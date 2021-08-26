@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.*;
 import static com.xpn.xwiki.XWikiException.*;
 import static java.util.stream.Collectors.*;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +36,8 @@ import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
+
+import one.util.streamex.StreamEx;
 
 @Immutable
 class DocumentSavePreparationCommand {
@@ -142,6 +146,18 @@ class DocumentSavePreparationCommand {
   private String getDocKey(Object... keyParts) {
     return Stream.of(keyParts).filter(Objects::nonNull).map(Object::toString)
         .collect(joining(".")).trim();
+  }
+
+  // TODO use me instead of loadExistingDocKeyForId ?
+  @SuppressWarnings("unchecked")
+  private Stream<String> loadExistingDocKeys(List<Long> docIds) throws HibernateException {
+    return StreamEx.of((Iterator<Object[]>) getSession()
+        .createQuery("select id, fullName, language from XWikiDocument where id in (:ids)")
+        .setParameterList("ids", docIds)
+        .iterate())
+        .filter(Objects::nonNull)
+        .toMap(null, null)
+        .map(this::getDocKey);
   }
 
   private String loadExistingDocKeyForId(long docId) throws HibernateException {
