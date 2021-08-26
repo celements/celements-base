@@ -8,16 +8,19 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
+import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.model.access.exception.DocumentSaveException;
 import com.google.common.base.Optional;
 
 @ComponentRole
 public interface UserService {
 
-  public static final String DEFAULT_LOGIN_FIELD = "loginname";
+  String DEFAULT_LOGIN_FIELD = "loginname";
+  String USERNAME_FIELD = "xwikiname";
 
   /**
    * @return the default user space reference for the current wiki
@@ -87,6 +90,29 @@ public interface UserService {
       throws UserCreateException;
 
   /**
+   * gets the existing user or creates a new one if none exists with the provided userData.
+   * generates a random name if no account name is provided.
+   *
+   * @param userData
+   * @return the new {@link User} instance
+   * @throws UserCreateException
+   *           if the user creation process failed
+   */
+  @NotNull
+  User getOrCreateNewUser(@NotNull Map<String, String> userData)
+      throws UserCreateException;
+
+  /**
+   * adds the given user to the given group if it doesn't already exist
+   *
+   * @return true if the document changed, false if the user already existed in the group
+   * @throws DocumentSaveException
+   *           if unable to save the group document
+   */
+  boolean addUserToGroup(@NotNull User user, @NotNull ClassReference groupRef)
+      throws DocumentSaveException;
+
+  /**
    * looks up the user by the given login value with {@link #getPossibleLoginFields()}
    *
    * @param login
@@ -110,5 +136,12 @@ public interface UserService {
   @NotNull
   Optional<User> getUserForLoginField(@NotNull String login,
       @Nullable Collection<String> possibleLoginFields);
+
+  /**
+   * sends a validation mail to the given user
+   *
+   * @return true if successfully sent
+   */
+  boolean sendValidationMail(@NotNull User user);
 
 }
