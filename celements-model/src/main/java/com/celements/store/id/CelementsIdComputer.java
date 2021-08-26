@@ -1,5 +1,7 @@
 package com.celements.store.id;
 
+import java.util.Iterator;
+
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -38,6 +40,8 @@ public interface CelementsIdComputer extends DocumentIdComputer {
    */
   long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang,
       byte collisionCount) throws IdComputationException;
+
+  Iterator<Long> getDocumentIdIterator(@NotNull DocumentReference docRef, @Nullable String lang);
 
   /**
    * @return computes the id for the given document

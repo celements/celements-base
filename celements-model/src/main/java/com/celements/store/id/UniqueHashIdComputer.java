@@ -6,6 +6,8 @@ import static com.google.common.base.Verify.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 
@@ -51,7 +53,7 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
     try {
       return computeDocumentId(docRef, lang);
     } catch (IdComputationException exc) {
-      throw new RuntimeException("should not happend", exc);
+      throw new IllegalStateException("should not happend", exc);
     }
   }
 
@@ -71,6 +73,27 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
   public long computeDocumentId(DocumentReference docRef, String lang, byte collisionCount)
       throws IdComputationException {
     return computeId(docRef, lang, collisionCount, 0);
+  }
+
+  @Override
+  public Iterator<Long> getDocumentIdIterator(DocumentReference docRef, String lang) {
+    byte collisionCount = 0;
+    return new Iterator<Long>() {
+
+      @Override
+      public boolean hasNext() {
+        return (collisionCount >>> BITS_COLLISION_COUNT) == 0;
+      }
+
+      @Override
+      public Long next() {
+        try {
+          return computeDocumentId(docRef, lang, collisionCount);
+        } catch (IdComputationException exc) {
+          throw new NoSuchElementException(exc.getMessage());
+        }
+      }
+    };
   }
 
   @Override
