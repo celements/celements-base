@@ -26,14 +26,23 @@ import com.xpn.xwiki.objects.BaseObject;
 
 import one.util.streamex.StreamEx;
 
+/**
+ * id format: 50bit | 2bit | 12bit
+ * MSB: 50bit docId md5(fullname+lang)
+ * center bits: 2bit collision count
+ * LSB: 12bit object count
+ */
 @Component(UniqueHashIdComputer.NAME)
 public class UniqueHashIdComputer implements CelementsIdComputer {
 
   public static final String NAME = "uniqueHash";
 
   private static final String HASH_ALGO = "MD5";
-  private static final byte BITS_COLLISION_COUNT = 2;
-  private static final byte BITS_OBJECT_COUNT = 12;
+
+  static final byte BITS_COLLISION_COUNT = 2;
+  static final byte BITS_OBJECT_COUNT = 12;
+  static final byte BITS_COUNTS = BITS_COLLISION_COUNT + BITS_OBJECT_COUNT;
+  static final byte BITS_DOCID = 64 - BITS_COUNTS;
 
   @Requirement
   private ModelUtils modelUtils;
@@ -77,21 +86,29 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
 
   @Override
   public Iterator<Long> getDocumentIdIterator(DocumentReference docRef, String lang) {
-    byte collisionCount = 0;
     return new Iterator<Long>() {
+
+      private byte collisionCount = 0;
+      private Long next = null;
 
       @Override
       public boolean hasNext() {
-        return (collisionCount >>> BITS_COLLISION_COUNT) == 0;
+        while ((next == null) && ((collisionCount >>> BITS_COLLISION_COUNT) == 0)) {
+          try {
+            next = computeDocumentId(docRef, lang, collisionCount++);
+          } catch (IdComputationException exc) {}
+        }
+        return (next != null);
       }
 
       @Override
       public Long next() {
-        try {
-          return computeDocumentId(docRef, lang, collisionCount);
-        } catch (IdComputationException exc) {
-          throw new NoSuchElementException(exc.getMessage());
+        if (hasNext()) {
+          long ret = next;
+          next = null;
+          return ret;
         }
+        throw new NoSuchElementException(docRef + ", lang:" + lang);
       }
     };
   }
@@ -148,14 +165,14 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
     verifyCount(collisionCount, BITS_COLLISION_COUNT);
     verifyCount(objectCount, BITS_OBJECT_COUNT);
     long docId = hashMD5(serializeLocalUid(docRef, lang));
-    long left = andifyRight(docId, (byte) (BITS_COLLISION_COUNT + BITS_OBJECT_COUNT));
-    long right = andifyLeft(collisionCount, inverseCount(BITS_COLLISION_COUNT));
-    right = (right << BITS_OBJECT_COUNT) + objectCount;
+    // docId part mustn't be zero, thus map docIds >= 0 and < 2^BITS_COUNTS to distinct values
+    if ((docId >>> BITS_COUNTS) == 0) {
+      docId = Long.MAX_VALUE - docId;
+    }
+    long left = andifyRight(docId, BITS_COUNTS);
+    long right = ((long) collisionCount << BITS_OBJECT_COUNT) + objectCount;
+    right = andifyLeft(right, BITS_DOCID);
     return verifyId(left & right);
-  }
-
-  private byte inverseCount(byte count) {
-    return (byte) (64 - count);
   }
 
   long andifyLeft(long base, byte bits) {
@@ -177,10 +194,8 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
 
   private long verifyId(long id) throws IdComputationException {
     try {
-      // generated id mustn't be zero
-      id = (id != 0) ? id : ~id;
       // FIXME this verification can lead to unrecoverable production fast failures and has be
-      // removed after compeletion of [CELDEV-605] XWikiDocument/BaseCollection id migration
+      // removed after completion of [CELDEV-605] XWikiDocument/BaseCollection id migration
       verify((id > Integer.MAX_VALUE) || (id < Integer.MIN_VALUE),
           "generated id '%s' may collide with '%s'", id, IdVersion.XWIKI_2);
       return id;

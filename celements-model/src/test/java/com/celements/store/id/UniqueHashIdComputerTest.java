@@ -1,6 +1,7 @@
 package com.celements.store.id;
 
 import static com.celements.common.test.CelementsTestUtils.*;
+import static com.celements.store.id.UniqueHashIdComputer.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -15,6 +16,7 @@ import org.xwiki.model.reference.DocumentReference;
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.google.common.base.VerifyException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Longs;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -128,8 +130,32 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_computeId_zero() throws Exception {
+    // all ids from 0 to 2^BITS_COUNTS will be shifted to 0
+    long max = 1 << BITS_COUNTS;
+    List<Long> zeroIds = Arrays.asList(0L, max / 4, max / 2, (max / 4) * 3, max - 1);
+    MessageDigest digestMock = createMockAndAddToDefault(MessageDigest.class);
+    idComputer.injectedDigest = digestMock;
+    digestMock.update(isA(byte[].class));
+    expectLastCall().times(zeroIds.size());
+    for (long id : zeroIds) {
+      expect(digestMock.digest()).andReturn(Longs.toByteArray(id)).once();
+    }
+    replayDefault();
+    for (long id : zeroIds) {
+      assertEquals("at " + id, nullCountBits(Long.MAX_VALUE - id),
+          idComputer.computeId(docRef, lang, (byte) 0, 0));
+    }
+    verifyDefault();
+  }
+
+  private long nullCountBits(long id) {
+    return (id >>> BITS_COUNTS) << BITS_COUNTS;
+  }
+
+  @Test
   public void test_computeId_illegalId_XWIKI_2() throws Exception {
-    List<Long> illegalIds = Arrays.asList(123456L, 1L, -1L, -123456L,
+    List<Long> illegalIds = Arrays.asList(123456L, (1L << BITS_COUNTS), -1L, -123456L,
         (long) Integer.MAX_VALUE, (long) Integer.MIN_VALUE);
     MessageDigest digestMock = createMockAndAddToDefault(MessageDigest.class);
     idComputer.injectedDigest = digestMock;
@@ -147,20 +173,6 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
       assertSame(VerifyException.class, cause.getClass());
       assertTrue(cause.getMessage(), cause.getMessage().contains(IdVersion.XWIKI_2.name()));
     }
-    verifyDefault();
-  }
-
-  @Test
-  public void test_computeId_illegalId_zero() throws Exception {
-    MessageDigest digestMock = createMockAndAddToDefault(MessageDigest.class);
-    idComputer.injectedDigest = digestMock;
-    digestMock.update(isA(byte[].class));
-    expect(digestMock.digest()).andReturn(Longs.toByteArray(0));
-    replayDefault();
-    Throwable cause = assertThrows(IdComputationException.class,
-        () -> idComputer.computeId(docRef, lang, (byte) 0, 0)).getCause();
-    assertSame(VerifyException.class, cause.getClass());
-    assertTrue(cause.getMessage(), cause.getMessage().contains("zero"));
     verifyDefault();
   }
 
@@ -201,6 +213,16 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     XWikiDocument doc = new XWikiDocument(docRef);
     doc.setLanguage(lang);
     assertEquals(0xf0da7f3f8545c000L, idComputer.computeDocumentId(doc));
+  }
+
+  @Test
+  public void test_getDocumentIdIterator() throws Exception {
+    assertEquals(ImmutableList.of(
+        0xf0da7f3f8545c000L,
+        0xf0da7f3f8545d000L,
+        0xf0da7f3f8545e000L,
+        0xf0da7f3f8545f000L),
+        ImmutableList.copyOf(idComputer.getDocumentIdIterator(docRef, lang)));
   }
 
   @Test
