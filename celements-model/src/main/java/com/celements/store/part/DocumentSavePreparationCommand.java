@@ -1,15 +1,14 @@
 package com.celements.store.part;
 
 import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Predicates.*;
 import static com.xpn.xwiki.XWikiException.*;
-import static java.util.stream.Collectors.*;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -110,7 +109,10 @@ class DocumentSavePreparationCommand {
   private void prepareDocId() throws IdComputationException, HibernateException, XWikiException {
     // documents with valid id have been loaded from the store, thus no id computation needed
     if (!doc.hasValidId()) {
-      doc.setId(computeNextFreeDocId(), store.getIdComputer().getIdVersion());
+      long nextFreeDocId = findNextFreeDocId();
+      LOGGER.debug("saveXWikiDoc - [{}] computed doc id [{}] for [{}]",
+          getDatabase(), nextFreeDocId, doc.getDocumentReference());
+      doc.setId(nextFreeDocId, store.getIdComputer().getIdVersion());
       if (!doc.isNew()) {
         doc.setNew(true);
         LOGGER.warn("saveXWikiDoc - [{}] document without valid id wasn't set to new [{}]",
@@ -119,53 +121,38 @@ class DocumentSavePreparationCommand {
     }
   }
 
-  private long computeNextFreeDocId()
-      throws IdComputationException, HibernateException, XWikiException {
-    String docKey = getDocKey(doc.getFullName(), doc.getLanguage());
-    Long nextFreeDocId = null;
-    for (byte collisionCount = 0; nextFreeDocId == null; collisionCount++) {
-      long docId = store.getIdComputer().computeDocumentId(
-          doc.getDocumentReference(), doc.getLanguage(), collisionCount);
-      String existingDocKey = loadExistingDocKeyForId(docId);
-      if (existingDocKey == null) {
-        nextFreeDocId = docId;
-      } else if (!docKey.equals(existingDocKey)) {
+  private long findNextFreeDocId() throws HibernateException, XWikiException {
+    String docKey = store.getDocKey(doc.getDocumentReference(), doc.getLanguage());
+    SortedMap<Long, String> existingDocKeys = store.loadExistingDocKeys(getSession(),
+        doc.getDocumentReference(), doc.getLanguage());
+    checkForCollisions(docKey, existingDocKeys);
+    return StreamEx.of(store.getIdComputer()
+        .getDocumentIdIterator(doc.getDocumentReference(), doc.getLanguage()))
+        .filter(not(existingDocKeys::containsKey))
+        .findFirst()
+        .orElseThrow(() -> new XWikiException(MODULE_XWIKI_STORE,
+            ERROR_XWIKI_STORE_HIBERNATE_SAVING_DOC, "saveXWikiDoc - [" + getDatabase()
+                + "] failed, collision count exhausted [" + docKey + "]"));
+  }
+
+  private void checkForCollisions(String docKey, SortedMap<Long, String> existingDocKeys)
+      throws XWikiException {
+    Iterator<Entry<Long, String>> iter = existingDocKeys.entrySet().iterator();
+    for (int collisionCount = 0; iter.hasNext(); collisionCount++) {
+      Entry<Long, String> entry = iter.next();
+      Long docId = entry.getKey();
+      String existingDocKey = entry.getValue();
+      if (docKey.equals(existingDocKey)) {
+        // should not happen ;) findNextFreeDocId should never be called for existing documents
+        // but let's check it here anyway and fail if it happens
+        throw new XWikiException(MODULE_XWIKI_STORE, ERROR_XWIKI_STORE_HIBERNATE_SAVING_DOC,
+            "saveXWikiDoc - [" + getDatabase() + "] failed, unable to compute next free id "
+                + "for an existing document [" + docKey + "]");
+      } else {
         LOGGER.warn("saveXWikiDoc - [{}] collision detected: id [{}], doc [{}], existing doc [{}], "
             + "count [{}]", getDatabase(), docId, docKey, existingDocKey, collisionCount);
-      } else {
-        throw new XWikiException(MODULE_XWIKI_STORE, ERROR_XWIKI_STORE_HIBERNATE_SAVING_DOC,
-            "saveXWikiDoc - [" + getDatabase() + "] unable to compute next free id "
-                + "for an existing document [" + docKey + "]");
       }
     }
-    LOGGER.debug("saveXWikiDoc - [{}] computed doc id [{}] for [{}]",
-        getDatabase(), nextFreeDocId, docKey);
-    return nextFreeDocId;
-  }
-
-  private String getDocKey(Object... keyParts) {
-    return Stream.of(keyParts).filter(Objects::nonNull).map(Object::toString)
-        .collect(joining(".")).trim();
-  }
-
-  // TODO use me instead of loadExistingDocKeyForId ?
-  @SuppressWarnings("unchecked")
-  private Stream<String> loadExistingDocKeys(List<Long> docIds) throws HibernateException {
-    return StreamEx.of((Iterator<Object[]>) getSession()
-        .createQuery("select id, fullName, language from XWikiDocument where id in (:ids)")
-        .setParameterList("ids", docIds)
-        .iterate())
-        .filter(Objects::nonNull)
-        .toMap(null, null)
-        .map(this::getDocKey);
-  }
-
-  private String loadExistingDocKeyForId(long docId) throws HibernateException {
-    Object[] row = (Object[]) getSession()
-        .createQuery("select fullName, language from XWikiDocument where id = :id")
-        .setLong("id", docId)
-        .uniqueResult();
-    return (row != null) ? getDocKey(row) : null;
   }
 
   private void prepareMainDoc() throws IdComputationException, XWikiException {

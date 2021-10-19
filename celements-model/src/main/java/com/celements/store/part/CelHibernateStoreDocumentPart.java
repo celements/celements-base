@@ -32,7 +32,6 @@ import com.celements.model.classes.ClassDefinition;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.CelHibernateStore;
-import com.celements.store.id.CelementsIdComputer;
 import com.celements.store.id.IdVersion;
 import com.celements.web.classes.oldcore.XWikiGroupsClass;
 import com.xpn.xwiki.XWikiContext;
@@ -42,6 +41,8 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.web.Utils;
+
+import one.util.streamex.EntryStream;
 
 //TODO CELDEV-626 - CelHibernateStore refactoring
 public class CelHibernateStoreDocumentPart {
@@ -160,6 +161,10 @@ public class CelHibernateStoreDocumentPart {
       session.setFlushMode(FlushMode.MANUAL);
 
       long docId = determineDocId(session, docRefToLoad, doc.getLanguage());
+      if (docId == 0) {
+        LOGGER.info("loadXWikiDoc - no existing doc for [{}:{}]",
+            defer(() -> store.serialize(docRefToLoad, GLOBAL)), doc.getLanguage());
+      }
       session.load(doc, docId);
       validateLoadedDoc(doc, docRefToLoad);
       sanitizeDoc(doc);
@@ -221,24 +226,15 @@ public class CelHibernateStoreDocumentPart {
   }
 
   /**
-   * loads the doc id for fullName and language. this is required since we don't know at this point
-   * which {@link IdVersion} we have to load.
-   *
-   * This method may use {@link CelementsIdComputer#computeDocumentId} after completion of
-   * [CELDEV-605] XWikiDocument id migration
+   * @return the doc id for fullName and language if one exists. this is needed because we don't
+   *         know before loading if a collision has occurred or which {@link IdVersion} was used on
+   *         save. returns 0 if no id exists.
    */
-  long determineDocId(Session session, DocumentReference docRef, String language) {
-    Long docId = (Long) session
-        .createQuery("select id from XWikiDocument where fullName = :fn and language = :lang")
-        .setString("fn", store.serialize(docRef, LOCAL))
-        .setString("lang", language)
-        .uniqueResult();
-    if (docId == null) {
-      LOGGER.info("loadXWikiDoc - no existing doc for [{}.{}]",
-          defer(() -> store.serialize(docRef, GLOBAL)), language);
-      docId = 0L;
-    }
-    return docId;
+  long determineDocId(Session session, DocumentReference docRef, String lang) {
+    return EntryStream.of(store.loadExistingDocKeys(session, docRef, lang))
+        .filterValues(store.getDocKey(docRef, lang)::equals)
+        .keys().findFirst()
+        .orElse(0L);
   }
 
   private void validateLoadedDoc(XWikiDocument doc, DocumentReference expectedDocRef)
