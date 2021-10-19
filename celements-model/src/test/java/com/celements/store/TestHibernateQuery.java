@@ -1,9 +1,9 @@
 package com.celements.store;
 
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.*;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -18,11 +18,14 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.impl.AbstractQueryImpl;
+import org.hibernate.type.Type;
 
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
+
+import one.util.streamex.StreamEx;
 
 public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
 
@@ -76,6 +79,21 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
     return this;
   }
 
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Query setParameterList(String named, Collection vals) throws HibernateException {
+    this.params.put(named, vals);
+    return this;
+  }
+
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Query setParameterList(String named, Collection vals, Type type)
+      throws HibernateException {
+    this.params.put(named, vals);
+    return this;
+  }
+
   @Override
   public int executeUpdate() throws HibernateException {
     return theQueryMock.executeUpdate();
@@ -92,28 +110,17 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
     throw new UnsupportedOperationException("getLockModes not supported");
   }
 
-  public static void expectSaveDocExists(Session sessionMock,
-      final Map<Long, Object[]> existingDocs) {
-    String hql = "select fullName, language from XWikiDocument where id = :id";
+  public static void expectLoadExistingDocs(Session sessionMock, List<Object[]> existingDocs) {
+    String hql = "select id, fullName, language from XWikiDocument where id in (:ids) order by id";
     Query query = new TestHibernateQuery<XWikiAttachment>(hql) {
 
       @Override
-      public Object uniqueResult() throws HibernateException {
-        return existingDocs.get(params.get("id"));
-      }
-    };
-    expect(sessionMock.createQuery(eq(hql))).andReturn(query).anyTimes();
-  }
-
-  public static void expectLoadDocId(Session sessionMock, String fullName, String lang, long id) {
-    String hql = "select id from XWikiDocument where fullName = :fn and language = :lang";
-    Query query = new TestHibernateQuery<XWikiAttachment>(hql) {
-
-      @Override
-      public Object uniqueResult() throws HibernateException {
-        assertEquals(fullName, params.get("fn"));
-        assertEquals(lang, params.get("lang"));
-        return id;
+      public Iterator<Object[]> iterate() throws HibernateException {
+        return StreamEx.of(existingDocs)
+            .mapToEntry(row -> (long) row[0], row -> row)
+            .filterKeys(((Collection<?>) params.get("ids"))::contains)
+            .sortedBy(Map.Entry::getKey)
+            .values().iterator();
       }
     };
     expect(sessionMock.createQuery(eq(hql))).andReturn(query).anyTimes();

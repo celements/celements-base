@@ -22,7 +22,7 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.store.id.IdVersion;
 import com.celements.store.part.XWikiDummyDocComparator;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -62,7 +62,8 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   public void test_loadXWikiDoc() throws Exception {
     long docId = -974136870929809408L;
     Session sessionMock = createSessionMock(doc);
-    expectLoadDocId(sessionMock, doc.getFullName(), doc.getLanguage(), docId);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
     expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
     expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
     sessionMock.load(same(doc), eq(docId));
@@ -83,7 +84,8 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     long docId = -974136870929809408L;
     Capture<XWikiDocument> docCapture = newCapture();
     Session sessionMock = createSessionMock(doc);
-    expectLoadDocId(sessionMock, doc.getFullName(), doc.getLanguage(), docId);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
     expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
     expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
     sessionMock.load(capture(docCapture), eq(docId));
@@ -106,7 +108,8 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   public void test_loadXWikiDoc_collision() throws Exception {
     long docId = -974136870929809408L;
     Session sessionMock = createSessionMock(doc);
-    expectLoadDocId(sessionMock, doc.getFullName(), doc.getLanguage(), docId);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
     expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
     expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
     sessionMock.load(cmp(doc, (actual, expected) -> {
@@ -125,7 +128,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   public void test_saveXWikiDoc_immutability() throws Exception {
     Capture<XWikiDocument> docCapture = newCapture();
     Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, ImmutableMap.of());
+    expectLoadExistingDocs(sessionMock, ImmutableList.of());
     expect(sessionMock.save(capture(docCapture))).andReturn(null).once();
     expect(sessionMock.close()).andReturn(null);
 
@@ -144,7 +147,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   @Test
   public void test_saveXWikiDoc_save() throws Exception {
     Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, ImmutableMap.of());
+    expectLoadExistingDocs(sessionMock, ImmutableList.of());
     expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
         .andReturn(null);
     expect(sessionMock.close()).andReturn(null);
@@ -182,8 +185,8 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   @Test
   public void test_saveXWikiDoc_collision_single() throws Exception {
     final Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, ImmutableMap.of(
-        -974136870929809408L, new Object[] { "space.other", "" }));
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { -974136870929809408L, "space.other", "" }));
     expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
         .andReturn(null);
     expect(sessionMock.close()).andReturn(null);
@@ -199,11 +202,11 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   @Test
   public void test_saveXWikiDoc_collision_exhausted() throws Exception {
     final Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, ImmutableMap.of(
-        -974136870929809408L, new Object[] { "space.other1", "" },
-        -974136870929805312L, new Object[] { "space.other2", "" },
-        -974136870929801216L, new Object[] { "space.other3", "" },
-        -974136870929797120L, new Object[] { "space.other4", "" }));
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { -974136870929809408L, "space.other1", "" },
+        new Object[] { -974136870929805312L, "space.other2", "" },
+        new Object[] { -974136870929801216L, "space.other3", "" },
+        new Object[] { -974136870929797120L, "space.other4", "" }));
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();

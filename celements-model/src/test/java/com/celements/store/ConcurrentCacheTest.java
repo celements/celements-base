@@ -303,8 +303,9 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
     expectLastCall().anyTimes();
     expect(sessionMock.close()).andReturn(null).anyTimes();
     XWikiDocument myDoc = new XWikiDocument(testDocRef);
-    long docId = 1234L;
-    expectLoadDocId(sessionMock, testFullName, myDoc.getLanguage(), docId);
+    long docId = 0x718b1d979ccec000L;
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, testFullName, myDoc.getLanguage() }));
     expectXWikiDocLoad(sessionMock, myDoc, docId);
     expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
     expectLoadObjects(sessionMock, getNewObjList(testDocRef));

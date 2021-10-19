@@ -1,7 +1,6 @@
 package com.celements.store.part;
 
 import static com.celements.common.test.CelementsTestUtils.*;
-import static com.celements.store.TestHibernateQuery.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -16,7 +15,7 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer;
 import com.celements.store.id.UniqueHashIdComputer;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
@@ -48,7 +47,10 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
     expect(storeStrictMock.beginTransaction(same(sfactoryMock), same(getContext())))
         .andReturn(true);
     expect(storeStrictMock.getSession(getContext())).andReturn(sessionMock);
-    expectSaveDocExists(sessionMock, ImmutableMap.of());
+    expect(storeStrictMock.getDocKey(doc.getDocumentReference(), doc.getLanguage()))
+        .andReturn("space.doc");
+    expect(storeStrictMock.loadExistingDocKeys(sessionMock, doc.getDocumentReference(),
+        doc.getLanguage())).andReturn(ImmutableSortedMap.of());
     expect(storeStrictMock.getIdComputer()).andReturn(Utils.getComponent(CelementsIdComputer.class,
         UniqueHashIdComputer.NAME)).times(2);
     expect(storeStrictMock.exists(anyObject(XWikiDocument.class), same(getContext())))
