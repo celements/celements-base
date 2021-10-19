@@ -14,6 +14,8 @@ import com.celements.model.util.ReferenceSerializationMode;
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
 
+import one.util.streamex.StreamEx;
+
 @Component(ReferenceScriptService.NAME)
 public class ReferenceScriptService implements ScriptService {
 
@@ -26,7 +28,15 @@ public class ReferenceScriptService implements ScriptService {
   private ModelContext context;
 
   public RefBuilder create() {
-    return new RefBuilder().nullable().with(context.getWikiRef());
+    return RefBuilder.create().nullable().with(context.getWikiRef());
+  }
+
+  public RefBuilder create(EntityReference... refs) {
+    RefBuilder builder = create();
+    if (refs != null) {
+      StreamEx.of(refs).forEach(builder::with);
+    }
+    return builder;
   }
 
   public ClassReference createClassRef(String space, String name) {
