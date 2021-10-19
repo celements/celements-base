@@ -42,7 +42,7 @@ import com.xpn.xwiki.web.Utils;
  * @version $Id$
  * @since 2.2M2
  */
-public class AbstractBridgedComponentTestCase extends AbstractComponentTestCase {
+public abstract class AbstractBridgedComponentTestCase extends AbstractComponentTestCase {
 
   private XWikiContext context;
 
