@@ -1,6 +1,7 @@
 package com.celements.store.id;
 
-import javax.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
@@ -14,12 +15,22 @@ public class XWikiDocumentIdComputer implements DocumentIdComputer {
   private EntityReferenceSerializer<String> localEntityReferenceSerializer;
 
   @Override
-  public long compute(@NotNull DocumentReference docRef, String lang) {
+  public IdVersion getIdVersion() {
+    return IdVersion.XWIKI_2;
+  }
+
+  @Override
+  public long compute(DocumentReference docRef, String lang) {
     String uniqueName = localEntityReferenceSerializer.serialize(docRef);
     if ((lang != null) && !lang.trim().isEmpty()) {
       uniqueName += ":" + lang;
     }
     return uniqueName.hashCode();
+  }
+
+  @Override
+  public Iterator<Long> getDocumentIdIterator(DocumentReference docRef, String lang) {
+    return Arrays.asList(compute(docRef, lang)).iterator();
   }
 
 }

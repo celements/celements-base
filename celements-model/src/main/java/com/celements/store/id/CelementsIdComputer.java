@@ -1,7 +1,5 @@
 package com.celements.store.id;
 
-import java.util.Iterator;
-
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -12,9 +10,6 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 @ComponentRole
 public interface CelementsIdComputer extends DocumentIdComputer {
-
-  @NotNull
-  IdVersion getIdVersion();
 
   /**
    * @return computes the id for the given document and language
@@ -40,8 +35,6 @@ public interface CelementsIdComputer extends DocumentIdComputer {
    */
   long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang,
       byte collisionCount) throws IdComputationException;
-
-  Iterator<Long> getDocumentIdIterator(@NotNull DocumentReference docRef, @Nullable String lang);
 
   /**
    * @return computes the id for the given document
