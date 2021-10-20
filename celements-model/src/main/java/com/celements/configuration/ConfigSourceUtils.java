@@ -1,26 +1,27 @@
 package com.celements.configuration;
 
+import static com.google.common.base.Predicates.*;
 import static com.google.common.base.Strings.*;
+import static com.google.common.collect.ImmutableList.*;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.EntityReference;
 
-import com.celements.common.MorePredicates;
 import com.celements.model.util.ModelUtils;
-import com.google.common.base.Functions;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Streams;
 import com.xpn.xwiki.web.Utils;
 
 public class ConfigSourceUtils {
 
-  private ConfigSourceUtils() {
-  }
+  private ConfigSourceUtils() {}
 
   @NotNull
   public static Optional<String> getStringProperty(@NotNull String key) {
@@ -41,17 +42,38 @@ public class ConfigSourceUtils {
   @NotNull
   public static List<String> getStringListProperty(@NotNull ConfigurationSource configSrc,
       @NotNull String key) {
-    FluentIterable<?> values;
+    return streamProperty(key, configSrc).collect(toImmutableList());
+  }
+
+  private static Stream<?> getPropertyAsStream(ConfigurationSource configSrc, String key) {
+    Stream<?> values;
     Object prop = configSrc.getProperty(key);
     if (prop instanceof Iterable) {
-      values = FluentIterable.from((Iterable<?>) prop);
+      values = Streams.stream((Iterable<?>) prop);
     } else if (prop != null) {
-      values = FluentIterable.of(prop);
+      values = Stream.of(prop);
     } else {
-      values = FluentIterable.of();
+      values = Stream.empty();
     }
-    return values.filter(Predicates.notNull()).transform(Functions.toStringFunction()).filter(
-        MorePredicates.stringNotBlankPredicate()).toList();
+    return values;
+  }
+
+  @NotNull
+  public static Stream<String> streamProperty(@NotNull String key,
+      @NotNull Iterable<ConfigurationSource> configSources) {
+    return Streams.stream(configSources)
+        .filter(Objects::nonNull)
+        .flatMap(cfgSrc -> getPropertyAsStream(cfgSrc, key))
+        .filter(Objects::nonNull)
+        .map(Object::toString)
+        .map(String::trim)
+        .filter(not(String::isEmpty));
+  }
+
+  @NotNull
+  public static Stream<String> streamProperty(@NotNull String key,
+      @NotNull ConfigurationSource... configSources) {
+    return streamProperty(key, Arrays.asList(configSources));
   }
 
   @NotNull
