@@ -106,7 +106,7 @@ class DocumentSavePreparationCommand {
     }
   }
 
-  private void prepareDocId() throws IdComputationException, HibernateException, XWikiException {
+  private void prepareDocId() throws HibernateException, XWikiException {
     // documents with valid id have been loaded from the store, thus no id computation needed
     if (!doc.hasValidId()) {
       long nextFreeDocId = findNextFreeDocId();
