@@ -3,6 +3,7 @@ package com.celements.store;
 import static com.xpn.xwiki.XWikiException.*;
 
 import java.text.MessageFormat;
+import java.time.Duration;
 
 import javax.inject.Singleton;
 
@@ -23,6 +24,7 @@ import com.celements.store.id.UniqueHashIdComputer;
 import com.celements.store.part.CelHibernateStoreCollectionPart;
 import com.celements.store.part.CelHibernateStoreDocumentPart;
 import com.celements.store.part.CelHibernateStorePropertyPart;
+import com.google.common.base.Stopwatch;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -61,16 +63,16 @@ public class CelHibernateStore extends XWikiHibernateStore {
   @Override
   public boolean exists(XWikiDocument doc, XWikiContext context) throws XWikiException {
     try {
-      log(LogLevel.INFO, "exists - start", doc);
+      Stopwatch timer = logStart(LogLevel.INFO, "exists", doc);
       // FIXME [CELDEV-924] Store add lang support for exists check and cache
       boolean ret = super.exists(doc, context);
-      log(LogLevel.INFO, "exists - end", doc);
+      logEnd(LogLevel.INFO, "exists", doc, timer);
       return ret;
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("exists - failed", doc, exc,
           ERROR_XWIKI_STORE_HIBERNATE_CHECK_EXISTS_DOC);
     } catch (Exception exc) {
-      logError("exists - error", doc, exc);
+      logError("exists", doc, exc);
       throw exc;
     }
   }
@@ -79,14 +81,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public void saveXWikiDoc(XWikiDocument doc, final XWikiContext context,
       final boolean bTransaction) throws XWikiException {
     try {
-      log(LogLevel.INFO, "saveXWikiDoc - start", doc);
+      Stopwatch timer = logStart(LogLevel.INFO, "saveXWikiDoc", doc);
       documentStorePart.saveXWikiDoc(doc, context, bTransaction);
-      log(LogLevel.INFO, "saveXWikiDoc - end", doc);
+      logEnd(LogLevel.INFO, "saveXWikiDoc", doc, timer);
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("saveXWikiDoc - failed", doc, exc,
           ERROR_XWIKI_STORE_HIBERNATE_SAVING_DOC);
     } catch (Exception exc) {
-      logError("saveXWikiDoc - error", doc, exc);
+      logError("saveXWikiDoc", doc, exc);
       throw exc;
     }
   }
@@ -100,15 +102,15 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, final XWikiContext context)
       throws XWikiException {
     try {
-      log(LogLevel.INFO, "loadXWikiDoc - start", doc);
+      Stopwatch timer = logStart(LogLevel.INFO, "loadXWikiDoc", doc);
       XWikiDocument ret = documentStorePart.loadXWikiDoc(doc, context);
-      log(LogLevel.INFO, "loadXWikiDoc - end", doc);
+      logEnd(LogLevel.INFO, "loadXWikiDoc", doc, timer);
       return ret;
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("loadXWikiDoc - failed", doc, exc,
           ERROR_XWIKI_STORE_HIBERNATE_READING_DOC);
     } catch (Exception exc) {
-      logError("loadXWikiDoc - error", doc, exc);
+      logError("loadXWikiDoc", doc, exc);
       throw exc;
     }
   }
@@ -116,14 +118,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
   @Override
   public void deleteXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     try {
-      log(LogLevel.INFO, "deleteXWikiDoc - start", doc);
+      Stopwatch timer = logStart(LogLevel.INFO, "deleteXWikiDoc", doc);
       documentStorePart.deleteXWikiDoc(doc, context);
-      log(LogLevel.INFO, "deleteXWikiDoc - end", doc);
+      logEnd(LogLevel.INFO, "deleteXWikiDoc", doc, timer);
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("deleteXWikiDoc - failed", doc, exc,
           ERROR_XWIKI_STORE_HIBERNATE_DELETING_DOC);
     } catch (Exception exc) {
-      logError("deleteXWikiDoc - error", doc, exc);
+      logError("deleteXWikiDoc", doc, exc);
       throw exc;
     }
   }
@@ -136,14 +138,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public void saveXWikiCollection(BaseCollection object, XWikiContext context, boolean bTransaction)
       throws XWikiException {
     try {
-      log(LogLevel.DEBUG, "saveXObject - start", object);
+      Stopwatch timer = logStart(LogLevel.DEBUG, "saveXObject", object);
       collectionStorePart.saveXWikiCollection(object, context, bTransaction);
-      log(LogLevel.DEBUG, "saveXObject - end", object);
+      logEnd(LogLevel.DEBUG, "saveXObject", object, timer);
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("saveXObject - failed", object, exc,
           ERROR_XWIKI_STORE_HIBERNATE_SAVING_OBJECT);
     } catch (Exception exc) {
-      logError("saveXObject - error", object, exc);
+      logError("saveXObject", object, exc);
       throw exc;
     }
   }
@@ -156,14 +158,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public void loadXWikiCollection(BaseCollection object, XWikiDocument doc, XWikiContext context,
       boolean bTransaction, boolean alreadyLoaded) throws XWikiException {
     try {
-      log(LogLevel.DEBUG, "loadXObject - start", object);
+      Stopwatch timer = logStart(LogLevel.DEBUG, "loadXObject", object);
       collectionStorePart.loadXWikiCollection(object, doc, context, bTransaction, alreadyLoaded);
-      log(LogLevel.DEBUG, "loadXObject - end", object);
+      logEnd(LogLevel.DEBUG, "loadXObject", object, timer);
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("loadXObject - failed", object, exc,
           ERROR_XWIKI_STORE_HIBERNATE_LOADING_OBJECT);
     } catch (Exception exc) {
-      logError("loadXObject - error", object, exc);
+      logError("loadXObject", object, exc);
       throw exc;
     }
   }
@@ -176,14 +178,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public void deleteXWikiCollection(BaseCollection object, XWikiContext context,
       boolean bTransaction, boolean evict) throws XWikiException {
     try {
-      log(LogLevel.DEBUG, "deleteXObject - start", object);
+      Stopwatch timer = logStart(LogLevel.DEBUG, "deleteXObject", object);
       collectionStorePart.deleteXWikiCollection(object, context, bTransaction, evict);
-      log(LogLevel.DEBUG, "deleteXObject - end", object);
+      logEnd(LogLevel.DEBUG, "deleteXObject", object, timer);
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("deleteXObject - failed", object, exc,
           ERROR_XWIKI_STORE_HIBERNATE_DELETING_OBJECT);
     } catch (Exception exc) {
-      logError("deleteXObject - error", object, exc);
+      logError("deleteXObject", object, exc);
       throw exc;
     }
   }
@@ -196,14 +198,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public void loadXWikiProperty(PropertyInterface property, XWikiContext context,
       boolean bTransaction) throws XWikiException {
     try {
-      log(LogLevel.TRACE, "loadXProperty - start", property);
+      Stopwatch timer = logStart(LogLevel.TRACE, "loadXProperty", property);
       propertyStorePart.loadXWikiProperty(property, context, bTransaction);
-      log(LogLevel.TRACE, "loadXProperty - end", property);
+      logEnd(LogLevel.TRACE, "loadXProperty", property, timer);
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("loadXProperty - failed", property, exc,
           ERROR_XWIKI_STORE_HIBERNATE_LOADING_OBJECT);
     } catch (Exception exc) {
-      logError("loadXProperty - error", property, exc);
+      logError("loadXProperty", property, exc);
       throw exc;
     }
   }
@@ -216,14 +218,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public void saveXWikiProperty(final PropertyInterface property, final XWikiContext context,
       final boolean runInOwnTransaction) throws XWikiException {
     try {
-      log(LogLevel.TRACE, "saveXProperty - start", property);
+      Stopwatch timer = logStart(LogLevel.TRACE, "saveXProperty", property);
       propertyStorePart.saveXWikiProperty(property, context, runInOwnTransaction);
-      log(LogLevel.TRACE, "saveXProperty - end", property);
+      logEnd(LogLevel.TRACE, "saveXProperty", property, timer);
     } catch (HibernateException | XWikiException exc) {
       throw newXWikiException("saveXProperty - failed", property, exc,
           ERROR_XWIKI_STORE_HIBERNATE_SAVING_OBJECT);
     } catch (Exception exc) {
-      logError("saveXProperty - error", property, exc);
+      logError("saveXProperty", property, exc);
       throw exc;
     }
   }
@@ -258,28 +260,40 @@ public class CelHibernateStore extends XWikiHibernateStore {
     throw new UnsupportedOperationException("Celements doesn't support class tables");
   }
 
-  public void log(LogLevel level, String msg, Object obj) {
-    LogUtils.log(LOGGER, level, () -> buildLogMessage(msg, obj));
+  private Stopwatch logStart(LogLevel level, String msg, Object obj) {
+    LogUtils.log(LOGGER, level, () -> buildLogMessage(msg + " - start", obj, null));
+    return LogUtils.isLevelEnabled(LOGGER, level) ? Stopwatch.createStarted() : null;
   }
 
-  public void logError(String msg, Object obj, Throwable cause) {
-    LogUtils.log(LOGGER, LogLevel.ERROR, () -> buildLogMessage(msg, obj), cause);
+  private void logEnd(LogLevel level, String msg, Object obj, Stopwatch timer) {
+    LogUtils.log(LOGGER, level, () -> buildLogMessage(msg + " - end", obj,
+        (timer != null) ? timer.elapsed() : null));
   }
 
-  public XWikiException newXWikiException(String msg, Object obj, Throwable cause, int code) {
+  private void logError(String msg, Object obj, Throwable cause) {
+    LogUtils.log(LOGGER, LogLevel.ERROR, () -> buildLogMessage(msg + " - error", obj), cause);
+  }
+
+  private XWikiException newXWikiException(String msg, Object obj, Throwable cause, int code) {
     return new XWikiException(MODULE_XWIKI_STORE, code, buildLogMessage(msg, obj), cause);
   }
 
-  public String buildLogMessage(String msg, Object obj) {
+  private String buildLogMessage(String msg, Object obj) {
+    return buildLogMessage(msg, obj, null);
+  }
+
+  private String buildLogMessage(String msg, Object obj, Duration time) {
+    String timeMsg = (time != null) ? MessageFormat.format("took {0}", time) : "";
     if (obj instanceof XWikiDocument) {
       XWikiDocument doc = (XWikiDocument) obj;
-      return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(doc.getId()),
-          modelUtils.serializeRef(doc.getDocumentReference()));
+      return MessageFormat.format("{0}: {1} {2} {3}", msg, Long.toString(doc.getId()),
+          modelUtils.serializeRef(doc.getDocumentReference()), timeMsg);
     } else if (obj instanceof PropertyInterface) {
       PropertyInterface property = (PropertyInterface) obj;
-      return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(property.getId()), property);
+      return MessageFormat.format("{0}: {1} {2} {3}", msg, Long.toString(property.getId()),
+          property, timeMsg);
     } else {
-      return MessageFormat.format("{0}: {1}", msg, obj);
+      return MessageFormat.format("{0}: {1} {2}", msg, obj, timeMsg);
     }
   }
 
