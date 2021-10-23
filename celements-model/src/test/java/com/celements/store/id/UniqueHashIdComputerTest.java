@@ -143,7 +143,7 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     }
     replayDefault();
     for (long id : zeroIds) {
-      assertEquals("at " + id, nullCountBits(Long.MAX_VALUE - id),
+      assertEquals("at " + id, nullCountBits(Long.MIN_VALUE + id),
           idComputer.computeId(docRef, lang, (byte) 0, 0));
     }
     verifyDefault();
@@ -151,29 +151,6 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
 
   private long nullCountBits(long id) {
     return (id >>> BITS_COUNTS) << BITS_COUNTS;
-  }
-
-  @Test
-  public void test_computeId_illegalId_XWIKI_2() throws Exception {
-    List<Long> illegalIds = Arrays.asList(123456L, (1L << BITS_COUNTS), -1L, -123456L,
-        (long) Integer.MAX_VALUE, (long) Integer.MIN_VALUE);
-    MessageDigest digestMock = createMockAndAddToDefault(MessageDigest.class);
-    idComputer.injectedDigest = digestMock;
-    digestMock.update(isA(byte[].class));
-    expectLastCall().times(illegalIds.size());
-    for (long id : illegalIds) {
-      expect(digestMock.digest()).andReturn(Longs.toByteArray(id)).once();
-    }
-    replayDefault();
-    for (int i = 0; i < illegalIds.size(); i++) {
-      final int objCount = i;
-      Throwable cause = assertThrows(IdComputationException.class,
-          () -> idComputer.computeId(docRef, lang, (byte) 0, objCount))
-              .getCause();
-      assertSame(VerifyException.class, cause.getClass());
-      assertTrue(cause.getMessage(), cause.getMessage().contains(IdVersion.XWIKI_2.name()));
-    }
-    verifyDefault();
   }
 
   @Test

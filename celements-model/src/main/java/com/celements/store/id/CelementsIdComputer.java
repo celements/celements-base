@@ -13,35 +13,27 @@ public interface CelementsIdComputer extends DocumentIdComputer {
 
   /**
    * @return computes the id for the given document and language
-   * @throws IdComputationException
-   *           if unable to compute an id
    */
-  long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang)
-      throws IdComputationException;
+  long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang);
 
   /**
    * @return computes the maximum id (regarding collision detection) for the given document and
    *         language
-   * @throws IdComputationException
-   *           if unable to compute an id
    */
-  long computeMaxDocumentId(@NotNull DocumentReference docRef, @Nullable String lang)
-      throws IdComputationException;
+  long computeMaxDocumentId(@NotNull DocumentReference docRef, @Nullable String lang);
 
   /**
    * @return computes the id for the given document, language and collision count
    * @throws IdComputationException
-   *           if unable to compute an id
+   *           if unable to compute an id for the given collision count
    */
   long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang,
       byte collisionCount) throws IdComputationException;
 
   /**
    * @return computes the id for the given document
-   * @throws IdComputationException
-   *           if unable to compute an id
    */
-  long computeDocumentId(@NotNull XWikiDocument doc) throws IdComputationException;
+  long computeDocumentId(@NotNull XWikiDocument doc);
 
   /**
    * @return computes the next object id for the given document
