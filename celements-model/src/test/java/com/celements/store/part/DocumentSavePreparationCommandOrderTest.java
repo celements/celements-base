@@ -15,7 +15,7 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer;
 import com.celements.store.id.UniqueHashIdComputer;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
@@ -40,6 +40,8 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
     XWikiDocument doc = createDoc(false, null);
     BaseObject obj = addObject(doc);
 
+    expect(storeStrictMock.getDocKey(doc.getDocumentReference(), doc.getLanguage()))
+        .andReturn("space.doc");
     storeStrictMock.checkHibernate(same(getContext()));
     SessionFactory sfactoryMock = createMockAndAddToDefault(SessionFactory.class);
     expect(storeStrictMock.injectCustomMappingsInSessionFactory(same(doc), same(getContext())))
@@ -47,10 +49,8 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
     expect(storeStrictMock.beginTransaction(same(sfactoryMock), same(getContext())))
         .andReturn(true);
     expect(storeStrictMock.getSession(getContext())).andReturn(sessionMock);
-    expect(storeStrictMock.getDocKey(doc.getDocumentReference(), doc.getLanguage()))
-        .andReturn("space.doc");
     expect(storeStrictMock.loadExistingDocKeys(sessionMock, doc.getDocumentReference(),
-        doc.getLanguage())).andReturn(ImmutableSortedMap.of());
+        doc.getLanguage())).andReturn(ImmutableBiMap.of());
     expect(storeStrictMock.getIdComputer()).andReturn(Utils.getComponent(CelementsIdComputer.class,
         UniqueHashIdComputer.NAME)).times(2);
     expect(storeStrictMock.exists(anyObject(XWikiDocument.class), same(getContext())))

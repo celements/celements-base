@@ -2,6 +2,7 @@ package com.celements.store;
 
 import static com.celements.model.util.ReferenceSerializationMode.*;
 import static com.google.common.base.Predicates.*;
+import static com.google.common.collect.ImmutableBiMap.*;
 import static com.xpn.xwiki.XWikiException.*;
 import static java.util.stream.Collectors.*;
 
@@ -9,9 +10,9 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.stream.Stream;
 
 import javax.inject.Singleton;
@@ -37,6 +38,7 @@ import com.celements.store.id.UniqueHashIdComputer;
 import com.celements.store.part.CelHibernateStoreCollectionPart;
 import com.celements.store.part.CelHibernateStoreDocumentPart;
 import com.celements.store.part.CelHibernateStorePropertyPart;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.primitives.Longs;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -149,6 +151,10 @@ public class CelHibernateStore extends XWikiHibernateStore {
     }
   }
 
+  public String getDocKey(XWikiDocument doc) {
+    return getDocKey(doc.getDocumentReference(), doc.getLanguage());
+  }
+
   public String getDocKey(DocumentReference docRef, String lang) {
     return getDocKey(Stream.of(serialize(docRef, LOCAL), lang));
   }
@@ -160,34 +166,36 @@ public class CelHibernateStore extends XWikiHibernateStore {
 
   /**
    * returns a map with all existing docIds for all {@link IdVersion} for the given docRef and lang
-   * sorted by collision count. the map value represents the docKey for the docId.
+   * sorted by collision count. the map value represents the {@link #getDocKey} for the docId
    */
-  public SortedMap<Long, String> loadExistingDocKeys(Session session,
+  public ImmutableBiMap<Long, String> loadExistingDocKeys(Session session,
       DocumentReference docRef, String lang) throws HibernateException {
     Set<Long> allPossibleDocIds = StreamEx.of(docIdComputers)
         .map(computer -> computer.getDocumentIdIterator(docRef, lang))
         .flatMap(StreamEx::of)
-        .distinct()
         .toSet();
     return loadExistingDocKeys(session, allPossibleDocIds)
-        // docIds for the same doc are sorted by collision count irrespective of their signum
-        // due to 2-complement representation
-        .toSortedMap();
+        .collect(toImmutableBiMap(Entry::getKey, Entry::getValue));
   }
 
+  /**
+   * docIds for the same doc are sorted by collision count firstly (and object count secondly)
+   * irrespective of their signum due to 2-complement representation
+   */
   @SuppressWarnings("unchecked")
   private EntryStream<Long, String> loadExistingDocKeys(Session session, Collection<Long> docIds) {
     Iterator<Object[]> iter = session.createQuery(
         "select id, fullName, language from XWikiDocument where id in (:ids) order by id")
         .setParameterList("ids", docIds)
         .iterate();
-    return StreamEx.of(iter).filter(Objects::nonNull)
+    return StreamEx.of(iter)
+        .filter(Objects::nonNull)
         .mapToEntry(row -> getDocKey(Stream.of(row).skip(1)))
         .filterValues(not(String::isEmpty))
         .mapKeys(row -> Stream.of(row).findFirst().map(String::valueOf).map(Longs::tryParse)
             .orElse(null))
         .filterKeys(Objects::nonNull)
-        .distinct();
+        .distinctKeys();
   }
 
   /**
@@ -335,8 +343,7 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public String buildLogMessage(String msg, Object obj) {
     if (obj instanceof XWikiDocument) {
       XWikiDocument doc = (XWikiDocument) obj;
-      return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(doc.getId()),
-          serialize(doc, GLOBAL));
+      return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(doc.getId()), getDocKey(doc));
     } else if (obj instanceof PropertyInterface) {
       PropertyInterface property = (PropertyInterface) obj;
       return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(property.getId()), property);

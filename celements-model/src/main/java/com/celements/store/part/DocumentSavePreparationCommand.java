@@ -4,10 +4,7 @@ import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Predicates.*;
 import static com.xpn.xwiki.XWikiException.*;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.SortedMap;
 import java.util.UUID;
 
 import javax.annotation.concurrent.Immutable;
@@ -28,6 +25,7 @@ import com.celements.model.reference.RefBuilder;
 import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.google.common.base.Strings;
+import com.google.common.collect.BiMap;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -46,6 +44,7 @@ class DocumentSavePreparationCommand {
   private final XWikiDocument doc;
   private final CelHibernateStore store;
   private final XWikiContext context;
+  private final String docKey;
 
   private Session session;
 
@@ -53,6 +52,7 @@ class DocumentSavePreparationCommand {
     this.doc = checkNotNull(doc);
     this.store = checkNotNull(store);
     this.context = checkNotNull(context);
+    this.docKey = store.getDocKey(doc.getDocumentReference(), doc.getLanguage());
   }
 
   public String getDatabase() {
@@ -79,7 +79,8 @@ class DocumentSavePreparationCommand {
       }
     } catch (IdComputationException exc) {
       throw new XWikiException(MODULE_XWIKI_STORE, ERROR_XWIKI_STORE_HIBERNATE_SAVING_DOC,
-          "saveXWikiDoc - [" + getDatabase() + "] failed to compute id for [" + doc + "]", exc);
+          "saveXWikiDoc - [" + getDatabase() + "] failed to compute id for [" + docKey + "]",
+          exc);
     }
     return this;
   }
@@ -98,7 +99,7 @@ class DocumentSavePreparationCommand {
   private void ensureDatabaseConsistency() {
     if (!doc.getDocumentReference().getWikiReference().getName().equals(getDatabase())) {
       LOGGER.warn("saveXWikiDoc - [{}] not matching database, adjusting from doc [{}]",
-          getDatabase(), doc.getDocumentReference(), new Throwable());
+          getDatabase(), docKey, new Throwable());
       boolean isMetaDataDirty = doc.isMetaDataDirty();
       doc.setDocumentReference(RefBuilder.from(doc.getDocumentReference()).wiki(getDatabase())
           .build(DocumentReference.class));
@@ -106,53 +107,34 @@ class DocumentSavePreparationCommand {
     }
   }
 
-  private void prepareDocId() throws HibernateException, XWikiException {
+  private void prepareDocId() throws HibernateException, IdComputationException {
     // documents with valid id have been loaded from the store, thus no id computation needed
     if (!doc.hasValidId()) {
-      long nextFreeDocId = findNextFreeDocId();
-      LOGGER.debug("saveXWikiDoc - [{}] computed doc id [{}] for [{}]",
-          getDatabase(), nextFreeDocId, doc.getDocumentReference());
-      doc.setId(nextFreeDocId, store.getIdComputer().getIdVersion());
-      if (!doc.isNew()) {
-        doc.setNew(true);
-        LOGGER.warn("saveXWikiDoc - [{}] document without valid id wasn't set to new [{}]",
-            getDatabase(), doc.getDocumentReference(), new Throwable());
+      BiMap<String, Long> existingDocKeys = store.loadExistingDocKeys(getSession(),
+          doc.getDocumentReference(), doc.getLanguage()).inverse();
+      long docId = findDocId(existingDocKeys);
+      LOGGER.debug("saveXWikiDoc - [{}] set doc id [{}] for [{}]", getDatabase(), docId, docKey);
+      doc.setId(docId, store.getIdComputer().getIdVersion());
+      if (doc.isNew() ^ !existingDocKeys.containsKey(docKey)) {
+        doc.setNew(!doc.isNew());
+        LOGGER.warn("saveXWikiDoc - [{}] corrected new flag to [{}] for document [{}]",
+            getDatabase(), doc.isNew(), docKey, new Throwable());
       }
     }
   }
 
-  private long findNextFreeDocId() throws HibernateException, XWikiException {
-    String docKey = store.getDocKey(doc.getDocumentReference(), doc.getLanguage());
-    SortedMap<Long, String> existingDocKeys = store.loadExistingDocKeys(getSession(),
-        doc.getDocumentReference(), doc.getLanguage());
-    checkForCollisions(docKey, existingDocKeys);
+  private long findDocId(BiMap<String, Long> existingDocKeys) throws IdComputationException {
+    if (existingDocKeys.containsKey(docKey)) {
+      return existingDocKeys.get(docKey);
+    } else if (!existingDocKeys.isEmpty()) {
+      LOGGER.warn("saveXWikiDoc - [{}] collision detected: doc [{}] with {} existing: [{}]",
+          getDatabase(), docKey, existingDocKeys.size(), existingDocKeys);
+    }
     return StreamEx.of(store.getIdComputer()
         .getDocumentIdIterator(doc.getDocumentReference(), doc.getLanguage()))
-        .filter(not(existingDocKeys::containsKey))
+        .filter(not(existingDocKeys.values()::contains))
         .findFirst()
-        .orElseThrow(() -> new XWikiException(MODULE_XWIKI_STORE,
-            ERROR_XWIKI_STORE_HIBERNATE_SAVING_DOC, "saveXWikiDoc - [" + getDatabase()
-                + "] failed, collision count exhausted [" + docKey + "]"));
-  }
-
-  private void checkForCollisions(String docKey, SortedMap<Long, String> existingDocKeys)
-      throws XWikiException {
-    Iterator<Entry<Long, String>> iter = existingDocKeys.entrySet().iterator();
-    for (int collisionCount = 0; iter.hasNext(); collisionCount++) {
-      Entry<Long, String> entry = iter.next();
-      Long docId = entry.getKey();
-      String existingDocKey = entry.getValue();
-      if (docKey.equals(existingDocKey)) {
-        // should not happen ;) findNextFreeDocId should never be called for existing documents
-        // but let's check it here anyway and fail if it happens
-        throw new XWikiException(MODULE_XWIKI_STORE, ERROR_XWIKI_STORE_HIBERNATE_SAVING_DOC,
-            "saveXWikiDoc - [" + getDatabase() + "] failed, unable to compute next free id "
-                + "for an existing document [" + docKey + "]");
-      } else {
-        LOGGER.warn("saveXWikiDoc - [{}] collision detected: id [{}], doc [{}], existing doc [{}], "
-            + "count [{}]", getDatabase(), docId, docKey, existingDocKey, collisionCount);
-      }
-    }
+        .orElseThrow(() -> new IdComputationException("collision count exhausted"));
   }
 
   private void prepareMainDoc() throws IdComputationException, XWikiException {

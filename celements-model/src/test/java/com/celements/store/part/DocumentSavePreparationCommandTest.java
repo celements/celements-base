@@ -20,8 +20,8 @@ import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer;
 import com.celements.store.id.IdVersion;
 import com.celements.store.id.UniqueHashIdComputer;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -100,12 +100,16 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   public void test_execute_setId_alreadyExists() throws Exception {
     long docId = -974136870929809408L;
     XWikiDocument doc = createDoc(false, null);
+    doc.setNew(true); // test with wrong new-flag, it should be corrected
     expectExistingDocs(doc, ImmutableMap.of(
         docId, doc.getFullName() + "." + doc.getLanguage()));
 
     replayDefault();
-    assertThrows(XWikiException.class, () -> newCommand(doc).execute(false));
+    newCommand(doc).execute(false);
     verifyDefault();
+    assertFalse(doc.isNew());
+    assertEquals(docId, doc.getId());
+    assertSame(IdVersion.CELEMENTS_3, doc.getIdVersion());
   }
 
   @Test
@@ -148,8 +152,11 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
         docId, doc.getFullName() + "." + doc.getLanguage()));
 
     replayDefault();
-    assertThrows(XWikiException.class, () -> newCommand(doc).execute(false));
+    newCommand(doc).execute(false);
     verifyDefault();
+    assertFalse(doc.isNew());
+    assertEquals(docId, doc.getId());
+    assertSame(IdVersion.CELEMENTS_3, doc.getIdVersion());
   }
 
   @Test
@@ -185,9 +192,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_translation() throws Exception {
-    XWikiDocument doc = createDoc(false);
-    doc.setLanguage("ch");
-    doc.setTranslation(1);
+    XWikiDocument doc = createDoc(false, 1L, "ch");
     BaseObject obj = addObject(doc);
 
     replayDefault();
@@ -223,7 +228,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
     expect(storeMock.exists(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL), same(
         getContext()))).andReturn(true).once();
     expect(storeMock.loadXWikiDoc(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL),
-        same(getContext()))).andReturn(createDoc(false));
+        same(getContext()))).andReturn(doc);
 
     replayDefault();
     newCommand(doc).execute(false);
@@ -282,20 +287,25 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   }
 
   private XWikiDocument createDoc(boolean isNew, Long id) {
+    return createDoc(isNew, id, "");
+  }
+
+  private XWikiDocument createDoc(boolean isNew, Long id, String lang) {
     DocumentReference docRef = new DocumentReference("xwikidb", "space", "doc");
     XWikiDocument doc = new XWikiDocument(docRef);
     doc.setNew(isNew);
     if (id != null) {
       doc.setId(id, IdVersion.XWIKI_2);
     }
+    doc.setLanguage(lang);
+    doc.setTranslation(lang.equals("") ? 0 : 1);
+    expect(storeMock.getDocKey(docRef, lang)).andReturn("space.doc." + lang).anyTimes();
     return doc;
   }
 
   private void expectExistingDocs(XWikiDocument doc, final Map<Long, String> existingDocs) {
-    expect(storeMock.getDocKey(doc.getDocumentReference(), doc.getLanguage()))
-        .andReturn("space.doc." + doc.getLanguage());
     expect(storeMock.loadExistingDocKeys(sessionMock, doc.getDocumentReference(),
-        doc.getLanguage())).andReturn(ImmutableSortedMap.copyOf(existingDocs));
+        doc.getLanguage())).andReturn(ImmutableBiMap.copyOf(existingDocs));
   }
 
 }

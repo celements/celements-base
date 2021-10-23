@@ -46,15 +46,15 @@ public interface CelementsIdComputer extends DocumentIdComputer {
 
     private static final long serialVersionUID = 1L;
 
-    protected IdComputationException(String message) {
+    public IdComputationException(String message) {
       super(message);
     }
 
-    protected IdComputationException(Throwable cause) {
+    public IdComputationException(Throwable cause) {
       super(cause);
     }
 
-    protected IdComputationException(String message, Throwable cause) {
+    public IdComputationException(String message, Throwable cause) {
       super(message, cause);
     }
 
