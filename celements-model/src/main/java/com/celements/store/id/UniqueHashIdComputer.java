@@ -42,7 +42,7 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
   static final byte BITS_COLLISION_COUNT = 2;
   static final byte BITS_OBJECT_COUNT = 12;
   static final byte BITS_COUNTS = BITS_COLLISION_COUNT + BITS_OBJECT_COUNT;
-  static final byte BITS_DOCID = 64 - BITS_COUNTS;
+  static final byte BITS_DOC_HASH = 64 - BITS_COUNTS;
 
   @Requirement
   private ModelUtils modelUtils;
@@ -171,15 +171,11 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
       throws IdComputationException {
     verifyCount(collisionCount, BITS_COLLISION_COUNT);
     verifyCount(objectCount, BITS_OBJECT_COUNT);
-    long docId = hashMD5(serializeLocalUid(docRef, lang));
-    // the first BITS_DOCID (MSB) of docId mustn't be zero, thus apply an injective function for
-    // 0 <= docIds < 2^BITS_COUNTS onto a disjoint set of longs
-    if ((docId >>> BITS_COUNTS) == 0) {
-      docId = Long.MIN_VALUE + docId;
-    }
-    long left = andifyRight(docId, BITS_COUNTS);
+    long docHash = hashMD5(serializeLocalUid(docRef, lang));
+    docHash = unzero(docHash, BITS_COUNTS); // first BITS_DOC_HASH (MSBs) of docId mustn't be 0
+    long left = andifyRight(docHash, BITS_COUNTS);
     long right = ((long) collisionCount << BITS_OBJECT_COUNT) + objectCount;
-    right = andifyLeft(right, BITS_DOCID);
+    right = andifyLeft(right, BITS_DOC_HASH);
     return left & right;
   }
 
@@ -189,6 +185,16 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
 
   long andifyRight(long base, byte bits) {
     return ~(~(base >>> bits) << bits);
+  }
+
+  /**
+   * for any 0 <= docHash < 2^zeroBits injective map onto docHash > 2^zeroBits
+   * else return given docHash
+   */
+  long unzero(long docHash, byte zeroBits) {
+    return ((docHash >>> zeroBits) == 0)
+        ? (docHash + 1) << zeroBits
+        : docHash;
   }
 
   private void verifyCount(long count, byte bits) throws IdComputationException {

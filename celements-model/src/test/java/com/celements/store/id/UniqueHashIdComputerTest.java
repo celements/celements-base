@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.LongStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -143,14 +144,22 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     }
     replayDefault();
     for (long id : zeroIds) {
-      assertEquals("at " + id, nullCountBits(Long.MIN_VALUE + id),
+      assertEquals("at " + id, idComputer.unzero(id, BITS_COUNTS),
           idComputer.computeId(docRef, lang, (byte) 0, 0));
     }
     verifyDefault();
   }
 
-  private long nullCountBits(long id) {
-    return (id >>> BITS_COUNTS) << BITS_COUNTS;
+  @Test
+  public void test_unzero() throws Exception {
+    byte bits = 10;
+    long max = 1 << bits; // exclusive
+    assertEquals(-1, idComputer.unzero(-1, bits));
+    assertEquals(max, idComputer.unzero(max, bits));
+    assertEquals("function not injective", max, LongStream.range(0, max)
+        .map(l -> idComputer.unzero(l, bits))
+        .peek(l -> assertTrue("too low: " + l, l >= max))
+        .distinct().count()); // injective functions map all inputs to distinct outputs
   }
 
   @Test
