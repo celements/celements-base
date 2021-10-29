@@ -26,6 +26,7 @@ import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.Ordering;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -133,6 +134,9 @@ class DocumentSavePreparationCommand {
     return StreamEx.of(store.getIdComputer()
         .getDocumentIdIterator(doc.getDocumentReference(), doc.getLanguage()))
         .filter(not(existingDocKeys.values()::contains))
+        // reverse ordering until [CELDEV-605] "XWikiDocument/BaseCollection id migration" is done
+        // we want to reduce potential collisions with already existing XWO_IDs having coll-count 0
+        .sorted(Ordering.natural().reversed())
         .findFirst()
         .orElseThrow(() -> new IdComputationException("collision count exhausted"));
   }

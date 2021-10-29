@@ -20,6 +20,8 @@ import org.xwiki.model.reference.ImmutableReference;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.access.IModelAccessFacade;
+import com.celements.store.id.CelementsIdComputer;
+import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.celements.store.id.IdVersion;
 import com.celements.store.part.XWikiDummyDocComparator;
 import com.google.common.collect.ImmutableList;
@@ -60,7 +62,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_loadXWikiDoc() throws Exception {
-    long docId = -974136870929809408L;
+    long docId = computeDocId(0);
     Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of(
         new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
@@ -81,7 +83,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_loadXWikiDoc_immutability() throws Exception {
-    long docId = -974136870929809408L;
+    long docId = computeDocId(0);
     Capture<XWikiDocument> docCapture = newCapture();
     Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of(
@@ -106,7 +108,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_loadXWikiDoc_collision() throws Exception {
-    long docId = -974136870929809408L;
+    long docId = computeDocId(0);
     Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of(
         new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
@@ -163,7 +165,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_saveXWikiDoc_update() throws Exception {
-    long docId = -974136870929809408L;
+    long docId = computeDocId(0);
     doc.setId(docId, IdVersion.CELEMENTS_3);
     doc.setNew(false);
     Session sessionMock = createSessionMock(doc);
@@ -186,7 +188,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   public void test_saveXWikiDoc_collision_single() throws Exception {
     final Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of(
-        new Object[] { -974136870929809408L, "space.other", "" }));
+        new Object[] { computeDocId(0), "space.other", "" }));
     expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
         .andReturn(null);
     expect(sessionMock.close()).andReturn(null);
@@ -195,7 +197,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     getStore(sessionMock).saveXWikiDoc(doc, getContext());
     verifyDefault();
 
-    assertEquals(-974136870929805312L, doc.getId());
+    assertEquals(computeDocId(3), doc.getId());
     assertSame(IdVersion.CELEMENTS_3, doc.getIdVersion());
   }
 
@@ -203,10 +205,10 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   public void test_saveXWikiDoc_collision_exhausted() throws Exception {
     final Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of(
-        new Object[] { -974136870929809408L, "space.other1", "" },
-        new Object[] { -974136870929805312L, "space.other2", "" },
-        new Object[] { -974136870929801216L, "space.other3", "" },
-        new Object[] { -974136870929797120L, "space.other4", "" }));
+        new Object[] { computeDocId(3), "space.other1", "" },
+        new Object[] { computeDocId(2), "space.other2", "" },
+        new Object[] { computeDocId(1), "space.other3", "" },
+        new Object[] { computeDocId(0), "space.other4", "" }));
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -244,6 +246,11 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     sessionMock.clear();
     expectLastCall().anyTimes();
     return sessionMock;
+  }
+
+  private long computeDocId(int collisionCount) throws IdComputationException {
+    return Utils.getComponent(CelementsIdComputer.class)
+        .computeDocumentId(docRef, "", (byte) collisionCount);
   }
 
 }

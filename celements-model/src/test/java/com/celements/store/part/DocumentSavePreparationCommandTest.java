@@ -18,6 +18,7 @@ import org.xwiki.model.reference.DocumentReference;
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer;
+import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.celements.store.id.IdVersion;
 import com.celements.store.id.UniqueHashIdComputer;
 import com.google.common.collect.ImmutableBiMap;
@@ -51,7 +52,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute() throws Exception {
-    XWikiDocument doc = createDoc(false);
+    XWikiDocument doc = createDoc("");
 
     replayDefault();
     DocumentSavePreparationCommand cmd = newCommand(doc).execute(false);
@@ -67,7 +68,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_transaction() throws Exception {
-    XWikiDocument doc = createDoc(false);
+    XWikiDocument doc = createDoc("");
 
     storeMock.checkHibernate(same(getContext()));
     expectLastCall();
@@ -84,8 +85,8 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_hasAlreadyValidId() throws Exception {
-    long docId = -974136870929809408L;
-    XWikiDocument doc = createDoc(false, null);
+    XWikiDocument doc = createDocWithoutId("");
+    long docId = computeDocId(doc, 3);
     doc.setId(docId, IdVersion.CELEMENTS_3);
 
     replayDefault();
@@ -98,8 +99,8 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_setId_alreadyExists() throws Exception {
-    long docId = -974136870929809408L;
-    XWikiDocument doc = createDoc(false, null);
+    XWikiDocument doc = createDocWithoutId("");
+    long docId = computeDocId(doc, 3);
     doc.setNew(true); // test with wrong new-flag, it should be corrected
     expectExistingDocs(doc, ImmutableMap.of(
         docId, doc.getFullName() + "." + doc.getLanguage()));
@@ -114,8 +115,8 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_setId_notExists() throws Exception {
-    long docId = -974136870929809408L;
-    XWikiDocument doc = createDoc(false, null);
+    XWikiDocument doc = createDocWithoutId("");
+    long docId = computeDocId(doc, 3);
     expectExistingDocs(doc, ImmutableMap.of());
 
     replayDefault();
@@ -128,11 +129,11 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_setId_collision_notExists() throws Exception {
-    long docId = -974136870929801216L;
-    XWikiDocument doc = createDoc(false, null);
+    XWikiDocument doc = createDocWithoutId("");
+    long docId = computeDocId(doc, 1);
     expectExistingDocs(doc, ImmutableMap.of(
-        -974136870929809408L, "space.other1",
-        -974136870929805312L, "space.other2"));
+        computeDocId(doc, 3), "space.other1",
+        computeDocId(doc, 2), "space.other2"));
 
     replayDefault();
     newCommand(doc).execute(false);
@@ -144,11 +145,11 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_setId_collision_alreadyExists() throws Exception {
-    long docId = -974136870929801216L;
-    XWikiDocument doc = createDoc(false, null);
+    XWikiDocument doc = createDocWithoutId("");
+    long docId = computeDocId(doc, 1);
     expectExistingDocs(doc, ImmutableMap.of(
-        -974136870929809408L, "space.other1",
-        -974136870929805312L, "space.other2",
+        computeDocId(doc, 3), "space.other1",
+        computeDocId(doc, 2), "space.other2",
         docId, doc.getFullName() + "." + doc.getLanguage()));
 
     replayDefault();
@@ -161,12 +162,12 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_setId_collision_countExhausted() throws Exception {
-    XWikiDocument doc = createDoc(false, null);
+    XWikiDocument doc = createDocWithoutId("");
     expectExistingDocs(doc, ImmutableMap.of(
-        -974136870929809408L, "space.other1",
-        -974136870929805312L, "space.other2",
-        -974136870929801216L, "space.other3",
-        -974136870929797120L, "space.other4"));
+        computeDocId(doc, 3), "space.other1",
+        computeDocId(doc, 2), "space.other2",
+        computeDocId(doc, 1), "space.other3",
+        computeDocId(doc, 0), "space.other4"));
 
     replayDefault();
     assertThrows(XWikiException.class, () -> newCommand(doc).execute(false));
@@ -175,7 +176,8 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_object() throws Exception {
-    XWikiDocument doc = createDoc(true);
+    XWikiDocument doc = createDoc("");
+    doc.setNew(true);
     BaseObject obj = addObject(doc);
     expect(storeMock.exists(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL), same(
         getContext()))).andReturn(false).once();
@@ -192,7 +194,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_translation() throws Exception {
-    XWikiDocument doc = createDoc(false, 1L, "ch");
+    XWikiDocument doc = createDoc("ch");
     BaseObject obj = addObject(doc);
 
     replayDefault();
@@ -205,9 +207,9 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_object_load() throws Exception {
-    XWikiDocument doc = createDoc(false);
+    XWikiDocument doc = createDoc("");
     BaseObject obj = addObject(doc);
-    XWikiDocument origDoc = createDoc(false);
+    XWikiDocument origDoc = createDoc("");
     BaseObject origObj = addObject(origDoc);
     origObj.setId(1234, IdVersion.CELEMENTS_3);
     expect(storeMock.exists(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL), same(
@@ -223,7 +225,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_object_load_noObj() throws Exception {
-    XWikiDocument doc = createDoc(false);
+    XWikiDocument doc = createDoc("");
     BaseObject obj = addObject(doc);
     expect(storeMock.exists(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL), same(
         getContext()))).andReturn(true).once();
@@ -238,7 +240,8 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_object_load_notExists() throws Exception {
-    XWikiDocument doc = createDoc(true);
+    XWikiDocument doc = createDoc("");
+    doc.setNew(true);
     BaseObject obj = addObject(doc);
     expect(storeMock.exists(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL), same(
         getContext()))).andReturn(false).once();
@@ -251,7 +254,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_object_load_XWE() throws Exception {
-    final XWikiDocument doc = createDoc(false);
+    final XWikiDocument doc = createDoc("");
     addObject(doc);
     XWikiException cause = new XWikiException();
     expect(storeMock.exists(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL), same(
@@ -273,7 +276,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Test
   public void test_execute_attachment() throws Exception {
-    XWikiDocument doc = createDoc(false);
+    XWikiDocument doc = createDoc("");
     doc.setAttachmentList(Arrays.asList(new XWikiAttachment(doc, "file")));
 
     replayDefault();
@@ -282,21 +285,16 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
     assertTrue(doc.hasElement(XWikiDocument.HAS_ATTACHMENTS));
   }
 
-  private XWikiDocument createDoc(boolean isNew) {
-    return createDoc(isNew, 1L);
+  private XWikiDocument createDoc(String lang) {
+    XWikiDocument doc = createDocWithoutId(lang);
+    doc.setId(1L, IdVersion.XWIKI_2);
+    return doc;
   }
 
-  private XWikiDocument createDoc(boolean isNew, Long id) {
-    return createDoc(isNew, id, "");
-  }
-
-  private XWikiDocument createDoc(boolean isNew, Long id, String lang) {
+  private XWikiDocument createDocWithoutId(String lang) {
     DocumentReference docRef = new DocumentReference("xwikidb", "space", "doc");
     XWikiDocument doc = new XWikiDocument(docRef);
-    doc.setNew(isNew);
-    if (id != null) {
-      doc.setId(id, IdVersion.XWIKI_2);
-    }
+    doc.setNew(false);
     doc.setLanguage(lang);
     doc.setTranslation(lang.equals("") ? 0 : 1);
     expect(storeMock.getDocKey(docRef, lang)).andReturn("space.doc." + lang).anyTimes();
@@ -306,6 +304,12 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   private void expectExistingDocs(XWikiDocument doc, final Map<Long, String> existingDocs) {
     expect(storeMock.loadExistingDocKeys(sessionMock, doc.getDocumentReference(),
         doc.getLanguage())).andReturn(ImmutableBiMap.copyOf(existingDocs));
+  }
+
+  private long computeDocId(XWikiDocument doc, int collisionCount)
+      throws IdComputationException {
+    return Utils.getComponent(CelementsIdComputer.class)
+        .computeDocumentId(doc.getDocumentReference(), doc.getLanguage(), (byte) collisionCount);
   }
 
 }
