@@ -1,5 +1,6 @@
 package com.celements.store.part;
 
+import static com.celements.store.part.CelHibernateStoreDocumentPart.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Predicates.*;
 import static com.xpn.xwiki.XWikiException.*;
@@ -15,6 +16,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 
@@ -26,7 +28,6 @@ import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.Ordering;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -132,11 +133,9 @@ class DocumentSavePreparationCommand {
           getDatabase(), docKey, existingDocKeys.size(), existingDocKeys);
     }
     return StreamEx.of(store.getIdComputer()
-        .getDocumentIdIterator(doc.getDocumentReference(), doc.getLanguage()))
+        .getDocumentIdIterator(doc.getDocumentReference(), doc.getLanguage(),
+            getStartCollisionCount()))
         .filter(not(existingDocKeys.values()::contains))
-        // reverse ordering until [CELDEV-605] "XWikiDocument/BaseCollection id migration" is done
-        // we want to reduce potential collisions with already existing XWO_IDs having coll-count 0
-        .sorted(Ordering.natural().reversed())
         .findFirst()
         .orElseThrow(() -> new IdComputationException("collision count exhausted"));
   }
@@ -223,6 +222,17 @@ class DocumentSavePreparationCommand {
    */
   private XWikiStoreInterface getPrimaryStore(XWikiContext context) {
     return context.getWiki().getStore();
+  }
+
+  // we'll return 1 until [CELDEV-605] "XWikiDocument/BaseCollection id migration" is done
+  // we want to eliminate potential collisions with already existing XWO_IDs having count 0
+  private byte getStartCollisionCount() {
+    return (byte) (int) getCfgSrc().getProperty("celements.store.startCollisionCount",
+        (int) START_COLLISION_COUNT_DEFAULT);
+  }
+
+  private ConfigurationSource getCfgSrc() {
+    return Utils.getComponent(ConfigurationSource.class);
   }
 
 }

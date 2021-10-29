@@ -88,9 +88,15 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
 
   @Override
   public Iterator<Long> getDocumentIdIterator(DocumentReference docRef, String lang) {
+    return getDocumentIdIterator(docRef, lang, (byte) 0);
+  }
+
+  @Override
+  public Iterator<Long> getDocumentIdIterator(DocumentReference docRef, String lang,
+      byte startCollisionCount) {
     return new Iterator<Long>() {
 
-      private byte collisionCount = 0;
+      private byte collisionCount = (byte) Math.max(startCollisionCount, 0);
       private Long next = null;
 
       @Override

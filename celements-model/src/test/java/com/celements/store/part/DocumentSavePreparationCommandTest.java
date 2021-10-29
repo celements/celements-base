@@ -1,6 +1,7 @@
 package com.celements.store.part;
 
 import static com.celements.common.test.CelementsTestUtils.*;
+import static com.celements.store.part.CelHibernateStoreDocumentPart.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -86,7 +87,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   @Test
   public void test_execute_hasAlreadyValidId() throws Exception {
     XWikiDocument doc = createDocWithoutId("");
-    long docId = computeDocId(doc, 3);
+    long docId = computeDocId(doc, START_COLLISION_COUNT_DEFAULT);
     doc.setId(docId, IdVersion.CELEMENTS_3);
 
     replayDefault();
@@ -100,7 +101,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   @Test
   public void test_execute_setId_alreadyExists() throws Exception {
     XWikiDocument doc = createDocWithoutId("");
-    long docId = computeDocId(doc, 3);
+    long docId = computeDocId(doc, START_COLLISION_COUNT_DEFAULT);
     doc.setNew(true); // test with wrong new-flag, it should be corrected
     expectExistingDocs(doc, ImmutableMap.of(
         docId, doc.getFullName() + "." + doc.getLanguage()));
@@ -116,7 +117,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   @Test
   public void test_execute_setId_notExists() throws Exception {
     XWikiDocument doc = createDocWithoutId("");
-    long docId = computeDocId(doc, 3);
+    long docId = computeDocId(doc, START_COLLISION_COUNT_DEFAULT);
     expectExistingDocs(doc, ImmutableMap.of());
 
     replayDefault();
@@ -130,10 +131,10 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   @Test
   public void test_execute_setId_collision_notExists() throws Exception {
     XWikiDocument doc = createDocWithoutId("");
-    long docId = computeDocId(doc, 1);
+    long docId = computeDocId(doc, START_COLLISION_COUNT_DEFAULT + 2);
     expectExistingDocs(doc, ImmutableMap.of(
-        computeDocId(doc, 3), "space.other1",
-        computeDocId(doc, 2), "space.other2"));
+        computeDocId(doc, START_COLLISION_COUNT_DEFAULT + 0), "space.other1",
+        computeDocId(doc, START_COLLISION_COUNT_DEFAULT + 1), "space.other2"));
 
     replayDefault();
     newCommand(doc).execute(false);
@@ -146,10 +147,10 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   @Test
   public void test_execute_setId_collision_alreadyExists() throws Exception {
     XWikiDocument doc = createDocWithoutId("");
-    long docId = computeDocId(doc, 1);
+    long docId = computeDocId(doc, START_COLLISION_COUNT_DEFAULT + 2);
     expectExistingDocs(doc, ImmutableMap.of(
-        computeDocId(doc, 3), "space.other1",
-        computeDocId(doc, 2), "space.other2",
+        computeDocId(doc, START_COLLISION_COUNT_DEFAULT + 0), "space.other1",
+        computeDocId(doc, START_COLLISION_COUNT_DEFAULT + 1), "space.other2",
         docId, doc.getFullName() + "." + doc.getLanguage()));
 
     replayDefault();
@@ -164,10 +165,10 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   public void test_execute_setId_collision_countExhausted() throws Exception {
     XWikiDocument doc = createDocWithoutId("");
     expectExistingDocs(doc, ImmutableMap.of(
-        computeDocId(doc, 3), "space.other1",
-        computeDocId(doc, 2), "space.other2",
-        computeDocId(doc, 1), "space.other3",
-        computeDocId(doc, 0), "space.other4"));
+        computeDocId(doc, 0), "space.other1",
+        computeDocId(doc, 1), "space.other2",
+        computeDocId(doc, 2), "space.other3",
+        computeDocId(doc, 3), "space.other4"));
 
     replayDefault();
     assertThrows(XWikiException.class, () -> newCommand(doc).execute(false));

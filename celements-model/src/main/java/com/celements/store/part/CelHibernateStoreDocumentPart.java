@@ -49,6 +49,8 @@ public class CelHibernateStoreDocumentPart {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CelHibernateStore.class);
 
+  public static final byte START_COLLISION_COUNT_DEFAULT = 1;
+
   private final CelHibernateStore store;
 
   public CelHibernateStoreDocumentPart(CelHibernateStore store) {
