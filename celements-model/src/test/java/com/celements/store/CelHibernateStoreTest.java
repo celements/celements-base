@@ -45,7 +45,6 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     expect(getWikiMock().getConfig()).andReturn(new XWikiConfig()).anyTimes();
     expect(getWikiMock().getPlugin("monitor", getContext())).andReturn(null).anyTimes();
     expect(getWikiMock().hasDynamicCustomMappings()).andReturn(false).anyTimes();
-    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
     expect(getWikiMock().hasVersioning(getContext())).andReturn(false).anyTimes();
     expect(getWikiMock().hasBacklinks(getContext())).andReturn(false).anyTimes();
     expect(getWikiMock().Param(eq("xwiki.store.hibernate.useclasstables.read"), eq("1"))).andReturn(
@@ -188,6 +187,32 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
         store.deleteXWikiDoc(doc, getContext());
       }
     }.evaluate();
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getSchemaFromWikiName_virtual() {
+    expect(getWikiMock().isVirtualMode()).andReturn(true).anyTimes();
+    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
+    replayDefault();
+    CelHibernateStore store = getStore(null);
+    assertNull(store.getSchemaFromWikiName(null, null, getContext()));
+    assertEquals("pref_as5df", store.getSchemaFromWikiName("as5df", null, getContext()));
+    assertEquals("pref_as5df", store.getSchemaFromWikiName("AS5DF", null, getContext()));
+    assertEquals("pref_as5df", store.getSchemaFromWikiName("a$s5(DF)", null, getContext()));
+    assertEquals("pref_as5df_suf", store.getSchemaFromWikiName("AS5DF-SUF", null, getContext()));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getSchemaFromWikiName_main() {
+    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
+    expect(getWikiMock().Param("xwiki.db")).andReturn("main").anyTimes();
+    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
+    replayDefault();
+    CelHibernateStore store = getStore(null);
+    assertNull(store.getSchemaFromWikiName(null, null, getContext()));
+    assertEquals("pref_main", store.getSchemaFromWikiName("as5df", null, getContext()));
     verifyDefault();
   }
 

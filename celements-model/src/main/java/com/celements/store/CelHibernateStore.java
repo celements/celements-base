@@ -30,6 +30,7 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
+import com.xpn.xwiki.store.DatabaseProduct;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 
 @Singleton
@@ -333,6 +334,36 @@ public class CelHibernateStore extends XWikiHibernateStore {
     }
 
     return available;
+  }
+
+  /**
+   * Convert wiki name in database/schema name.
+   *
+   * @param wikiName
+   *          the wiki name to convert.
+   * @param databaseProduct
+   *          the database engine type.
+   * @param context
+   *          the XWiki context.
+   * @return the database/schema name.
+   */
+  @Override
+  protected String getSchemaFromWikiName(String wikiName, DatabaseProduct databaseProduct,
+      XWikiContext context) {
+    if (wikiName == null) {
+      return null;
+    }
+    String schemaName = null;
+    if (context.isMainWiki(wikiName)) {
+      schemaName = context.getWiki().Param("xwiki.db");
+    }
+    if (schemaName == null) {
+      schemaName = wikiName;
+    }
+    return (context.getWiki().Param("xwiki.db.prefix", "") + schemaName)
+        .toLowerCase()
+        .replace('-', '_')
+        .replaceAll("[^a-z0-9_]", "");
   }
 
 }
