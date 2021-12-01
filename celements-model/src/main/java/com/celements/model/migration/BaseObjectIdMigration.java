@@ -139,12 +139,13 @@ public class BaseObjectIdMigration extends AbstractCelementsHibernateMigrator {
   private boolean migrateObjectId(XWikiDocument doc, BaseObject object, XWikiContext context)
       throws XWikiException {
     try {
-      getHibStore().loadXWikiCollection(object, doc, context, false, false);
-      getHibStore().deleteXWikiObject(object, context, false);
       long newId = idComputer.computeNextObjectId(doc);
-      if (object.getId() != newId) {
+      if ((object.getId() != newId) || (idComputer.getIdVersion() != object.getIdVersion())) {
+        getHibStore().loadXWikiCollection(object, doc, context, false, false);
+        getHibStore().deleteXWikiObject(object, context, false);
         object.setId(newId, idComputer.getIdVersion());
         getHibStore().saveXWikiCollection(object, context, false);
+        LOGGER.debug("migrated [{}]", object);
         return true;
       }
       return false;
