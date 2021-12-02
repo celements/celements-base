@@ -8,7 +8,7 @@ import static com.xpn.xwiki.XWikiException.*;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.NotThreadSafe;
 
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -38,7 +38,7 @@ import com.xpn.xwiki.web.Utils;
 
 import one.util.streamex.StreamEx;
 
-@Immutable
+@NotThreadSafe
 class DocumentSavePreparationCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CelHibernateStore.class);
