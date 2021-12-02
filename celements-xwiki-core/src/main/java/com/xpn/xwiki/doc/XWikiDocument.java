@@ -553,7 +553,7 @@ public class XWikiDocument implements DocumentModelBridge {
   }
 
   /**
-   * IMPORTANT: must never to be called outside of store logic
+   * IMPORTANT: must never be called outside of store logic
    */
   public void setId(long id, IdVersion idVersion) {
     if (hasValidId()) {
