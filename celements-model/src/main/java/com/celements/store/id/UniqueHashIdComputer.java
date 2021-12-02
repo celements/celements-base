@@ -182,7 +182,7 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
     long left = andifyRight(docHash, BITS_COUNTS);
     long right = ((long) collisionCount << BITS_OBJECT_COUNT) + objectCount;
     right = andifyLeft(right, BITS_DOC_HASH);
-    return left & right;
+    return verifyId(left & right);
   }
 
   long andifyLeft(long base, byte bits) {
@@ -207,6 +207,18 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
     try {
       verify(count >= 0, "negative count '%s' not allowed", count);
       verify((count >>> bits) == 0, "count '%s' outside of defined range '2^%s'", count, bits);
+    } catch (VerifyException exc) {
+      throw new IdComputationException(exc);
+    }
+  }
+
+  private long verifyId(long id) throws IdComputationException {
+    try {
+      // TODO this verification can be removed after compeletion of
+      // [CELDEV-605] XWikiDocument/BaseCollection id migration
+      verify((id > Integer.MAX_VALUE) || (id < Integer.MIN_VALUE),
+          "generated id '%s' may collide with '%s'", id, IdVersion.XWIKI_2);
+      return id;
     } catch (VerifyException exc) {
       throw new IdComputationException(exc);
     }
