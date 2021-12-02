@@ -76,7 +76,7 @@ public class BaseObjectIdMigration extends AbstractCelementsHibernateMigrator {
    */
   @Override
   public XWikiDBVersion getVersion() {
-    return new XWikiDBVersion(4351);
+    return new XWikiDBVersion(4000);
   }
 
   @Override
@@ -192,6 +192,7 @@ public class BaseObjectIdMigration extends AbstractCelementsHibernateMigrator {
   static String getSelectAllObjsWithOldIdSql() {
     return "select XWO_ID, XWO_NAME, XWO_CLASSNAME, XWO_NUMBER from xwikiobjects"
         + " where XWO_ID_VERSION = " + IdVersion.XWIKI_2.ordinal()
+        + " and XWO_NAME like 'Collection10-201409021706.%'"
         + " order by XWO_NAME, XWO_CLASSNAME, XWO_NUMBER";
   }
 
