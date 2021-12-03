@@ -1,5 +1,7 @@
 package com.celements.store.id;
 
+import java.util.Iterator;
+
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
@@ -9,42 +11,39 @@ import org.xwiki.model.reference.DocumentReference;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @ComponentRole
-public interface CelementsIdComputer {
-
-  @NotNull
-  IdVersion getIdVersion();
+public interface CelementsIdComputer extends DocumentIdComputer {
 
   /**
    * @return computes the id for the given document and language
-   * @throws IdComputationException
-   *           if unable to compute an id
    */
-  long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang)
-      throws IdComputationException;
+  long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang);
 
   /**
    * @return computes the maximum id (regarding collision detection) for the given document and
    *         language
-   * @throws IdComputationException
-   *           if unable to compute an id
    */
-  long computeMaxDocumentId(@NotNull DocumentReference docRef, @Nullable String lang)
-      throws IdComputationException;
+  long computeMaxDocumentId(@NotNull DocumentReference docRef, @Nullable String lang);
+
+  /**
+   * @return iterator over all document ids for the given document and language starting from given
+   *         startCollisionCount
+   */
+  @NotNull
+  Iterator<Long> getDocumentIdIterator(@NotNull DocumentReference docRef, String lang,
+      byte startCollisionCount);
 
   /**
    * @return computes the id for the given document, language and collision count
    * @throws IdComputationException
-   *           if unable to compute an id
+   *           if unable to compute an id for the given collision count
    */
   long computeDocumentId(@NotNull DocumentReference docRef, @Nullable String lang,
       byte collisionCount) throws IdComputationException;
 
   /**
    * @return computes the id for the given document
-   * @throws IdComputationException
-   *           if unable to compute an id
    */
-  long computeDocumentId(@NotNull XWikiDocument doc) throws IdComputationException;
+  long computeDocumentId(@NotNull XWikiDocument doc);
 
   /**
    * @return computes the next object id for the given document
@@ -57,15 +56,15 @@ public interface CelementsIdComputer {
 
     private static final long serialVersionUID = 1L;
 
-    protected IdComputationException(String message) {
+    public IdComputationException(String message) {
       super(message);
     }
 
-    protected IdComputationException(Throwable cause) {
+    public IdComputationException(Throwable cause) {
       super(cause);
     }
 
-    protected IdComputationException(String message, Throwable cause) {
+    public IdComputationException(String message, Throwable cause) {
       super(message, cause);
     }
 

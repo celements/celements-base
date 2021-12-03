@@ -1,8 +1,19 @@
 package com.celements.store;
 
+import static com.celements.model.util.ReferenceSerializationMode.*;
+import static com.google.common.base.Predicates.*;
+import static com.google.common.collect.ImmutableBiMap.*;
 import static com.xpn.xwiki.XWikiException.*;
+import static java.util.stream.Collectors.*;
 
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 
@@ -13,16 +24,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.logging.LogLevel;
 import com.celements.logging.LogUtils;
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
+import com.celements.model.util.ReferenceSerializationMode;
 import com.celements.store.id.CelementsIdComputer;
+import com.celements.store.id.DocumentIdComputer;
+import com.celements.store.id.IdVersion;
 import com.celements.store.id.UniqueHashIdComputer;
 import com.celements.store.part.CelHibernateStoreCollectionPart;
 import com.celements.store.part.CelHibernateStoreDocumentPart;
 import com.celements.store.part.CelHibernateStorePropertyPart;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.primitives.Longs;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -33,6 +50,9 @@ import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.store.DatabaseProduct;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 
+import one.util.streamex.EntryStream;
+import one.util.streamex.StreamEx;
+
 @Singleton
 @Component
 public class CelHibernateStore extends XWikiHibernateStore {
@@ -41,6 +61,9 @@ public class CelHibernateStore extends XWikiHibernateStore {
 
   @Requirement(UniqueHashIdComputer.NAME)
   private CelementsIdComputer idComputer;
+
+  @Requirement
+  private List<DocumentIdComputer> docIdComputers;
 
   @Requirement
   private ModelUtils modelUtils;
@@ -127,6 +150,53 @@ public class CelHibernateStore extends XWikiHibernateStore {
       logError("deleteXWikiDoc - error", doc, exc);
       throw exc;
     }
+  }
+
+  public String getDocKey(XWikiDocument doc) {
+    return getDocKey(doc.getDocumentReference(), doc.getLanguage());
+  }
+
+  public String getDocKey(DocumentReference docRef, String lang) {
+    return getDocKey(Stream.of(serialize(docRef, LOCAL), lang));
+  }
+
+  private String getDocKey(Stream<?> keyParts) {
+    return keyParts.filter(Objects::nonNull).map(Object::toString)
+        .collect(joining(".")).trim();
+  }
+
+  /**
+   * returns a map with all existing docIds for all {@link IdVersion} for the given docRef and lang
+   * sorted by collision count. the map value represents the {@link #getDocKey} for the docId
+   */
+  public ImmutableBiMap<Long, String> loadExistingDocKeys(Session session,
+      DocumentReference docRef, String lang) throws HibernateException {
+    Set<Long> allPossibleDocIds = StreamEx.of(docIdComputers)
+        .map(computer -> computer.getDocumentIdIterator(docRef, lang))
+        .flatMap(StreamEx::of)
+        .toSet();
+    return loadExistingDocKeys(session, allPossibleDocIds)
+        .collect(toImmutableBiMap(Entry::getKey, Entry::getValue));
+  }
+
+  /**
+   * docIds for the same doc are sorted by collision count firstly (and object count secondly)
+   * irrespective of their signum due to 2-complement representation
+   */
+  @SuppressWarnings("unchecked")
+  private EntryStream<Long, String> loadExistingDocKeys(Session session, Collection<Long> docIds) {
+    Iterator<Object[]> iter = session.createQuery(
+        "select id, fullName, language from XWikiDocument where id in (:ids) order by id")
+        .setParameterList("ids", docIds)
+        .iterate();
+    return StreamEx.of(iter)
+        .filter(Objects::nonNull)
+        .mapToEntry(row -> getDocKey(Stream.of(row).skip(1)))
+        .filterValues(not(String::isEmpty))
+        .mapKeys(row -> Stream.of(row).findFirst().map(String::valueOf).map(Longs::tryParse)
+            .orElse(null))
+        .filterKeys(Objects::nonNull)
+        .distinctKeys();
   }
 
   /**
@@ -274,8 +344,7 @@ public class CelHibernateStore extends XWikiHibernateStore {
   public String buildLogMessage(String msg, Object obj) {
     if (obj instanceof XWikiDocument) {
       XWikiDocument doc = (XWikiDocument) obj;
-      return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(doc.getId()),
-          modelUtils.serializeRef(doc.getDocumentReference()));
+      return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(doc.getId()), getDocKey(doc));
     } else if (obj instanceof PropertyInterface) {
       PropertyInterface property = (PropertyInterface) obj;
       return MessageFormat.format("{0}: {1} {2}", msg, Long.toString(property.getId()), property);
@@ -286,6 +355,14 @@ public class CelHibernateStore extends XWikiHibernateStore {
 
   public ModelUtils getModelUtils() {
     return modelUtils;
+  }
+
+  public String serialize(DocumentReference docRef, ReferenceSerializationMode mode) {
+    return getModelUtils().serializeRef(docRef, mode);
+  }
+
+  public String serialize(XWikiDocument doc, ReferenceSerializationMode mode) {
+    return serialize(doc.getDocumentReference(), mode);
   }
 
   public ModelContext getModelContext() {

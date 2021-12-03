@@ -50,7 +50,7 @@ public interface ObjectFetcher<D, O> extends ObjectHandler<D, O> {
    *           if there is no object to fetch
    */
   @NotNull
-  public O firstAssert();
+  O firstAssert();
 
   /**
    * @return the sole object to fetch
@@ -67,10 +67,8 @@ public interface ObjectFetcher<D, O> extends ObjectHandler<D, O> {
   List<O> list();
 
   /**
-   * @deprecated instead use {@link #stream()}
    * @return an {@link Iterable} of all fetched objects
    */
-  @Deprecated
   @NotNull
   FluentIterable<O> iter();
 

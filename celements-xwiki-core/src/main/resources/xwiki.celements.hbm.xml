@@ -5,7 +5,7 @@
 <hibernate-mapping auto-import="true">
   <!-- com.xpn.xwiki.doc.XWikiDocument root -->
   <class name="com.xpn.xwiki.doc.XWikiDocument" table="xwikidoc">
-    <id name="id" type="long" unsaved-value="undefined">
+    <id name="id" access="field" type="long" unsaved-value="undefined">
       <column name="XWD_ID" not-null="true" />
       <generator class="assigned" />
     </id>

@@ -80,7 +80,6 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
   }
 
   @Override
-  @Deprecated
   public FluentIterable<O> iter() {
     return FluentIterable.from(stream()::iterator);
   }

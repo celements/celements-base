@@ -1,14 +1,14 @@
 package com.celements.store.id;
 
-import static com.google.common.base.MoreObjects.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Verify.*;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 import org.xwiki.component.annotation.Component;
@@ -24,14 +24,25 @@ import com.google.common.primitives.Longs;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
+import one.util.streamex.StreamEx;
+
+/**
+ * id format: 50bit | 2bit | 12bit
+ * MSB: 50bit docId md5(fullname+lang)
+ * center bits: 2bit collision count
+ * LSB: 12bit object count
+ */
 @Component(UniqueHashIdComputer.NAME)
 public class UniqueHashIdComputer implements CelementsIdComputer {
 
   public static final String NAME = "uniqueHash";
 
   private static final String HASH_ALGO = "MD5";
-  private static final byte BITS_COLLISION_COUNT = 2;
-  private static final byte BITS_OBJECT_COUNT = 12;
+
+  static final byte BITS_COLLISION_COUNT = 2;
+  static final byte BITS_OBJECT_COUNT = 12;
+  static final byte BITS_COUNTS = BITS_COLLISION_COUNT + BITS_OBJECT_COUNT;
+  static final byte BITS_DOC_HASH = 64 - BITS_COUNTS;
 
   @Requirement
   private ModelUtils modelUtils;
@@ -47,15 +58,26 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
   }
 
   @Override
-  public long computeDocumentId(DocumentReference docRef, String lang)
-      throws IdComputationException {
-    return computeDocumentId(docRef, lang, (byte) 0);
+  public long compute(DocumentReference docRef, String lang) {
+    return computeDocumentId(docRef, lang);
   }
 
   @Override
-  public long computeMaxDocumentId(DocumentReference docRef, String lang)
-      throws IdComputationException {
-    return computeDocumentId(docRef, lang, getMaxCollisionCount());
+  public long computeDocumentId(DocumentReference docRef, String lang) {
+    try {
+      return computeDocumentId(docRef, lang, (byte) 0);
+    } catch (IdComputationException exc) {
+      throw new IllegalArgumentException("should not happend, collisionCount=0 valid", exc);
+    }
+  }
+
+  @Override
+  public long computeMaxDocumentId(DocumentReference docRef, String lang) {
+    try {
+      return computeDocumentId(docRef, lang, getMaxCollisionCount());
+    } catch (IdComputationException exc) {
+      throw new IllegalArgumentException("should not happend, collisionCount=max valid", exc);
+    }
   }
 
   @Override
@@ -65,8 +87,49 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
   }
 
   @Override
-  public long computeDocumentId(XWikiDocument doc) throws IdComputationException {
-    return computeId(doc, 0);
+  public Iterator<Long> getDocumentIdIterator(DocumentReference docRef, String lang) {
+    return getDocumentIdIterator(docRef, lang, (byte) 0);
+  }
+
+  @Override
+  public Iterator<Long> getDocumentIdIterator(DocumentReference docRef, String lang,
+      byte startCollisionCount) {
+    return new Iterator<Long>() {
+
+      private byte collisionCount = (byte) Math.max(startCollisionCount, 0);
+      private Long next = null;
+
+      @Override
+      public boolean hasNext() {
+        while (next == null) {
+          try {
+            next = computeDocumentId(docRef, lang, collisionCount++);
+          } catch (IdComputationException exc) {
+            break;
+          }
+        }
+        return (next != null);
+      }
+
+      @Override
+      public Long next() {
+        if (hasNext()) {
+          long ret = next;
+          next = null;
+          return ret;
+        }
+        throw new NoSuchElementException(docRef + ", lang:" + lang);
+      }
+    };
+  }
+
+  @Override
+  public long computeDocumentId(XWikiDocument doc) {
+    try {
+      return computeId(doc, 0);
+    } catch (IdComputationException exc) {
+      throw new IllegalArgumentException("should not happend, objectCount=0 valid", exc);
+    }
   }
 
   @Override
@@ -81,17 +144,15 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
   }
 
   private Set<Long> collectVersionedObjectIds(XWikiDocument doc) {
-    Set<Long> ids = new HashSet<>();
-    for (BaseObject obj : XWikiObjectEditor.on(doc).fetch().iter().append(firstNonNull(
-        doc.getXObjectsToRemove(), Collections.<BaseObject>emptyList()))) {
-      if ((obj != null) && obj.hasValidId() && (obj.getIdVersion() == getIdVersion())) {
-        ids.add(obj.getId());
-      }
-    }
-    return ids;
+    return StreamEx.of(XWikiObjectEditor.on(doc).fetch().stream())
+        .append(doc.getXObjectsToRemove())
+        .filter(Objects::nonNull)
+        .filter(BaseObject::hasValidId)
+        .map(BaseObject::getId)
+        .toImmutableSet();
   }
 
-  private long computeId(XWikiDocument doc, int objectCount) throws IdComputationException {
+  long computeId(XWikiDocument doc, int objectCount) throws IdComputationException {
     checkNotNull(doc);
     byte collisionCount = 0;
     if (doc.hasValidId() && (doc.getIdVersion() == getIdVersion())) {
@@ -100,11 +161,15 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
     return computeId(doc.getDocumentReference(), doc.getLanguage(), collisionCount, objectCount);
   }
 
-  private byte extractCollisionCount(long id) {
-    return (byte) ((id >> BITS_OBJECT_COUNT) & getMaxCollisionCount());
+  byte extractCollisionCount(long id) {
+    // & 0xff (255) to prevent accidental value conversions, see Sonar S3034
+    return (byte) ((id >> BITS_OBJECT_COUNT) & (getMaxCollisionCount() & 0xff));
   }
 
-  private byte getMaxCollisionCount() {
+  /**
+   * inclusive
+   */
+  byte getMaxCollisionCount() {
     return ~(-1 << BITS_COLLISION_COUNT);
   }
 
@@ -112,15 +177,12 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
       throws IdComputationException {
     verifyCount(collisionCount, BITS_COLLISION_COUNT);
     verifyCount(objectCount, BITS_OBJECT_COUNT);
-    long docId = hashMD5(serializeLocalUid(docRef, lang));
-    long left = andifyRight(docId, (byte) (BITS_COLLISION_COUNT + BITS_OBJECT_COUNT));
-    long right = andifyLeft(collisionCount, inverseCount(BITS_COLLISION_COUNT));
-    right = (right << BITS_OBJECT_COUNT) + objectCount;
+    long docHash = hashMD5(serializeLocalUid(docRef, lang));
+    docHash = unzero(docHash, BITS_COUNTS); // first BITS_DOC_HASH (MSBs) of docId mustn't be 0
+    long left = andifyRight(docHash, BITS_COUNTS);
+    long right = ((long) collisionCount << BITS_OBJECT_COUNT) + objectCount;
+    right = andifyLeft(right, BITS_DOC_HASH);
     return verifyId(left & right);
-  }
-
-  private byte inverseCount(byte count) {
-    return (byte) (64 - count);
   }
 
   long andifyLeft(long base, byte bits) {
@@ -129,6 +191,16 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
 
   long andifyRight(long base, byte bits) {
     return ~(~(base >>> bits) << bits);
+  }
+
+  /**
+   * for any 0 <= docHash < 2^zeroBits injective map onto docHash > 2^zeroBits
+   * else return given docHash
+   */
+  long unzero(long docHash, byte zeroBits) {
+    return ((docHash >>> zeroBits) == 0)
+        ? (docHash + 1) << zeroBits
+        : docHash;
   }
 
   private void verifyCount(long count, byte bits) throws IdComputationException {
@@ -155,13 +227,13 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
   /**
    * @return first 8 bytes of MD5 hash from given string
    */
-  long hashMD5(String str) throws IdComputationException {
+  long hashMD5(String str) {
     MessageDigest digest = getMessageDigest();
     digest.update(str.getBytes(StandardCharsets.UTF_8));
     return Longs.fromByteArray(digest.digest());
   }
 
-  private MessageDigest getMessageDigest() throws IdComputationException {
+  private MessageDigest getMessageDigest() {
     try {
       if (injectedDigest == null) {
         return MessageDigest.getInstance(HASH_ALGO);
@@ -169,7 +241,7 @@ public class UniqueHashIdComputer implements CelementsIdComputer {
         return injectedDigest;
       }
     } catch (NoSuchAlgorithmException exc) {
-      throw new IdComputationException("illegal hash algorithm", exc);
+      throw new IllegalArgumentException("illegal hash algorithm", exc);
     }
   }
 

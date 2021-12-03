@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -109,6 +108,7 @@ import org.xwiki.rendering.util.ParserUtils;
 import org.xwiki.velocity.VelocityManager;
 import org.xwiki.velocity.XWikiVelocityException;
 
+import com.celements.store.id.DocumentIdComputer;
 import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWiki;
@@ -230,8 +230,7 @@ public class XWikiDocument implements DocumentModelBridge {
 
   private long id = 0;
 
-  // TODO remove idVersion init in [CELDEV-602] - XWikiDocument get/setId
-  private IdVersion idVersion = IdVersion.XWIKI_2;
+  private IdVersion idVersion;
 
   private boolean mostRecent = true;
 
@@ -541,45 +540,34 @@ public class XWikiDocument implements DocumentModelBridge {
     this.store = store;
   }
 
-  /**
-   * @return the unique id used to represent the document, as a number. This id is technical and is
-   *         equivalent to the Document Reference + the language of the Document. This technical id
-   *         should only be used for the storage layer and all user APIs should instead use Document
-   *         Reference and language as they are model-related while the id isn't (it's purely
-   *         technical).
-   */
   public long getId() {
-    // TODO: The implemented below doesn't guarantee a unique id since it uses the hashCode() method
-    // which doesn't
-    // guarantee unicity. From the JDK's javadoc: "It is not required that if two objects are
-    // unequal according to
-    // the equals(java.lang.Object) method, then calling the hashCode method on each of the two
-    // objects must
-    // produce distinct integer results.". This needs to be fixed to produce a real unique id since
-    // otherwise we
-    // can have clashes in the database.
+    return hasValidId() ? id
+        : Utils.getComponent(DocumentIdComputer.class)
+            .compute(getDocumentReference(), getLanguage());
+  }
 
-    // Note: We don't use the wiki name in the document id's computation. The main historical reason
-    // is so
-    // that all things saved in a given wiki's database are always stored relative to that wiki so
-    // that
-    // changing that wiki's name is simpler.
-    if ((this.language == null) || this.language.trim().equals("")) {
-      this.id = this.localEntityReferenceSerializer.serialize(getDocumentReference()).hashCode();
-    } else {
-      this.id = (this.localEntityReferenceSerializer.serialize(getDocumentReference()) + ":"
-          + this.language)
-              .hashCode();
-    }
-
-    return this.id;
+  @Deprecated
+  public int calculateXWikiId() {
+    return (int) Utils.getComponent(DocumentIdComputer.class, "xwiki")
+        .compute(getDocumentReference(), getLanguage());
   }
 
   /**
-   * @see #getId()
+   * IMPORTANT: must never be called outside of store logic
    */
-  public void setId(long id) {
+  public void setId(long id, IdVersion idVersion) {
+    if (hasValidId()) {
+      throw new IllegalStateException("id override not permitted");
+    } else if (idVersion != null) {
+      setIdInternal(id, idVersion);
+    } else {
+      verifyIdVersion();
+    }
+  }
+
+  private void setIdInternal(long id, IdVersion idVersion) {
     this.id = id;
+    this.idVersion = idVersion;
   }
 
   public boolean hasValidId() {
@@ -3286,9 +3274,13 @@ public class XWikiDocument implements DocumentModelBridge {
    * @throws XWikiException
    *           in case of error
    */
-  private void clone(XWikiDocument document) throws XWikiException {
+  private void assumeIdentity(XWikiDocument document) throws XWikiException {
     setDocumentReference(document.getDocumentReference());
-    setId(document.getId());
+    if (document.hasValidId()) {
+      setIdInternal(document.getId(), document.getIdVersion());
+    } else {
+      setIdInternal(0, null);
+    }
     setRCSVersion(document.getRCSVersion());
     setDocumentArchive(document.getDocumentArchive());
     setAuthor(document.getAuthor());
@@ -3350,11 +3342,10 @@ public class XWikiDocument implements DocumentModelBridge {
       boolean keepsIdentity) {
     XWikiDocument doc = null;
     try {
-      Constructor<? extends XWikiDocument> constructor = getClass().getConstructor(
-          DocumentReference.class);
-      doc = constructor.newInstance(newDocumentReference);
-
-      doc.setId(getId());
+      doc = getClass().getConstructor(DocumentReference.class).newInstance(newDocumentReference);
+      if (keepsIdentity && hasValidId()) {
+        doc.setId(getId(), getIdVersion());
+      }
       // use version field instead of getRCSVersion because it returns "1.1" if version==null.
       doc.version = this.version;
       doc.setDocumentArchive(getDocumentArchive());
@@ -3371,7 +3362,7 @@ public class XWikiDocument implements DocumentModelBridge {
       doc.setElements(getElements());
       doc.setMeta(getMeta());
       doc.setMostRecent(isMostRecent());
-      doc.setNew(isNew());
+      doc.setNew(!keepsIdentity || isNew());
       doc.setStore(getStore());
       doc.setTemplateDocumentReference(getTemplateDocumentReference());
       doc.setParentReference(getRelativeParentReference());
@@ -3404,8 +3395,7 @@ public class XWikiDocument implements DocumentModelBridge {
 
       doc.originalDocument = this.originalDocument;
     } catch (ReflectiveOperationException exc) {
-      // This should not happen
-      LOG.error("Exception while cloning document", exc);
+      throw new IllegalStateException("should not happen", exc);
     }
     return doc;
   }
@@ -5817,9 +5807,8 @@ public class XWikiDocument implements DocumentModelBridge {
     xwiki.deleteDocument(this, context);
 
     // Step 6: The current document needs to point to the renamed document as otherwise it's
-    // pointing to an
-    // invalid XWikiDocument object as it's been deleted...
-    clone(newDocument);
+    // pointing to an invalid XWikiDocument object as it's been deleted...
+    this.assumeIdentity(newDocument);
   }
 
   /**

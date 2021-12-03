@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.lambda.LambdaExceptionUtil.ThrowingSupplier;
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.References;
 import com.xpn.xwiki.web.Utils;
@@ -18,10 +19,10 @@ import com.xpn.xwiki.web.Utils;
  * @param <T>
  *          return parameter of {@link #call()} and {@link #execute()}
  * @param <E>
- *          subclass of {@link Throwable} thrown by {@link #call()} and {@link #execute()}
+ *          subclass of {@link Exception} thrown by {@link #call()} and {@link #execute()}
  * @author Marc Sladek
  */
-public abstract class ContextExecutor<T, E extends Throwable> {
+public abstract class ContextExecutor<T, E extends Exception> {
 
   private WikiReference wikiRef;
 
@@ -55,7 +56,7 @@ public abstract class ContextExecutor<T, E extends Throwable> {
     return executeInWikiThrows(wikiRef, supplier::get);
   }
 
-  public static <T, E extends Throwable> T executeInWikiThrows(WikiReference wikiRef,
+  public static <T, E extends Exception> T executeInWikiThrows(WikiReference wikiRef,
       ThrowingSupplier<T, E> supplier) throws E {
     return new ContextExecutor<T, E>() {
 
@@ -64,12 +65,5 @@ public abstract class ContextExecutor<T, E extends Throwable> {
         return supplier.get();
       }
     }.inWiki(wikiRef).execute();
-  }
-
-  @FunctionalInterface
-  public interface ThrowingSupplier<T, E extends Throwable> {
-
-    T get() throws E;
-
   }
 }

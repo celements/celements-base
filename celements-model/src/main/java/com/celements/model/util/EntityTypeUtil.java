@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.*;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -24,42 +25,44 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 
+import one.util.streamex.StreamEx;
+
 public class EntityTypeUtil {
 
-  private static final BiMap<Class<? extends EntityReference>, EntityType> ENTITY_TYPE_MAP;
-  private static final Map<EntityType, String> REGEX_MAP;
-  private static final Map<Class<? extends EntityReference>, Class<? extends EntityReference>> OVERRIDE_MAP;
+  private static final BiMap<Class<? extends EntityReference>, EntityType> ENTITY_TYPE_MAP = ImmutableBiMap
+      .<Class<? extends EntityReference>, EntityType>builder()
+      .put(WikiReference.class, EntityType.WIKI)
+      .put(SpaceReference.class, EntityType.SPACE)
+      .put(ImmutableDocumentReference.class, EntityType.DOCUMENT)
+      .put(AttachmentReference.class, EntityType.ATTACHMENT)
+      .put(ObjectReference.class, EntityType.OBJECT)
+      .put(ObjectPropertyReference.class, EntityType.OBJECT_PROPERTY)
+      .build();
+  private static final Map<Class<? extends EntityReference>, Class<? extends EntityReference>> OVERRIDE_MAP = ImmutableMap
+      .<Class<? extends EntityReference>, Class<? extends EntityReference>>builder()
+      .put(DocumentReference.class, ImmutableDocumentReference.class)
+      // XXX add new (immutable) sub classes here
+      .build();
 
   public static final String REGEX_WORD = "[a-zA-Z0-9_-]+";
   public static final String REGEX_WIKINAME = "[a-zA-Z0-9]+";
   public static final String REGEX_SPACE = "(" + REGEX_WIKINAME + "\\:)?" + REGEX_WORD;
   public static final String REGEX_DOC = REGEX_SPACE + "\\." + REGEX_WORD;
   public static final String REGEX_ATT = REGEX_DOC + "\\@" + ".+";
+  public static final Pattern PATTERN_WORD = Pattern.compile(REGEX_WORD);
+  public static final Pattern PATTERN_WIKI = Pattern.compile(REGEX_WIKINAME);
+  public static final Pattern PATTERN_SPACE = Pattern.compile(REGEX_SPACE);
+  public static final Pattern PATTERN_DOC = Pattern.compile(REGEX_DOC);
+  public static final Pattern PATTERN_ATT = Pattern.compile(REGEX_ATT);
+  private static final Map<EntityType, Pattern> REGEX_MAP = ImmutableMap
+      .<EntityType, Pattern>builder()
+      .put(EntityType.WIKI, PATTERN_WIKI)
+      .put(EntityType.SPACE, PATTERN_SPACE)
+      .put(EntityType.DOCUMENT, PATTERN_DOC)
+      .put(EntityType.ATTACHMENT, PATTERN_ATT)
+      .build();
 
-  static {
-    ImmutableBiMap.Builder<Class<? extends EntityReference>, EntityType> builder;
-    builder = ImmutableBiMap.builder();
-    builder.put(WikiReference.class, EntityType.WIKI);
-    builder.put(SpaceReference.class, EntityType.SPACE);
-    builder.put(ImmutableDocumentReference.class, EntityType.DOCUMENT);
-    builder.put(AttachmentReference.class, EntityType.ATTACHMENT);
-    builder.put(ObjectReference.class, EntityType.OBJECT);
-    builder.put(ObjectPropertyReference.class, EntityType.OBJECT_PROPERTY);
-    ENTITY_TYPE_MAP = builder.build();
-
-    ImmutableMap.Builder<EntityType, String> regexBuilder = ImmutableMap.builder();
-    regexBuilder.put(EntityType.WIKI, REGEX_WIKINAME);
-    regexBuilder.put(EntityType.SPACE, REGEX_SPACE);
-    regexBuilder.put(EntityType.DOCUMENT, REGEX_DOC);
-    regexBuilder.put(EntityType.ATTACHMENT, REGEX_ATT);
-    REGEX_MAP = regexBuilder.build();
-
-    ImmutableMap.Builder<Class<? extends EntityReference>, Class<? extends EntityReference>> overrideBuilder;
-    overrideBuilder = ImmutableMap.builder();
-    overrideBuilder.put(DocumentReference.class, ImmutableDocumentReference.class);
-    // XXX add new (immutable) sub classes here
-    OVERRIDE_MAP = overrideBuilder.build();
-  }
+  private EntityTypeUtil() {}
 
   @NotNull
   public static Optional<EntityType> getEntityTypeForClass(
@@ -132,14 +135,13 @@ public class EntityTypeUtil {
    */
   @NotNull
   public static Optional<EntityType> identifyEntityTypeFromName(@NotNull String name) {
-    if (!checkNotNull(name).isEmpty()) {
-      for (EntityType type : REGEX_MAP.keySet()) {
-        if (name.matches(REGEX_MAP.get(type))) {
-          return Optional.of(type);
-        }
-      }
-    }
-    return Optional.absent();
+    return Optional.fromJavaUtil(StreamEx.ofKeys(REGEX_MAP)
+        .findFirst(type -> isMatchingEntityType(name, type)));
+  }
+
+  public static boolean isMatchingEntityType(@NotNull String name, @NotNull EntityType type) {
+    Pattern pattern = REGEX_MAP.get(type);
+    return (pattern != null) && pattern.matcher(name).matches();
   }
 
   @NotNull
@@ -149,7 +151,7 @@ public class EntityTypeUtil {
 
   @NotNull
   public static Iterator<EntityType> createIteratorFrom(@Nullable final EntityType startType) {
-    Iterator<EntityType> ret = createIteratorAt(checkNotNull(startType));
+    Iterator<EntityType> ret = createIteratorAt(startType);
     if ((startType != null) && ret.hasNext()) {
       ret.next();
     }

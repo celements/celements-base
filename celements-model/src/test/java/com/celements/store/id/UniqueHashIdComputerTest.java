@@ -1,21 +1,23 @@
 package com.celements.store.id;
 
 import static com.celements.common.test.CelementsTestUtils.*;
+import static com.celements.store.id.UniqueHashIdComputer.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.LongStream;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.common.test.AbstractComponentTest;
-import com.celements.common.test.ExceptionAsserter;
 import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.google.common.base.VerifyException;
+import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Longs;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -84,26 +86,18 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
 
   @Test
   public void test_computeId_collisionCount_negative() throws Exception {
-    Throwable cause = new ExceptionAsserter<IdComputationException>(IdComputationException.class) {
-
-      @Override
-      protected void execute() throws IdComputationException {
-        idComputer.computeId(docRef, lang, (byte) -1, 0);
-      }
-    }.evaluate().getCause();
+    Throwable cause = assertThrows(IdComputationException.class,
+        () -> idComputer.computeId(docRef, lang, (byte) -1, 0))
+            .getCause();
     assertSame(VerifyException.class, cause.getClass());
     assertTrue(cause.getMessage().contains("negative"));
   }
 
   @Test
   public void test_computeId_collisionCount_overflow() throws Exception {
-    Throwable cause = new ExceptionAsserter<IdComputationException>(IdComputationException.class) {
-
-      @Override
-      protected void execute() throws IdComputationException {
-        idComputer.computeId(docRef, lang, (byte) 0b100, 0);
-      }
-    }.evaluate().getCause();
+    Throwable cause = assertThrows(IdComputationException.class,
+        () -> idComputer.computeId(docRef, lang, (byte) 0b100, 0))
+            .getCause();
     assertSame(VerifyException.class, cause.getClass());
     assertTrue(cause.getMessage().contains("outside of defined range"));
   }
@@ -120,55 +114,52 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
 
   @Test
   public void test_computeId_objectCount_negative() throws Exception {
-    Throwable cause = new ExceptionAsserter<IdComputationException>(IdComputationException.class) {
-
-      @Override
-      protected void execute() throws IdComputationException {
-        idComputer.computeId(docRef, lang, (byte) 0, -1);
-      }
-    }.evaluate().getCause();
+    Throwable cause = assertThrows(IdComputationException.class,
+        () -> idComputer.computeId(docRef, lang, (byte) 0, -1))
+            .getCause();
     assertSame(VerifyException.class, cause.getClass());
     assertTrue(cause.getMessage().contains("negative"));
   }
 
   @Test
   public void test_computeId_objectCount_overflow() throws Exception {
-    Throwable cause = new ExceptionAsserter<IdComputationException>(IdComputationException.class) {
-
-      @Override
-      protected void execute() throws IdComputationException {
-        idComputer.computeId(docRef, lang, (byte) 0, 1 << 12);
-      }
-    }.evaluate().getCause();
+    Throwable cause = assertThrows(IdComputationException.class,
+        () -> idComputer.computeId(docRef, lang, (byte) 0, 1 << 12))
+            .getCause();
     assertSame(VerifyException.class, cause.getClass());
     assertTrue(cause.getMessage().contains("outside of defined range"));
   }
 
   @Test
-  public void test_computeId_illegalId_XWIKI_2() throws Exception {
-    List<Integer> illegalIds = Arrays.asList(0, Integer.MAX_VALUE, -1, Integer.MIN_VALUE);
+  public void test_computeId_zero() throws Exception {
+    // all ids from 0 to 2^BITS_COUNTS will be shifted to 0
+    long max = 1 << BITS_COUNTS;
+    List<Long> zeroIds = Arrays.asList(0L, max / 4, max / 2, (max / 4) * 3, max - 1);
     MessageDigest digestMock = createMockAndAddToDefault(MessageDigest.class);
     idComputer.injectedDigest = digestMock;
     digestMock.update(isA(byte[].class));
-    expectLastCall().times(illegalIds.size());
-    for (Integer id : illegalIds) {
+    expectLastCall().times(zeroIds.size());
+    for (long id : zeroIds) {
       expect(digestMock.digest()).andReturn(Longs.toByteArray(id)).once();
     }
     replayDefault();
-    for (int i = 0; i < illegalIds.size(); i++) {
-      final int objCount = i;
-      Throwable cause = new ExceptionAsserter<IdComputationException>(
-          IdComputationException.class) {
-
-        @Override
-        protected void execute() throws IdComputationException {
-          idComputer.computeId(docRef, lang, (byte) 0, objCount);
-        }
-      }.evaluate().getCause();
-      assertSame(VerifyException.class, cause.getClass());
-      assertTrue(cause.getMessage().contains(IdVersion.XWIKI_2.name()));
+    for (long id : zeroIds) {
+      assertEquals("at " + id, idComputer.unzero(id, BITS_COUNTS),
+          idComputer.computeId(docRef, lang, (byte) 0, 0));
     }
     verifyDefault();
+  }
+
+  @Test
+  public void test_unzero() throws Exception {
+    byte bits = 10;
+    long max = 1 << bits; // exclusive
+    assertEquals(-1, idComputer.unzero(-1, bits));
+    assertEquals(max, idComputer.unzero(max, bits));
+    assertEquals("function not injective", max, LongStream.range(0, max)
+        .map(l -> idComputer.unzero(l, bits))
+        .peek(l -> assertTrue("too low: " + l, l >= max))
+        .distinct().count()); // injective functions map all inputs to distinct outputs
   }
 
   @Test
@@ -184,14 +175,9 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     docRef.getWikiReference().setName("asdf");
     assertEquals(exp, idComputer.computeDocumentId(docRef, lang));
     docRef.setName("asdf");
-    assertFalse(exp == idComputer.computeDocumentId(docRef, lang));
-    new ExceptionAsserter<NullPointerException>(NullPointerException.class) {
-
-      @Override
-      protected void execute() throws Exception {
-        idComputer.computeDocumentId(null, lang);
-      }
-    }.evaluate();
+    assertNotEquals(exp, idComputer.computeDocumentId(docRef, lang));
+    assertThrows(NullPointerException.class,
+        () -> idComputer.computeDocumentId(null, lang));
   }
 
   @Test
@@ -200,7 +186,7 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     assertEquals(exp, idComputer.computeDocumentId(docRef, ""));
     assertEquals(exp, idComputer.computeDocumentId(docRef, " "));
     assertEquals(exp, idComputer.computeDocumentId(docRef, null));
-    assertFalse(exp == idComputer.computeDocumentId(docRef, "de"));
+    assertNotEquals(exp, idComputer.computeDocumentId(docRef, "de"));
   }
 
   @Test
@@ -213,6 +199,16 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     XWikiDocument doc = new XWikiDocument(docRef);
     doc.setLanguage(lang);
     assertEquals(0xf0da7f3f8545c000L, idComputer.computeDocumentId(doc));
+  }
+
+  @Test
+  public void test_getDocumentIdIterator() throws Exception {
+    assertEquals(ImmutableList.of(
+        0xf0da7f3f8545c000L,
+        0xf0da7f3f8545d000L,
+        0xf0da7f3f8545e000L,
+        0xf0da7f3f8545f000L),
+        ImmutableList.copyOf(idComputer.getDocumentIdIterator(docRef, lang)));
   }
 
   @Test
@@ -285,6 +281,32 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     doc.addXObject(obj);
     obj.setId(id, idVersion);
     return obj;
+  }
+
+  @Test
+  public void test_getMaxCollisionCount() throws Exception {
+    assertEquals("only 2 collision bits", 3, idComputer.getMaxCollisionCount());
+  }
+
+  @Test
+  public void test_extractCollisionCount() throws Exception {
+    byte max = idComputer.getMaxCollisionCount();
+    for (byte collisionCount = 0; collisionCount <= max; collisionCount++) {
+      long docId = idComputer.computeDocumentId(docRef, lang, collisionCount);
+      assertEquals(collisionCount, idComputer.extractCollisionCount(docId));
+    }
+  }
+
+  @Test
+  public void test_computeId_extractCollisionCount() throws Exception {
+    byte max = idComputer.getMaxCollisionCount();
+    for (byte collisionCount = 0; collisionCount <= max; collisionCount++) {
+      XWikiDocument doc = new XWikiDocument(docRef);
+      doc.setLanguage(lang);
+      doc.setId(idComputer.computeDocumentId(docRef, lang, collisionCount), IdVersion.CELEMENTS_3);
+      long docId = idComputer.computeId(doc, 0);
+      assertEquals(collisionCount, idComputer.extractCollisionCount(docId));
+    }
   }
 
 }

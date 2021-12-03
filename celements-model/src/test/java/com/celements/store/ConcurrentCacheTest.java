@@ -236,7 +236,8 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
       int expectedLoads = expectedCountDocLoadsFixed.get();
       final String failingDetails = " expected loads '" + expectedLoads
           + "' must be lower equal to count loads '" + countLoads + "'\n diff '" + (countLoads
-              - expectedLoads) + "'\n invalidatedLoadingCount '" + invalidatedLoadingCount.get()
+              - expectedLoads)
+          + "'\n invalidatedLoadingCount '" + invalidatedLoadingCount.get()
           + "'\n invalidatedMultipleCount '" + invalidatedMultipleCount.get()
           + "'\n failedToInvalidatedLoadingCount '" + failedToInvalidatedLoadingCount.get()
           + "'\n failedToRemoveFromCacheCount '" + failedToRemoveFromCacheCount.get() + "'";
@@ -302,7 +303,10 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
     expectLastCall().anyTimes();
     expect(sessionMock.close()).andReturn(null).anyTimes();
     XWikiDocument myDoc = new XWikiDocument(testDocRef);
-    expectXWikiDocLoad(sessionMock, myDoc);
+    long docId = 0x718b1d979ccec000L;
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, testFullName, myDoc.getLanguage() }));
+    expectXWikiDocLoad(sessionMock, myDoc, docId);
     expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
     expectLoadObjects(sessionMock, getNewObjList(testDocRef));
     expectLoadProperties(sessionMock, baseObjMap.get(testDocRef), propertiesMap);
@@ -395,8 +399,8 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
     return objList;
   }
 
-  private void expectXWikiDocLoad(Session sessionMock, XWikiDocument myDoc) {
-    sessionMock.load(isA(XWikiDocument.class), eq(new Long(myDoc.getId())));
+  private void expectXWikiDocLoad(Session sessionMock, XWikiDocument myDoc, long docId) {
+    sessionMock.load(isA(XWikiDocument.class), eq(docId));
     expectLastCall().andAnswer(new IAnswer<Object>() {
 
       @Override

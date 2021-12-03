@@ -15,13 +15,12 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.store.CelHibernateStore;
 import com.celements.store.id.CelementsIdComputer;
 import com.celements.store.id.UniqueHashIdComputer;
+import com.google.common.collect.ImmutableBiMap;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
 
 public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTest {
-
-  private DocumentSavePreparationCommand savePrepCmd;
 
   private CelHibernateStore storeStrictMock;
   private Session sessionMock;
@@ -34,7 +33,6 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
     sessionMock = createMockAndAddToDefault(Session.class);
     sessionMock.setFlushMode(FlushMode.COMMIT);
     expectLastCall().anyTimes();
-    savePrepCmd = new DocumentSavePreparationCommand(storeStrictMock);
   }
 
   @Test
@@ -42,25 +40,31 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
     XWikiDocument doc = createDoc(false, null);
     BaseObject obj = addObject(doc);
 
-    expect(storeStrictMock.exists(anyObject(XWikiDocument.class), same(getContext()))).andReturn(
-        true);
-    expect(storeStrictMock.loadXWikiDoc(anyObject(XWikiDocument.class), same(
-        getContext()))).andReturn(createDoc(false, null));
-    expect(storeStrictMock.getIdComputer()).andReturn(Utils.getComponent(CelementsIdComputer.class,
-        UniqueHashIdComputer.NAME)).anyTimes();
+    expect(storeStrictMock.getDocKey(doc.getDocumentReference(), doc.getLanguage()))
+        .andReturn("space.doc");
     storeStrictMock.checkHibernate(same(getContext()));
-    expectLastCall();
     SessionFactory sfactoryMock = createMockAndAddToDefault(SessionFactory.class);
-    expect(storeStrictMock.injectCustomMappingsInSessionFactory(same(doc), same(
-        getContext()))).andReturn(sfactoryMock);
-    expect(storeStrictMock.beginTransaction(same(sfactoryMock), same(getContext()))).andReturn(
-        true);
+    expect(storeStrictMock.injectCustomMappingsInSessionFactory(same(doc), same(getContext())))
+        .andReturn(sfactoryMock);
+    expect(storeStrictMock.beginTransaction(same(sfactoryMock), same(getContext())))
+        .andReturn(true);
     expect(storeStrictMock.getSession(getContext())).andReturn(sessionMock);
+    expect(storeStrictMock.loadExistingDocKeys(sessionMock, doc.getDocumentReference(),
+        doc.getLanguage())).andReturn(ImmutableBiMap.of());
+    expect(storeStrictMock.getIdComputer()).andReturn(Utils.getComponent(CelementsIdComputer.class,
+        UniqueHashIdComputer.NAME)).times(2);
+    expect(storeStrictMock.exists(anyObject(XWikiDocument.class), same(getContext())))
+        .andReturn(true);
+    expect(storeStrictMock.loadXWikiDoc(anyObject(XWikiDocument.class), same(getContext())))
+        .andReturn(createDoc(false, null));
+    expect(storeStrictMock.getIdComputer()).andReturn(Utils.getComponent(CelementsIdComputer.class,
+        UniqueHashIdComputer.NAME)).times(2);
 
     replayDefault();
-    Session ret = savePrepCmd.execute(doc, true, getContext());
+    DocumentSavePreparationCommand ret = new DocumentSavePreparationCommand(
+        doc, storeStrictMock, getContext()).execute(true);
     verifyDefault();
-    assertSame(sessionMock, ret);
+    assertSame(sessionMock, ret.getSession());
   }
 
   private BaseObject addObject(XWikiDocument doc) {
