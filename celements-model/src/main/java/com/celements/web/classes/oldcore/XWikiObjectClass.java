@@ -9,7 +9,6 @@ import org.xwiki.model.reference.DocumentReference;
 import com.celements.model.classes.PseudoClassDefinition;
 import com.celements.model.classes.fields.ClassField;
 import com.celements.model.classes.fields.number.IntField;
-import com.celements.model.classes.fields.number.LongField;
 import com.celements.model.classes.fields.ref.ClassReferenceField;
 import com.celements.model.classes.fields.ref.DocumentReferenceField;
 
@@ -21,8 +20,6 @@ public class XWikiObjectClass extends PseudoClassDefinition {
   public static final String CLASS_FN = CLASS_SPACE + "." + CLASS_NAME;
   public static final String CLASS_DEF_HINT = CLASS_FN;
   public static final ClassReference CLASS_REF = new ClassReference(CLASS_SPACE, CLASS_NAME);
-
-  public static final ClassField<Long> FIELD_ID = new LongField.Builder(CLASS_REF, "id").build();
 
   public static final ClassField<DocumentReference> FIELD_DOC_REF = new DocumentReferenceField.Builder(
       CLASS_REF, "documentReference").build();
