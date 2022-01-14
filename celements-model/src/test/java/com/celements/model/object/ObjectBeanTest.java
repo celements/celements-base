@@ -2,8 +2,6 @@ package com.celements.model.object;
 
 import static org.junit.Assert.*;
 
-import java.util.function.Supplier;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.ClassReference;
@@ -16,23 +14,10 @@ import com.celements.convert.bean.BeanClassDefConverter;
 import com.celements.convert.bean.XObjectBeanConverter;
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.TestClassDefinition;
-import com.google.common.base.Suppliers;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
 
 public class ObjectBeanTest extends AbstractComponentTest {
-
-  private final Supplier<BeanClassDefConverter<BaseObject, ObjectBean>> testClassConverter = Suppliers
-      .memoize(this::createTestClassConverter);
-
-  private BeanClassDefConverter<BaseObject, ObjectBean> createTestClassConverter() {
-    @SuppressWarnings("unchecked")
-    BeanClassDefConverter<BaseObject, ObjectBean> converter = Utils.getComponent(
-        BeanClassDefConverter.class, XObjectBeanConverter.NAME);
-    converter.initialize(Utils.getComponent(ClassDefinition.class, TestClassDefinition.NAME));
-    converter.initialize(new ReflectiveInstanceSupplier<>(ObjectBean.class));
-    return converter;
-  }
 
   private ObjectBean objectBean;
 
@@ -42,14 +27,14 @@ public class ObjectBeanTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testSetNumber() {
+  public void test_setNumber() {
     Integer num = 123;
     objectBean.setNumber(num);
     assertEquals("Number field is needed for bean", num, objectBean.getNumber());
   }
 
   @Test
-  public void testSetClassReference() {
+  public void test_setClassReference() {
     ClassReference classRef = new ClassReference("space", "classname");
     objectBean.setClassReference(classRef);
     assertEquals("ClassReference field is needed for bean", classRef,
@@ -57,7 +42,7 @@ public class ObjectBeanTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testSetDocumentReference() {
+  public void test_setDocumentReference() {
     DocumentReference docRef = new DocumentReference("wikiName", "space", "classname");
     objectBean.setDocumentReference(docRef);
     assertEquals("ClassReference field is needed for bean", docRef,
@@ -65,7 +50,7 @@ public class ObjectBeanTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_Equals_equals() {
+  public void test_equals_equals() {
     DocumentReference docRef = new DocumentReference("wikiName", "space", "document");
     Integer objNum = 2;
     objectBean.setDocumentReference(docRef);
@@ -80,7 +65,7 @@ public class ObjectBeanTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_Equals_notEquals_docRef() {
+  public void test_equals_notEquals_docRef() {
     DocumentReference docRef = new DocumentReference("wikiName", "space", "document");
     Integer objNum = 2;
     objectBean.setDocumentReference(docRef);
@@ -96,7 +81,7 @@ public class ObjectBeanTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_Equals_notEquals_classRef() {
+  public void test_equals_notEquals_classRef() {
     DocumentReference docRef = new DocumentReference("wikiName", "space", "document");
     Integer objNum = 2;
     objectBean.setDocumentReference(docRef);
@@ -111,7 +96,7 @@ public class ObjectBeanTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_Equals_notEquals_objNum() {
+  public void test_equals_notEquals_objNum() {
     DocumentReference docRef = new DocumentReference("wikiName", "space", "document");
     Integer objNum = 2;
     objectBean.setDocumentReference(docRef);
@@ -149,7 +134,7 @@ public class ObjectBeanTest extends AbstractComponentTest {
     objectBeanObj.setDocumentReference(docRef);
     objectBeanObj.setNumber(objNum);
     try {
-      ObjectBean objectBean2 = testClassConverter.get().apply(objectBeanObj);
+      ObjectBean objectBean2 = createTestClassConverter().apply(objectBeanObj);
       assertEquals(objectBean, objectBean2);
       assertEquals(objectBean.getDocumentReference(), objectBean2.getDocumentReference());
       assertEquals(objectBean.getClassReference(), objectBean2.getClassReference());
@@ -158,4 +143,14 @@ public class ObjectBeanTest extends AbstractComponentTest {
       fail();
     }
   }
+
+  private BeanClassDefConverter<BaseObject, ObjectBean> createTestClassConverter() {
+    @SuppressWarnings("unchecked")
+    BeanClassDefConverter<BaseObject, ObjectBean> converter = Utils.getComponent(
+        BeanClassDefConverter.class, XObjectBeanConverter.NAME);
+    converter.initialize(Utils.getComponent(ClassDefinition.class, TestClassDefinition.NAME));
+    converter.initialize(new ReflectiveInstanceSupplier<>(ObjectBean.class));
+    return converter;
+  }
+
 }
