@@ -5,7 +5,6 @@ import java.util.Objects;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.validation.constraints.NotEmpty;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 
@@ -13,7 +12,7 @@ import org.xwiki.model.reference.DocumentReference;
 public class ObjectBean {
 
   private DocumentReference documentReference;
-  private Integer objNum;
+  private Integer number;
   private ClassReference classReference;
 
   public DocumentReference getDocumentReference() {
@@ -25,11 +24,11 @@ public class ObjectBean {
   }
 
   public Integer getNumber() {
-    return objNum;
+    return number;
   }
 
   public void setNumber(Integer number) {
-    this.objNum = number;
+    this.number = number;
   }
 
   public ClassReference getClassReference() {
@@ -44,23 +43,19 @@ public class ObjectBean {
   public boolean equals(Object obj) {
     return (obj instanceof ObjectBean)
         && Objects.equals(((ObjectBean) obj).documentReference, this.documentReference)
-        && Objects.equals(((ObjectBean) obj).objNum, this.objNum)
+        && Objects.equals(((ObjectBean) obj).number, this.number)
         && Objects.equals(((ObjectBean) obj).classReference, this.classReference);
   }
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder()
-        .append(documentReference)
-        .append(objNum)
-        .append(classReference)
-        .toHashCode();
+    return Objects.hash(documentReference, number, classReference);
   }
 
   @Override
   @NotEmpty
   public String toString() {
     return "docRef [" + documentReference + "], classReference [" + classReference
-        + "] from objNum [" + objNum + "]";
+        + "] from objNum [" + number + "]";
   }
 }
