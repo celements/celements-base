@@ -21,7 +21,9 @@ package com.celements.common.classes;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,8 @@ import com.xpn.xwiki.objects.classes.BaseClass;
 @Singleton
 @Component
 public class DefaultXClassCreator implements XClassCreator {
+
+  private static final String LEGACY_DEFAULT_SEPARATOR = " ,|";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultXClassCreator.class);
 
@@ -100,6 +104,11 @@ public class DefaultXClassCreator implements XClassCreator {
 
   @Override
   public BaseClass generateXClass(ClassDefinition classDef) {
+    return generateXClass(classDef, null);
+  }
+
+  private @NotNull BaseClass generateXClass(@NotNull ClassDefinition classDef,
+      @Nullable String overwriteDefaultSeparator) {
     BaseClass bClass = new BaseClass();
     DocumentReference classDocRef = classDef.getClassReference().getDocRef();
     bClass.setDocumentReference(classDocRef);
@@ -109,12 +118,17 @@ public class DefaultXClassCreator implements XClassCreator {
     }
     for (ClassField<?> field : classDef.getFields()) {
       if (bClass.get(field.getName()) == null) {
-        PropertyInterface xField = field.getXField();
+        PropertyInterface xField = field.getXField(overwriteDefaultSeparator);
         xField.setObject(bClass);
         bClass.addField(field.getName(), xField);
       }
     }
     return bClass;
+  }
+
+  @Override
+  public @NotNull BaseClass generateXClassForTests(@NotNull ClassDefinition classDef) {
+    return generateXClass(classDef, LEGACY_DEFAULT_SEPARATOR);
   }
 
 }

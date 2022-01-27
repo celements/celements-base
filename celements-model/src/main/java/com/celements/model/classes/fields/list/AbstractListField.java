@@ -146,11 +146,15 @@ public abstract class AbstractListField<T, E> extends AbstractClassField<T> impl
   }
 
   protected String getSeparator() {
-    return DEFAULT_SEPARATOR;
+    return getSeparator(null);
+  }
+
+  protected String getSeparator(@Nullable String overwriteDefaultSeparator) {
+    return Optional.ofNullable(overwriteDefaultSeparator).orElse(DEFAULT_SEPARATOR);
   }
 
   @Override
-  protected PropertyClass getPropertyClass() {
+  protected PropertyClass getPropertyClass(@Nullable String overwriteDefaultSeparator) {
     ListClass element = getListClass();
     if (size != null) {
       element.setSize(size);
@@ -161,7 +165,7 @@ public abstract class AbstractListField<T, E> extends AbstractClassField<T> impl
     if (picker != null) {
       element.setPicker(picker);
     }
-    element.setSeparators(getSeparator());
+    element.setSeparators(getSeparator(overwriteDefaultSeparator));
     return element;
   }
 
