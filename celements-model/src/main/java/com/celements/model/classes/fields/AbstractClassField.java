@@ -125,12 +125,16 @@ public abstract class AbstractClassField<T> implements ClassField<T> {
 
   @Override
   public PropertyInterface getXField() {
-    return getXField(null);
+    PropertyClass element = getPropertyClass();
+    return setXFieldValues(element);
   }
 
   @Override
   public PropertyInterface getXField(@Nullable String overwriteDefaultSeparator) {
-    PropertyClass element = getPropertyClass(overwriteDefaultSeparator);
+    return getXField();
+  }
+
+  protected PropertyInterface setXFieldValues(PropertyClass element) {
     element.setName(name);
     if (prettyName != null) {
       element.setPrettyName(prettyName);
@@ -142,11 +146,7 @@ public abstract class AbstractClassField<T> implements ClassField<T> {
     return element;
   }
 
-  protected PropertyClass getPropertyClass() {
-    return getPropertyClass(null);
-  }
-
-  protected abstract PropertyClass getPropertyClass(@Nullable String overwriteDefaultSeparator);
+  protected abstract PropertyClass getPropertyClass();
 
   @Override
   public int hashCode() {

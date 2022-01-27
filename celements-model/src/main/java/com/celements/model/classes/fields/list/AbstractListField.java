@@ -21,6 +21,7 @@ import com.celements.marshalling.Marshaller;
 import com.celements.model.classes.fields.AbstractClassField;
 import com.celements.model.classes.fields.CustomClassField;
 import com.google.common.base.Enums;
+import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.ListClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 
@@ -146,14 +147,24 @@ public abstract class AbstractListField<T, E> extends AbstractClassField<T> impl
   }
 
   protected String getSeparator() {
-    return getSeparator(null);
+    return DEFAULT_SEPARATOR;
   }
 
-  protected String getSeparator(@Nullable String overwriteDefaultSeparator) {
-    return Optional.ofNullable(overwriteDefaultSeparator).orElse(DEFAULT_SEPARATOR);
+  protected final String getSeparator(@Nullable String overwriteDefaultSeparator) {
+    return Optional.ofNullable(overwriteDefaultSeparator).orElse(getSeparator());
   }
 
   @Override
+  public PropertyInterface getXField(@Nullable String overwriteDefaultSeparator) {
+    PropertyClass element = getPropertyClass(overwriteDefaultSeparator);
+    return setXFieldValues(element);
+  }
+
+  @Override
+  protected PropertyClass getPropertyClass() {
+    return getPropertyClass(null);
+  }
+
   protected PropertyClass getPropertyClass(@Nullable String overwriteDefaultSeparator) {
     ListClass element = getListClass();
     if (size != null) {
