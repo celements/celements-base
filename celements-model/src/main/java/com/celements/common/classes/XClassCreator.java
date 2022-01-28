@@ -19,6 +19,8 @@
  */
 package com.celements.common.classes;
 
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
 
 import com.celements.model.classes.ClassDefinition;
@@ -41,7 +43,7 @@ public interface XClassCreator {
    * @param classPackage
    * @throws XClassCreateException
    */
-  public void createXClasses(ClassPackage classPackage) throws XClassCreateException;
+  public void createXClasses(@NotNull ClassPackage classPackage) throws XClassCreateException;
 
   /**
    * creates XClass from provided classDefinition if doesn't exist. If it does exist, newly added
@@ -50,8 +52,9 @@ public interface XClassCreator {
    * @param classDefinition
    * @throws XClassCreateException
    */
-  public void createXClass(ClassDefinition classDefinition) throws XClassCreateException;
+  public void createXClass(@NotNull ClassDefinition classDefinition) throws XClassCreateException;
 
-  public BaseClass generateXClass(ClassDefinition classDef);
+  @NotNull
+  public BaseClass generateXClass(@NotNull ClassDefinition classDef);
 
 }
