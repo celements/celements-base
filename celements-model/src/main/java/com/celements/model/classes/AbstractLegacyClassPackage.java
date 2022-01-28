@@ -16,8 +16,7 @@ public abstract class AbstractLegacyClassPackage extends AbstractClassPackage {
   @Requirement
   private List<IClassCollectionRole> classCollections;
 
-  @NotEmpty
-  public abstract String getLegacyName();
+  public abstract @NotEmpty String getLegacyName();
 
   @Override
   public boolean isActivated() {

@@ -57,7 +57,4 @@ public interface XClassCreator {
   @NotNull
   public BaseClass generateXClass(@NotNull ClassDefinition classDef);
 
-  @NotNull
-  public BaseClass generateXClassForTests(@NotNull ClassDefinition classDef);
-
 }

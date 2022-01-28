@@ -1,6 +1,5 @@
 package com.celements.model.classes.fields;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.reference.ClassReference;
@@ -24,9 +23,6 @@ public interface ClassField<T> {
 
   @NotNull
   PropertyInterface getXField();
-
-  @NotNull
-  PropertyInterface getXField(@Nullable String overwriteDefaultSeparator);
 
   @NotNull
   String serialize();
