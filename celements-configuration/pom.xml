@@ -53,6 +53,11 @@
       <artifactId>xwiki-core-properties</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-script</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- external -->
     <dependency>
