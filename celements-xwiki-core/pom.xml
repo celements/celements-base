@@ -31,7 +31,6 @@
   <version>5.4-SNAPSHOT</version>
   <description>Celements XWiki</description>
   <dependencies>
-    <!-- Add here all your dependencies -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
