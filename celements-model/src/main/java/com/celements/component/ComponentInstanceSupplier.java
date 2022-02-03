@@ -39,8 +39,4 @@ public class ComponentInstanceSupplier<T> implements Supplier<T> {
     }
   }
 
-  public <S extends T> S getAndCast(Class<S> type) throws ClassCastException {
-    return type.cast(get());
-  }
-
 }
