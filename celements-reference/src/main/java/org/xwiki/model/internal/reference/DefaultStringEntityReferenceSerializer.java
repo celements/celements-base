@@ -73,7 +73,6 @@ public class DefaultStringEntityReferenceSerializer implements EntityReferenceSe
     if (reference == null) {
       return null;
     }
-
     EntityReference currentReference = reference.getRoot();
     StringBuilder representation = new StringBuilder();
     // While we still have children and they're not the children of the reference to serialize
@@ -89,7 +88,6 @@ public class DefaultStringEntityReferenceSerializer implements EntityReferenceSe
       StringBuilder representation,
       boolean isLastReference, Object... parameters) {
     List<String> currentEscapeChars = this.escapes.get(currentReference.getType());
-
     // If we're on the Root reference then we don't need to escape anything
     if (currentEscapeChars != null) {
       representation.append(StringUtils.replaceEach(currentReference.getName(), currentEscapeChars
@@ -98,7 +96,6 @@ public class DefaultStringEntityReferenceSerializer implements EntityReferenceSe
     } else {
       representation.append(currentReference.getName());
     }
-
     // If the reference is the last one in the chain then don't print the separator char
     if (!isLastReference && (currentReference.getChild() != null)) {
       String separatorChar = this.escapes.get(currentReference.getChild().getType()).get(0);

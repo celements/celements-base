@@ -52,7 +52,7 @@ public class DefaultStringDocumentReferenceResolver implements DocumentReference
   @Override
   public DocumentReference resolve(String documentReferenceRepresentation, Object... parameters) {
     return new DocumentReference(
-        this.entityReferenceResolver.resolve(documentReferenceRepresentation,
-            EntityType.DOCUMENT, parameters));
+        this.entityReferenceResolver.resolve(documentReferenceRepresentation, EntityType.DOCUMENT,
+            parameters));
   }
 }

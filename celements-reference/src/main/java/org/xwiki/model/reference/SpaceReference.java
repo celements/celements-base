@@ -66,7 +66,6 @@ public class SpaceReference extends EntityReference {
       throw new IllegalArgumentException(
           "Invalid parent reference [" + parent + "] for a space reference");
     }
-
     if (parent.getType() == EntityType.SPACE) {
       super.setParent(new SpaceReference(parent));
     } else {
@@ -88,7 +87,6 @@ public class SpaceReference extends EntityReference {
     if (type != EntityType.SPACE) {
       throw new IllegalArgumentException("Invalid type [" + type + "] for a space reference");
     }
-
     super.setType(EntityType.SPACE);
   }
 }

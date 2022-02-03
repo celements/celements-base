@@ -44,7 +44,6 @@ public class ExplicitStringEntityReferenceResolver extends AbstractStringEntityR
   @Override
   protected String getDefaultValue(EntityType type, Object... parameters) {
     throw new IllegalArgumentException(
-        "The resolver parameter doesn't contain an Entity Reference of type ["
-            + type + "]");
+        "The resolver parameter doesn't contain an Entity Reference of type [" + type + "]");
   }
 }

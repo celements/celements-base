@@ -60,7 +60,6 @@ public class WikiReference extends EntityReference {
     if (type != EntityType.WIKI) {
       throw new IllegalArgumentException("Invalid type [" + type + "] for a wiki reference");
     }
-
     super.setType(EntityType.WIKI);
   }
 }

@@ -187,13 +187,11 @@ public abstract class AbstractStringEntityReferenceResolver
         j--;
       }
     }
-
     // If not found then the full buffer is the current reference segment
     if (!found) {
       name = representation.toString();
       representation.setLength(0);
     }
-
     return name;
   }
 
@@ -207,11 +205,9 @@ public abstract class AbstractStringEntityReferenceResolver
         resolvedDefaultValue = extractedReference.getName();
       }
     }
-
     if (resolvedDefaultValue == null) {
       resolvedDefaultValue = getDefaultValue(type, parameters);
     }
-
     return resolvedDefaultValue;
   }
 }

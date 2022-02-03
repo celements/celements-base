@@ -54,7 +54,7 @@ public class DefaultStringObjectReferenceResolver implements ObjectReferenceReso
    */
   @Override
   public ObjectReference resolve(String objectReferenceRepresentation) {
-    return new ObjectReference(
-        entityReferenceResolver.resolve(objectReferenceRepresentation, EntityType.OBJECT));
+    return new ObjectReference(entityReferenceResolver.resolve(
+        objectReferenceRepresentation, EntityType.OBJECT));
   }
 }

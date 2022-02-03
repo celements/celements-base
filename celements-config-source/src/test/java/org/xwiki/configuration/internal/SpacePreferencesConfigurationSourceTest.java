@@ -19,8 +19,9 @@
  */
 package org.xwiki.configuration.internal;
 
+import static org.junit.Assert.*;
+
 import org.jmock.Expectations;
-import org.junit.Assert;
 import org.junit.Test;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.configuration.ConfigurationSource;
@@ -40,7 +41,7 @@ public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTe
   @Override
   protected void registerComponents() throws Exception {
     super.registerComponents();
-    this.bridge = registerMockComponent(DocumentAccessBridge.class);
+    bridge = registerMockComponent(DocumentAccessBridge.class);
   }
 
   @Test
@@ -63,9 +64,9 @@ public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTe
 
     String result = source.getProperty("key", String.class);
 
-    Assert.assertEquals("value", result);
+    assertEquals("value", result);
     // Check that the current document reference is not modified
-    Assert.assertEquals(currentDocument.getName(),
+    assertEquals(currentDocument.getName(),
         currentDocument.getParent().getChild().getName());
   }
 }

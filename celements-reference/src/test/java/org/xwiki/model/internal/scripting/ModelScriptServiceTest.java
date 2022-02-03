@@ -19,9 +19,10 @@
  */
 package org.xwiki.model.internal.scripting;
 
+import static org.junit.Assert.*;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -50,15 +51,15 @@ public class ModelScriptServiceTest {
 
   @Before
   public void setUp() {
-    this.service = new ModelScriptService();
-    this.mockComponentManager = this.mockery.mock(ComponentManager.class);
-    ReflectionUtils.setFieldValue(this.service, "componentManager", this.mockComponentManager);
-    this.mockResolver = this.mockery.mock(DocumentReferenceResolver.class);
+    service = new ModelScriptService();
+    mockComponentManager = mockery.mock(ComponentManager.class);
+    ReflectionUtils.setFieldValue(service, "componentManager", mockComponentManager);
+    mockResolver = mockery.mock(DocumentReferenceResolver.class);
   }
 
   @Test
   public void testCreateDocumentReference() throws Exception {
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
@@ -68,12 +69,12 @@ public class ModelScriptServiceTest {
       }
     });
 
-    this.service.createDocumentReference("wiki", "space", "page", "default/reference");
+    service.createDocumentReference("wiki", "space", "page", "default/reference");
   }
 
   @Test
   public void testCreateDocumentReferenceWhenEmptyParameters() throws Exception {
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
@@ -83,12 +84,12 @@ public class ModelScriptServiceTest {
       }
     });
 
-    this.service.createDocumentReference("", "", "", "default/reference");
+    service.createDocumentReference("", "", "", "default/reference");
   }
 
   @Test
   public void testCreateDocumentReferenceWhenWikiParameterEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
@@ -99,12 +100,12 @@ public class ModelScriptServiceTest {
       }
     });
 
-    this.service.createDocumentReference("", "space", "page", "default/reference");
+    service.createDocumentReference("", "space", "page", "default/reference");
   }
 
   @Test
   public void testCreateDocumentReferenceWhenSpaceParameterEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
@@ -115,12 +116,12 @@ public class ModelScriptServiceTest {
       }
     });
 
-    this.service.createDocumentReference("wiki", "", "page", "default/reference");
+    service.createDocumentReference("wiki", "", "page", "default/reference");
   }
 
   @Test
   public void testCreateDocumentReferenceWhenPageParameterEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
@@ -131,12 +132,12 @@ public class ModelScriptServiceTest {
       }
     });
 
-    this.service.createDocumentReference("wiki", "space", "", "default/reference");
+    service.createDocumentReference("wiki", "space", "", "default/reference");
   }
 
   @Test
   public void testCreateDocumentReferenceWhenWikiAndSpaceParametersEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
@@ -146,12 +147,12 @@ public class ModelScriptServiceTest {
       }
     });
 
-    this.service.createDocumentReference("wiki", "", "", "default/reference");
+    service.createDocumentReference("wiki", "", "", "default/reference");
   }
 
   @Test
   public void testCreateDocumentReferenceWhenInvalidHint() throws Exception {
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "invalid");
@@ -159,6 +160,6 @@ public class ModelScriptServiceTest {
       }
     });
 
-    Assert.assertNull(this.service.createDocumentReference("wiki", "space", "page", "invalid"));
+    assertNull(service.createDocumentReference("wiki", "space", "page", "invalid"));
   }
 }

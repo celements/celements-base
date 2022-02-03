@@ -117,11 +117,9 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
 
   public EntityReference extractReference(EntityType type) {
     EntityReference reference = this;
-
     while ((reference != null) && (reference.getType() != type)) {
       reference = reference.getParent();
     }
-
     return reference;
   }
 
@@ -143,7 +141,6 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
   @Override
   public boolean equals(Object obj) {
     boolean equals = false;
-
     if (obj == this) {
       equals = true;
     } else if (obj instanceof EntityReference) {
@@ -158,7 +155,6 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
               : entityReference.getType().equals(
                   getType()));
     }
-
     return equals;
   }
 

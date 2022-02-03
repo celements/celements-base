@@ -85,7 +85,6 @@ public class CommonsConfigurationSource extends AbstractLogEnabled implements Co
   @SuppressWarnings("unchecked")
   public <T> T getProperty(String key, Class<T> valueClass) {
     T result = null;
-
     try {
       if (String.class.getName().equals(valueClass.getName())) {
         result = (T) this.configuration.getString(key);

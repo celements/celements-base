@@ -55,8 +55,7 @@ public class DefaultStringObjectPropertyReferenceResolver
    */
   @Override
   public ObjectPropertyReference resolve(String propertyReferenceRepresentation) {
-    return new ObjectPropertyReference(
-        entityReferenceResolver.resolve(propertyReferenceRepresentation,
-            EntityType.OBJECT_PROPERTY));
+    return new ObjectPropertyReference(entityReferenceResolver.resolve(
+        propertyReferenceRepresentation, EntityType.OBJECT_PROPERTY));
   }
 }

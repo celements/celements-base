@@ -95,7 +95,6 @@ public class DefaultModelConfiguration extends AbstractLogEnabled implements Mod
           + "]. Using default Model values", e);
       name = DEFAULT_VALUES.get(type);
     }
-
     return name;
   }
 }

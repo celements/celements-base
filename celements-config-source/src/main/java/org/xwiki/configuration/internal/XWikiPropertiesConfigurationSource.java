@@ -67,7 +67,6 @@ public class XWikiPropertiesConfigurationSource extends CommonsConfigurationSour
       // default values for all configurable elements.
       getLogger().warn("Failed to load configuration file [" + XWIKI_PROPERTIES_FILE
           + "]. Using default configuration. " + " Internal error [" + e.getMessage() + "]");
-
       // Use a default Commons Configuration implementation since we couldn't use a Properties
       // configuration.
       setConfiguration(new BaseConfiguration());

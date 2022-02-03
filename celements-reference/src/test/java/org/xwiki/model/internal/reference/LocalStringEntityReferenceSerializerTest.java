@@ -19,7 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
@@ -41,19 +42,19 @@ public class LocalStringEntityReferenceSerializerTest {
 
   @Before
   public void setUp() {
-    this.serializer = new LocalStringEntityReferenceSerializer();
-    this.resolver = new DefaultStringEntityReferenceResolver();
+    serializer = new LocalStringEntityReferenceSerializer();
+    resolver = new DefaultStringEntityReferenceResolver();
   }
 
   @Test
   public void testSerializeDocumentReference() throws Exception {
     EntityReference reference = resolver.resolve("wiki:space.page", EntityType.DOCUMENT);
-    Assert.assertEquals("space.page", serializer.serialize(reference));
+    assertEquals("space.page", serializer.serialize(reference));
   }
 
   @Test
   public void testSerializeSpaceReferenceWithChild() {
     EntityReference reference = resolver.resolve("wiki:space.page", EntityType.DOCUMENT);
-    Assert.assertEquals("space", serializer.serialize(reference.getParent()));
+    assertEquals("space", serializer.serialize(reference.getParent()));
   }
 }

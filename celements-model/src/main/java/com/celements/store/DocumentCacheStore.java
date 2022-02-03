@@ -20,6 +20,7 @@
  */
 package com.celements.store;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +63,7 @@ import com.celements.model.metadata.DocumentMetaData;
 import com.celements.model.metadata.ImmutableDocumentMetaData;
 import com.celements.model.util.ModelUtils;
 import com.celements.model.util.References;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
@@ -127,6 +129,13 @@ public class DocumentCacheStore implements XWikiCacheStoreInterface, MetaDataSto
    * CAUTION: Lazy initialized of cache thus volatile is needed.
    */
   private volatile Cache<Boolean> existCache;
+
+  private void asdf() {
+    Caffeine.newBuilder()
+    .initialCapacity(10000)
+    .maximumSize(10000)
+    .
+  }
 
   private final ConcurrentMap<String, DocumentLoader> documentLoaderMap = new ConcurrentHashMap<>();
 

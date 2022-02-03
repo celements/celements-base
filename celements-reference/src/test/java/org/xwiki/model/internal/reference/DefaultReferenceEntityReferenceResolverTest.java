@@ -19,9 +19,10 @@
  */
 package org.xwiki.model.internal.reference;
 
+import static org.junit.Assert.*;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
@@ -45,12 +46,12 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Before
   public void setUp() {
-    this.resolver = new DefaultReferenceEntityReferenceResolver();
-    final EntityReferenceValueProvider mockValueProvider = this.mockery
+    resolver = new DefaultReferenceEntityReferenceResolver();
+    final EntityReferenceValueProvider mockValueProvider = mockery
         .mock(EntityReferenceValueProvider.class);
-    ReflectionUtils.setFieldValue(this.resolver, "provider", mockValueProvider);
+    ReflectionUtils.setFieldValue(resolver, "provider", mockValueProvider);
 
-    this.mockery.checking(new Expectations() {
+    mockery.checking(new Expectations() {
 
       {
         allowing(mockValueProvider).getDefaultValue(EntityType.SPACE);
@@ -71,26 +72,26 @@ public class DefaultReferenceEntityReferenceResolverTest {
   public void testResolveDocumentReferenceWhenMissingParents() {
     EntityReference partialReference = new EntityReference("page", EntityType.DOCUMENT);
 
-    EntityReference reference = this.resolver.resolve(partialReference, EntityType.DOCUMENT);
+    EntityReference reference = resolver.resolve(partialReference, EntityType.DOCUMENT);
 
-    Assert.assertNotSame(partialReference, reference);
-    Assert.assertEquals("defspace", reference.getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getType());
-    Assert.assertEquals("defwiki", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
+    assertNotSame(partialReference, reference);
+    assertEquals("defspace", reference.getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getType());
+    assertEquals("defwiki", reference.getParent().getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
   }
 
   @Test
   public void testResolveAttachmentReferenceWhenMissingParents() {
-    EntityReference reference = this.resolver
+    EntityReference reference = resolver
         .resolve(new EntityReference("filename", EntityType.ATTACHMENT), EntityType.ATTACHMENT);
 
-    Assert.assertEquals("defpage", reference.getParent().getName());
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
-    Assert.assertEquals("defspace", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
-    Assert.assertEquals("defwiki", reference.getParent().getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
+    assertEquals("defpage", reference.getParent().getName());
+    assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
+    assertEquals("defspace", reference.getParent().getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
+    assertEquals("defwiki", reference.getParent().getParent().getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
   }
 
   @Test
@@ -98,40 +99,40 @@ public class DefaultReferenceEntityReferenceResolverTest {
     EntityReference partialReference = new EntityReference("page", EntityType.DOCUMENT,
         new EntityReference("wiki", EntityType.WIKI));
 
-    EntityReference reference = this.resolver.resolve(partialReference, EntityType.DOCUMENT);
+    EntityReference reference = resolver.resolve(partialReference, EntityType.DOCUMENT);
 
-    Assert.assertNotSame(partialReference, reference);
-    Assert.assertEquals("defspace", reference.getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getType());
-    Assert.assertNotSame(partialReference.getParent().getParent(),
+    assertNotSame(partialReference, reference);
+    assertEquals("defspace", reference.getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getType());
+    assertNotSame(partialReference.getParent().getParent(),
         reference.getParent().getParent());
-    Assert.assertEquals("wiki", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
+    assertEquals("wiki", reference.getParent().getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
   }
 
   @Test
   public void testResolveAttachmentReferenceWhenMissingParentBetweenReferences() {
-    EntityReference reference = this.resolver
+    EntityReference reference = resolver
         .resolve(new EntityReference("filename", EntityType.ATTACHMENT, new EntityReference(
             "wiki", EntityType.WIKI)), EntityType.ATTACHMENT);
 
-    Assert.assertEquals("defpage", reference.getParent().getName());
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
-    Assert.assertEquals("defspace", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
-    Assert.assertEquals("wiki", reference.getParent().getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
+    assertEquals("defpage", reference.getParent().getName());
+    assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
+    assertEquals("defspace", reference.getParent().getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
+    assertEquals("wiki", reference.getParent().getParent().getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
   }
 
   @Test
   public void testResolveDocumentReferenceWhenInvalidReference() {
     try {
-      this.resolver
+      resolver
           .resolve(new EntityReference("page", EntityType.DOCUMENT, new EntityReference("filename",
               EntityType.ATTACHMENT)), EntityType.DOCUMENT);
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (InvalidEntityReferenceException expected) {
-      Assert.assertEquals(
+      assertEquals(
           "Invalid reference [name = [page], type = [DOCUMENT], parent = [name = [filename], "
               + "type = [ATTACHMENT], parent = [null]]]",
           expected.getMessage());
@@ -140,26 +141,26 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveDocumentReferenceWhenTypeIsSpace() {
-    EntityReference reference = this.resolver
+    EntityReference reference = resolver
         .resolve(new EntityReference("space", EntityType.SPACE), EntityType.DOCUMENT);
 
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getType());
-    Assert.assertEquals("defpage", reference.getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getType());
-    Assert.assertEquals("space", reference.getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
-    Assert.assertEquals("defwiki", reference.getParent().getParent().getName());
+    assertEquals(EntityType.DOCUMENT, reference.getType());
+    assertEquals("defpage", reference.getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getType());
+    assertEquals("space", reference.getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
+    assertEquals("defwiki", reference.getParent().getParent().getName());
   }
 
   @Test
   public void testResolveSpaceReferenceWhenTypeIsDocument() {
-    EntityReference reference = this.resolver
+    EntityReference reference = resolver
         .resolve(new EntityReference("page", EntityType.DOCUMENT), EntityType.SPACE);
 
-    Assert.assertEquals(EntityType.SPACE, reference.getType());
-    Assert.assertEquals("defspace", reference.getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getType());
-    Assert.assertEquals("defwiki", reference.getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getType());
+    assertEquals("defspace", reference.getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getType());
+    assertEquals("defwiki", reference.getParent().getName());
   }
 
   /**
@@ -170,14 +171,14 @@ public class DefaultReferenceEntityReferenceResolverTest {
   public void testResolveObjectReferenceWhenMissingParents() {
     EntityReference reference = resolver.resolve(new EntityReference("object", EntityType.OBJECT),
         EntityType.OBJECT);
-    Assert.assertEquals(EntityType.OBJECT, reference.getType());
-    Assert.assertEquals("object", reference.getName());
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
-    Assert.assertEquals("defpage", reference.getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
-    Assert.assertEquals("defspace", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
-    Assert.assertEquals("defwiki", reference.getParent().getParent().getParent().getName());
+    assertEquals(EntityType.OBJECT, reference.getType());
+    assertEquals("object", reference.getName());
+    assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
+    assertEquals("defpage", reference.getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
+    assertEquals("defspace", reference.getParent().getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
+    assertEquals("defwiki", reference.getParent().getParent().getParent().getName());
   }
 
   /**
@@ -188,17 +189,17 @@ public class DefaultReferenceEntityReferenceResolverTest {
   public void testResolveObjectPropertyReferenceWhenMissingParents() {
     EntityReference reference = resolver.resolve(
         new EntityReference("property", EntityType.OBJECT_PROPERTY), EntityType.OBJECT_PROPERTY);
-    Assert.assertEquals(EntityType.OBJECT_PROPERTY, reference.getType());
-    Assert.assertEquals("property", reference.getName());
-    Assert.assertEquals(EntityType.OBJECT, reference.getParent().getType());
-    Assert.assertEquals("defobject", reference.getParent().getName());
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getParent().getType());
-    Assert.assertEquals("defpage", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getParent().getType());
-    Assert.assertEquals("defspace", reference.getParent().getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI,
+    assertEquals(EntityType.OBJECT_PROPERTY, reference.getType());
+    assertEquals("property", reference.getName());
+    assertEquals(EntityType.OBJECT, reference.getParent().getType());
+    assertEquals("defobject", reference.getParent().getName());
+    assertEquals(EntityType.DOCUMENT, reference.getParent().getParent().getType());
+    assertEquals("defpage", reference.getParent().getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getParent().getParent().getType());
+    assertEquals("defspace", reference.getParent().getParent().getParent().getName());
+    assertEquals(EntityType.WIKI,
         reference.getParent().getParent().getParent().getParent().getType());
-    Assert.assertEquals("defwiki",
+    assertEquals("defwiki",
         reference.getParent().getParent().getParent().getParent().getName());
   }
 
@@ -212,14 +213,14 @@ public class DefaultReferenceEntityReferenceResolverTest {
     EntityReference reference = resolver
         .resolve(new EntityReference("page", EntityType.DOCUMENT, new EntityReference("space",
             EntityType.SPACE, new EntityReference("wiki", EntityType.WIKI))), EntityType.OBJECT);
-    Assert.assertEquals(EntityType.OBJECT, reference.getType());
-    Assert.assertEquals("defobject", reference.getName());
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
-    Assert.assertEquals("page", reference.getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
-    Assert.assertEquals("space", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
-    Assert.assertEquals("wiki", reference.getParent().getParent().getParent().getName());
+    assertEquals(EntityType.OBJECT, reference.getType());
+    assertEquals("defobject", reference.getName());
+    assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
+    assertEquals("page", reference.getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
+    assertEquals("space", reference.getParent().getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
+    assertEquals("wiki", reference.getParent().getParent().getParent().getName());
   }
 
   /**
@@ -233,29 +234,29 @@ public class DefaultReferenceEntityReferenceResolverTest {
         new EntityReference("page", EntityType.DOCUMENT, new EntityReference("space",
             EntityType.SPACE, new EntityReference("wiki", EntityType.WIKI))),
         EntityType.OBJECT_PROPERTY);
-    Assert.assertEquals(EntityType.OBJECT_PROPERTY, reference.getType());
-    Assert.assertEquals("defproperty", reference.getName());
-    Assert.assertEquals(EntityType.OBJECT, reference.getParent().getType());
-    Assert.assertEquals("defobject", reference.getParent().getName());
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getParent().getType());
-    Assert.assertEquals("page", reference.getParent().getParent().getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getParent().getType());
-    Assert.assertEquals("space", reference.getParent().getParent().getParent().getName());
-    Assert.assertEquals(EntityType.WIKI,
+    assertEquals(EntityType.OBJECT_PROPERTY, reference.getType());
+    assertEquals("defproperty", reference.getName());
+    assertEquals(EntityType.OBJECT, reference.getParent().getType());
+    assertEquals("defobject", reference.getParent().getName());
+    assertEquals(EntityType.DOCUMENT, reference.getParent().getParent().getType());
+    assertEquals("page", reference.getParent().getParent().getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getParent().getParent().getType());
+    assertEquals("space", reference.getParent().getParent().getParent().getName());
+    assertEquals(EntityType.WIKI,
         reference.getParent().getParent().getParent().getParent().getType());
-    Assert.assertEquals("wiki",
+    assertEquals("wiki",
         reference.getParent().getParent().getParent().getParent().getName());
   }
 
   @Test
   public void testResolveDocumentReferenceWhenNullReference() {
-    EntityReference reference = this.resolver.resolve(null, EntityType.DOCUMENT);
+    EntityReference reference = resolver.resolve(null, EntityType.DOCUMENT);
 
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getType());
-    Assert.assertEquals("defpage", reference.getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getType());
-    Assert.assertEquals("defspace", reference.getParent().getName());
-    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
-    Assert.assertEquals("defwiki", reference.getParent().getParent().getName());
+    assertEquals(EntityType.DOCUMENT, reference.getType());
+    assertEquals("defpage", reference.getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getType());
+    assertEquals("defspace", reference.getParent().getName());
+    assertEquals(EntityType.WIKI, reference.getParent().getParent().getType());
+    assertEquals("defwiki", reference.getParent().getParent().getName());
   }
 }

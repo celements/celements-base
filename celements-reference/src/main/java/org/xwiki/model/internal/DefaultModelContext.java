@@ -65,24 +65,19 @@ public class DefaultModelContext implements ModelContext {
   @Override
   public EntityReference getCurrentEntityReference() {
     WikiReference result = null;
-
     // TODO: This is bridge to the old XWiki Context since we currently don't store the current
     // entity in the
     // new Execution Context yet. Remove when we do so.
     ExecutionContext econtext = this.execution.getContext();
-
     if (econtext != null) {
       Map<String, Object> xcontext = (Map<String, Object>) econtext.getProperty(XCONTEXT_KEY);
-
       if (xcontext != null) {
         String wikiName = (String) xcontext.get(WIKINAME_KEY);
-
         if (wikiName != null) {
           result = new WikiReference(wikiName);
         }
       }
     }
-
     return result;
   }
 
@@ -97,10 +92,8 @@ public class DefaultModelContext implements ModelContext {
     // entity in the
     // new Execution Context yet. Remove when we do so.
     ExecutionContext econtext = this.execution.getContext();
-
     if (econtext != null) {
       Map<String, Object> xcontext = (Map<String, Object>) econtext.getProperty(XCONTEXT_KEY);
-
       if (xcontext != null) {
         xcontext.put(WIKINAME_KEY, extractWikiName(entityReference));
       }
@@ -122,7 +115,6 @@ public class DefaultModelContext implements ModelContext {
         wikiName = wikiReference.getName();
       }
     }
-
     return wikiName;
   }
 }

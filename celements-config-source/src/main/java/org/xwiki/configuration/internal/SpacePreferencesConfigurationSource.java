@@ -47,7 +47,6 @@ public class SpacePreferencesConfigurationSource extends AbstractDocumentConfigu
   @Override
   protected DocumentReference getClassReference() {
     DocumentReference classReference = null;
-
     DocumentReference currentDocumentReference = getDocumentAccessBridge()
         .getCurrentDocumentReference();
     if (currentDocumentReference != null) {
@@ -71,13 +70,10 @@ public class SpacePreferencesConfigurationSource extends AbstractDocumentConfigu
     // Note: We would normally use a Reference Resolver here but since the Model module uses the
     // Configuration
     // module we cannot use one as otherwise we would create a cyclic build dependency...
-
     DocumentReference documentReference = null;
-
     // Get the current document reference to extract the wiki and space names.
     DocumentReference currentDocumentReference = getDocumentAccessBridge()
         .getCurrentDocumentReference();
-
     if (currentDocumentReference != null) {
       // Add the current spaces and current wiki references to the Web Preferences document
       // reference to form
@@ -85,7 +81,6 @@ public class SpacePreferencesConfigurationSource extends AbstractDocumentConfigu
       documentReference = new DocumentReference(DOCUMENT_NAME,
           currentDocumentReference.getLastSpaceReference());
     }
-
     return documentReference;
   }
 }

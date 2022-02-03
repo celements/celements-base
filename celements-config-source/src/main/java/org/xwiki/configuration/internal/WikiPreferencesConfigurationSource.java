@@ -48,8 +48,7 @@ public class WikiPreferencesConfigurationSource extends AbstractDocumentConfigur
 
   @Override
   protected DocumentReference getDocumentReference() {
-    return new DocumentReference(PAGE_NAME,
-        new SpaceReference(SPACE_NAME,
-            new WikiReference(getDocumentAccessBridge().getCurrentWiki())));
+    return new DocumentReference(PAGE_NAME, new SpaceReference(SPACE_NAME,
+        new WikiReference(getDocumentAccessBridge().getCurrentWiki())));
   }
 }

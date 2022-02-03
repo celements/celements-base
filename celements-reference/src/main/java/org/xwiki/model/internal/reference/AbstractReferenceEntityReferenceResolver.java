@@ -71,7 +71,6 @@ public abstract class AbstractReferenceEntityReferenceResolver
   public EntityReference resolve(EntityReference referenceToResolve, EntityType type,
       Object... parameters) {
     EntityReference normalizedReference;
-
     if (referenceToResolve == null) {
       normalizedReference = new EntityReference(resolveDefaultValue(type, parameters), type);
     } else {
@@ -132,11 +131,9 @@ public abstract class AbstractReferenceEntityReferenceResolver
         resolvedDefaultValue = extractedReference.getName();
       }
     }
-
     if (resolvedDefaultValue == null) {
       resolvedDefaultValue = getDefaultValue(type, parameters);
     }
-
     return resolvedDefaultValue;
   }
 }
