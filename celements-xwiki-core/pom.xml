@@ -379,6 +379,10 @@
       <artifactId>dom4j</artifactId>
     </dependency>
     <dependency>
+      <groupId>jdom</groupId>
+      <artifactId>jdom</artifactId>
+    </dependency>
+    <dependency>
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
     </dependency>
