@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
@@ -35,6 +37,9 @@ import org.xwiki.model.reference.DocumentReference;
  * @since 2.0M2
  */
 public abstract class AbstractDocumentConfigurationSource implements ConfigurationSource {
+
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(AbstractDocumentConfigurationSource.class);
 
   /**
    * @see #getDocumentAccessBridge()
@@ -164,9 +169,9 @@ public abstract class AbstractDocumentConfigurationSource implements Configurati
     try {
       documentReference = getDocumentReference();
     } catch (Exception e) {
+      LOGGER.info("Cannot load this config source. Skipping.", e);
       // We verify that no error has happened and if one happened then we skip this configuration
-      // source. This
-      // ensures the system will continue to work even if this source has a problem.
+      // source. This ensures the system will continue to work even if this source has a problem.
       documentReference = null;
     }
     return documentReference;
@@ -177,9 +182,9 @@ public abstract class AbstractDocumentConfigurationSource implements Configurati
     try {
       classReference = getDocumentReference();
     } catch (Exception e) {
+      LOGGER.info("Cannot load this config source. Skipping.", e);
       // We verify that no error has happened and if one happened then we skip this configuration
-      // source. This
-      // ensures the system will continue to work even if this source has a problem.
+      // source. This ensures the system will continue to work even if this source has a problem.
       classReference = null;
     }
     return classReference;
