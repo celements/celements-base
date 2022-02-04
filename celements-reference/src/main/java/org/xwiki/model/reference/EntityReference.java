@@ -20,6 +20,7 @@
 package org.xwiki.model.reference;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
@@ -140,22 +141,15 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
    */
   @Override
   public boolean equals(Object obj) {
-    boolean equals = false;
     if (obj == this) {
-      equals = true;
+      return true;
     } else if (obj instanceof EntityReference) {
       EntityReference entityReference = (EntityReference) obj;
-
-      equals = (entityReference.getName() == null ? getName() == null
-          : entityReference.getName().equals(getName()))
-          && (entityReference.getParent() == null ? getParent() == null
-              : entityReference.getParent().equals(
-                  getParent()))
-          && (entityReference.getType() == null ? getType() == null
-              : entityReference.getType().equals(
-                  getType()));
+      return Objects.equals(entityReference.getName(), getName())
+          && Objects.equals(entityReference.getParent(), getParent())
+          && Objects.equals(entityReference.getType(), getType());
     }
-    return equals;
+    return false;
   }
 
   /**
@@ -165,7 +159,7 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
    */
   @Override
   public int hashCode() {
-    return toString().hashCode();
+    return Objects.hash(getName(), getType(), getParent());
   }
 
   /**
