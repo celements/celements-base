@@ -23,6 +23,8 @@ import java.net.URL;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
@@ -38,6 +40,9 @@ import org.xwiki.container.Container;
 @Component("xwikiproperties")
 public class XWikiPropertiesConfigurationSource extends CommonsConfigurationSource
     implements Initializable {
+
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(XWikiPropertiesConfigurationSource.class);
 
   private static final String XWIKI_PROPERTIES_FILE = "/WEB-INF/xwiki.properties";
 
@@ -65,8 +70,8 @@ public class XWikiPropertiesConfigurationSource extends CommonsConfigurationSour
       // Note: if we cannot read the configuration file we log a warning but continue since XWiki
       // will use
       // default values for all configurable elements.
-      getLogger().warn("Failed to load configuration file [" + XWIKI_PROPERTIES_FILE
-          + "]. Using default configuration. " + " Internal error [" + e.getMessage() + "]");
+      LOGGER.warn("Failed to load configuration file [{}]. Using default configuration.",
+          XWIKI_PROPERTIES_FILE, e);
       // Use a default Commons Configuration implementation since we couldn't use a Properties
       // configuration.
       setConfiguration(new BaseConfiguration());
