@@ -30,6 +30,8 @@ import org.xwiki.model.EntityType;
  */
 public class WikiReference extends EntityReference {
 
+  private static final long serialVersionUID = 1L;
+
   /**
    * Special constructor that transforms a generic entity reference into a {@link WikiReference}. It
    * checks the
@@ -48,7 +50,6 @@ public class WikiReference extends EntityReference {
 
   /**
    * {@inheritDoc}
-   *
    * Overridden in order to verify the validity of the passed type
    *
    * @see org.xwiki.model.reference.EntityReference#setType(org.xwiki.model.EntityType)

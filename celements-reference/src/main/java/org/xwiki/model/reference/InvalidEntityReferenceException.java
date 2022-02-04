@@ -29,6 +29,8 @@ package org.xwiki.model.reference;
  */
 public class InvalidEntityReferenceException extends RuntimeException {
 
+  private static final long serialVersionUID = 1L;
+
   public InvalidEntityReferenceException() {
     super();
   }

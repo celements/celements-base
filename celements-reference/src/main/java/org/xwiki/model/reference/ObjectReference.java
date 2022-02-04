@@ -29,6 +29,8 @@ import org.xwiki.model.EntityType;
  */
 public class ObjectReference extends EntityReference {
 
+  private static final long serialVersionUID = 1L;
+
   /**
    * Constructor which would raise exceptions if the source entity reference does not have the
    * appropriate type or
