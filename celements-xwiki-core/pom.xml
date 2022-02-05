@@ -272,12 +272,6 @@
       <artifactId>xwiki-core-rendering-syntax-xwiki10</artifactId>
       <!-- Only needed at runtime since it's a component implementation -->
       <scope>runtime</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-model</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
