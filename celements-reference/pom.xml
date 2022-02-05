@@ -6,50 +6,56 @@
     <version>5.6-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>celements-component</artifactId>
-  <version>5.2-SNAPSHOT</version>
-  <description>Celements Component Manager</description>
+  <artifactId>celements-reference</artifactId>
+  <version>5.0-SNAPSHOT</version>
+  <description>Celements Reference</description>
   <dependencies>
 
-    <!-- Add here all your dependencies -->
+    <!-- celements -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
       <version>5.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-bridge</artifactId>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-component</artifactId>
+      <version>5.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-config-source-api</artifactId>
+      <version>5.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
 
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <!-- Testing -->
+    <!-- xwiki -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-shared-tests</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>xwiki-core-context</artifactId>
+      <scope>provided</scope>
     </dependency>
-    <!-- This dependency introduces a cycle:
-            ->{celements-common-test, celements-xwiki-core, celements-component}
     <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-shared-tests</artifactId>
-      <version>5.0-SNAPSHOT</version>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-script</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- testing -->
+    <dependency>
+      <groupId>org.jmock</groupId>
+      <artifactId>jmock-junit4</artifactId>
+      <version>2.12.0</version>
       <scope>test</scope>
     </dependency>
-    -->
+
   </dependencies>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-xwiki.git</connection>
