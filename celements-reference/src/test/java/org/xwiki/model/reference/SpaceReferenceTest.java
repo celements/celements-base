@@ -27,7 +27,7 @@ import org.xwiki.model.EntityType;
 /**
  * Unit tests for {@link org.xwiki.model.reference.SpaceReference}.
  *
- * @version $Id$
+ * @version $Id: aa1605fe7716f71b9146033941ac8583584049b3 $
  * @since 2.2M1
  */
 public class SpaceReferenceTest {
@@ -48,7 +48,7 @@ public class SpaceReferenceTest {
       new SpaceReference("page", (WikiReference) null);
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid parent reference [null] for a space reference",
+      assertEquals("Invalid parent reference [null] in a space reference",
           expected.getMessage());
     }
   }
@@ -62,7 +62,7 @@ public class SpaceReferenceTest {
     } catch (IllegalArgumentException expected) {
       assertEquals(
           "Invalid parent reference [name = [whatever], type = [DOCUMENT], parent = [null]] "
-              + "for a space reference",
+              + "in a space reference",
           expected.getMessage());
     }
   }

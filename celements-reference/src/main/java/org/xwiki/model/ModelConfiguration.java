@@ -24,7 +24,7 @@ import org.xwiki.component.annotation.ComponentRole;
 /**
  * Provides configuration options for the Model module.
  *
- * @version $Id$
+ * @version $Id: 95a9b925a8cca1c98b5e944e338639c9cfddab01 $
  * @since 2.2M1
  */
 @ComponentRole

@@ -27,7 +27,7 @@ import org.xwiki.model.EntityType;
 /**
  * Unit tests for {@link AttachmentReference}.
  *
- * @version $Id$
+ * @version $Id: b09dfb977ae555ad84e1df85f7f955ff01d2236f $
  * @since 2.2M1
  */
 public class AttachmentReferenceTest {
@@ -49,7 +49,7 @@ public class AttachmentReferenceTest {
       new AttachmentReference("filename", null);
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid parent reference [null] for an attachment reference",
+      assertEquals("Invalid parent reference [null] in an attachment reference",
           expected.getMessage());
     }
   }
@@ -62,7 +62,7 @@ public class AttachmentReferenceTest {
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] for an "
+          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] in an "
               + "attachment reference",
           expected.getMessage());
     }

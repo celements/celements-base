@@ -33,7 +33,7 @@ import org.xwiki.model.reference.EntityReferenceValueProvider;
 /**
  * Unit tests for {@link org.xwiki.model.internal.reference.DefaultEntityReferenceValueProvider}.
  *
- * @version $Id$
+ * @version $Id: 2df8c30e29571f619571a6e6986863b4646101e2 $
  * @since 2.3M1
  */
 public class DefaultEntityReferenceValueProviderTest {
@@ -44,11 +44,11 @@ public class DefaultEntityReferenceValueProviderTest {
 
   @Before
   public void setUp() {
-    provider = new DefaultEntityReferenceValueProvider();
-    final ModelConfiguration mockConfiguration = mockery.mock(ModelConfiguration.class);
-    ReflectionUtils.setFieldValue(provider, "configuration", mockConfiguration);
+    this.provider = new DefaultEntityReferenceValueProvider();
+    final ModelConfiguration mockConfiguration = this.mockery.mock(ModelConfiguration.class);
+    ReflectionUtils.setFieldValue(this.provider, "configuration", mockConfiguration);
 
-    mockery.checking(new Expectations() {
+    this.mockery.checking(new Expectations() {
 
       {
         allowing(mockConfiguration).getDefaultReferenceValue(EntityType.SPACE);
@@ -65,9 +65,9 @@ public class DefaultEntityReferenceValueProviderTest {
 
   @Test
   public void testGetDefaultValue() {
-    assertEquals("defpage", provider.getDefaultValue(EntityType.DOCUMENT));
-    assertEquals("defspace", provider.getDefaultValue(EntityType.SPACE));
-    assertEquals("deffilename", provider.getDefaultValue(EntityType.ATTACHMENT));
-    assertEquals("defwiki", provider.getDefaultValue(EntityType.WIKI));
+    assertEquals("defpage", this.provider.getDefaultValue(EntityType.DOCUMENT));
+    assertEquals("defspace", this.provider.getDefaultValue(EntityType.SPACE));
+    assertEquals("deffilename", this.provider.getDefaultValue(EntityType.ATTACHMENT));
+    assertEquals("defwiki", this.provider.getDefaultValue(EntityType.WIKI));
   }
 }

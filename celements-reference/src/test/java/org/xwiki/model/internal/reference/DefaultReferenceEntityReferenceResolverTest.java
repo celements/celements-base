@@ -35,7 +35,7 @@ import org.xwiki.model.reference.InvalidEntityReferenceException;
 /**
  * Unit tests for {@link DefaultReferenceEntityReferenceResolver}.
  *
- * @version $Id$
+ * @version $Id: a31e61994a7f28b56395d7c335e63df9437e915a $
  * @since 2.2M1
  */
 public class DefaultReferenceEntityReferenceResolverTest {
@@ -46,12 +46,12 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Before
   public void setUp() {
-    resolver = new DefaultReferenceEntityReferenceResolver();
-    final EntityReferenceValueProvider mockValueProvider = mockery
+    this.resolver = new DefaultReferenceEntityReferenceResolver();
+    final EntityReferenceValueProvider mockValueProvider = this.mockery
         .mock(EntityReferenceValueProvider.class);
-    ReflectionUtils.setFieldValue(resolver, "provider", mockValueProvider);
+    ReflectionUtils.setFieldValue(this.resolver, "provider", mockValueProvider);
 
-    mockery.checking(new Expectations() {
+    this.mockery.checking(new Expectations() {
 
       {
         allowing(mockValueProvider).getDefaultValue(EntityType.SPACE);
@@ -72,7 +72,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   public void testResolveDocumentReferenceWhenMissingParents() {
     EntityReference partialReference = new EntityReference("page", EntityType.DOCUMENT);
 
-    EntityReference reference = resolver.resolve(partialReference, EntityType.DOCUMENT);
+    EntityReference reference = this.resolver.resolve(partialReference, EntityType.DOCUMENT);
 
     assertNotSame(partialReference, reference);
     assertEquals("defspace", reference.getParent().getName());
@@ -83,7 +83,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveAttachmentReferenceWhenMissingParents() {
-    EntityReference reference = resolver
+    EntityReference reference = this.resolver
         .resolve(new EntityReference("filename", EntityType.ATTACHMENT), EntityType.ATTACHMENT);
 
     assertEquals("defpage", reference.getParent().getName());
@@ -99,7 +99,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
     EntityReference partialReference = new EntityReference("page", EntityType.DOCUMENT,
         new EntityReference("wiki", EntityType.WIKI));
 
-    EntityReference reference = resolver.resolve(partialReference, EntityType.DOCUMENT);
+    EntityReference reference = this.resolver.resolve(partialReference, EntityType.DOCUMENT);
 
     assertNotSame(partialReference, reference);
     assertEquals("defspace", reference.getParent().getName());
@@ -112,7 +112,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveAttachmentReferenceWhenMissingParentBetweenReferences() {
-    EntityReference reference = resolver
+    EntityReference reference = this.resolver
         .resolve(new EntityReference("filename", EntityType.ATTACHMENT, new EntityReference(
             "wiki", EntityType.WIKI)), EntityType.ATTACHMENT);
 
@@ -127,7 +127,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   @Test
   public void testResolveDocumentReferenceWhenInvalidReference() {
     try {
-      resolver
+      this.resolver
           .resolve(new EntityReference("page", EntityType.DOCUMENT, new EntityReference("filename",
               EntityType.ATTACHMENT)), EntityType.DOCUMENT);
       fail("Should have thrown an exception here");
@@ -141,7 +141,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveDocumentReferenceWhenTypeIsSpace() {
-    EntityReference reference = resolver
+    EntityReference reference = this.resolver
         .resolve(new EntityReference("space", EntityType.SPACE), EntityType.DOCUMENT);
 
     assertEquals(EntityType.DOCUMENT, reference.getType());
@@ -154,7 +154,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveSpaceReferenceWhenTypeIsDocument() {
-    EntityReference reference = resolver
+    EntityReference reference = this.resolver
         .resolve(new EntityReference("page", EntityType.DOCUMENT), EntityType.SPACE);
 
     assertEquals(EntityType.SPACE, reference.getType());
@@ -250,7 +250,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveDocumentReferenceWhenNullReference() {
-    EntityReference reference = resolver.resolve(null, EntityType.DOCUMENT);
+    EntityReference reference = this.resolver.resolve(null, EntityType.DOCUMENT);
 
     assertEquals(EntityType.DOCUMENT, reference.getType());
     assertEquals("defpage", reference.getName());

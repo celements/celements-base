@@ -33,7 +33,7 @@ import org.xwiki.model.reference.WikiReference;
 /**
  * Unit tests for {@link LocalReferenceEntityReferenceSerializer}.
  *
- * @version $Id$
+ * @version $Id: f52fe54e86e2a42c9213f4f119ca5693fa6c32f8 $
  */
 public class LocalReferenceEntityReferenceSerializerTest {
 
@@ -41,12 +41,12 @@ public class LocalReferenceEntityReferenceSerializerTest {
 
   @Before
   public void setUp() {
-    serializer = new LocalReferenceEntityReferenceSerializer();
+    this.serializer = new LocalReferenceEntityReferenceSerializer();
   }
 
   @Test
   public void testSerializeDocumentReference() throws Exception {
-    EntityReference reference = serializer
+    EntityReference reference = this.serializer
         .serialize(new DocumentReference("wiki", "space", "page"));
 
     assertEquals(EntityType.DOCUMENT, reference.getType());
@@ -58,7 +58,7 @@ public class LocalReferenceEntityReferenceSerializerTest {
 
   @Test
   public void testSerializeSpaceReferenceWithChild() {
-    EntityReference reference = serializer
+    EntityReference reference = this.serializer
         .serialize(new SpaceReference("space", new WikiReference("wiki")));
 
     assertEquals(EntityType.SPACE, reference.getType());

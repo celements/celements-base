@@ -31,7 +31,7 @@ import org.xwiki.model.reference.EntityReferenceSerializer;
 /**
  * Unit tests for {@link LocalStringEntityReferenceSerializer}.
  *
- * @version $Id$
+ * @version $Id: 555a7f6e6aebb26ec7b5718ccf9c00dfecc1e0c9 $
  * @since 2.2M1
  */
 public class LocalStringEntityReferenceSerializerTest {
@@ -42,8 +42,8 @@ public class LocalStringEntityReferenceSerializerTest {
 
   @Before
   public void setUp() {
-    serializer = new LocalStringEntityReferenceSerializer();
-    resolver = new DefaultStringEntityReferenceResolver();
+    this.serializer = new LocalStringEntityReferenceSerializer();
+    this.resolver = new DefaultStringEntityReferenceResolver();
   }
 
   @Test

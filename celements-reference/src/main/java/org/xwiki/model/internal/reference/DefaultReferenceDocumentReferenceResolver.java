@@ -19,6 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -37,21 +39,20 @@ import org.xwiki.model.reference.EntityReferenceResolver;
  * Reference are missing in the string representation. Default values are retrieved from the
  * {@link org.xwiki.model.ModelConfiguration} class.
  *
- * @version $Id$
+ * @version $Id: 9be41ab88300561539ced2ca354b29d3e143ff93 $
  * @since 2.2M1
  */
 @Component("default/reference")
+@Singleton
 public class DefaultReferenceDocumentReferenceResolver
     implements DocumentReferenceResolver<EntityReference> {
 
+  /**
+   * Default entity reference resolver use for resolution.
+   */
   @Requirement("default/reference")
   private EntityReferenceResolver<EntityReference> entityReferenceResolver;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.model.reference.DocumentReferenceResolver#resolve
-   */
   @Override
   public DocumentReference resolve(EntityReference documentReferenceRepresentation,
       Object... parameters) {

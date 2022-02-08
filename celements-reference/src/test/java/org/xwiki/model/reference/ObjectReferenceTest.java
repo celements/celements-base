@@ -27,7 +27,7 @@ import org.xwiki.model.EntityType;
 /**
  * Unit test for the Object reference ({@link ObjectReference}).
  *
- * @version $Id$
+ * @version $Id: 400f0928af8be562db995cf73aa11ccbef1e9956 $
  * @since 2.3M1
  */
 public class ObjectReferenceTest {
@@ -42,7 +42,6 @@ public class ObjectReferenceTest {
             EntityType.DOCUMENT,
             new EntityReference("Space", EntityType.SPACE, new EntityReference("wiki",
                 EntityType.WIKI)))));
-    assertEquals(reference, new ObjectReference("wiki", "Space", "Page", "Object"));
     assertEquals(reference,
         new ObjectReference("Object", new DocumentReference("wiki", "Space", "Page")));
   }
@@ -63,8 +62,7 @@ public class ObjectReferenceTest {
       new ObjectReference(new EntityReference("className", EntityType.OBJECT, null));
       fail("Should have thrown exception");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid parent reference [null] for an object reference",
-          expected.getMessage());
+      assertEquals("Invalid parent reference [null] in an object reference", expected.getMessage());
     }
   }
 
@@ -80,7 +78,7 @@ public class ObjectReferenceTest {
       fail("Should have thrown exception");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Invalid parent reference [name = [Space], type = [SPACE], parent = [null]] for an object "
+          "Invalid parent reference [name = [Space], type = [SPACE], parent = [null]] in an object "
               + "reference",
           expected.getMessage());
     }

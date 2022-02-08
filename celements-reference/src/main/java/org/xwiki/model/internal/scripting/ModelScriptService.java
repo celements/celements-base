@@ -19,7 +19,8 @@
  */
 package org.xwiki.model.internal.scripting;
 
-import org.apache.commons.lang.StringUtils;
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -31,15 +32,20 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.ObjectPropertyReference;
+import org.xwiki.model.reference.ObjectReference;
 import org.xwiki.script.service.ScriptService;
+
+import com.google.common.base.Strings;
 
 /**
  * Provides Model-specific Scripting APIs.
  *
- * @version $Id$
+ * @version $Id: 4230cc79681d08643453d7c31bb68373d3571bdc $
  * @since 2.3M1
  */
 @Component("model")
+@Singleton
 public class ModelScriptService implements ScriptService {
 
   /**
@@ -94,13 +100,13 @@ public class ModelScriptService implements ScriptService {
   public DocumentReference createDocumentReference(String wiki, String space, String page,
       String hint) {
     EntityReference reference = null;
-    if (!StringUtils.isEmpty(wiki)) {
+    if (!Strings.isNullOrEmpty(wiki)) {
       reference = new EntityReference(wiki, EntityType.WIKI);
     }
-    if (!StringUtils.isEmpty(space)) {
+    if (!Strings.isNullOrEmpty(space)) {
       reference = new EntityReference(space, EntityType.SPACE, reference);
     }
-    if (!StringUtils.isEmpty(page)) {
+    if (!Strings.isNullOrEmpty(page)) {
       reference = new EntityReference(page, EntityType.DOCUMENT, reference);
     }
     DocumentReference documentReference;
@@ -160,7 +166,7 @@ public class ModelScriptService implements ScriptService {
   public DocumentReference resolveDocument(String stringRepresentation, String hint,
       Object... parameters) {
     try {
-      EntityReferenceResolver<String> resolver = componentManager
+      EntityReferenceResolver<String> resolver = this.componentManager
           .lookup(EntityReferenceResolver.class, hint);
       return new DocumentReference(
           resolver.resolve(stringRepresentation, EntityType.DOCUMENT, parameters));
@@ -200,10 +206,93 @@ public class ModelScriptService implements ScriptService {
   public AttachmentReference resolveAttachment(String stringRepresentation, String hint,
       Object... parameters) {
     try {
-      EntityReferenceResolver<String> resolver = componentManager
+      EntityReferenceResolver<String> resolver = this.componentManager
           .lookup(EntityReferenceResolver.class, hint);
       return new AttachmentReference(
           resolver.resolve(stringRepresentation, EntityType.ATTACHMENT, parameters));
+    } catch (ComponentLookupException e) {
+      return null;
+    }
+  }
+
+  /**
+   * @param stringRepresentation
+   *          an object reference specified as {@link String} (using the "wiki:space.page^object"
+   *          format and with special characters escaped where required)
+   * @return the corresponding typed {@link ObjectReference} object (resolved using the
+   *         {@value #DEFAULT_STRING_RESOLVER_HINT} resolver)
+   * @since 3.2M3
+   */
+  public ObjectReference resolveObject(String stringRepresentation) {
+    return resolveObject(stringRepresentation, DEFAULT_STRING_RESOLVER_HINT);
+  }
+
+  /**
+   * @param stringRepresentation
+   *          an object reference specified as {@link String} (using the "wiki:space.page^object"
+   *          format and with special characters escaped where required)
+   * @param hint
+   *          the hint of the resolver to use in case any part of the reference is missing (no wiki
+   *          specified, no
+   *          space or no page)
+   * @param parameters
+   *          extra parameters to pass to the resolver; you can use these parameters to resolve an
+   *          object
+   *          reference relative to another entity reference
+   * @return the corresponding typed {@link ObjectReference} object
+   * @since 3.2M3
+   */
+  @SuppressWarnings("unchecked")
+  public ObjectReference resolveObject(String stringRepresentation, String hint,
+      Object... parameters) {
+    try {
+      EntityReferenceResolver<String> resolver = this.componentManager
+          .lookup(EntityReferenceResolver.class, hint);
+      return new ObjectReference(
+          resolver.resolve(stringRepresentation, EntityType.OBJECT, parameters));
+    } catch (ComponentLookupException e) {
+      return null;
+    }
+  }
+
+  /**
+   * @param stringRepresentation
+   *          an object property reference specified as {@link String} (using the
+   *          "wiki:space.page^object.property" format and with special characters escaped where
+   *          required)
+   * @return the corresponding typed {@link ObjectReference} object (resolved using the
+   *         {@value #DEFAULT_STRING_RESOLVER_HINT} resolver)
+   * @since 3.2M3
+   */
+  public ObjectPropertyReference resolveObjectProperty(String stringRepresentation) {
+    return resolveObjectProperty(stringRepresentation, DEFAULT_STRING_RESOLVER_HINT);
+  }
+
+  /**
+   * @param stringRepresentation
+   *          an object property reference specified as {@link String} (using the
+   *          "wiki:space.page^object.property" format and with special characters escaped where
+   *          required)
+   * @param hint
+   *          the hint of the resolver to use in case any part of the reference is missing (no wiki
+   *          specified, no
+   *          space or no page)
+   * @param parameters
+   *          extra parameters to pass to the resolver; you can use these parameters to resolve an
+   *          object
+   *          property reference relative to another entity reference
+   * @return the corresponding typed {@link ObjectReference} object
+   * @since 3.2M3
+   */
+  @SuppressWarnings("unchecked")
+  public ObjectPropertyReference resolveObjectProperty(String stringRepresentation, String hint,
+      Object... parameters) {
+    try {
+      EntityReferenceResolver<String> resolver = this.componentManager
+          .lookup(EntityReferenceResolver.class, hint);
+      return new ObjectPropertyReference(
+          resolver.resolve(stringRepresentation, EntityType.OBJECT_PROPERTY,
+              parameters));
     } catch (ComponentLookupException e) {
       return null;
     }

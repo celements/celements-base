@@ -32,7 +32,7 @@ import org.xwiki.model.reference.EntityReferenceResolver;
  * Unit tests for
  * {@link org.xwiki.model.internal.reference.ExplicitReferenceEntityReferenceResolver}.
  *
- * @version $Id$
+ * @version $Id: 1c295800350494b19ef492a7e4974e86f3aeede3 $
  * @since 2.2.3
  */
 public class ExplicitReferenceEntityReferenceResolverTest {
@@ -41,12 +41,12 @@ public class ExplicitReferenceEntityReferenceResolverTest {
 
   @Before
   public void setUp() throws Exception {
-    resolver = new ExplicitReferenceEntityReferenceResolver();
+    this.resolver = new ExplicitReferenceEntityReferenceResolver();
   }
 
   @Test
   public void testResolveWithExplicitDocumentReference() {
-    EntityReference reference = resolver.resolve(null, EntityType.DOCUMENT,
+    EntityReference reference = this.resolver.resolve(null, EntityType.DOCUMENT,
         new DocumentReference("wiki", "space", "page"));
 
     assertEquals("page", reference.getName());
@@ -59,7 +59,7 @@ public class ExplicitReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveWithExplicitEntityReference() {
-    EntityReference reference = resolver.resolve(
+    EntityReference reference = this.resolver.resolve(
         new EntityReference("page", EntityType.DOCUMENT,
             new EntityReference("space", EntityType.SPACE)),
         EntityType.DOCUMENT, new EntityReference("wiki", EntityType.WIKI));
@@ -74,7 +74,7 @@ public class ExplicitReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveWithAbsoluteReferenceAndNoExplicitReference() {
-    EntityReference reference = resolver
+    EntityReference reference = this.resolver
         .resolve(
             new EntityReference("page", EntityType.DOCUMENT, new EntityReference("space",
                 EntityType.SPACE, new EntityReference("wiki", EntityType.WIKI))),
@@ -90,7 +90,7 @@ public class ExplicitReferenceEntityReferenceResolverTest {
 
   @Test
   public void testResolveWithExplicitReferenceWithHoles() {
-    EntityReference reference = resolver.resolve(
+    EntityReference reference = this.resolver.resolve(
         new EntityReference("page", EntityType.DOCUMENT,
             new EntityReference("space", EntityType.SPACE)),
         EntityType.DOCUMENT,
@@ -108,7 +108,7 @@ public class ExplicitReferenceEntityReferenceResolverTest {
   @Test
   public void testResolveWithNoExplicitAndPartialReference() {
     try {
-      resolver.resolve(null, EntityType.DOCUMENT);
+      this.resolver.resolve(null, EntityType.DOCUMENT);
       fail("Should have raised an exception");
     } catch (IllegalArgumentException expected) {
       assertEquals(
@@ -120,7 +120,7 @@ public class ExplicitReferenceEntityReferenceResolverTest {
   @Test
   public void testResolveWithInvalidParameterType() {
     try {
-      resolver.resolve(null, EntityType.DOCUMENT, "wrong type");
+      this.resolver.resolve(null, EntityType.DOCUMENT, "wrong type");
       fail("Should have raised an exception");
     } catch (IllegalArgumentException expected) {
       assertEquals(
@@ -132,7 +132,7 @@ public class ExplicitReferenceEntityReferenceResolverTest {
   @Test
   public void testResolveWithIncompleteExplicitReference() {
     try {
-      resolver.resolve(null, EntityType.DOCUMENT,
+      this.resolver.resolve(null, EntityType.DOCUMENT,
           new EntityReference("wiki", EntityType.WIKI));
       fail("Should have raised an exception");
     } catch (IllegalArgumentException expected) {

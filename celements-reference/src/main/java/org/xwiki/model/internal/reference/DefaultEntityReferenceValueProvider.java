@@ -19,6 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -28,21 +30,20 @@ import org.xwiki.model.reference.EntityReferenceValueProvider;
 /**
  * Uses the Entity Reference values defined in the Model Configuration.
  *
- * @version $Id$
+ * @version $Id: 1df04bc88be0e5aeab5bcd141fd5672411de71c6 $
  * @since 2.3M1
  * @see org.xwiki.model.internal.DefaultModelConfiguration
  */
 @Component
+@Singleton
 public class DefaultEntityReferenceValueProvider implements EntityReferenceValueProvider {
 
+  /**
+   * Configuration option of the model.
+   */
   @Requirement
   private ModelConfiguration configuration;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.model.reference.EntityReferenceValueProvider#getDefaultValue(org.xwiki.model.EntityType)
-   */
   @Override
   public String getDefaultValue(EntityType type) {
     return this.configuration.getDefaultReferenceValue(type);

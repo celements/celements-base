@@ -24,41 +24,36 @@ import javax.inject.Singleton;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.AttachmentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.model.reference.ObjectReference;
-import org.xwiki.model.reference.ObjectReferenceResolver;
 
 /**
  * Specialized version of {@link org.xwiki.model.reference.EntityReferenceResolver} which can be
  * considered a helper
- * component to resolve {@link ObjectReference} objects from their string representation. This
- * implementation uses fixed
- * default values when parts of the Reference are missing in the string representation. Default
- * values are retrieved
- * from the {@link org.xwiki.model.ModelConfiguration} class.
+ * component to resolve {@link org.xwiki.model.reference.AttachmentReference} objects from their
+ * string representation.
+ * The behavior is the one defined in
+ * {@link org.xwiki.model.internal.reference.ExplicitStringEntityReferenceResolver}.
  *
- * @version $Id: ec836349fbd6f78d5a5211c2cdc41218ea65b106 $
- * @since 2.3M1
+ * @version $Id: 5259077195f3c73498a38dfc2e77bbe700413346 $
+ * @since 3.0M1
  */
-@Component
+@Component("explicit")
 @Singleton
-public class DefaultStringObjectReferenceResolver implements ObjectReferenceResolver<String> {
+public class ExplicitStringAttachmentReferenceResolver
+    implements AttachmentReferenceResolver<String> {
 
   /**
-   * The default entity resolver, used to delegate actual resolving of string representations.
+   * Default entity reference resolver used for resolution.
    */
-  @Requirement
+  @Requirement("explicit")
   private EntityReferenceResolver<String> entityReferenceResolver;
 
   @Override
-  public ObjectReference resolve(String objectReferenceRepresentation, Object... parameters) {
-    return new ObjectReference(this.entityReferenceResolver.resolve(objectReferenceRepresentation,
-        EntityType.OBJECT, parameters));
-  }
-
-  @Override
-  public ObjectReference resolve(String objectReferenceRepresentation) {
-    return new ObjectReference(this.entityReferenceResolver.resolve(objectReferenceRepresentation,
-        EntityType.OBJECT));
+  public AttachmentReference resolve(String attachmentReferenceRepresentation,
+      Object... parameters) {
+    return new AttachmentReference(this.entityReferenceResolver.resolve(
+        attachmentReferenceRepresentation, EntityType.ATTACHMENT, parameters));
   }
 }
