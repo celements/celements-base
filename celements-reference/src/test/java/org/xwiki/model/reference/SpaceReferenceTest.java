@@ -19,10 +19,10 @@
  */
 package org.xwiki.model.reference;
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.xwiki.model.EntityType;
-
-import junit.framework.Assert;
 
 /**
  * Unit tests for {@link org.xwiki.model.reference.SpaceReference}.
@@ -36,9 +36,9 @@ public class SpaceReferenceTest {
   public void testInvalidType() {
     try {
       new SpaceReference(new EntityReference("space", EntityType.WIKI));
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("Invalid type [WIKI] for a space reference", expected.getMessage());
+      assertEquals("Invalid type [WIKI] for a space reference", expected.getMessage());
     }
   }
 
@@ -46,9 +46,9 @@ public class SpaceReferenceTest {
   public void testInvalidNullParent() {
     try {
       new SpaceReference("page", (WikiReference) null);
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("Invalid parent reference [null] in a space reference",
+      assertEquals("Invalid parent reference [null] in a space reference",
           expected.getMessage());
     }
   }
@@ -58,9 +58,9 @@ public class SpaceReferenceTest {
     try {
       new SpaceReference(new EntityReference("space", EntityType.SPACE,
           new EntityReference("whatever", EntityType.DOCUMENT, null)));
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals(
+      assertEquals(
           "Invalid parent reference [name = [whatever], type = [DOCUMENT], parent = [null]] "
               + "in a space reference",
           expected.getMessage());

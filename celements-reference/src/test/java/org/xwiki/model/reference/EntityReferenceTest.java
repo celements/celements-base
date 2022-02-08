@@ -19,6 +19,8 @@
  */
 package org.xwiki.model.reference;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -33,8 +35,6 @@ import java.util.UUID;
 
 import org.junit.Test;
 import org.xwiki.model.EntityType;
-
-import junit.framework.Assert;
 
 /**
  * Unit tests for {@link EntityReference}.
@@ -67,10 +67,10 @@ public class EntityReferenceTest {
     EntityReference space = new EntityReference("space", EntityType.SPACE, wiki);
     EntityReference reference = new EntityReference("page", EntityType.DOCUMENT, space);
 
-    Assert.assertSame(wiki, reference.extractReference(EntityType.WIKI));
-    Assert.assertSame(space, reference.extractReference(EntityType.SPACE));
-    Assert.assertSame(reference, reference.extractReference(EntityType.DOCUMENT));
-    Assert.assertNull(reference.extractReference(EntityType.ATTACHMENT));
+    assertSame(wiki, reference.extractReference(EntityType.WIKI));
+    assertSame(space, reference.extractReference(EntityType.SPACE));
+    assertSame(reference, reference.extractReference(EntityType.DOCUMENT));
+    assertNull(reference.extractReference(EntityType.ATTACHMENT));
   }
 
   @Test
@@ -78,7 +78,7 @@ public class EntityReferenceTest {
     EntityReference wiki = new EntityReference("wiki", EntityType.WIKI, null);
     EntityReference reference = new EntityReference("page", EntityType.DOCUMENT,
         new EntityReference("space", EntityType.SPACE, wiki));
-    Assert.assertSame(wiki, reference.getRoot());
+    assertSame(wiki, reference.getRoot());
   }
 
   @Test
@@ -89,10 +89,10 @@ public class EntityReferenceTest {
 
     List<EntityReference> list = reference.getReversedReferenceChain();
 
-    Assert.assertEquals(3, list.size());
-    Assert.assertSame(wiki, list.get(0));
-    Assert.assertSame(space, list.get(1));
-    Assert.assertSame(reference, list.get(2));
+    assertEquals(3, list.size());
+    assertSame(wiki, list.get(0));
+    assertSame(space, list.get(1));
+    assertSame(reference, list.get(2));
   }
 
   @Test
@@ -105,11 +105,11 @@ public class EntityReferenceTest {
 
     EntityReference reference = new EntityReference("page", EntityType.DOCUMENT, parent, map1);
 
-    Assert.assertEquals("page", reference.getName());
-    Assert.assertSame(EntityType.DOCUMENT, reference.getType());
-    Assert.assertSame(parent, reference.getParent());
-    Assert.assertTrue(checkParamMap(reference, map1));
-    Assert.assertTrue(checkParamMap(reference.getParent().getParent(), map2));
+    assertEquals("page", reference.getName());
+    assertSame(EntityType.DOCUMENT, reference.getType());
+    assertSame(parent, reference.getParent());
+    assertTrue(checkParamMap(reference, map1));
+    assertTrue(checkParamMap(reference.getParent().getParent(), map2));
   }
 
   @Test
@@ -155,19 +155,19 @@ public class EntityReferenceTest {
         new EntityReference("space", EntityType.SPACE,
             new EntityReference("wiki", EntityType.WIKI, null, map)));
 
-    Assert.assertTrue(reference1.equals(reference1));
-    Assert.assertTrue(reference1.equals(reference2));
-    Assert.assertFalse(reference1.equals(reference3));
-    Assert.assertFalse(reference1.equals(reference4));
-    Assert.assertFalse(reference1.equals(reference5));
-    Assert.assertFalse(reference1.equals(reference6));
-    Assert.assertEquals(reference6, new EntityReference("page", EntityType.DOCUMENT, null));
-    Assert.assertFalse(reference1.equals(reference7));
-    Assert.assertTrue(reference7.equals(reference8));
-    Assert.assertFalse(reference1.equals(reference9));
-    Assert.assertFalse(reference7.equals(reference9));
-    Assert.assertFalse(reference1.equals(reference10));
-    Assert.assertFalse(reference7.equals(reference10));
+    assertTrue(reference1.equals(reference1));
+    assertTrue(reference1.equals(reference2));
+    assertFalse(reference1.equals(reference3));
+    assertFalse(reference1.equals(reference4));
+    assertFalse(reference1.equals(reference5));
+    assertFalse(reference1.equals(reference6));
+    assertEquals(reference6, new EntityReference("page", EntityType.DOCUMENT, null));
+    assertFalse(reference1.equals(reference7));
+    assertTrue(reference7.equals(reference8));
+    assertFalse(reference1.equals(reference9));
+    assertFalse(reference7.equals(reference9));
+    assertFalse(reference1.equals(reference10));
+    assertFalse(reference7.equals(reference10));
   }
 
   @Test
@@ -213,20 +213,20 @@ public class EntityReferenceTest {
         new EntityReference("space", EntityType.SPACE,
             new EntityReference("wiki", EntityType.WIKI, null, map)));
 
-    Assert.assertEquals(reference1.hashCode(), reference1.hashCode());
-    Assert.assertEquals(reference1.hashCode(), reference2.hashCode());
-    Assert.assertFalse(reference1.hashCode() == reference3.hashCode());
-    Assert.assertFalse(reference1.hashCode() == reference4.hashCode());
-    Assert.assertFalse(reference1.hashCode() == reference5.hashCode());
-    Assert.assertFalse(reference1.hashCode() == reference6.hashCode());
-    Assert.assertEquals(reference6.hashCode(),
+    assertEquals(reference1.hashCode(), reference1.hashCode());
+    assertEquals(reference1.hashCode(), reference2.hashCode());
+    assertFalse(reference1.hashCode() == reference3.hashCode());
+    assertFalse(reference1.hashCode() == reference4.hashCode());
+    assertFalse(reference1.hashCode() == reference5.hashCode());
+    assertFalse(reference1.hashCode() == reference6.hashCode());
+    assertEquals(reference6.hashCode(),
         new EntityReference("page", EntityType.DOCUMENT, null).hashCode());
-    Assert.assertFalse(reference1.hashCode() == reference7.hashCode());
-    Assert.assertEquals(reference7.hashCode(), reference8.hashCode());
-    Assert.assertFalse(reference1.hashCode() == reference9.hashCode());
-    Assert.assertFalse(reference7.hashCode() == reference9.hashCode());
-    Assert.assertFalse(reference1.hashCode() == reference10.hashCode());
-    Assert.assertFalse(reference7.hashCode() == reference10.hashCode());
+    assertFalse(reference1.hashCode() == reference7.hashCode());
+    assertEquals(reference7.hashCode(), reference8.hashCode());
+    assertFalse(reference1.hashCode() == reference9.hashCode());
+    assertFalse(reference7.hashCode() == reference9.hashCode());
+    assertFalse(reference1.hashCode() == reference10.hashCode());
+    assertFalse(reference7.hashCode() == reference10.hashCode());
   }
 
   @Test
@@ -269,7 +269,7 @@ public class EntityReferenceTest {
             new EntityReference("a", EntityType.WIKI)),
         map3);
 
-    Assert.assertEquals(0, reference.compareTo(reference));
+    assertEquals(0, reference.compareTo(reference));
 
     List<EntityReference> list = new ArrayList<>();
     list.add(reference);
@@ -281,21 +281,21 @@ public class EntityReferenceTest {
     Collections.sort(list);
 
     // Reference3 is first since it serializes as a:a:c which comes before a:b:c and d:e:f
-    Assert.assertSame(reference, list.get(5));
-    Assert.assertSame(reference2, list.get(4));
-    Assert.assertSame(reference3, list.get(0));
-    Assert.assertSame(reference4, list.get(1));
-    Assert.assertSame(reference5, list.get(2));
-    Assert.assertSame(reference6, list.get(3));
+    assertSame(reference, list.get(5));
+    assertSame(reference2, list.get(4));
+    assertSame(reference3, list.get(0));
+    assertSame(reference4, list.get(1));
+    assertSame(reference5, list.get(2));
+    assertSame(reference6, list.get(3));
   }
 
   @Test
   public void testNullType() {
     try {
       new EntityReference("name", null);
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("An Entity Reference type cannot be null", expected.getMessage());
+      assertEquals("An Entity Reference type cannot be null", expected.getMessage());
     }
   }
 
@@ -303,9 +303,9 @@ public class EntityReferenceTest {
   public void testNullName() {
     try {
       new EntityReference(null, EntityType.WIKI);
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("An Entity Reference name cannot be null or empty",
+      assertEquals("An Entity Reference name cannot be null or empty",
           expected.getMessage());
     }
   }
@@ -314,9 +314,9 @@ public class EntityReferenceTest {
   public void testEmptyName() {
     try {
       new EntityReference("", EntityType.WIKI);
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("An Entity Reference name cannot be null or empty",
+      assertEquals("An Entity Reference name cannot be null or empty",
           expected.getMessage());
     }
   }
@@ -337,15 +337,15 @@ public class EntityReferenceTest {
     EntityReference referenceSpace2 = reference.replaceParent(space, space2);
     EntityReference referenceWiki2 = reference.replaceParent(wiki, wiki2);
 
-    Assert.assertNotSame(reference, referenceSpace2);
-    Assert.assertTrue(checkParamMap(referenceSpace2, map1));
-    Assert.assertSame(space2, referenceSpace2.getParent());
+    assertNotSame(reference, referenceSpace2);
+    assertTrue(checkParamMap(referenceSpace2, map1));
+    assertSame(space2, referenceSpace2.getParent());
 
-    Assert.assertNotSame(reference, referenceWiki2);
-    Assert.assertTrue(checkParamMap(referenceWiki2, map1));
-    Assert.assertNotSame(space, referenceWiki2.getParent());
-    Assert.assertTrue(checkParamMap(referenceWiki2.getParent(), map2));
-    Assert.assertSame(wiki2, referenceWiki2.getParent().getParent());
+    assertNotSame(reference, referenceWiki2);
+    assertTrue(checkParamMap(referenceWiki2, map1));
+    assertNotSame(space, referenceWiki2.getParent());
+    assertTrue(checkParamMap(referenceWiki2.getParent(), map2));
+    assertSame(wiki2, referenceWiki2.getParent().getParent());
   }
 
   @Test
@@ -366,6 +366,6 @@ public class EntityReferenceTest {
 
     EntityReference outRefs = (EntityReference) ois.readObject();
 
-    Assert.assertEquals(reference, outRefs);
+    assertEquals(reference, outRefs);
   }
 }

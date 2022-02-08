@@ -19,7 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
@@ -51,7 +52,7 @@ public class ExplicitStringAttachmentReferenceResolverTest {
     AttachmentReference reference = this.resolver.resolve("",
         new AttachmentReference("file", documentReference));
 
-    Assert.assertEquals("file", reference.getName());
-    Assert.assertEquals(documentReference, reference.getDocumentReference());
+    assertEquals("file", reference.getName());
+    assertEquals(documentReference, reference.getDocumentReference());
   }
 }

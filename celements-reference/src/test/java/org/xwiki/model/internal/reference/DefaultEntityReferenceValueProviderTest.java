@@ -19,9 +19,10 @@
  */
 package org.xwiki.model.internal.reference;
 
+import static org.junit.Assert.*;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
@@ -64,9 +65,9 @@ public class DefaultEntityReferenceValueProviderTest {
 
   @Test
   public void testGetDefaultValue() {
-    Assert.assertEquals("defpage", this.provider.getDefaultValue(EntityType.DOCUMENT));
-    Assert.assertEquals("defspace", this.provider.getDefaultValue(EntityType.SPACE));
-    Assert.assertEquals("deffilename", this.provider.getDefaultValue(EntityType.ATTACHMENT));
-    Assert.assertEquals("defwiki", this.provider.getDefaultValue(EntityType.WIKI));
+    assertEquals("defpage", this.provider.getDefaultValue(EntityType.DOCUMENT));
+    assertEquals("defspace", this.provider.getDefaultValue(EntityType.SPACE));
+    assertEquals("deffilename", this.provider.getDefaultValue(EntityType.ATTACHMENT));
+    assertEquals("defwiki", this.provider.getDefaultValue(EntityType.WIKI));
   }
 }

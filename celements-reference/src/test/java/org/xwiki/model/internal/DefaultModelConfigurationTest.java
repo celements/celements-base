@@ -19,11 +19,12 @@
  */
 package org.xwiki.model.internal;
 
+import static org.junit.Assert.*;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
 import org.jmock.integration.junit4.JUnit4Mockery;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,17 +91,17 @@ public class DefaultModelConfigurationTest {
       }
     });
 
-    Assert.assertEquals("defaultWiki",
+    assertEquals("defaultWiki",
         this.configuration.getDefaultReferenceValue(EntityType.WIKI));
-    Assert.assertEquals("defaultDocument",
+    assertEquals("defaultDocument",
         this.configuration.getDefaultReferenceValue(EntityType.DOCUMENT));
-    Assert.assertEquals("defaultSpace",
+    assertEquals("defaultSpace",
         this.configuration.getDefaultReferenceValue(EntityType.SPACE));
-    Assert.assertEquals("defaultFilename",
+    assertEquals("defaultFilename",
         this.configuration.getDefaultReferenceValue(EntityType.ATTACHMENT));
-    Assert.assertEquals("defaultObject",
+    assertEquals("defaultObject",
         this.configuration.getDefaultReferenceValue(EntityType.OBJECT));
-    Assert.assertEquals("defaultProperty",
+    assertEquals("defaultProperty",
         this.configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
   }
 
@@ -124,14 +125,14 @@ public class DefaultModelConfigurationTest {
       }
     });
 
-    Assert.assertEquals("xwiki", this.configuration.getDefaultReferenceValue(EntityType.WIKI));
-    Assert.assertEquals("WebHome",
+    assertEquals("xwiki", this.configuration.getDefaultReferenceValue(EntityType.WIKI));
+    assertEquals("WebHome",
         this.configuration.getDefaultReferenceValue(EntityType.DOCUMENT));
-    Assert.assertEquals("Main", this.configuration.getDefaultReferenceValue(EntityType.SPACE));
-    Assert.assertEquals("filename",
+    assertEquals("Main", this.configuration.getDefaultReferenceValue(EntityType.SPACE));
+    assertEquals("filename",
         this.configuration.getDefaultReferenceValue(EntityType.ATTACHMENT));
-    Assert.assertEquals("Main.WebHome", configuration.getDefaultReferenceValue(EntityType.OBJECT));
-    Assert.assertEquals("property",
+    assertEquals("Main.WebHome", configuration.getDefaultReferenceValue(EntityType.OBJECT));
+    assertEquals("property",
         configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
   }
 }

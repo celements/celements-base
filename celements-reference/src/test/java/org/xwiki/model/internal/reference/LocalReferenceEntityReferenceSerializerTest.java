@@ -19,7 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
@@ -48,11 +49,11 @@ public class LocalReferenceEntityReferenceSerializerTest {
     EntityReference reference = this.serializer
         .serialize(new DocumentReference("wiki", "space", "page"));
 
-    Assert.assertEquals(EntityType.DOCUMENT, reference.getType());
-    Assert.assertEquals("page", reference.getName());
-    Assert.assertEquals(EntityType.SPACE, reference.getParent().getType());
-    Assert.assertEquals("space", reference.getParent().getName());
-    Assert.assertNull(reference.getParent().getParent());
+    assertEquals(EntityType.DOCUMENT, reference.getType());
+    assertEquals("page", reference.getName());
+    assertEquals(EntityType.SPACE, reference.getParent().getType());
+    assertEquals("space", reference.getParent().getName());
+    assertNull(reference.getParent().getParent());
   }
 
   @Test
@@ -60,8 +61,8 @@ public class LocalReferenceEntityReferenceSerializerTest {
     EntityReference reference = this.serializer
         .serialize(new SpaceReference("space", new WikiReference("wiki")));
 
-    Assert.assertEquals(EntityType.SPACE, reference.getType());
-    Assert.assertEquals("space", reference.getName());
-    Assert.assertNull(reference.getParent());
+    assertEquals(EntityType.SPACE, reference.getType());
+    assertEquals("space", reference.getName());
+    assertNull(reference.getParent());
   }
 }

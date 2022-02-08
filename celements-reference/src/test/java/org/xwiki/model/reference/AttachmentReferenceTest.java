@@ -19,10 +19,10 @@
  */
 package org.xwiki.model.reference;
 
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import org.xwiki.model.EntityType;
-
-import junit.framework.Assert;
 
 /**
  * Unit tests for {@link AttachmentReference}.
@@ -36,9 +36,9 @@ public class AttachmentReferenceTest {
   public void testInvalidType() {
     try {
       new AttachmentReference(new EntityReference("filename", EntityType.DOCUMENT));
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("Invalid type [DOCUMENT] for an attachment reference",
+      assertEquals("Invalid type [DOCUMENT] for an attachment reference",
           expected.getMessage());
     }
   }
@@ -47,9 +47,9 @@ public class AttachmentReferenceTest {
   public void testInvalidNullParent() {
     try {
       new AttachmentReference("filename", null);
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals("Invalid parent reference [null] in an attachment reference",
+      assertEquals("Invalid parent reference [null] in an attachment reference",
           expected.getMessage());
     }
   }
@@ -59,9 +59,9 @@ public class AttachmentReferenceTest {
     try {
       new AttachmentReference(
           new EntityReference("filename", EntityType.ATTACHMENT, new WikiReference("wiki")));
-      Assert.fail("Should have thrown an exception here");
+      fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      Assert.assertEquals(
+      assertEquals(
           "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] in an "
               + "attachment reference",
           expected.getMessage());

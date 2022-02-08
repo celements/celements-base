@@ -19,12 +19,12 @@
  */
 package org.xwiki.model.reference;
 
+import static org.junit.Assert.*;
+
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 import org.xwiki.model.EntityType;
-
-import junit.framework.Assert;
 
 /**
  * Validate {@link RegexEntityReference} class.
@@ -49,7 +49,7 @@ public class RegexEntityReferenceTest {
         Pattern.compile(REFERENCETOMATCH.getName(), Pattern.LITERAL), EntityType.DOCUMENT,
         spaceReference);
 
-    Assert.assertTrue(reference.equals(REFERENCETOMATCH));
+    assertTrue(reference.equals(REFERENCETOMATCH));
   }
 
   @Test
@@ -57,7 +57,7 @@ public class RegexEntityReferenceTest {
     EntityReference reference = new RegexEntityReference(
         Pattern.compile(REFERENCETOMATCH.getName(), Pattern.LITERAL), EntityType.DOCUMENT);
 
-    Assert.assertTrue(reference.equals(REFERENCETOMATCH));
+    assertTrue(reference.equals(REFERENCETOMATCH));
   }
 
   @Test
@@ -66,7 +66,7 @@ public class RegexEntityReferenceTest {
         Pattern.compile(REFERENCETOMATCH.getWikiReference().getName(), Pattern.LITERAL),
         EntityType.WIKI);
 
-    Assert.assertTrue(reference.equals(REFERENCETOMATCH));
+    assertTrue(reference.equals(REFERENCETOMATCH));
   }
 
   @Test
@@ -74,7 +74,7 @@ public class RegexEntityReferenceTest {
     EntityReference reference = new RegexEntityReference(Pattern.compile("p.*"),
         EntityType.DOCUMENT);
 
-    Assert.assertTrue(reference.equals(REFERENCETOMATCH));
+    assertTrue(reference.equals(REFERENCETOMATCH));
   }
 
   @Test
@@ -82,6 +82,6 @@ public class RegexEntityReferenceTest {
     EntityReference reference = new RegexEntityReference(Pattern.compile("space"),
         EntityType.DOCUMENT);
 
-    Assert.assertFalse(reference.equals(REFERENCETOMATCH));
+    assertFalse(reference.equals(REFERENCETOMATCH));
   }
 }

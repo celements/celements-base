@@ -19,9 +19,10 @@
  */
 package org.xwiki.model.internal.scripting;
 
+import static org.junit.Assert.*;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -159,6 +160,6 @@ public class ModelScriptServiceTest {
       }
     });
 
-    Assert.assertNull(this.service.createDocumentReference("wiki", "space", "page", "invalid"));
+    assertNull(this.service.createDocumentReference("wiki", "space", "page", "invalid"));
   }
 }

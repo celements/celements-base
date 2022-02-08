@@ -19,7 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
-import org.junit.Assert;
+import static org.junit.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
@@ -49,8 +50,8 @@ public class ExplicitStringDocumentReferenceResolverTest {
     DocumentReference reference = this.resolver.resolve("",
         new DocumentReference("wiki", "space", "page"));
 
-    Assert.assertEquals("page", reference.getName());
-    Assert.assertEquals("space", reference.getLastSpaceReference().getName());
-    Assert.assertEquals("wiki", reference.getWikiReference().getName());
+    assertEquals("page", reference.getName());
+    assertEquals("space", reference.getLastSpaceReference().getName());
+    assertEquals("wiki", reference.getWikiReference().getName());
   }
 }
