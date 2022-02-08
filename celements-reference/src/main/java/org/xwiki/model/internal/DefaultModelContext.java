@@ -21,10 +21,10 @@ package org.xwiki.model.internal;
 
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.EntityType;
@@ -57,7 +57,7 @@ public class DefaultModelContext implements ModelContext {
    * Model Reference
    * Objects.
    */
-  @Inject
+  @Requirement
   private Execution execution;
 
   @Override
