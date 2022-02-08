@@ -51,6 +51,8 @@ import com.google.common.collect.ImmutableMap;
 @Singleton
 public class DefaultModelConfiguration implements ModelConfiguration {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelConfiguration.class);
+
   /**
    * Prefix for configuration keys for the Model module.
    */
@@ -79,11 +81,6 @@ public class DefaultModelConfiguration implements ModelConfiguration {
   @Requirement
   private ComponentManager componentManager;
 
-  /**
-   * The logger to log.
-   */
-  private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
   @Override
   public String getDefaultReferenceValue(EntityType type) {
     String name;
@@ -97,10 +94,8 @@ public class DefaultModelConfiguration implements ModelConfiguration {
       name = configuration.getProperty(
           PREFIX + "reference.default." + type.toString().toLowerCase(),
           DEFAULT_VALUES.get(type));
-    } catch (ComponentLookupException e) {
-      // Failed to load the component, use default values
-      this.logger.debug("Failed to load [" + ConfigurationSource.class.getName()
-          + "]. Using default Model values", e);
+    } catch (ComponentLookupException exc) {
+      LOGGER.debug("Failed to load xwikiproperties. Using default Model values", exc);
       name = DEFAULT_VALUES.get(type);
     }
     return name;
