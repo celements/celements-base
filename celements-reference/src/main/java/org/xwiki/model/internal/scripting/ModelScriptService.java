@@ -109,7 +109,6 @@ public class ModelScriptService implements ScriptService {
     if (!Strings.isNullOrEmpty(page)) {
       reference = new EntityReference(page, EntityType.DOCUMENT, reference);
     }
-
     DocumentReference documentReference;
     try {
       documentReference = this.componentManager.lookup(DocumentReferenceResolver.class, hint)

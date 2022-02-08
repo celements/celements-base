@@ -95,7 +95,6 @@ public class ObjectReference extends EntityReference {
     if (type != EntityType.OBJECT) {
       throw new IllegalArgumentException("Invalid type [" + type + "] for an object reference");
     }
-
     super.setType(EntityType.OBJECT);
   }
 
@@ -111,12 +110,10 @@ public class ObjectReference extends EntityReference {
       super.setParent(parent);
       return;
     }
-
     if ((parent == null) || (parent.getType() != EntityType.DOCUMENT)) {
       throw new IllegalArgumentException(
           "Invalid parent reference [" + parent + "] in an object reference");
     }
-
     super.setParent(new DocumentReference(parent));
   }
 

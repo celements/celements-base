@@ -101,7 +101,6 @@ public class ObjectPropertyReference extends EntityReference {
       throw new IllegalArgumentException(
           "Invalid type [" + type + "] for an object property reference");
     }
-
     super.setType(EntityType.OBJECT_PROPERTY);
   }
 
@@ -117,12 +116,10 @@ public class ObjectPropertyReference extends EntityReference {
       super.setParent(parent);
       return;
     }
-
     if ((parent == null) || (parent.getType() != EntityType.OBJECT)) {
       throw new IllegalArgumentException("Invalid parent reference [" + parent
           + "] in an object property reference");
     }
-
     super.setParent(new ObjectReference(parent));
   }
 

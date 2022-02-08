@@ -50,7 +50,6 @@ public class LocalReferenceEntityReferenceSerializer
       if (currentReference.getType() == EntityType.WIKI) {
         return newReference;
       }
-
       parent = new EntityReference(currentReference.getName(), currentReference.getType());
       if (newReference != null) {
         newReference = newReference.appendParent(parent);
@@ -58,7 +57,6 @@ public class LocalReferenceEntityReferenceSerializer
         newReference = parent;
       }
     }
-
     return newReference;
   }
 }

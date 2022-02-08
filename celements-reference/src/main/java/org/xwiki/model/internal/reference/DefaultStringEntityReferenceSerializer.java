@@ -47,7 +47,6 @@ public class DefaultStringEntityReferenceSerializer
     EntityType currentType = currentReference.getType();
     EntityReference currentParent = currentReference.getParent();
     List<String> currentEscapeChars = ESCAPES.get(currentType);
-
     // Add my separator if I am not the first one in the representation
     if ((currentParent != null) && (representation.length() > 0)) {
       if (currentParent.getType() == EntityType.WIKI) {
@@ -56,7 +55,6 @@ public class DefaultStringEntityReferenceSerializer
         representation.append(currentEscapeChars.get(0));
       }
     }
-
     // If we're on the Root reference then we don't need to escape anything
     if (currentEscapeChars != null) {
       representation.append(StringUtils.replaceEach(currentReference.getName(),

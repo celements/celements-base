@@ -63,7 +63,6 @@ public abstract class AbstractReferenceEntityReferenceResolver
   public EntityReference resolve(EntityReference referenceToResolve, EntityType type,
       Object... parameters) {
     EntityReference normalizedReference;
-
     if (referenceToResolve == null) {
       normalizedReference = new EntityReference(resolveDefaultValue(type, parameters), type);
     } else {
@@ -77,7 +76,6 @@ public abstract class AbstractReferenceEntityReferenceResolver
         normalizedReference = referenceToResolve;
       }
     }
-
     // Check all references and parent references which have a NULL name and replace them with
     // default values.
     // In addition insert references where needed.
@@ -86,13 +84,11 @@ public abstract class AbstractReferenceEntityReferenceResolver
     } catch (InvalidEntityReferenceException e) {
       throw new InvalidEntityReferenceException("Invalid reference [" + referenceToResolve + "]");
     }
-
     // If the passed type is a subtype of the reference to resolve's type then we extract the
     // reference.
     if ((referenceToResolve != null) && (type.ordinal() < referenceToResolve.getType().ordinal())) {
       normalizedReference = normalizedReference.extractReference(type);
     }
-
     return normalizedReference;
   }
 

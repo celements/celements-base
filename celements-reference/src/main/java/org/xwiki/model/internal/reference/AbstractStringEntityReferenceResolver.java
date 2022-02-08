@@ -80,12 +80,10 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
     // TODO: Once we support nested spaces, handle the possibility of having nested spaces. The
     // format is still
     // to be defined but it could be for example: Wiki:Space1.Space2.Page
-
     // First, check if there's a definition for the type
     if (!SEPARATORS.containsKey(type)) {
       throw new RuntimeException("No parsing definition found for Entity Type [" + type + "]");
     }
-
     // Handle the case when the passed representation is null. In this case we consider it similar
     // to passing
     // an empty string.
@@ -95,11 +93,9 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
     } else {
       representation = new StringBuilder(entityReferenceRepresentation);
     }
-
     EntityReference reference = null;
     List<Character> separatorsForType = SEPARATORS.get(type);
     List<EntityType> entityTypesForType = ENTITYTYPES.get(type);
-
     // Iterate over the representation string looking for iterators in the correct order (rightmost
     // separator
     // looked for first).
@@ -112,7 +108,6 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
         // There's no definition for the current segment use default values
         name = resolveDefaultValue(entityTypesForType.get(i), parameters);
       }
-
       if (name != null) {
         EntityReference newReference = new EntityReference(name, entityTypesForType.get(i));
         if (reference != null) {
@@ -122,7 +117,6 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
         }
       }
     }
-
     // Handle last entity reference's name
     String name;
     if (representation.length() > 0) {
@@ -131,7 +125,6 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
     } else {
       name = resolveDefaultValue(entityTypesForType.get(separatorsForType.size()), parameters);
     }
-
     if (name != null) {
       EntityReference newReference = new EntityReference(name,
           entityTypesForType.get(separatorsForType.size()));
@@ -141,7 +134,6 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
         reference = newReference;
       }
     }
-
     return reference;
   }
 
@@ -161,7 +153,6 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
   private String getSegmentName(StringBuilder representation, char separator, EntityType entityType,
       Object... parameters) {
     String name = null;
-
     // Search all characters for a non escaped separator. If found, then consider the part after the
     // character as
     // the reference name and continue parsing the part before the separator.
@@ -200,13 +191,11 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
         --i;
       }
     }
-
     // If not found then the full buffer is the current reference segment
     if (!found) {
       name = representation.toString();
       representation.setLength(0);
     }
-
     return name;
   }
 
@@ -224,11 +213,9 @@ public abstract class AbstractStringEntityReferenceResolver extends AbstractEnti
    */
   private int getNumberOfCharsBefore(char c, StringBuilder representation, int currentPosition) {
     int position = currentPosition;
-
     while ((position >= 0) && (representation.charAt(position) == c)) {
       --position;
     }
-
     return currentPosition - position;
   }
 }

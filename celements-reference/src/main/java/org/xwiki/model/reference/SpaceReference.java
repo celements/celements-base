@@ -112,13 +112,11 @@ public class SpaceReference extends EntityReference {
       super.setParent(parent);
       return;
     }
-
     if ((parent == null)
         || ((parent.getType() != EntityType.SPACE) && (parent.getType() != EntityType.WIKI))) {
       throw new IllegalArgumentException(
           "Invalid parent reference [" + parent + "] in a space reference");
     }
-
     if (parent.getType() == EntityType.SPACE) {
       super.setParent(new SpaceReference(parent));
     } else {
@@ -140,7 +138,6 @@ public class SpaceReference extends EntityReference {
     if (type != EntityType.SPACE) {
       throw new IllegalArgumentException("Invalid type [" + type + "] for a space reference");
     }
-
     super.setType(EntityType.SPACE);
   }
 

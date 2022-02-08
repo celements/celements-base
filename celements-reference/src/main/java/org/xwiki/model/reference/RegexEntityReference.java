@@ -58,7 +58,6 @@ public class RegexEntityReference extends EntityReference {
    */
   public RegexEntityReference(Pattern pattern, EntityType type) {
     super(pattern.pattern(), type);
-
     this.pattern = pattern;
   }
 
@@ -72,7 +71,6 @@ public class RegexEntityReference extends EntityReference {
    */
   public RegexEntityReference(Pattern pattern, EntityType type, EntityReference parent) {
     super(pattern.pattern(), type, parent);
-
     this.pattern = pattern;
   }
 
@@ -100,13 +98,10 @@ public class RegexEntityReference extends EntityReference {
     if (obj == this) {
       return true;
     }
-
     if (!(obj instanceof EntityReference)) {
       return false;
     }
-
     EntityReference reference = (EntityReference) obj;
-
     for (EntityReference entity = reference; entity != null; entity = entity.getParent()) {
       if (getType().equals(entity.getType())) {
         if ((this.pattern != null) && !this.pattern.matcher(entity.getName()).matches()) {
@@ -116,7 +111,6 @@ public class RegexEntityReference extends EntityReference {
         }
       }
     }
-
     return true;
   }
 }

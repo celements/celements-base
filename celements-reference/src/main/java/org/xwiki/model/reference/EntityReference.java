@@ -105,7 +105,6 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
     if (reference == null) {
       throw new IllegalArgumentException("Cloned reference must not be null");
     }
-
     setName(reference.name);
     setType(reference.type);
     setParameters(reference.parameters);
@@ -339,11 +338,9 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
    */
   public EntityReference extractReference(EntityType type) {
     EntityReference reference = this;
-
     while ((reference != null) && (reference.getType() != type)) {
       reference = reference.getParent();
     }
-
     return reference;
   }
 
@@ -409,9 +406,7 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
     if (!(obj instanceof EntityReference)) {
       return false;
     }
-
     EntityReference ref = (EntityReference) obj;
-
     return name.equals(ref.name) && type.equals(ref.type)
         && (parent == null ? ref.parent == null : parent.equals(ref.parent))
         && (parameters == null ? ref.parameters == null : parameters.equals(ref.parameters));
@@ -427,24 +422,19 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
     if (reference == null) {
       throw new NullPointerException("Provided reference should not be null");
     }
-
     if (reference == this) {
       return 0;
     }
-
     int cmp = compareParent(reference);
     if (cmp != 0) {
       return cmp;
     }
-
     if (!type.equals(reference.type)) {
       return type.compareTo(reference.type);
     }
-
     if (!name.equals(reference.name)) {
       return name.compareTo(reference.name);
     }
-
     return compareParameters(reference);
   }
 
@@ -460,7 +450,6 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
       if (reference.parent == null) {
         return 1;
       }
-
       return parent.compareTo(reference.parent);
     }
     return (reference.parent == null) ? 0 : -1;
@@ -478,7 +467,6 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
     if ((parameters != null) && (reference.parameters == null)) {
       return 1;
     }
-
     if (parameters != null) {
       for (Map.Entry<String, Serializable> entry : parameters.entrySet()) {
         Object obj = reference.parameters.get(entry.getKey());

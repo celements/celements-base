@@ -103,7 +103,6 @@ public class DefaultModelConfiguration implements ModelConfiguration {
           + "]. Using default Model values", e);
       name = DEFAULT_VALUES.get(type);
     }
-
     return name;
   }
 }

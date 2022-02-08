@@ -212,12 +212,10 @@ public class DocumentReference extends EntityReference {
       super.setParent(parent);
       return;
     }
-
     if ((parent == null) || (parent.getType() != EntityType.SPACE)) {
       throw new IllegalArgumentException(
           "Invalid parent reference [" + parent + "] in a document reference");
     }
-
     super.setParent(new SpaceReference(parent));
   }
 
@@ -235,7 +233,6 @@ public class DocumentReference extends EntityReference {
     if (type != EntityType.DOCUMENT) {
       throw new IllegalArgumentException("Invalid type [" + type + "] for a document reference");
     }
-
     super.setType(EntityType.DOCUMENT);
   }
 
@@ -275,7 +272,6 @@ public class DocumentReference extends EntityReference {
    */
   public List<SpaceReference> getSpaceReferences() {
     List<SpaceReference> references = new ArrayList<>();
-
     EntityReference reference = this;
     while (reference != null) {
       if (reference.getType() == EntityType.SPACE) {
@@ -285,7 +281,6 @@ public class DocumentReference extends EntityReference {
     }
     // Reverse the array so that the last entry is the parent of the Document Reference
     Collections.reverse(references);
-
     return references;
   }
 

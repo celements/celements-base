@@ -68,11 +68,9 @@ public abstract class AbstractEntityReferenceResolver {
         resolvedDefaultValue = extractedReference.getName();
       }
     }
-
     if (resolvedDefaultValue == null) {
       resolvedDefaultValue = getDefaultValue(type, parameters);
     }
-
     return resolvedDefaultValue;
   }
 }

@@ -37,14 +37,11 @@ public abstract class AbstractStringEntityReferenceSerializer
     if (reference == null) {
       return null;
     }
-
     StringBuilder representation = new StringBuilder();
-
     for (EntityReference currentReference : reference.getReversedReferenceChain()) {
       serializeEntityReference(currentReference, representation, currentReference == reference,
           parameters);
     }
-
     return representation.toString();
   }
 

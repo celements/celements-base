@@ -94,7 +94,6 @@ public class AttachmentReference extends EntityReference {
       throw new IllegalArgumentException(
           "Invalid parent reference [" + parent + "] in an attachment reference");
     }
-
     super.setParent(new DocumentReference(parent));
   }
 
@@ -111,7 +110,6 @@ public class AttachmentReference extends EntityReference {
     if (type != EntityType.ATTACHMENT) {
       throw new IllegalArgumentException("Invalid type [" + type + "] for an attachment reference");
     }
-
     super.setType(EntityType.ATTACHMENT);
   }
 

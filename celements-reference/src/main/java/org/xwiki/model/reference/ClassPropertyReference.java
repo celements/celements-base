@@ -99,7 +99,6 @@ public class ClassPropertyReference extends EntityReference {
       throw new IllegalArgumentException(
           "Invalid type [" + type + "] for an class property reference");
     }
-
     super.setType(EntityType.CLASS_PROPERTY);
   }
 
@@ -116,13 +115,11 @@ public class ClassPropertyReference extends EntityReference {
       super.setParent(parent);
       return;
     }
-
     if ((parent == null) || (parent.getType() != EntityType.DOCUMENT)) {
       throw new IllegalArgumentException(
           "Invalid parent reference [" + parent + "] for an class property "
               + "reference");
     }
-
     super.setParent(new DocumentReference(parent));
   }
 

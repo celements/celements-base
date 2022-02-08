@@ -56,8 +56,7 @@ public class DefaultReferenceDocumentReferenceResolver
   @Override
   public DocumentReference resolve(EntityReference documentReferenceRepresentation,
       Object... parameters) {
-    return new DocumentReference(
-        this.entityReferenceResolver.resolve(documentReferenceRepresentation,
-            EntityType.DOCUMENT, parameters));
+    return new DocumentReference(this.entityReferenceResolver.resolve(
+        documentReferenceRepresentation, EntityType.DOCUMENT, parameters));
   }
 }
