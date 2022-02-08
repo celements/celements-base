@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.ObjectPropertyReference;
 import org.xwiki.model.reference.ObjectReference;
@@ -31,6 +32,7 @@ public class EntityTypeUtil {
       .<Class<? extends EntityReference>, EntityType>builder()
       .put(WikiReference.class, EntityType.WIKI)
       .put(SpaceReference.class, EntityType.SPACE)
+      .put(DocumentReference.class, EntityType.DOCUMENT)
       .put(AttachmentReference.class, EntityType.ATTACHMENT)
       .put(ObjectReference.class, EntityType.OBJECT)
       .put(ObjectPropertyReference.class, EntityType.OBJECT_PROPERTY)

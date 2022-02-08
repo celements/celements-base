@@ -6,23 +6,19 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
+import org.xwiki.model.internal.reference.RelativeStringEntityReferenceResolver;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.model.reference.ImmutableDocumentReference;
 import org.xwiki.model.reference.ObjectReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
-import com.celements.common.test.AbstractComponentTest;
-import com.celements.common.test.ExceptionAsserter;
 import com.google.common.base.Optional;
-import com.xpn.xwiki.web.Utils;
 
-public class ReferencesTest extends AbstractComponentTest {
+public class ReferencesTest {
 
-  ModelUtils modelUtils;
   WikiReference wikiRef;
   SpaceReference spaceRef;
   DocumentReference docRef;
@@ -30,7 +26,6 @@ public class ReferencesTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    modelUtils = Utils.getComponent(ModelUtils.class);
     wikiRef = new WikiReference("wiki");
     spaceRef = new SpaceReference("space", wikiRef);
     docRef = new DocumentReference("doc", spaceRef);
@@ -47,10 +42,10 @@ public class ReferencesTest extends AbstractComponentTest {
     assertTrue(isAbsoluteRef(objRef));
     // ObjectPropertyReference is buggy, always contains EntityType.OBJECT, see setType
     // assertTrue(isAbsoluteRef(new ObjectPropertyReference("field", objRef)));
-    assertFalse(isAbsoluteRef(getRelativeRefResolver().resolve(modelUtils.serializeRefLocal(docRef),
-        EntityType.DOCUMENT)));
-    assertTrue(isAbsoluteRef(getRelativeRefResolver().resolve(modelUtils.serializeRef(docRef),
-        EntityType.DOCUMENT)));
+    assertFalse(isAbsoluteRef(getRelativeRefResolver().resolve(
+        "space.doc", EntityType.DOCUMENT)));
+    assertTrue(isAbsoluteRef(getRelativeRefResolver().resolve(
+        "wiki:space.doc", EntityType.DOCUMENT)));
     assertFalse(isAbsoluteRef(new EntityReference("wiki", EntityType.WIKI, new EntityReference(
         "superwiki", EntityType.WIKI))));
   }
@@ -92,7 +87,7 @@ public class ReferencesTest extends AbstractComponentTest {
     assertClone(ref.getParent(), clone.getParent());
     assertClone(ref.getParent().getParent(), clone.getParent().getParent());
     assertClone(ref.getChild(), clone.getChild());
-    assertTrue(clone instanceof ImmutableDocumentReference);
+    assertTrue(clone instanceof DocumentReference);
   }
 
   @Test
@@ -104,17 +99,6 @@ public class ReferencesTest extends AbstractComponentTest {
     assertClone(ref.getParent(), clone.getParent());
     assertClone(ref.getParent().getParent(), clone.getParent().getParent());
     assertClone(ref.getChild(), clone.getChild());
-    // TODO clone should be immutable
-    // assertTrue(clone instanceof ImmutableDocumentReference);
-  }
-
-  @Test
-  public void test_cloneRef_immutable() {
-    DocumentReference ref = new ImmutableDocumentReference(attRef.getDocumentReference());
-    assertSame(ref, cloneRef(ref));
-    assertSame(ref, cloneRef(ref, EntityReference.class));
-    assertSame(ref, cloneRef(ref, DocumentReference.class));
-    assertSame(ref, cloneRef(ref, ImmutableDocumentReference.class));
   }
 
   @Test
@@ -144,42 +128,25 @@ public class ReferencesTest extends AbstractComponentTest {
     assertClone(ref.getChild(), cloneRef(ref).getChild());
     assertClone(ref.getChild(), cloneRef(ref, EntityReference.class).getChild());
     assertClone(ref.getChild(), cloneRef(ref, DocumentReference.class).getChild());
-    assertClone(ref.getChild(), cloneRef(ref, ImmutableDocumentReference.class).getChild());
     assertClone(ref.getChild(), cloneRef(ref).getParent().getChild().getChild());
   }
 
   @Test
   public void test_cloneRef_wrongAbsoluteType() {
-    IllegalArgumentException iae = new ExceptionAsserter<IllegalArgumentException>(
-        IllegalArgumentException.class, "cannot clone space reference as document reference") {
-
-      @Override
-      protected void execute() throws Exception {
-        cloneRef(spaceRef, DocumentReference.class);
-      }
-    }.evaluate();
-    assertTrue(iae.getMessage(), iae.getMessage().contains("absolute"));
+    assertThrows("cannot clone space reference as document reference",
+        IllegalArgumentException.class, () -> cloneRef(spaceRef, DocumentReference.class));
   }
 
   @Test
   public void test_cloneRef_relativeAsAbsolute() {
-    final EntityReference ref = getRelativeRefResolver().resolve(modelUtils.serializeRefLocal(
-        docRef), EntityType.DOCUMENT);
-    IllegalArgumentException iae = new ExceptionAsserter<IllegalArgumentException>(
-        IllegalArgumentException.class, " cannot clone relative reference as absolute") {
-
-      @Override
-      protected void execute() throws Exception {
-        cloneRef(ref, DocumentReference.class);
-      }
-    }.evaluate();
-    assertTrue(iae.getMessage(), iae.getMessage().contains("relative"));
+    final EntityReference ref = getRelativeRefResolver().resolve("space.doc", EntityType.DOCUMENT);
+    assertThrows(" cannot clone relative reference as absolute",
+        IllegalArgumentException.class, () -> cloneRef(ref, DocumentReference.class));
   }
 
   @Test
   public void test_cloneRef_relative_asEntityRef() {
-    EntityReference ref = getRelativeRefResolver().resolve(modelUtils.serializeRefLocal(docRef),
-        EntityType.DOCUMENT);
+    EntityReference ref = getRelativeRefResolver().resolve("space.doc", EntityType.DOCUMENT);
     EntityReference clone = cloneRef(ref);
     assertFalse(clone instanceof DocumentReference);
     assertNotSame(ref, clone);
@@ -188,16 +155,8 @@ public class ReferencesTest extends AbstractComponentTest {
     assertFalse(ref.equals(clone));
   }
 
-  @Test
-  public void test_cloneRef_subType() {
-    TestSubImmuDocRef ref = new TestSubImmuDocRef(docRef);
-    DocumentReference clone = cloneRef(ref, DocumentReference.class);
-    assertSame(ref, clone);
-  }
-
-  @SuppressWarnings("unchecked")
   private EntityReferenceResolver<String> getRelativeRefResolver() {
-    return Utils.getComponent(EntityReferenceResolver.class, "relative");
+    return new RelativeStringEntityReferenceResolver();
   }
 
   @Test
@@ -280,7 +239,6 @@ public class ReferencesTest extends AbstractComponentTest {
     String name = "doc";
     DocumentReference docRef = create(DocumentReference.class, name, spaceRef);
     assertNotNull(docRef);
-    assertTrue(docRef instanceof ImmutableDocumentReference);
     assertEquals(name, docRef.getName());
     assertEquals(spaceRef, docRef.getParent());
     assertSame(docRef, docRef.getParent().getChild());
@@ -290,7 +248,7 @@ public class ReferencesTest extends AbstractComponentTest {
   public void test_create_parent_immutable() {
     String name = "file";
     AttachmentReference attRef = create(AttachmentReference.class, name,
-        new ImmutableDocumentReference(docRef));
+        new DocumentReference(docRef));
     assertNotNull(attRef);
     assertEquals(name, attRef.getName());
     assertEquals(docRef, attRef.getParent());
@@ -442,14 +400,6 @@ public class ReferencesTest extends AbstractComponentTest {
       assertNotSame(expected, actual);
       assertEquals(expected, actual);
     }
-  }
-
-  private class TestSubImmuDocRef extends ImmutableDocumentReference {
-
-    public TestSubImmuDocRef(EntityReference reference) {
-      super(reference);
-    }
-
   }
 
 }
