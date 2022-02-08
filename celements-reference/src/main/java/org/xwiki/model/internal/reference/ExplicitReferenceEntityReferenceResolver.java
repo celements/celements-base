@@ -19,32 +19,31 @@
  */
 package org.xwiki.model.internal.reference;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
-import org.xwiki.model.reference.EntityReference;
 
 /**
  * Resolver that resolves a Reference passed as a String into an absolute reference. For missing
  * reference parts, the
- * resolver takes default values from a parameter which must be of type {@link EntityReference}.
+ * resolver takes default values from a parameter which must be of type
+ * {@link org.xwiki.model.reference.EntityReference}.
  *
- * @version $Id$
+ * @version $Id: 7dd119308fe0c1b6d3bb859ff1babd5bf53c413a $
  * @since 2.23
  */
-@Component("explicit/reference")
+@Component
+@Named("explicit/reference")
+@Singleton
 public class ExplicitReferenceEntityReferenceResolver
     extends AbstractReferenceEntityReferenceResolver {
 
-  /**
-   * {@inheritDoc}
-   *
-   * Expects an EntityReference parameter from which to extract the default values.
-   *
-   * @see AbstractStringEntityReferenceResolver#getDefaultValue
-   */
   @Override
   protected String getDefaultValue(EntityType type, Object... parameters) {
     throw new IllegalArgumentException(
-        "The resolver parameter doesn't contain an Entity Reference of type [" + type + "]");
+        "The resolver parameter doesn't contain an Entity Reference of type ["
+            + type + "]");
   }
 }

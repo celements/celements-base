@@ -19,8 +19,10 @@
  */
 package org.xwiki.model.internal.reference;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReferenceValueProvider;
 
@@ -32,20 +34,19 @@ import org.xwiki.model.reference.EntityReferenceValueProvider;
  * representation. Default values are retrieved from the {@link org.xwiki.model.ModelConfiguration}
  * class.
  *
- * @version $Id$
+ * @version $Id: 5bb3f59d317a3fa7172c218570ff5bd404eec4e2 $
  * @since 2.2M1
  */
 @Component
+@Singleton
 public class DefaultStringEntityReferenceResolver extends AbstractStringEntityReferenceResolver {
 
-  @Requirement
+  /**
+   * Entity reference value provider used to provide default value.
+   */
+  @Inject
   private EntityReferenceValueProvider provider;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see AbstractStringEntityReferenceResolver#getDefaultValue
-   */
   @Override
   protected String getDefaultValue(EntityType type, Object... parameters) {
     return this.provider.getDefaultValue(type);

@@ -32,7 +32,7 @@ import org.xwiki.model.reference.EntityReferenceSerializer;
  * systematically
  * (usually we don't want to print it but only if it's the same as the current wiki).
  *
- * @version $Id$
+ * @version $Id: 324dc8a7811b08169598029dad5be3dc7a248855 $
  * @since 2.2.3
  * @deprecated {@link DefaultStringEntityReferenceSerializer} should be used instead
  */
@@ -41,30 +41,24 @@ import org.xwiki.model.reference.EntityReferenceSerializer;
 public class LocalReferenceEntityReferenceSerializer
     implements EntityReferenceSerializer<EntityReference> {
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see EntityReferenceSerializer#serialize(org.xwiki.model.reference.EntityReference, Object...)
-   */
   @Override
   public EntityReference serialize(EntityReference reference, Object... parameters) {
     EntityReference newReference = null;
-    EntityReference currentNewReference = null;
+    EntityReference parent;
     for (EntityReference currentReference = reference; currentReference != null; currentReference = currentReference
         .getParent()) {
       if (currentReference.getType() == EntityType.WIKI) {
         return newReference;
       }
-      if (currentNewReference != null) {
-        currentNewReference
-            .setParent(new EntityReference(currentReference.getName(), currentReference
-                .getType()));
-        currentNewReference = currentNewReference.getParent();
+
+      parent = new EntityReference(currentReference.getName(), currentReference.getType());
+      if (newReference != null) {
+        newReference = newReference.appendParent(parent);
       } else {
-        newReference = new EntityReference(currentReference.getName(), currentReference.getType());
-        currentNewReference = newReference;
+        newReference = parent;
       }
     }
+
     return newReference;
   }
 }

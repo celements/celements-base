@@ -23,35 +23,35 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
+import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.AttachmentReferenceResolver;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.model.reference.EntityReference;
 
 /**
  * Unit tests for
- * {@link org.xwiki.model.internal.reference.ExplicitReferenceDocumentReferenceResolver}.
+ * {@link org.xwiki.model.internal.reference.ExplicitStringAttachmentReferenceResolver}.
  *
- * @version $Id: bf88a00b4f2e14e17ef391953c4045ea5e909f20 $
- * @since 2.2.3
+ * @version $Id: a199be7636ebe51ada3de162431114e7ffbbe21f $
+ * @since 3.0M1
  */
-public class ExplicitReferenceDocumentReferenceResolverTest {
+public class ExplicitStringAttachmentReferenceResolverTest {
 
-  private DocumentReferenceResolver<EntityReference> resolver;
+  private AttachmentReferenceResolver<String> resolver;
 
   @Before
   public void setUp() throws Exception {
-    this.resolver = new ExplicitReferenceDocumentReferenceResolver();
+    this.resolver = new ExplicitStringAttachmentReferenceResolver();
     ReflectionUtils.setFieldValue(this.resolver, "entityReferenceResolver",
         new ExplicitStringEntityReferenceResolver());
   }
 
   @Test
-  public void testResolveWithExplicitDocumentReference() {
-    DocumentReference reference = this.resolver.resolve(null,
-        new DocumentReference("wiki", "space", "page"));
+  public void testResolveWithExplicitAttachmentReference() {
+    DocumentReference documentReference = new DocumentReference("wiki", "space", "page");
+    AttachmentReference reference = this.resolver.resolve("",
+        new AttachmentReference("file", documentReference));
 
-    Assert.assertEquals("page", reference.getName());
-    Assert.assertEquals("space", reference.getLastSpaceReference().getName());
-    Assert.assertEquals("wiki", reference.getWikiReference().getName());
+    Assert.assertEquals("file", reference.getName());
+    Assert.assertEquals(documentReference, reference.getDocumentReference());
   }
 }

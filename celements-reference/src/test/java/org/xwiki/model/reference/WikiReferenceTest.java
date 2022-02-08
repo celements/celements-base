@@ -19,15 +19,15 @@
  */
 package org.xwiki.model.reference;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 import org.xwiki.model.EntityType;
+
+import junit.framework.Assert;
 
 /**
  * Unit tests for {@link WikiReference}.
  *
- * @version $Id$
+ * @version $Id: 12683b8b27b51f7f05b2c38f2fde8dd549a0da40 $
  * @since 2.2M1
  */
 public class WikiReferenceTest {
@@ -36,9 +36,9 @@ public class WikiReferenceTest {
   public void testInvalidType() {
     try {
       new WikiReference(new EntityReference("wiki", EntityType.DOCUMENT));
-      fail("Should have thrown an exception here");
+      Assert.fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid type [DOCUMENT] for a wiki reference", expected.getMessage());
+      Assert.assertEquals("Invalid type [DOCUMENT] for a wiki reference", expected.getMessage());
     }
   }
 }

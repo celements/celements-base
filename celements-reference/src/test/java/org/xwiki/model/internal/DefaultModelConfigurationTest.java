@@ -19,12 +19,11 @@
  */
 package org.xwiki.model.internal;
 
-import static org.junit.Assert.*;
-
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
 import org.jmock.integration.junit4.JUnit4Mockery;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +36,7 @@ import org.xwiki.model.ModelConfiguration;
 /**
  * Unit tests for {@link DefaultModelConfiguration}.
  *
- * @version $Id$
+ * @version $Id: cc01c66f29059826583ab02bfcac83039597b5aa $
  * @since 2.2M1
  */
 @RunWith(JMock.class)
@@ -51,11 +50,12 @@ public class DefaultModelConfigurationTest {
 
   @Before
   public void setUp() throws Exception {
-    mockSource = mockery.mock(ConfigurationSource.class);
-    configuration = new DefaultModelConfiguration();
-    final ComponentManager mockCM = mockery.mock(ComponentManager.class);
-    ReflectionUtils.setFieldValue(configuration, "componentManager", mockCM);
-    mockery.checking(new Expectations() {
+    this.mockSource = this.mockery.mock(ConfigurationSource.class);
+    this.configuration = new DefaultModelConfiguration();
+
+    final ComponentManager mockCM = this.mockery.mock(ComponentManager.class);
+    ReflectionUtils.setFieldValue(this.configuration, "componentManager", mockCM);
+    this.mockery.checking(new Expectations() {
 
       {
         allowing(mockCM).lookup(ConfigurationSource.class, "xwikiproperties");
@@ -66,7 +66,7 @@ public class DefaultModelConfigurationTest {
 
   @Test
   public void testGetDefaultReferenceNameWhenDefinedInConfiguration() {
-    mockery.checking(new Expectations() {
+    this.mockery.checking(new Expectations() {
 
       {
         oneOf(mockSource).getProperty(with(equal("model.reference.default.wiki")),
@@ -89,18 +89,24 @@ public class DefaultModelConfigurationTest {
         will(returnValue("defaultProperty"));
       }
     });
-    assertEquals("defaultWiki", configuration.getDefaultReferenceValue(EntityType.WIKI));
-    assertEquals("defaultDocument", configuration.getDefaultReferenceValue(EntityType.DOCUMENT));
-    assertEquals("defaultSpace", configuration.getDefaultReferenceValue(EntityType.SPACE));
-    assertEquals("defaultFilename", configuration.getDefaultReferenceValue(EntityType.ATTACHMENT));
-    assertEquals("defaultObject", configuration.getDefaultReferenceValue(EntityType.OBJECT));
-    assertEquals("defaultProperty",
-        configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
+
+    Assert.assertEquals("defaultWiki",
+        this.configuration.getDefaultReferenceValue(EntityType.WIKI));
+    Assert.assertEquals("defaultDocument",
+        this.configuration.getDefaultReferenceValue(EntityType.DOCUMENT));
+    Assert.assertEquals("defaultSpace",
+        this.configuration.getDefaultReferenceValue(EntityType.SPACE));
+    Assert.assertEquals("defaultFilename",
+        this.configuration.getDefaultReferenceValue(EntityType.ATTACHMENT));
+    Assert.assertEquals("defaultObject",
+        this.configuration.getDefaultReferenceValue(EntityType.OBJECT));
+    Assert.assertEquals("defaultProperty",
+        this.configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
   }
 
   @Test
   public void testGetDefaultReferenceNameWhenNotDefinedInConfiguration() {
-    mockery.checking(new Expectations() {
+    this.mockery.checking(new Expectations() {
 
       {
         oneOf(mockSource).getProperty("model.reference.default.wiki", "xwiki");
@@ -118,11 +124,14 @@ public class DefaultModelConfigurationTest {
       }
     });
 
-    assertEquals("xwiki", configuration.getDefaultReferenceValue(EntityType.WIKI));
-    assertEquals("WebHome", configuration.getDefaultReferenceValue(EntityType.DOCUMENT));
-    assertEquals("Main", configuration.getDefaultReferenceValue(EntityType.SPACE));
-    assertEquals("filename", configuration.getDefaultReferenceValue(EntityType.ATTACHMENT));
-    assertEquals("Main.WebHome", configuration.getDefaultReferenceValue(EntityType.OBJECT));
-    assertEquals("property", configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
+    Assert.assertEquals("xwiki", this.configuration.getDefaultReferenceValue(EntityType.WIKI));
+    Assert.assertEquals("WebHome",
+        this.configuration.getDefaultReferenceValue(EntityType.DOCUMENT));
+    Assert.assertEquals("Main", this.configuration.getDefaultReferenceValue(EntityType.SPACE));
+    Assert.assertEquals("filename",
+        this.configuration.getDefaultReferenceValue(EntityType.ATTACHMENT));
+    Assert.assertEquals("Main.WebHome", configuration.getDefaultReferenceValue(EntityType.OBJECT));
+    Assert.assertEquals("property",
+        configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
   }
 }

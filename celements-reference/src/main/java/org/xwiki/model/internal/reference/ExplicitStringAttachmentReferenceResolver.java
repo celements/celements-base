@@ -25,42 +25,38 @@ import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.EntityType;
-import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.AttachmentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
 /**
  * Specialized version of {@link org.xwiki.model.reference.EntityReferenceResolver} which can be
  * considered a helper
- * component to resolve {@link org.xwiki.model.reference.DocumentReference} objects from Entity
- * Reference (when they
- * miss some parent references or have NULL values). This implementation uses fixed default values
- * when parts of the
- * Reference are missing in the string representation. Default values are retrieved from the
- * {@link org.xwiki.model.ModelConfiguration} class.
+ * component to resolve {@link org.xwiki.model.reference.AttachmentReference} objects from their
+ * string representation.
+ * The behavior is the one defined in
+ * {@link org.xwiki.model.internal.reference.ExplicitStringEntityReferenceResolver}.
  *
- * @version $Id: 9be41ab88300561539ced2ca354b29d3e143ff93 $
- * @since 2.2M1
+ * @version $Id: 5259077195f3c73498a38dfc2e77bbe700413346 $
+ * @since 3.0M1
  */
 @Component
-@Named("default/reference")
+@Named("explicit")
 @Singleton
-public class DefaultReferenceDocumentReferenceResolver
-    implements DocumentReferenceResolver<EntityReference> {
+public class ExplicitStringAttachmentReferenceResolver
+    implements AttachmentReferenceResolver<String> {
 
   /**
-   * Default entity reference resolver use for resolution.
+   * Default entity reference resolver used for resolution.
    */
   @Inject
-  @Named("default/reference")
-  private EntityReferenceResolver<EntityReference> entityReferenceResolver;
+  @Named("explicit")
+  private EntityReferenceResolver<String> entityReferenceResolver;
 
   @Override
-  public DocumentReference resolve(EntityReference documentReferenceRepresentation,
+  public AttachmentReference resolve(String attachmentReferenceRepresentation,
       Object... parameters) {
-    return new DocumentReference(
-        this.entityReferenceResolver.resolve(documentReferenceRepresentation,
-            EntityType.DOCUMENT, parameters));
+    return new AttachmentReference(this.entityReferenceResolver.resolve(
+        attachmentReferenceRepresentation, EntityType.ATTACHMENT, parameters));
   }
 }

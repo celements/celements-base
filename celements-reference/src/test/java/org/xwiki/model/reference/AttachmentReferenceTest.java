@@ -19,15 +19,15 @@
  */
 package org.xwiki.model.reference;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 import org.xwiki.model.EntityType;
+
+import junit.framework.Assert;
 
 /**
  * Unit tests for {@link AttachmentReference}.
  *
- * @version $Id$
+ * @version $Id: b09dfb977ae555ad84e1df85f7f955ff01d2236f $
  * @since 2.2M1
  */
 public class AttachmentReferenceTest {
@@ -36,9 +36,9 @@ public class AttachmentReferenceTest {
   public void testInvalidType() {
     try {
       new AttachmentReference(new EntityReference("filename", EntityType.DOCUMENT));
-      fail("Should have thrown an exception here");
+      Assert.fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid type [DOCUMENT] for an attachment reference",
+      Assert.assertEquals("Invalid type [DOCUMENT] for an attachment reference",
           expected.getMessage());
     }
   }
@@ -47,9 +47,9 @@ public class AttachmentReferenceTest {
   public void testInvalidNullParent() {
     try {
       new AttachmentReference("filename", null);
-      fail("Should have thrown an exception here");
+      Assert.fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid parent reference [null] for an attachment reference",
+      Assert.assertEquals("Invalid parent reference [null] in an attachment reference",
           expected.getMessage());
     }
   }
@@ -59,10 +59,10 @@ public class AttachmentReferenceTest {
     try {
       new AttachmentReference(
           new EntityReference("filename", EntityType.ATTACHMENT, new WikiReference("wiki")));
-      fail("Should have thrown an exception here");
+      Assert.fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      assertEquals(
-          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] for an "
+      Assert.assertEquals(
+          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] in an "
               + "attachment reference",
           expected.getMessage());
     }

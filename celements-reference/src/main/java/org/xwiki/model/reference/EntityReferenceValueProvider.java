@@ -31,7 +31,7 @@ import org.xwiki.model.EntityType;
  * taken from the
  * current document reference, etc).
  *
- * @version $Id$
+ * @version $Id: 9aac5230b6f936379e85457a8f621f415d5cb284 $
  * @since 2.3M1
  */
 @ComponentRole

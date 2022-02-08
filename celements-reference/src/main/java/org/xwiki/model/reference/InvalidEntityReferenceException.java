@@ -24,25 +24,44 @@ package org.xwiki.model.reference;
  * Attachment Reference as
  * parent is invalid.
  *
- * @version $Id$
+ * @version $Id: d3c92e6b8a422ebb63106424390ebfb106fa605a $
  * @since 2.2M1
  */
 public class InvalidEntityReferenceException extends RuntimeException {
 
-  private static final long serialVersionUID = 1L;
+  /**
+   * Create a new invalid entity reference exception.
+   */
+  public InvalidEntityReferenceException() {}
 
-  public InvalidEntityReferenceException() {
-    super();
-  }
-
+  /**
+   * Create a new invalid entity reference exception with a message.
+   *
+   * @param message
+   *          the message
+   */
   public InvalidEntityReferenceException(String message) {
     super(message);
   }
 
+  /**
+   * Create a new invalid entity reference exception with a message and a cause.
+   *
+   * @param message
+   *          the message
+   * @param throwable
+   *          the cause
+   */
   public InvalidEntityReferenceException(String message, Throwable throwable) {
     super(message, throwable);
   }
 
+  /**
+   * Create a new invalid entity reference exception with a cause.
+   *
+   * @param throwable
+   *          the cause
+   */
   public InvalidEntityReferenceException(Throwable throwable) {
     super(throwable);
   }

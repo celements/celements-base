@@ -22,12 +22,12 @@ package org.xwiki.model.reference;
 import org.xwiki.model.EntityType;
 
 /**
- * References a property in an object in a document (the value of the property).
+ * References a property in a class in a document (the description of the property).
  *
- * @since 2.3M1
- * @version $Id: b7f69ad51e0b343b53a3218bd5e8f806e7ce1bcc $
+ * @version $Id: fb52b3c4b66e3367beefb2b980e6d1232f6ad6c3 $
+ * @since 3.2M1
  */
-public class ObjectPropertyReference extends EntityReference {
+public class ClassPropertyReference extends EntityReference {
 
   /**
    * Constructor which would raise exceptions if the source entity reference does not have the
@@ -37,12 +37,12 @@ public class ObjectPropertyReference extends EntityReference {
    * @param reference
    *          the raw reference to build this object reference from
    */
-  public ObjectPropertyReference(EntityReference reference) {
+  public ClassPropertyReference(EntityReference reference) {
     super(reference);
   }
 
   /**
-   * Clone an ObjectPropertyReference, but replace one of the parent in the chain by a new one.
+   * Clone an ClassPropertyReference, but replace one of the parent in the chain by a new one.
    *
    * @param reference
    *          the reference that is cloned
@@ -52,7 +52,7 @@ public class ObjectPropertyReference extends EntityReference {
    *          the new parent that will replace oldReference in the chain
    * @since 3.3M2
    */
-  protected ObjectPropertyReference(EntityReference reference, EntityReference oldReference,
+  protected ClassPropertyReference(EntityReference reference, EntityReference oldReference,
       EntityReference newReference) {
     super(reference, oldReference, newReference);
   }
@@ -62,73 +62,73 @@ public class ObjectPropertyReference extends EntityReference {
    *
    * @param propertyName
    *          the name of the property to create reference for
-   * @param objectReference
-   *          the reference to the object whose property is
+   * @param classReference
+   *          the reference to the class whose property is
    */
-  public ObjectPropertyReference(String propertyName, ObjectReference objectReference) {
-    super(propertyName, EntityType.OBJECT_PROPERTY, objectReference);
+  public ClassPropertyReference(String propertyName, DocumentReference classReference) {
+    super(propertyName, EntityType.CLASS_PROPERTY, classReference);
   }
 
   /**
    * Deprecated constructor.
    *
    * @param wiki
-   *          the wiki of the document where the parent object of this property is
+   *          the wiki of the document where the parent class of this property is
    * @param space
-   *          the space of the document where the parent object of this property is
+   *          the space of the document where the parent class of this property is
    * @param page
-   *          the document where the parent object of this property is
-   * @param objectName
-   *          the name of the parent object of this property
+   *          the document where the parent class of this property is
    * @param propertyName
    *          the name of the property to refer to
    */
   @Deprecated
-  public ObjectPropertyReference(String wiki, String space, String page, String objectName,
-      String propertyName) {
-    this(propertyName, new ObjectReference(wiki, space, page, objectName));
+  public ClassPropertyReference(String wiki, String space, String page, String propertyName) {
+    this(propertyName, new DocumentReference(wiki, space, page));
   }
 
   /**
-   * {@inheritDoc} <br />
+   * {@inheritDoc}
+   * <p>
    * Overridden to check the type to be a property type.
    *
    * @see org.xwiki.model.reference.EntityReference#setType(org.xwiki.model.EntityType)
    */
   @Override
   protected void setType(EntityType type) {
-    if (type != EntityType.OBJECT_PROPERTY) {
+    if (type != EntityType.CLASS_PROPERTY) {
       throw new IllegalArgumentException(
-          "Invalid type [" + type + "] for an object property reference");
+          "Invalid type [" + type + "] for an class property reference");
     }
 
-    super.setType(EntityType.OBJECT_PROPERTY);
+    super.setType(EntityType.CLASS_PROPERTY);
   }
 
   /**
-   * {@inheritDoc} <br />
+   * {@inheritDoc}
+   * <p>
    * Overridden to ensure that the parent of a property is always an object.
    *
    * @see org.xwiki.model.reference.EntityReference#setParent(org.xwiki.model.reference.EntityReference)
    */
   @Override
   protected void setParent(EntityReference parent) {
-    if (parent instanceof ObjectReference) {
+    if (parent instanceof DocumentReference) {
       super.setParent(parent);
       return;
     }
 
-    if ((parent == null) || (parent.getType() != EntityType.OBJECT)) {
-      throw new IllegalArgumentException("Invalid parent reference [" + parent
-          + "] in an object property reference");
+    if ((parent == null) || (parent.getType() != EntityType.DOCUMENT)) {
+      throw new IllegalArgumentException(
+          "Invalid parent reference [" + parent + "] for an class property "
+              + "reference");
     }
 
-    super.setParent(new ObjectReference(parent));
+    super.setParent(new DocumentReference(parent));
   }
 
   @Override
-  public ObjectPropertyReference replaceParent(EntityReference oldParent,
+  public ClassPropertyReference replaceParent(EntityReference oldParent,
       EntityReference newParent) {
-    return new ObjectPropertyReference(this, oldParent, newParent);
+    return new ClassPropertyReference(this, oldParent, newParent);
   }
 }

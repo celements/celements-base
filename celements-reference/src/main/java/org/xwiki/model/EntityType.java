@@ -23,10 +23,13 @@ package org.xwiki.model;
  * Represents a type of entity (ie a Model Object such as a Wiki, a Space, a Document, an
  * Attachment, etc).
  *
- * @version $Id$
+ * @version $Id: a95dbf75dfa1b8947c0a7607afb7c52d4bea867b $
  * @since 2.2M1
  */
 public enum EntityType {
+  // Note that order below is important since it creates an order.
+  // For example: EntityType.WIKI.ordinal() < EntityType.SPACE.ordinal()
+
   /**
    * Represents a Wiki Entity.
    */
@@ -55,5 +58,12 @@ public enum EntityType {
   /**
    * Represents an Object Property Entity.
    */
-  OBJECT_PROPERTY
+  OBJECT_PROPERTY,
+
+  /**
+   * Represents a class property entity.
+   *
+   * @since 3.2M1
+   */
+  CLASS_PROPERTY
 }
