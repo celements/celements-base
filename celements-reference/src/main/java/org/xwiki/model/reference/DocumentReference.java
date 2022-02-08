@@ -253,18 +253,23 @@ public class DocumentReference extends EntityReference {
     return (Locale) getParameter(LOCALE);
   }
 
+  @Override
+  public SpaceReference getParent() {
+    return (SpaceReference) super.getParent();
+  }
+
   /**
    * @return the wiki reference of this document reference
    */
   public WikiReference getWikiReference() {
-    return (WikiReference) extractReference(EntityType.WIKI);
+    return extractRef(WikiReference.class).orElseThrow(IllegalStateException::new);
   }
 
   /**
    * @return the space reference of the last space containing this document
    */
   public SpaceReference getLastSpaceReference() {
-    return (SpaceReference) extractReference(EntityType.SPACE);
+    return extractRef(SpaceReference.class).orElseThrow(IllegalStateException::new);
   }
 
   /**

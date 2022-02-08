@@ -27,7 +27,7 @@ public abstract class AbstractEntityEvent extends AbstractFilterableEvent {
   }
 
   public EntityReference getReference() {
-    return reference.clone();
+    return reference;
   }
 
 }

@@ -40,12 +40,6 @@ public class ModelUtilsTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_getMainWikiRef_immutable() {
-    modelUtils.getMainWikiRef().setName("asdf");
-    assertEquals("xwiki", modelUtils.getMainWikiRef().getName());
-  }
-
-  @Test
   public void test_getDatabaseName() {
     String prefix = "cel_";
     expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn(prefix).once();
@@ -85,8 +79,7 @@ public class ModelUtilsTest extends AbstractComponentTest {
   @Test
   public void test_resolveRef_noParamChange() {
     assertEquals(spaceRef, modelUtils.resolveRef("wiki:space", SpaceReference.class, wikiRef));
-    assertNotSame(wikiRef, spaceRef.getParent());
-    assertNull(wikiRef.getChild());
+    assertSame(wikiRef, spaceRef.getParent());
   }
 
   @Test

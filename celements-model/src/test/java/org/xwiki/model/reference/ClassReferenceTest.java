@@ -38,24 +38,11 @@ public class ClassReferenceTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_setName() {
-    new ExceptionAsserter<IllegalStateException>(IllegalStateException.class) {
-
-      @Override
-      protected void execute() throws IllegalStateException {
-        classRef.setName("x");
-      }
-
-    }.evaluate();
-  }
-
-  @Test
   public void test_getParent() {
     EntityReference parent = classRef.getParent();
     assertNotNull(parent);
     assertEquals("space", parent.getName());
     assertEquals(EntityType.SPACE, parent.getType());
-    assertSame(classRef, parent.getChild());
     assertNull(parent.getParent());
     parent.setName("x");
   }
@@ -65,35 +52,17 @@ public class ClassReferenceTest extends AbstractComponentTest {
     EntityReference clone = classRef.clone();
     clone.getParent().setName("x");
     clone.getParent().setParent(null);
-    clone.getParent().setChild(null);
     clone.getParent().setType(EntityType.WIKI);
     assertEquals(classRef, clone);
   }
 
   @Test
   public void test_setParent() {
-    new ExceptionAsserter<IllegalStateException>(IllegalStateException.class) {
+    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class) {
 
       @Override
-      protected void execute() throws IllegalStateException {
+      protected void execute() throws IllegalArgumentException {
         classRef.setParent(classRef);
-      }
-
-    }.evaluate();
-  }
-
-  @Test
-  public void test_getChild() {
-    assertNull(classRef.getChild());
-  }
-
-  @Test
-  public void test_setChild() {
-    new ExceptionAsserter<IllegalStateException>(IllegalStateException.class) {
-
-      @Override
-      protected void execute() throws IllegalStateException {
-        classRef.setChild(classRef);
       }
 
     }.evaluate();
@@ -106,21 +75,21 @@ public class ClassReferenceTest extends AbstractComponentTest {
 
   @Test
   public void test_setType() {
-    new ExceptionAsserter<IllegalStateException>(IllegalStateException.class) {
-
-      @Override
-      protected void execute() throws IllegalStateException {
-        classRef.setType(EntityType.DOCUMENT);
+    for (EntityType type : EntityType.values()) {
+      if (type == EntityType.DOCUMENT) {
+        classRef.setType(type);
+        assertSame(type, classRef.getType());
+      } else {
+        assertThrows(IllegalArgumentException.class, () -> classRef.setType(type));
       }
-
-    }.evaluate();
+    }
   }
 
   @Test
   public void test_extractReference() {
     assertSame(classRef, classRef.extractReference(EntityType.DOCUMENT));
     assertEquals(classRef.getParent(), classRef.extractReference(EntityType.SPACE));
-    assertNotSame(classRef.getParent(), classRef.extractReference(EntityType.SPACE));
+    assertSame(classRef.getParent(), classRef.extractReference(EntityType.SPACE));
     assertNull(classRef.extractReference(EntityType.WIKI));
   }
 

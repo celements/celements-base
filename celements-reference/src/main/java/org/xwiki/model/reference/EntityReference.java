@@ -220,7 +220,7 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
   /**
    * @return the parent of this entity, may be null for a root entity.
    */
-  public final EntityReference getParent() {
+  public EntityReference getParent() {
     return this.parent;
   }
 
