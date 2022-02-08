@@ -118,18 +118,18 @@ public class ReferencesTest {
   }
 
   @Test
-  public void test_toAbsoluteRef() {
+  public void test_asCompleteRef() {
     EntityReference relative = getRelativeRefResolver().resolve("wiki:space.doc",
         EntityType.DOCUMENT);
-    assertEquals(docRef, toAbsoluteRef(relative, DocumentReference.class));
-    assertEquals(docRef, toAbsoluteRef(relative, EntityReference.class));
+    assertEquals(docRef, asCompleteRef(relative, DocumentReference.class));
+    assertEquals(docRef, asCompleteRef(relative, EntityReference.class));
   }
 
   @Test
-  public void test_toAbsoluteRef_incomplete() {
+  public void test_asCompleteRef_incomplete() {
     EntityReference relative = getRelativeRefResolver().resolve("space.doc", EntityType.DOCUMENT);
     assertThrows(IllegalArgumentException.class,
-        () -> toAbsoluteRef(relative, DocumentReference.class));
+        () -> asCompleteRef(relative, DocumentReference.class));
   }
 
   private EntityReferenceResolver<String> getRelativeRefResolver() {
@@ -143,7 +143,7 @@ public class ReferencesTest {
     assertEquals(docRef, extractRef(docRef, DocumentReference.class).get());
     assertFalse(extractRef(docRef, AttachmentReference.class).isPresent());
     assertEquals(attRef, extractRef(attRef, AttachmentReference.class).get());
-    assertNotSame(docRef, extractRef(docRef, DocumentReference.class).get());
+    assertSame(docRef, extractRef(docRef, DocumentReference.class).get());
   }
 
   @Test

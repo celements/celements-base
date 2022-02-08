@@ -107,7 +107,7 @@ public class RefBuilder implements Cloneable {
     try {
       EntityReference relativeRef = buildRelative(getEntityTypeForClass(token).orNull());
       if (relativeRef != null) {
-        ref = toAbsoluteRef(relativeRef, token);
+        ref = asCompleteRef(relativeRef, token);
       }
     } catch (IllegalArgumentException iae) {
       if (!nullable) {
@@ -154,7 +154,7 @@ public class RefBuilder implements Cloneable {
         if (ret == null) {
           ret = ref;
         } else {
-          ret = new EntityReference(ref, ret);
+          ret = ref.appendParent(ret);
         }
       }
     }

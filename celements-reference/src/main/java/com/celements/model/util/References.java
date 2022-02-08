@@ -44,20 +44,18 @@ public final class References {
   }
 
   /**
-   * @deprecated since 5.4, references are immutable
    * @param ref
    *          the reference to be cloned
    * @return a cloned instance of the reference
+   * @deprecated since 5.4, references are immutable
    */
-  @NotNull
   @Deprecated
+  @NotNull
   public static EntityReference cloneRef(@NotNull EntityReference ref) {
     return cloneRef(ref, EntityReference.class);
   }
 
   /**
-   * @deprecated since 5.4, references are immutable. drop or use
-   *             {@link #toAbsoluteRef(EntityReference, Class)} instead
    * @param ref
    *          the reference to be cloned
    * @param token
@@ -65,18 +63,29 @@ public final class References {
    * @return a cloned instance of the reference of type T
    * @throws IllegalArgumentException
    *           when relative references are being cloned as subtypes of {@link EntityReference}
+   * @deprecated since 5.4, references are immutable. drop or use
+   *             {@link #asCompleteRef(EntityReference, Class)} instead
    */
-  @NotNull
   @Deprecated
+  @NotNull
   public static <T extends EntityReference> T cloneRef(@NotNull EntityReference ref,
       @NotNull Class<T> token) {
-    // sadly we've misused the functionality of cloneRef as toAbsoluteRef in the past, thus we
-    // require this redirect for all clients
-    return toAbsoluteRef(ref, token);
+    // we've misused the functionality of cloneRef instead of using asCompleteRef in the past,
+    // thus we require this redirect for all clients
+    return asCompleteRef(ref, token);
   }
 
+  /**
+   * @param ref
+   *          the reference to be cloned
+   * @param token
+   *          type of the reference
+   * @return an absolute instance of the reference of type T
+   * @throws IllegalArgumentException
+   *           when calling with incomplete references for subtypes of {@link EntityReference}
+   */
   @NotNull
-  public static <T extends EntityReference> T toAbsoluteRef(@NotNull EntityReference ref,
+  public static <T extends EntityReference> T asCompleteRef(@NotNull EntityReference ref,
       @NotNull Class<T> token) {
     checkNotNull(ref);
     checkNotNull(token);
@@ -112,24 +121,27 @@ public final class References {
    * @param token
    *          reference class to extract
    * @return optional of the extracted reference
+   * @deprecated since 5.4, instead use {@link EntityReference#extractRef(Class)}
    */
+  @Deprecated
   public static <T extends EntityReference> Optional<T> extractRef(
       @Nullable EntityReference fromRef, @NotNull Class<T> token) {
-    EntityReference ret = null;
-    Optional<EntityType> type = getEntityTypeForClass(token);
-    if (type.isPresent()) {
-      ret = extractRef(fromRef, type.get()).orNull();
+    if (fromRef != null) {
+      return Optional.fromJavaUtil(fromRef.extractRef(token));
     }
-    return castOrAbsent(ret, token);
+    return Optional.absent();
   }
 
+  /**
+   * @deprecated since 5.4, instead use {@link EntityReference#extractRef(EntityType)}
+   */
+  @Deprecated
   public static Optional<EntityReference> extractRef(@Nullable EntityReference fromRef,
       @NotNull EntityType type) {
-    EntityReference ret = null;
     if (fromRef != null) {
-      ret = fromRef.extractReference(checkNotNull(type));
+      return Optional.fromJavaUtil(fromRef.extractRef(type));
     }
-    return cloneOrAbsent(ret);
+    return Optional.absent();
   }
 
   /**
@@ -143,15 +155,13 @@ public final class References {
    * @param toRef
    *          it is adjusted to
    * @return a new instance of the adjusted reference
+   * @deprecated since 5.4, instead use {@link RefBuilder}
    */
+  @Deprecated
   @NotNull
   public static <T extends EntityReference> T adjustRef(@NotNull T ref,
       @NotNull Class<? extends T> token, @Nullable EntityReference toRef) {
-    EntityType type = getEntityTypeForClass(token).orNull();
-    // combinedRef cannot be absent since ref is not null
-    EntityReference combinedRef = combineRef(token, type, toRef, checkNotNull(ref)).get();
-    // return value cannot be absent since ref is enforced to be of token class by signature
-    return castOrAbsent(combinedRef, token).get();
+    return RefBuilder.from(ref).with(toRef).build(token);
   }
 
   /**
@@ -164,7 +174,9 @@ public final class References {
    * @throws IllegalArgumentException
    *           if token is {@link EntityReference}, instead use
    *           {@link #combineRef(EntityReference...)} for relative references
+   * @deprecated since 5.4, instead use {@link RefBuilder}
    */
+  @Deprecated
   @NotNull
   public static <T extends EntityReference> Optional<T> completeRef(@NotNull Class<T> token,
       EntityReference... refs) {
@@ -178,7 +190,9 @@ public final class References {
    *
    * @param refs
    * @return a new, relative instance of the combined references
+   * @deprecated since 5.4, instead use {@link RefBuilder}
    */
+  @Deprecated
   @NotNull
   public static Optional<EntityReference> combineRef(EntityReference... refs) {
     return combineRef(EntityReference.class, null, refs);
@@ -191,13 +205,16 @@ public final class References {
    *          for the reference type
    * @param refs
    * @return a new, relative instance of the combined references
+   * @deprecated since 5.4, instead use {@link RefBuilder}
    */
+  @Deprecated
   @NotNull
   public static Optional<EntityReference> combineRef(@Nullable EntityType type,
       EntityReference... refs) {
     return combineRef(EntityReference.class, type, refs);
   }
 
+  @Deprecated
   @NotNull
   private static Optional<EntityReference> combineRef(@NotNull Class<?> token,
       @Nullable EntityType type, EntityReference... refs) {
@@ -208,20 +225,36 @@ public final class References {
     return Optional.fromNullable(builder.build(type));
   }
 
+  /**
+   * @deprecated since 5.4, instead use {@link RefBuilder}
+   */
+  @Deprecated
   public static EntityReference create(@NotNull EntityType type, @NotNull String name) {
     return create(type, name, null);
   }
 
+  /**
+   * @deprecated since 5.4, instead use {@link RefBuilder}
+   */
+  @Deprecated
   public static EntityReference create(@NotNull EntityType type, @NotNull String name,
       @Nullable EntityReference parent) {
     return new RefBuilder().with(type, name).with(parent).buildRelative();
   }
 
+  /**
+   * @deprecated since 5.4, instead use {@link RefBuilder}
+   */
+  @Deprecated
   public static <T extends EntityReference> T create(@NotNull Class<T> token,
       @NotNull String name) {
     return create(token, name, null);
   }
 
+  /**
+   * @deprecated since 5.4, instead use {@link RefBuilder}
+   */
+  @Deprecated
   public static <T extends EntityReference> T create(@NotNull Class<T> token, @NotNull String name,
       @Nullable EntityReference parent) {
     return new RefBuilder().with(getEntityTypeForClassOrThrow(token), name).with(parent).build(
@@ -232,14 +265,6 @@ public final class References {
       Class<T> token) {
     if ((ref != null) && (checkNotNull(token).isAssignableFrom(ref.getClass()))) {
       return Optional.of(token.cast(ref));
-    } else {
-      return Optional.absent();
-    }
-  }
-
-  private static Optional<EntityReference> cloneOrAbsent(EntityReference ref) {
-    if (ref != null) {
-      return Optional.of(cloneRef(ref));
     } else {
       return Optional.absent();
     }

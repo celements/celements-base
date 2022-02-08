@@ -19,12 +19,18 @@
  */
 package org.xwiki.model.reference;
 
+import static com.celements.model.util.EntityTypeUtil.*;
+
 import java.io.Serializable;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.EntityType;
 
@@ -335,13 +341,42 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
    * @param type
    *          the type of the entity to be extracted
    * @return the entity of the given type
+   * @deprecated since 5.4, instead use {@link #extractRef(EntityType)}
    */
+  @Deprecated
   public EntityReference extractReference(EntityType type) {
+    return extractRef(type).orElse(null);
+  }
+
+  /**
+   * Extract the parent reference of the given type from this reference.
+   *
+   * @param type
+   *          the type of the entity to be extracted
+   * @return the extracted reference of the given type
+   */
+  @NotNull
+  public Optional<EntityReference> extractRef(@Nullable EntityType type) {
     EntityReference reference = this;
     while ((reference != null) && (reference.getType() != type)) {
       reference = reference.getParent();
     }
-    return reference;
+    return Optional.ofNullable(reference);
+  }
+
+  /**
+   * Extract the parent reference of the given type from this reference.
+   *
+   * @param token
+   *          the class of the parent to be extracted
+   * @return the extracted reference of the given type
+   */
+  @NotNull
+  public <T extends EntityReference> Optional<T> extractRef(@Nullable Class<T> token) {
+    return Optional.ofNullable(token)
+        .flatMap(t -> getEntityTypeForClass(t).toJavaUtil())
+        .flatMap(this::extractRef)
+        .map(ref -> token.cast(ref));
   }
 
   /**
