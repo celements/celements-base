@@ -107,8 +107,7 @@ public class RefBuilder implements Cloneable {
     try {
       EntityReference relativeRef = buildRelative(getEntityTypeForClass(token).orNull());
       if (relativeRef != null) {
-        // clone for absolute, immutability reference
-        ref = cloneRef(relativeRef, token);
+        ref = toAbsoluteRef(relativeRef, token);
       }
     } catch (IllegalArgumentException iae) {
       if (!nullable) {
@@ -150,15 +149,13 @@ public class RefBuilder implements Cloneable {
    */
   public EntityReference buildRelative(EntityType type) {
     EntityReference ret = null;
-    EntityReference lastRef = null;
-    for (EntityReference ref : refs.descendingMap().values()) {
+    for (EntityReference ref : refs.values()) {
       if ((type == null) || (type.compareTo(ref.getType()) >= 0)) {
         if (ret == null) {
           ret = ref;
         } else {
-          lastRef.setParent(ref);
+          ret = new EntityReference(ref, ret);
         }
-        lastRef = ref;
       }
     }
     checkArgument(nullable || (ret != null), "missing information for building reference");

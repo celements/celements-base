@@ -10,10 +10,11 @@ import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.ImmutableReference;
 
 import com.celements.model.reference.RefBuilder;
 import com.google.common.base.Optional;
+
+import one.util.streamex.StreamEx;
 
 public final class References {
 
@@ -43,16 +44,20 @@ public final class References {
   }
 
   /**
+   * @deprecated since 5.4, references are immutable
    * @param ref
    *          the reference to be cloned
    * @return a cloned instance of the reference
    */
   @NotNull
+  @Deprecated
   public static EntityReference cloneRef(@NotNull EntityReference ref) {
-    return cloneRef(ref, determineClass(ref));
+    return cloneRef(ref, EntityReference.class);
   }
 
   /**
+   * @deprecated since 5.4, references are immutable. drop or use
+   *             {@link #toAbsoluteRef(EntityReference, Class)} instead
    * @param ref
    *          the reference to be cloned
    * @param token
@@ -62,38 +67,43 @@ public final class References {
    *           when relative references are being cloned as subtypes of {@link EntityReference}
    */
   @NotNull
+  @Deprecated
   public static <T extends EntityReference> T cloneRef(@NotNull EntityReference ref,
+      @NotNull Class<T> token) {
+    // sadly we've misused the functionality of cloneRef as toAbsoluteRef in the past, thus we
+    // require this redirect for all clients
+    return toAbsoluteRef(ref, token);
+  }
+
+  @NotNull
+  public static <T extends EntityReference> T toAbsoluteRef(@NotNull EntityReference ref,
       @NotNull Class<T> token) {
     checkNotNull(ref);
     checkNotNull(token);
-    assertAssignability(ref, token);
-    T ret;
-    if (ref instanceof ImmutableReference) {
-      ret = token.cast(ref);
-    } else if (token == EntityReference.class) {
-      ret = token.cast(ref.clone());
-    } else {
-      try {
-        ret = token.getConstructor(EntityReference.class).newInstance(ref);
-      } catch (ReflectiveOperationException | SecurityException exc) {
-        throw new IllegalArgumentException("Unsupported entity class: " + token, exc);
-      }
+    Class<T> determinedToken = assertAssignability(ref, token);
+    if (token == EntityReference.class) {
+      token = determinedToken;
     }
-    // EntityReference.clone doesn't correctly clone the child, therefore set for mutable references
-    if (!(ret instanceof ImmutableReference) && (ref.getChild() != null)) {
-      ret.setChild(cloneRef(ref.getChild()));
+    T ret;
+    try {
+      ret = token.getConstructor(EntityReference.class).newInstance(ref);
+    } catch (ReflectiveOperationException | SecurityException exc) {
+      throw new IllegalArgumentException("Unsupported entity class: " + token, exc);
     }
     return ret;
   }
 
-  private static void assertAssignability(EntityReference ref, Class<?> token)
-      throws IllegalArgumentException {
-    if ((token != EntityReference.class) && !token.isAssignableFrom(determineClass(ref))) {
+  @SuppressWarnings("unchecked")
+  private static <T extends EntityReference> Class<T> assertAssignability(EntityReference ref,
+      Class<T> token) throws IllegalArgumentException {
+    Class<? extends EntityReference> determinedToken = determineClass(ref);
+    if ((token != EntityReference.class) && !token.isAssignableFrom(determinedToken)) {
       String msg = "Given " + (isAbsoluteRef(ref) ? "absolute reference (" + determineClass(
           ref).getSimpleName() + ")" : "relative reference") + " is not assignable to '"
           + token.getSimpleName() + "' - " + ref;
       throw new IllegalArgumentException(msg);
     }
+    return (Class<T>) determinedToken;
   }
 
   /**
@@ -189,33 +199,13 @@ public final class References {
   }
 
   @NotNull
-  private static <T extends EntityReference> Optional<T> combineRef(@NotNull Class<T> token,
+  private static Optional<EntityReference> combineRef(@NotNull Class<?> token,
       @Nullable EntityType type, EntityReference... refs) {
-    EntityReference ret = null;
-    for (Iterator<EntityType> iter = createIteratorAt(type); iter.hasNext();) {
-      Optional<EntityReference> extrRef = extractSimpleRef(iter.next(), refs);
-      if (extrRef.isPresent()) {
-        if (ret == null) {
-          ret = extrRef.get();
-        } else {
-          ret.getRoot().setParent(extrRef.get());
-        }
-      }
+    RefBuilder builder = RefBuilder.create().nullable();
+    if (refs != null) {
+      StreamEx.ofReversed(refs).forEach(builder::with);
     }
-    return cloneOrAbsent(ret, token); // clone for effective immutability
-  }
-
-  private static Optional<EntityReference> extractSimpleRef(EntityType type,
-      EntityReference... fromRefs) {
-    if (fromRefs != null) {
-      for (EntityReference fromRef : fromRefs) {
-        Optional<? extends EntityReference> ref = extractRef(fromRef, type);
-        if (ref.isPresent()) {
-          return Optional.of(create(type, ref.get().getName())); // strip parent
-        }
-      }
-    }
-    return Optional.absent();
+    return Optional.fromNullable(builder.build(type));
   }
 
   public static EntityReference create(@NotNull EntityType type, @NotNull String name) {
@@ -242,15 +232,6 @@ public final class References {
       Class<T> token) {
     if ((ref != null) && (checkNotNull(token).isAssignableFrom(ref.getClass()))) {
       return Optional.of(token.cast(ref));
-    } else {
-      return Optional.absent();
-    }
-  }
-
-  private static <T extends EntityReference> Optional<T> cloneOrAbsent(EntityReference ref,
-      Class<T> token) {
-    if ((ref != null) && checkNotNull(token).isAssignableFrom(determineClass(ref))) {
-      return Optional.of(cloneRef(ref, token));
     } else {
       return Optional.absent();
     }

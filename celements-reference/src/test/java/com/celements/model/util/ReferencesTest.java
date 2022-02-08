@@ -56,8 +56,7 @@ public class ReferencesTest {
     EntityReference clone = cloneRef(ref);
     assertTrue(clone instanceof SpaceReference);
     assertClone(ref, clone);
-    assertClone(ref.getParent(), clone.getParent());
-    assertClone(ref.getChild(), clone.getChild());
+    assertEquals(ref.getParent(), clone.getParent());
   }
 
   @Test
@@ -66,8 +65,6 @@ public class ReferencesTest {
     WikiReference clone = cloneRef(ref, WikiReference.class);
     assertClone(ref, clone);
     assertClone(ref.getParent(), clone.getParent());
-    assertClone(ref.getChild(), clone.getChild());
-    assertClone(ref.getChild().getChild(), clone.getChild().getChild());
   }
 
   @Test
@@ -75,8 +72,7 @@ public class ReferencesTest {
     SpaceReference ref = docRef.getLastSpaceReference();
     SpaceReference clone = cloneRef(ref, SpaceReference.class);
     assertClone(ref, clone);
-    assertClone(ref.getParent(), clone.getParent());
-    assertClone(ref.getChild(), clone.getChild());
+    assertEquals(ref.getParent(), clone.getParent());
   }
 
   @Test
@@ -84,9 +80,8 @@ public class ReferencesTest {
     DocumentReference ref = attRef.getDocumentReference();
     EntityReference clone = cloneRef(ref, DocumentReference.class);
     assertClone(ref, clone);
-    assertClone(ref.getParent(), clone.getParent());
-    assertClone(ref.getParent().getParent(), clone.getParent().getParent());
-    assertClone(ref.getChild(), clone.getChild());
+    assertEquals(ref.getParent(), clone.getParent());
+    assertEquals(ref.getParent().getParent(), clone.getParent().getParent());
     assertTrue(clone instanceof DocumentReference);
   }
 
@@ -96,9 +91,8 @@ public class ReferencesTest {
     EntityReference clone = cloneRef(ref, EntityReference.class);
     assertTrue(clone instanceof DocumentReference);
     assertClone(ref, clone);
-    assertClone(ref.getParent(), clone.getParent());
-    assertClone(ref.getParent().getParent(), clone.getParent().getParent());
-    assertClone(ref.getChild(), clone.getChild());
+    assertEquals(ref.getParent(), clone.getParent());
+    assertEquals(ref.getParent().getParent(), clone.getParent().getParent());
   }
 
   @Test
@@ -107,28 +101,7 @@ public class ReferencesTest {
         "space", EntityType.SPACE));
     assertClone(ref, cloneRef(ref));
     assertClone(ref, cloneRef(ref, EntityReference.class));
-    assertClone(ref.getParent(), cloneRef(ref).getParent());
-    assertClone(ref, cloneRef(ref.getParent()).getChild());
-  }
-
-  @Test
-  public void test_cloneRef_child_spaceRef() {
-    SpaceReference ref = docRef.getLastSpaceReference();
-    assertNotNull(ref.getChild());
-    assertClone(ref.getChild(), cloneRef(ref).getChild());
-    assertClone(ref.getChild(), cloneRef(ref, EntityReference.class).getChild());
-    assertClone(ref.getChild(), cloneRef(ref, SpaceReference.class).getChild());
-    assertClone(ref.getChild(), cloneRef(ref).getParent().getChild().getChild());
-  }
-
-  @Test
-  public void test_cloneRef_child_docRef() {
-    DocumentReference ref = attRef.getDocumentReference();
-    assertNotNull(ref.getChild());
-    assertClone(ref.getChild(), cloneRef(ref).getChild());
-    assertClone(ref.getChild(), cloneRef(ref, EntityReference.class).getChild());
-    assertClone(ref.getChild(), cloneRef(ref, DocumentReference.class).getChild());
-    assertClone(ref.getChild(), cloneRef(ref).getParent().getChild().getChild());
+    assertEquals(ref.getParent(), cloneRef(ref).getParent());
   }
 
   @Test
@@ -145,14 +118,18 @@ public class ReferencesTest {
   }
 
   @Test
-  public void test_cloneRef_relative_asEntityRef() {
-    EntityReference ref = getRelativeRefResolver().resolve("space.doc", EntityType.DOCUMENT);
-    EntityReference clone = cloneRef(ref);
-    assertFalse(clone instanceof DocumentReference);
-    assertNotSame(ref, clone);
-    assertEquals(ref, clone);
-    ref.getParent().setName("asdf");
-    assertFalse(ref.equals(clone));
+  public void test_toAbsoluteRef() {
+    EntityReference relative = getRelativeRefResolver().resolve("wiki:space.doc",
+        EntityType.DOCUMENT);
+    assertEquals(docRef, toAbsoluteRef(relative, DocumentReference.class));
+    assertEquals(docRef, toAbsoluteRef(relative, EntityReference.class));
+  }
+
+  @Test
+  public void test_toAbsoluteRef_incomplete() {
+    EntityReference relative = getRelativeRefResolver().resolve("space.doc", EntityType.DOCUMENT);
+    assertThrows(IllegalArgumentException.class,
+        () -> toAbsoluteRef(relative, DocumentReference.class));
   }
 
   private EntityReferenceResolver<String> getRelativeRefResolver() {
@@ -207,16 +184,6 @@ public class ReferencesTest {
   }
 
   @Test
-  public void test_adjustRef_EntityReference_childUnchanged() {
-    WikiReference toRef = new WikiReference("oWiki");
-    assertNull(toRef.getChild());
-    adjustRef(new EntityReference("doc", EntityType.DOCUMENT, new EntityReference("wiki",
-        EntityType.WIKI)), EntityReference.class, toRef);
-    // EntityReference.setParent overwrites child of param, ensure it is cloned
-    assertNull(toRef.getChild());
-  }
-
-  @Test
   public void test_create_wiki() {
     String name = "wiki";
     WikiReference wikiRef = create(WikiReference.class, name);
@@ -231,7 +198,6 @@ public class ReferencesTest {
     assertNotNull(spaceRef);
     assertEquals(name, spaceRef.getName());
     assertEquals(wikiRef, spaceRef.getParent());
-    assertSame(spaceRef, spaceRef.getParent().getChild());
   }
 
   @Test
@@ -241,7 +207,6 @@ public class ReferencesTest {
     assertNotNull(docRef);
     assertEquals(name, docRef.getName());
     assertEquals(spaceRef, docRef.getParent());
-    assertSame(docRef, docRef.getParent().getChild());
   }
 
   @Test
@@ -253,7 +218,6 @@ public class ReferencesTest {
     assertEquals(name, attRef.getName());
     assertEquals(docRef, attRef.getParent());
     assertEquals(docRef, attRef.getDocumentReference());
-    assertSame(attRef, attRef.getParent().getChild());
   }
 
   @Test
@@ -271,8 +235,6 @@ public class ReferencesTest {
     SpaceReference spaceRef = create(SpaceReference.class, "space", wikiRef);
     assertNotSame(wikiRef, spaceRef.getParent());
     assertEquals(wikiRef, spaceRef.getParent());
-    assertSame(spaceRef, spaceRef.getParent().getChild());
-    assertNull(wikiRef.getChild());
   }
 
   @Test
@@ -357,7 +319,6 @@ public class ReferencesTest {
 
   @Test
   public void test_combineRef() {
-    assertEquals(EntityReference.class, combineRef(docRef).get().getClass());
     SpaceReference spaceRef2 = new SpaceReference("space2", new WikiReference("wiki2"));
     WikiReference wikiRef2 = new WikiReference("wiki3");
     assertEquals(docRef, combineRef(docRef, spaceRef2, wikiRef2).get());
@@ -380,8 +341,7 @@ public class ReferencesTest {
         docRef).get());
     assertEquals(new DocumentReference("wiki2", "space", "doc"), combineRef(EntityType.DOCUMENT,
         wikiRef2, docRef).get());
-    assertEquals(new DocumentReference("wiki2", "space", "doc"), combineRef(EntityType.ATTACHMENT,
-        wikiRef2, docRef).get());
+    assertFalse(combineRef(EntityType.ATTACHMENT, wikiRef2, docRef).isPresent());
   }
 
   @Test
