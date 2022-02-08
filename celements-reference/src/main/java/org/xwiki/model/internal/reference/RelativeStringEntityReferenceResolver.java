@@ -19,7 +19,6 @@
  */
 package org.xwiki.model.internal.reference;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
@@ -48,8 +47,7 @@ import org.xwiki.model.reference.EntityReference;
  * @version $Id: 207680e7078d89883eb2d28b2280e068645c4432 $
  * @since 2.2.3
  */
-@Component
-@Named("relative")
+@Component("relative")
 @Singleton
 public class RelativeStringEntityReferenceResolver extends AbstractStringEntityReferenceResolver {
 

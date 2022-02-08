@@ -19,11 +19,10 @@
  */
 package org.xwiki.model.internal.scripting;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.model.EntityType;
@@ -45,8 +44,7 @@ import com.google.common.base.Strings;
  * @version $Id: 4230cc79681d08643453d7c31bb68373d3571bdc $
  * @since 2.3M1
  */
-@Component
-@Named("model")
+@Component("model")
 @Singleton
 public class ModelScriptService implements ScriptService {
 
@@ -58,7 +56,7 @@ public class ModelScriptService implements ScriptService {
   /**
    * Used to dynamically look up component implementations based on a given hint.
    */
-  @Inject
+  @Requirement
   private ComponentManager componentManager;
 
   /**

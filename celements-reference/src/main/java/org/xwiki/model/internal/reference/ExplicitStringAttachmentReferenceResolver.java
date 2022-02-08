@@ -19,11 +19,10 @@
  */
 package org.xwiki.model.internal.reference;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.AttachmentReferenceResolver;
@@ -40,8 +39,7 @@ import org.xwiki.model.reference.EntityReferenceResolver;
  * @version $Id: 5259077195f3c73498a38dfc2e77bbe700413346 $
  * @since 3.0M1
  */
-@Component
-@Named("explicit")
+@Component("explicit")
 @Singleton
 public class ExplicitStringAttachmentReferenceResolver
     implements AttachmentReferenceResolver<String> {
@@ -49,8 +47,7 @@ public class ExplicitStringAttachmentReferenceResolver
   /**
    * Default entity reference resolver used for resolution.
    */
-  @Inject
-  @Named("explicit")
+  @Requirement("explicit")
   private EntityReferenceResolver<String> entityReferenceResolver;
 
   @Override

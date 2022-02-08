@@ -21,11 +21,12 @@ package org.xwiki.model.internal;
 
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.configuration.ConfigurationSource;
@@ -75,14 +76,13 @@ public class DefaultModelConfiguration implements ModelConfiguration {
    * ConfigurationSource available
    * in the system. This is why we lazy load the ConfigurationSource component.
    */
-  @Inject
+  @Requirement
   private ComponentManager componentManager;
 
   /**
    * The logger to log.
    */
-  @Inject
-  private Logger logger;
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Override
   public String getDefaultReferenceValue(EntityType type) {

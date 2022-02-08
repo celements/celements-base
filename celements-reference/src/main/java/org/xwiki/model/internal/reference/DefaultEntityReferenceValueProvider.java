@@ -19,10 +19,10 @@
  */
 package org.xwiki.model.internal.reference;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
+import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.ModelConfiguration;
 import org.xwiki.model.reference.EntityReferenceValueProvider;
@@ -41,7 +41,7 @@ public class DefaultEntityReferenceValueProvider implements EntityReferenceValue
   /**
    * Configuration option of the model.
    */
-  @Inject
+  @Requirement
   private ModelConfiguration configuration;
 
   @Override
