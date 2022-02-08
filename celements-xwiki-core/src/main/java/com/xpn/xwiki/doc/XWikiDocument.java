@@ -83,7 +83,6 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
-import org.xwiki.model.reference.WikiReference;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.HeaderBlock;
 import org.xwiki.rendering.block.LinkBlock;
@@ -108,6 +107,7 @@ import org.xwiki.rendering.util.ParserUtils;
 import org.xwiki.velocity.VelocityManager;
 import org.xwiki.velocity.XWikiVelocityException;
 
+import com.celements.model.reference.RefBuilder;
 import com.celements.store.id.DocumentIdComputer;
 import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.CoreConfiguration;
@@ -489,34 +489,21 @@ public class XWikiDocument implements DocumentModelBridge {
   @Deprecated
   public XWikiDocument(String wiki, String space, String name) {
     // We allow to specify the space in the name (eg name = "space.page"). In this case the passed
-    // space is
-    // ignored.
-
+    // space is ignored.
     // Build an entity reference that will serve as a current context reference against which to
-    // resolve if the
-    // passed name doesn't contain a space.
-    EntityReference contextReference = null;
-    if (!StringUtils.isEmpty(space)) {
-      contextReference = new EntityReference(space, EntityType.SPACE);
-      if (!StringUtils.isEmpty(wiki)) {
-        contextReference.setParent(new WikiReference(wiki));
-      }
-    } else if (!StringUtils.isEmpty(wiki)) {
-      contextReference = new WikiReference(wiki);
-    }
-
+    // resolve if the passed name doesn't contain a space.
+    EntityReference contextReference = RefBuilder.create().space(space).wiki(wiki).buildRelative();
     DocumentReference reference;
     if (contextReference != null) {
       reference = this.currentDocumentReferenceResolver.resolve(name, contextReference);
       // Replace the resolved wiki by the passed wiki if not empty/null
       if (!StringUtils.isEmpty(wiki)) {
-        reference.setWikiReference(new WikiReference(wiki));
+        reference = RefBuilder.from(reference).wiki(wiki).build(DocumentReference.class);
       }
     } else {
       // Both the wiki and space params are empty/null, thus don't use a context reference.
       reference = this.currentDocumentReferenceResolver.resolve(name);
     }
-
     init(reference);
   }
 
@@ -1077,10 +1064,7 @@ public class XWikiDocument implements DocumentModelBridge {
    */
   @Override
   public DocumentReference getDocumentReference() {
-    if (documentReference != null) {
-      return (DocumentReference) documentReference.clone();
-    }
-    return null;
+    return documentReference;
   }
 
   /**
@@ -1111,7 +1095,7 @@ public class XWikiDocument implements DocumentModelBridge {
   public void setDocumentReference(DocumentReference reference) {
     if (reference != null) {
       boolean changed = !reference.equals(documentReference);
-      documentReference = (DocumentReference) reference.clone();
+      documentReference = reference;
       if (changed) {
         setMetaDataDirty(true);
         this.parentReferenceCache = null;

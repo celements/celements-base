@@ -120,6 +120,7 @@ import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
+import com.celements.model.reference.RefBuilder;
 import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.api.User;
@@ -4504,18 +4505,18 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public boolean copyDocument(String docname, String targetdocname, String sourceWiki,
       String targetWiki, String wikilanguage, boolean reset, boolean force,
       boolean resetCreationData, XWikiContext context) throws XWikiException {
-    DocumentReference sourceDocumentReference = this.currentMixedDocumentReferenceResolver.resolve(
-        docname);
+    DocumentReference sourceDocumentReference = this.currentMixedDocumentReferenceResolver
+        .resolve(docname);
     if (!StringUtils.isEmpty(sourceWiki)) {
-      sourceDocumentReference.setWikiReference(new WikiReference(sourceWiki));
+      sourceDocumentReference = RefBuilder.from(sourceDocumentReference).wiki(sourceWiki)
+          .build(DocumentReference.class);
     }
-
-    DocumentReference targetDocumentReference = this.currentMixedDocumentReferenceResolver.resolve(
-        targetdocname);
+    DocumentReference targetDocumentReference = this.currentMixedDocumentReferenceResolver
+        .resolve(targetdocname);
     if (!StringUtils.isEmpty(targetWiki)) {
-      targetDocumentReference.setWikiReference(new WikiReference(targetWiki));
+      targetDocumentReference = RefBuilder.from(targetDocumentReference).wiki(targetWiki)
+          .build(DocumentReference.class);
     }
-
     return copyDocument(sourceDocumentReference, targetDocumentReference, wikilanguage, reset,
         force, resetCreationData, context);
   }

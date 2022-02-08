@@ -158,7 +158,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
       this.xClassDocRefCache = this.currentReferenceDocumentReferenceResolver
           .resolve(getRelativeXClassReference(), getDocumentReference());
     }
-    return cloneDocRef(xClassDocRefCache);
+    return xClassDocRefCache;
   }
 
   /**
