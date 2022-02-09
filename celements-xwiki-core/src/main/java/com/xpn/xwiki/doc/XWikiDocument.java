@@ -6737,16 +6737,11 @@ public class XWikiDocument implements DocumentModelBridge {
    * @return the XWiki context for the current thread
    */
   private XWikiContext getXWikiContext() {
-    Execution execution = Utils.getComponent(Execution.class);
-
-    ExecutionContext ec = execution.getContext();
-
-    XWikiContext context = null;
-    if (ec != null) {
-      context = (XWikiContext) ec.getProperty("xwikicontext");
+    if (execution.getContext() != null) {
+      return (XWikiContext) this.execution.getContext()
+          .getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
     }
-
-    return context;
+    return null;
   }
 
   /**

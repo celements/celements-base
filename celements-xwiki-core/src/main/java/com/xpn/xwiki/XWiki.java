@@ -101,7 +101,6 @@ import org.xwiki.cache.eviction.EntryEvictionConfiguration;
 import org.xwiki.cache.eviction.LRUEvictionConfiguration;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -2794,10 +2793,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   private XWikiContext getXWikiContext() {
     Execution execution = Utils.getComponent(Execution.class);
-
-    ExecutionContext ec = execution.getContext();
-
-    return ec != null ? (XWikiContext) ec.getProperty("xwikicontext") : null;
+    if (execution.getContext() != null) {
+      return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    }
+    return null;
   }
 
   /**

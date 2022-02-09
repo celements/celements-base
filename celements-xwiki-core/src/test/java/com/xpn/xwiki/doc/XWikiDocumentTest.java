@@ -37,6 +37,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.rendering.syntax.Syntax;
 
+import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiConstant;
@@ -96,6 +97,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     super.setUp();
 
     this.document = new XWikiDocument(new DocumentReference(DOCWIKI, DOCSPACE, DOCNAME));
+    this.document.setId(1, IdVersion.CELEMENTS_3);
     this.document.setSyntax(Syntax.XWIKI_1_0);
     this.document.setLanguage("en");
     this.document.setDefaultLanguage("en");

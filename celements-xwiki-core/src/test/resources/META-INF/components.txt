@@ -1,2 +1,0 @@
-com.xpn.xwiki.ServerUrlUtils
-com.celements.store.id.DefaultTestDocumentIdComputer
