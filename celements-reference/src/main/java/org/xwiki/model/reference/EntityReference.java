@@ -39,16 +39,12 @@ import com.google.common.base.Strings;
 /**
  * Represents a reference to an Entity (Document, Attachment, Space, Wiki, etc).
  *
- * @version $Id: 99154da56f4e4a9a6961b12c978de7aa8071f650 $
- * @since 2.2M1
+ * All setters must only be called from the constructor to guarantee effective immutability.
+ *
+ * @since XWiki 2.2M1
  */
-public class EntityReference implements Serializable, Cloneable, Comparable<EntityReference> {
+public class EntityReference implements Serializable, Comparable<EntityReference> {
 
-  /**
-   * The version identifier for this Serializable class. Increment only if the <i>serialized</i>
-   * form of the class
-   * changes.
-   */
   private static final long serialVersionUID = 2L;
 
   /**
@@ -183,6 +179,8 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
   /**
    * Entity reference are immutable since 3.3M2, so this method is now protected.
    *
+   * Must only be called from the constructor to guarantee effective immutability.
+   *
    * @param name
    *          the name for this entity
    * @exception IllegalArgumentException
@@ -196,10 +194,8 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
   }
 
   /**
-   * Returns the name of this entity.
-   * This method is final to ensure that name is never null and we use the private field in all
-   * other methods of
-   * this implementation (faster).
+   * Returns the name of this entity. This method is final to ensure that name is never null and we
+   * use the private field in all other methods of this implementation (faster).
    *
    * @return the name of this entity.
    */
@@ -209,6 +205,8 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
 
   /**
    * Entity reference are immutable since 3.3M2, so this method is now protected.
+   *
+   * Must only be called from the constructor to guarantee effective immutability.
    *
    * @param parent
    *          the parent for this entity, may be null for a root entity.
@@ -227,6 +225,8 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
   /**
    * Entity reference are immutable since 3.3M2, so this method is now protected.
    *
+   * Must only be called from the constructor to guarantee effective immutability.
+   *
    * @param type
    *          the type for this entity
    * @exception IllegalArgumentException
@@ -240,10 +240,8 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
   }
 
   /**
-   * Returns the type of this entity.
-   * This method is final to ensure that type is never null and we use the private field in all
-   * other methods of
-   * this implementation (faster).
+   * Returns the type of this entity. This method is final to ensure that type is never null and we
+   * use the private field in all other methods of this implementation (faster).
    *
    * @return the type of this entity
    */
@@ -253,6 +251,8 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
 
   /**
    * Set multiple parameters at once.
+   *
+   * Must only be called from the constructor to guarantee effective immutability.
    *
    * @param parameters
    *          the map of parameter to set
@@ -269,6 +269,8 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
   /**
    * Add or set a parameter value. Parameters should be immutable objects to prevent any weird
    * behavior.
+   *
+   * Must only be called from the constructor to guarantee effective immutability.
    *
    * @param name
    *          the name of the parameter
@@ -376,7 +378,7 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
     return Optional.ofNullable(token)
         .flatMap(t -> getEntityTypeForClass(t).toJavaUtil())
         .flatMap(this::extractRef)
-        .map(ref -> token.cast(ref));
+        .map(token::cast);
   }
 
   /**
@@ -497,7 +499,7 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
    *          the other reference to be compare with
    * @return 0 if parameters are equals, -1 if this reference has lower parameters, +1 otherwise
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   private int compareParameters(EntityReference reference) {
     if ((parameters != null) && (reference.parameters == null)) {
       return 1;
@@ -506,7 +508,7 @@ public class EntityReference implements Serializable, Cloneable, Comparable<Enti
       for (Map.Entry<String, Serializable> entry : parameters.entrySet()) {
         Object obj = reference.parameters.get(entry.getKey());
         Object myobj = entry.getValue();
-        if ((myobj != null) && (myobj instanceof Comparable)) {
+        if (myobj instanceof Comparable) {
           if (obj == null) {
             return 1;
           }
