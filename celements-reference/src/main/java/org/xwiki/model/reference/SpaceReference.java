@@ -24,10 +24,11 @@ import org.xwiki.model.EntityType;
 /**
  * Represents a reference to a space (space name). Note that nested spaces are supported.
  *
- * @version $Id: 6a20f019c16fa2788a38376ef676774fa496ab93 $
- * @since 2.2M1
+ * @since XWiki 2.2M1
  */
 public class SpaceReference extends EntityReference {
+
+  private static final long serialVersionUID = 2L;
 
   /**
    * Special constructor that transforms a generic entity reference into a {@link SpaceReference}.

@@ -29,10 +29,11 @@ import org.xwiki.model.EntityType;
 /**
  * Represents a reference to a document (wiki, space and page names).
  *
- * @version $Id: d8ee9872095473617b4010f33b95ccc40da79b35 $
- * @since 2.2M1
+ * @since XWiki 2.2M1
  */
 public class DocumentReference extends EntityReference {
+
+  private static final long serialVersionUID = 2L;
 
   /**
    * Parameter key for the locale.

@@ -24,10 +24,11 @@ import org.xwiki.model.EntityType;
 /**
  * Reference to an object in a document (by classname and index, document, space, wiki).
  *
- * @since 2.3M1
- * @version $Id: c6959590312605611472f37bd9ccabcac93ab72e $
+ * @since XWiki 2.3M1
  */
 public class ObjectReference extends EntityReference {
+
+  private static final long serialVersionUID = 2L;
 
   /**
    * Constructor which would raise exceptions if the source entity reference does not have the

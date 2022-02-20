@@ -24,10 +24,11 @@ import org.xwiki.model.EntityType;
 /**
  * References a property in a class in a document (the description of the property).
  *
- * @version $Id: fb52b3c4b66e3367beefb2b980e6d1232f6ad6c3 $
- * @since 3.2M1
+ * @since XWiki 3.2M1
  */
 public class ClassPropertyReference extends EntityReference {
+
+  private static final long serialVersionUID = 2L;
 
   /**
    * Constructor which would raise exceptions if the source entity reference does not have the

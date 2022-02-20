@@ -20,7 +20,7 @@ import com.xpn.xwiki.web.Utils;
 @Immutable
 public class ClassReference extends EntityReference implements ImmutableReference, ClassIdentity {
 
-  private static final long serialVersionUID = -8664491352611685779L;
+  private static final long serialVersionUID = 2L;
 
   public ClassReference(EntityReference reference) {
     super(reference.getName(), reference.getType(), reference.getParent());
@@ -84,7 +84,7 @@ public class ClassReference extends EntityReference implements ImmutableReferenc
 
   @Override
   public DocumentReference getDocRef(WikiReference wikiRef) {
-    return new ImmutableDocumentReference(getName(), new SpaceReference(getParentName(), wikiRef));
+    return new DocumentReference(getName(), new SpaceReference(getParentName(), wikiRef));
   }
 
   @Override

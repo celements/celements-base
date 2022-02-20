@@ -40,10 +40,11 @@ import org.xwiki.model.EntityType;
  * {@link #equals(Object)} method behave as usual and then call following member
  * {@link #equals(Object)} etc.
  *
- * @version $Id: 3a0302dc115cf5daf864cbee78cb9ee562ea85b1 $
- * @since 3.2M1
+ * @since XWiki 3.2M1
  */
 public class RegexEntityReference extends EntityReference {
+
+  private static final long serialVersionUID = 2L;
 
   /**
    *

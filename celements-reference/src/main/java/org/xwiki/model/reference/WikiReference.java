@@ -25,10 +25,11 @@ import org.xwiki.model.EntityType;
  * Represents a reference to a wiki (wiki name). This is the topmost reference and it doesn't have a
  * parent reference.
  *
- * @version $Id: c7c466f1320c8693ea9e47c8b7172a430c1c97f1 $
- * @since 2.2M1
+ * @since XWiki 2.2M1
  */
 public class WikiReference extends EntityReference {
+
+  private static final long serialVersionUID = 2L;
 
   /**
    * Special constructor that transforms a generic entity reference into a {@link WikiReference}. It

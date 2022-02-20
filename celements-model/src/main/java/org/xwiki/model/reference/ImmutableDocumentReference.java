@@ -13,7 +13,7 @@ import com.xpn.xwiki.web.Utils;
 @Immutable
 public class ImmutableDocumentReference extends DocumentReference implements ImmutableReference {
 
-  private static final long serialVersionUID = 4196990820112451663L;
+  private static final long serialVersionUID = 2L;
 
   public ImmutableDocumentReference(EntityReference reference) {
     super(reference);

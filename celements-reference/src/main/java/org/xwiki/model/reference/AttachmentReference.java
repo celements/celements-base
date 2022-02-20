@@ -26,10 +26,11 @@ import org.xwiki.model.EntityType;
  * attachment is always
  * attached to a document.
  *
- * @version $Id: d8298282f856ba0789ab6b444b829520d9bcc971 $
- * @since 2.2M1
+ * @since XWiki 2.2M1
  */
 public class AttachmentReference extends EntityReference {
+
+  private static final long serialVersionUID = 2L;
 
   /**
    * Special constructor that transforms a generic entity reference into an
@@ -117,7 +118,7 @@ public class AttachmentReference extends EntityReference {
    * @return the document reference contained in this attachment reference
    */
   public DocumentReference getDocumentReference() {
-    return (DocumentReference) extractReference(EntityType.DOCUMENT);
+    return extractRef(DocumentReference.class).orElseThrow(IllegalStateException::new);
   }
 
   @Override
