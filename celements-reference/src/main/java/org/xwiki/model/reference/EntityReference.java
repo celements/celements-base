@@ -20,14 +20,15 @@
 package org.xwiki.model.reference;
 
 import static com.celements.model.util.EntityTypeUtil.*;
+import static com.google.common.collect.ImmutableMap.*;
 
 import java.io.Serializable;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.TreeMap;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -35,6 +36,12 @@ import javax.validation.constraints.NotNull;
 import org.xwiki.model.EntityType;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.MapDifference.ValueDifference;
+import com.google.common.collect.Maps;
+
+import one.util.streamex.EntryStream;
 
 /**
  * Represents a reference to an Entity (Document, Attachment, Space, Wiki, etc).
@@ -65,7 +72,7 @@ public class EntityReference implements Serializable, Comparable<EntityReference
   /**
    * Parameters of this entity.
    */
-  private Map<String, Serializable> parameters;
+  private final ImmutableMap<String, Serializable> parameters;
 
   /**
    * Clone an EntityReference.
@@ -92,6 +99,20 @@ public class EntityReference implements Serializable, Comparable<EntityReference
   }
 
   /**
+   * Clone an EntityReference, but add the specified parameters.
+   *
+   * @param reference
+   *          the reference to clone
+   * @param parameters
+   *          additional parameters
+   * @since 3.3M2
+   */
+  protected EntityReference(EntityReference reference, Map<String, Serializable> parameters) {
+    this(reference.name, reference.type, reference.parent,
+        concatMaps(parameters, reference.parameters));
+  }
+
+  /**
    * Clone an EntityReference, but replace one of the parent in the chain by an other one.
    *
    * @param reference
@@ -109,7 +130,7 @@ public class EntityReference implements Serializable, Comparable<EntityReference
     }
     setName(reference.name);
     setType(reference.type);
-    setParameters(reference.parameters);
+    this.parameters = reference.parameters;
     if (reference.parent == null) {
       if (oldReference == null) {
         setParent(newReference);
@@ -152,6 +173,7 @@ public class EntityReference implements Serializable, Comparable<EntityReference
     setName(name);
     setType(type);
     setParent(parent);
+    this.parameters = ImmutableMap.of();
   }
 
   /**
@@ -173,7 +195,9 @@ public class EntityReference implements Serializable, Comparable<EntityReference
     setName(name);
     setType(type);
     setParent(parent);
-    setParameters(parameters);
+    this.parameters = (parameters != null)
+        ? ImmutableMap.copyOf(parameters)
+        : ImmutableMap.of();
   }
 
   /**
@@ -250,53 +274,9 @@ public class EntityReference implements Serializable, Comparable<EntityReference
   }
 
   /**
-   * Set multiple parameters at once.
-   *
-   * Must only be called from the constructor to guarantee effective immutability.
-   *
-   * @param parameters
-   *          the map of parameter to set
-   * @since 3.3M2
-   */
-  protected void setParameters(Map<String, Serializable> parameters) {
-    if (parameters != null) {
-      for (Map.Entry<String, Serializable> entry : parameters.entrySet()) {
-        setParameter(entry.getKey(), entry.getValue());
-      }
-    }
-  }
-
-  /**
-   * Add or set a parameter value. Parameters should be immutable objects to prevent any weird
-   * behavior.
-   *
-   * Must only be called from the constructor to guarantee effective immutability.
-   *
-   * @param name
-   *          the name of the parameter
-   * @param value
-   *          the value of the parameter
-   * @since 3.3M2
-   */
-  protected void setParameter(String name, Serializable value) {
-    if (value != null) {
-      if (parameters == null) {
-        parameters = new TreeMap<>();
-      }
-      parameters.put(name, value);
-    } else if (parameters != null) {
-      parameters.remove(name);
-      if (parameters.size() == 0) {
-        parameters = null;
-      }
-    }
-  }
-
-  /**
    * Get the value of a parameter. Return null if the parameter is not set.
    * This method is final so there is no way to override the map, and the private field in all other
-   * methods of
-   * this implementation (faster).
+   * methods of this implementation (faster).
    *
    * @param <T>
    *          the type of the value of the requested parameter
@@ -305,9 +285,8 @@ public class EntityReference implements Serializable, Comparable<EntityReference
    * @return the value of the parameter
    * @since 3.3M2
    */
-  @SuppressWarnings("unchecked")
-  protected final <T> T getParameter(String name) {
-    return (parameters == null) ? null : (T) parameters.get(name);
+  protected final <T> Optional<T> getParameter(Class<T> type, String name) {
+    return Optional.ofNullable(parameters.get(name)).map(type::cast);
   }
 
   /**
@@ -416,7 +395,7 @@ public class EntityReference implements Serializable, Comparable<EntityReference
         .append("], parent = [")
         .append(getParent())
         .append(']');
-    if (parameters != null) {
+    if (parameters.size() > 0) {
       sb.append(" parameters = {");
       boolean first = true;
       for (Map.Entry<String, Serializable> entry : parameters.entrySet()) {
@@ -437,21 +416,19 @@ public class EntityReference implements Serializable, Comparable<EntityReference
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == this) {
-      return true;
+    if (obj instanceof EntityReference) {
+      EntityReference other = (EntityReference) obj;
+      return Objects.equals(this.name, other.name)
+          && Objects.equals(this.type, other.type)
+          && Objects.equals(this.parent, other.parent)
+          && Objects.equals(this.parameters, other.parameters);
     }
-    if (!(obj instanceof EntityReference)) {
-      return false;
-    }
-    EntityReference ref = (EntityReference) obj;
-    return name.equals(ref.name) && type.equals(ref.type)
-        && (parent == null ? ref.parent == null : parent.equals(ref.parent))
-        && (parameters == null ? ref.parameters == null : parameters.equals(ref.parameters));
+    return false;
   }
 
   @Override
   public int hashCode() {
-    return toString().hashCode();
+    return Objects.hash(name, type, parent, parameters);
   }
 
   @Override
@@ -499,23 +476,40 @@ public class EntityReference implements Serializable, Comparable<EntityReference
    *          the other reference to be compare with
    * @return 0 if parameters are equals, -1 if this reference has lower parameters, +1 otherwise
    */
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings("unchecked")
   private int compareParameters(EntityReference reference) {
-    if ((parameters != null) && (reference.parameters == null)) {
-      return 1;
-    }
-    if (parameters != null) {
-      for (Map.Entry<String, Serializable> entry : parameters.entrySet()) {
-        Object obj = reference.parameters.get(entry.getKey());
-        Object myobj = entry.getValue();
-        if (myobj instanceof Comparable) {
-          if (obj == null) {
-            return 1;
-          }
-          return ((Comparable) myobj).compareTo(obj);
+    MapDifference<String, Serializable> mapDiff = Maps.difference(parameters, reference.parameters);
+    if (mapDiff.areEqual()) {
+      return 0;
+    } else if (mapDiff.entriesOnlyOnRight().size() == mapDiff.entriesOnlyOnLeft().size()) {
+      for (ValueDifference<Serializable> valDiff : mapDiff.entriesDiffering().values()) {
+        Serializable obj = valDiff.leftValue();
+        if (obj instanceof Comparable) {
+          return ((Comparable<Serializable>) obj).compareTo(valDiff.rightValue());
         }
       }
     }
-    return (reference.parameters == null) ? 0 : -1;
+    return mapDiff.entriesOnlyOnRight().size() > mapDiff.entriesOnlyOnLeft().size() ? -1 : 1;
+  }
+
+  private static Map<String, Serializable> concatMaps(
+      Map<String, Serializable> map1, Map<String, Serializable> map2) {
+    if ((map1 == null) || (map1.size() == 0)) {
+      return map2;
+    } else if ((map2 == null) || (map2.size() == 0)) {
+      return map1;
+    } else {
+      return asMap(EntryStream.of(map1).append(EntryStream.of(map2)));
+    }
+  }
+
+  protected static final Map<String, Serializable> asMap(EntryStream<String, Serializable> stream) {
+    return stream
+        .filterKeys(Objects::nonNull)
+        .filterValues(Objects::nonNull)
+        .distinctKeys()
+        .sortedBy(Map.Entry::getKey)
+        // immutable map retains insertion order
+        .collect(toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

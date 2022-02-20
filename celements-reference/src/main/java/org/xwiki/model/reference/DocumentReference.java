@@ -23,8 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.xwiki.model.EntityType;
+
+import one.util.streamex.EntryStream;
 
 /**
  * Represents a reference to a document (wiki, space and page names).
@@ -81,8 +84,7 @@ public class DocumentReference extends EntityReference {
    *              if the passed reference is not a valid document reference
    */
   public DocumentReference(EntityReference reference, Locale locale) {
-    super(reference);
-    setLocale(locale);
+    super(reference, asMap(EntryStream.of(LOCALE, locale)));
   }
 
   /**
@@ -166,8 +168,8 @@ public class DocumentReference extends EntityReference {
    */
   public DocumentReference(String wikiName, List<String> spaceNames, String pageName,
       Locale locale) {
-    super(pageName, EntityType.DOCUMENT, constructSpaceReference(wikiName, spaceNames));
-    setLocale(locale);
+    super(pageName, EntityType.DOCUMENT, constructSpaceReference(wikiName, spaceNames),
+        asMap(EntryStream.of(LOCALE, locale)));
   }
 
   /**
@@ -193,8 +195,7 @@ public class DocumentReference extends EntityReference {
    *          the locale of the document reference, may be null
    */
   public DocumentReference(String pageName, SpaceReference parent, Locale locale) {
-    super(pageName, EntityType.DOCUMENT, parent);
-    setLocale(locale);
+    super(pageName, EntityType.DOCUMENT, parent, asMap(EntryStream.of(LOCALE, locale)));
   }
 
   /**
@@ -238,20 +239,10 @@ public class DocumentReference extends EntityReference {
   }
 
   /**
-   * Set the locale of this document reference.
-   *
-   * @param locale
-   *          the locale of this document reference
-   */
-  protected void setLocale(Locale locale) {
-    setParameter(LOCALE, locale);
-  }
-
-  /**
    * @return the locale of this document reference
    */
-  public Locale getLocale() {
-    return (Locale) getParameter(LOCALE);
+  public Optional<Locale> getLocale() {
+    return getParameter(Locale.class, LOCALE);
   }
 
   @Override

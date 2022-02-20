@@ -36,6 +36,8 @@ import java.util.UUID;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
 
+import com.google.common.collect.ImmutableMap;
+
 /**
  * Unit tests for {@link EntityReference}.
  *
@@ -54,7 +56,7 @@ public class EntityReferenceTest {
 
   private boolean checkParamMap(EntityReference ref, Map<String, Serializable> map) {
     for (Map.Entry<String, Serializable> entry : map.entrySet()) {
-      if (entry.getValue() != ref.getParameter(entry.getKey())) {
+      if (entry.getValue() != ref.getParameter(Serializable.class, entry.getKey()).orElse(null)) {
         return false;
       }
     }
@@ -67,10 +69,10 @@ public class EntityReferenceTest {
     EntityReference space = new EntityReference("space", EntityType.SPACE, wiki);
     EntityReference reference = new EntityReference("page", EntityType.DOCUMENT, space);
 
-    assertSame(wiki, reference.extractReference(EntityType.WIKI));
-    assertSame(space, reference.extractReference(EntityType.SPACE));
-    assertSame(reference, reference.extractReference(EntityType.DOCUMENT));
-    assertNull(reference.extractReference(EntityType.ATTACHMENT));
+    assertSame(wiki, reference.extractRef(EntityType.WIKI).orElse(null));
+    assertSame(space, reference.extractRef(EntityType.SPACE).orElse(null));
+    assertSame(reference, reference.extractRef(EntityType.DOCUMENT).orElse(null));
+    assertNull(reference.extractRef(EntityType.ATTACHMENT).orElse(null));
   }
 
   @Test
@@ -232,43 +234,21 @@ public class EntityReferenceTest {
   @Test
   public void testCompareTo() {
     EntityReference reference = new EntityReference("f", EntityType.DOCUMENT,
-        new EntityReference("e", EntityType.SPACE,
-            new EntityReference("d", EntityType.WIKI)));
-
+        new EntityReference("e", EntityType.SPACE, new EntityReference("d", EntityType.WIKI)));
     EntityReference reference2 = new EntityReference("c", EntityType.DOCUMENT,
-        new EntityReference("b", EntityType.SPACE,
-            new EntityReference("a", EntityType.WIKI)));
-
+        new EntityReference("b", EntityType.SPACE, new EntityReference("a", EntityType.WIKI)));
     EntityReference reference3 = new EntityReference("c", EntityType.DOCUMENT,
-        new EntityReference("a", EntityType.SPACE,
-            new EntityReference("a", EntityType.WIKI)));
-
-    Map map1 = new HashMap(3);
-    map1.put("param1", "a");
-    map1.put("param2", "b");
-    map1.put("param3", "c");
-    Map map2 = new HashMap(2);
-    map2.put("param1", "a");
-    map2.put("param3", "c");
-    Map map3 = new HashMap(2);
-    map3.put("param1", "b");
-    map3.put("param3", "c");
-
-    EntityReference reference4 = new EntityReference("c", EntityType.DOCUMENT,
-        new EntityReference("a", EntityType.SPACE,
-            new EntityReference("a", EntityType.WIKI)),
-        map1);
-
-    EntityReference reference5 = new EntityReference("c", EntityType.DOCUMENT,
-        new EntityReference("a", EntityType.SPACE,
-            new EntityReference("a", EntityType.WIKI)),
-        map2);
-
-    EntityReference reference6 = new EntityReference("c", EntityType.DOCUMENT,
-        new EntityReference("a", EntityType.SPACE,
-            new EntityReference("a", EntityType.WIKI)),
-        map3);
-
+        new EntityReference("a", EntityType.SPACE, new EntityReference("a", EntityType.WIKI)));
+    EntityReference reference4 = new EntityReference(reference3, ImmutableMap.of(
+        "param1", "a",
+        "param2", "b",
+        "param3", "c"));
+    EntityReference reference5 = new EntityReference(reference3, ImmutableMap.of(
+        "param1", "a",
+        "param3", "c"));
+    EntityReference reference6 = new EntityReference(reference3, ImmutableMap.of(
+        "param1", "b",
+        "param3", "c"));
     assertEquals(0, reference.compareTo(reference));
 
     List<EntityReference> list = new ArrayList<>();
@@ -284,9 +264,9 @@ public class EntityReferenceTest {
     assertSame(reference, list.get(5));
     assertSame(reference2, list.get(4));
     assertSame(reference3, list.get(0));
-    assertSame(reference4, list.get(1));
-    assertSame(reference5, list.get(2));
-    assertSame(reference6, list.get(3));
+    assertSame(reference4, list.get(3));
+    assertSame(reference5, list.get(1));
+    assertSame(reference6, list.get(2));
   }
 
   @Test
