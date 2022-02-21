@@ -30,7 +30,8 @@ import org.xwiki.model.EntityType;
 import one.util.streamex.EntryStream;
 
 /**
- * Represents a reference to a document (wiki, space and page names).
+ * Represents a reference to a document. Consists of a wiki, space and page name and optionally
+ * a locale (for translations).
  *
  * @since XWiki 2.2M1
  */
