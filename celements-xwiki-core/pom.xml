@@ -359,21 +359,6 @@
       <classifier>jdk15</classifier>
     </dependency>
 
-    <!-- PDF export, image processing -->
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>fop</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>batik</groupId>
-      <artifactId>batik-rasterizer</artifactId>
-    </dependency>
-    <!-- fop gets us batik but not batik-codec and we need this one for SVGPlugin -->
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>batik-codec</artifactId>
-    </dependency>
-
     <!-- Misc -->
     <!-- CSS and JS compression tool, used in SkinExtensions -->
     <dependency>
