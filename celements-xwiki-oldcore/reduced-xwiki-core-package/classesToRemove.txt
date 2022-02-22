@@ -1,0 +1,11 @@
+com/xpn/xwiki/doc/XWikiDocument.class
+com/xpn/xwiki/stats/impl/XWikiStats.class
+com/xpn/xwiki/objects/classes/PropertyClass.class
+com/xpn/xwiki/objects/BaseElement.class
+com/xpn/xwiki/objects/BaseProperty.class
+com/xpn/xwiki/objects/BaseObject.class
+com/xpn/xwiki/objects/PropertyInterface.class
+com/xpn/xwiki/objects/BaseCollection.class
+com/xpn/xwiki/XWiki.class
+com/xpn/xwiki/objects/StringListProperty.class
+com/xpn/xwiki/objects/classes/BaseClass.class
