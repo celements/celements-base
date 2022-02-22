@@ -24,12 +24,11 @@ import org.xwiki.model.EntityType;
 /**
  * Reference to an object in a document (by classname and index, document, space, wiki).
  *
- * @since 2.3M1
- * @version $Id$
+ * @since XWiki 2.3M1
  */
 public class ObjectReference extends EntityReference {
 
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 2L;
 
   /**
    * Constructor which would raise exceptions if the source entity reference does not have the
@@ -40,21 +39,23 @@ public class ObjectReference extends EntityReference {
    *          the raw reference to build this object reference from
    */
   public ObjectReference(EntityReference reference) {
-    super(reference.getName(), reference.getType(), reference.getParent());
+    super(reference);
   }
 
   /**
-   * @param wiki
-   *          wiki where the parent document of the object is
-   * @param space
-   *          space where the parent document of the object is
-   * @param document
-   *          parent document of the object
-   * @param objectName
-   *          the name of the object
+   * Clone an ObjectReference, but replace one of the parent in the chain by a new one.
+   *
+   * @param reference
+   *          the reference that is cloned
+   * @param oldReference
+   *          the old parent that will be replaced
+   * @param newReference
+   *          the new parent that will replace oldReference in the chain
+   * @since 3.3M2
    */
-  public ObjectReference(String wiki, String space, String document, String objectName) {
-    this(objectName, new DocumentReference(wiki, space, document));
+  protected ObjectReference(EntityReference reference, EntityReference oldReference,
+      EntityReference newReference) {
+    super(reference, oldReference, newReference);
   }
 
   /**
@@ -68,13 +69,30 @@ public class ObjectReference extends EntityReference {
   }
 
   /**
+   * Deprecated constructor.
+   *
+   * @param wiki
+   *          wiki where the parent document of the object is
+   * @param space
+   *          space where the parent document of the object is
+   * @param document
+   *          parent document of the object
+   * @param objectName
+   *          the name of the object
+   */
+  @Deprecated
+  public ObjectReference(String wiki, String space, String document, String objectName) {
+    this(objectName, new DocumentReference(wiki, space, document));
+  }
+
+  /**
    * {@inheritDoc} <br />
    * Overridden to check the type to be an object type.
    *
    * @see org.xwiki.model.reference.EntityReference#setType(org.xwiki.model.EntityType)
    */
   @Override
-  public void setType(EntityType type) {
+  protected void setType(EntityType type) {
     if (type != EntityType.OBJECT) {
       throw new IllegalArgumentException("Invalid type [" + type + "] for an object reference");
     }
@@ -88,11 +106,20 @@ public class ObjectReference extends EntityReference {
    * @see org.xwiki.model.reference.EntityReference#setParent(org.xwiki.model.reference.EntityReference)
    */
   @Override
-  public void setParent(EntityReference parent) {
+  protected void setParent(EntityReference parent) {
+    if (parent instanceof DocumentReference) {
+      super.setParent(parent);
+      return;
+    }
     if ((parent == null) || (parent.getType() != EntityType.DOCUMENT)) {
       throw new IllegalArgumentException(
-          "Invalid parent reference [" + parent + "] for an object reference");
+          "Invalid parent reference [" + parent + "] in an object reference");
     }
     super.setParent(new DocumentReference(parent));
+  }
+
+  @Override
+  public ObjectReference replaceParent(EntityReference oldParent, EntityReference newParent) {
+    return new ObjectReference(this, oldParent, newParent);
   }
 }

@@ -31,7 +31,7 @@ import org.xwiki.model.EntityType;
  *
  * @param <T>
  *          the object to resolve into an Entity Reference
- * @version $Id$
+ * @version $Id: 52498f2246e7504939a963a1520a1711b7ba1a49 $
  * @since 2.2M1
  */
 @ComponentRole

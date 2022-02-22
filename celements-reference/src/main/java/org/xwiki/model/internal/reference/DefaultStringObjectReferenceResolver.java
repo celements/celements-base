@@ -19,6 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -35,10 +37,11 @@ import org.xwiki.model.reference.ObjectReferenceResolver;
  * values are retrieved
  * from the {@link org.xwiki.model.ModelConfiguration} class.
  *
- * @version $Id$
+ * @version $Id: ec836349fbd6f78d5a5211c2cdc41218ea65b106 $
  * @since 2.3M1
  */
 @Component
+@Singleton
 public class DefaultStringObjectReferenceResolver implements ObjectReferenceResolver<String> {
 
   /**
@@ -47,14 +50,15 @@ public class DefaultStringObjectReferenceResolver implements ObjectReferenceReso
   @Requirement
   private EntityReferenceResolver<String> entityReferenceResolver;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObjectReferenceResolver#resolve(Object)
-   */
+  @Override
+  public ObjectReference resolve(String objectReferenceRepresentation, Object... parameters) {
+    return new ObjectReference(this.entityReferenceResolver.resolve(objectReferenceRepresentation,
+        EntityType.OBJECT, parameters));
+  }
+
   @Override
   public ObjectReference resolve(String objectReferenceRepresentation) {
-    return new ObjectReference(entityReferenceResolver.resolve(
-        objectReferenceRepresentation, EntityType.OBJECT));
+    return new ObjectReference(this.entityReferenceResolver.resolve(objectReferenceRepresentation,
+        EntityType.OBJECT));
   }
 }

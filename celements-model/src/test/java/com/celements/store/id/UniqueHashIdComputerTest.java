@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.common.test.AbstractComponentTest;
+import com.celements.model.reference.RefBuilder;
 import com.celements.store.id.CelementsIdComputer.IdComputationException;
 import com.google.common.base.VerifyException;
 import com.google.common.collect.ImmutableList;
@@ -166,10 +167,11 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
   @Test
   public void test_computeDocumentId_docRef() throws Exception {
     long exp = 0xf0da7f3f8545c000L;
+    DocumentReference docRef = this.docRef;
     assertEquals(exp, idComputer.computeDocumentId(docRef, lang));
-    docRef.getWikiReference().setName("asdf");
+    docRef = RefBuilder.from(docRef).wiki("asdf").build(DocumentReference.class);
     assertEquals(exp, idComputer.computeDocumentId(docRef, lang));
-    docRef.setName("asdf");
+    docRef = RefBuilder.from(docRef).doc("asdf").build(DocumentReference.class);
     assertNotEquals(exp, idComputer.computeDocumentId(docRef, lang));
     assertThrows(NullPointerException.class,
         () -> idComputer.computeDocumentId(null, lang));

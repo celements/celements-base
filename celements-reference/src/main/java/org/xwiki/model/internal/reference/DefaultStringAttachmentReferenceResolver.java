@@ -19,6 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -35,21 +37,20 @@ import org.xwiki.model.reference.EntityReferenceResolver;
  * Default values are
  * retrieved from the {@link org.xwiki.model.ModelConfiguration} class.
  *
- * @version $Id$
+ * @version $Id: 06707a05587ecd7f7b362e840f829718e05a4e3f $
  * @since 2.2M1
  */
 @Component
+@Singleton
 public class DefaultStringAttachmentReferenceResolver
     implements AttachmentReferenceResolver<String> {
 
+  /**
+   * Default entity reference resolver used for resolution.
+   */
   @Requirement
   private EntityReferenceResolver<String> entityReferenceResolver;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.model.reference.AttachmentReferenceResolver#resolve
-   */
   @Override
   public AttachmentReference resolve(String attachmentReferenceRepresentation,
       Object... parameters) {

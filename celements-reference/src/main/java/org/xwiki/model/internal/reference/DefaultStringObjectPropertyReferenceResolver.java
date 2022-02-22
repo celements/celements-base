@@ -19,6 +19,8 @@
  */
 package org.xwiki.model.internal.reference;
 
+import javax.inject.Singleton;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -35,10 +37,11 @@ import org.xwiki.model.reference.ObjectPropertyReferenceResolver;
  * Default values are
  * retrieved from the {@link org.xwiki.model.ModelConfiguration} class.
  *
- * @version $Id$
+ * @version $Id: 91b0f7ce958ee794394b9706f4c36d09c447e1c6 $
  * @since 2.3M1
  */
 @Component
+@Singleton
 public class DefaultStringObjectPropertyReferenceResolver
     implements ObjectPropertyReferenceResolver<String> {
 
@@ -48,14 +51,18 @@ public class DefaultStringObjectPropertyReferenceResolver
   @Requirement
   private EntityReferenceResolver<String> entityReferenceResolver;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.model.reference.ObjectPropertyReferenceResolver#resolve(java.lang.Object)
-   */
+  @Override
+  public ObjectPropertyReference resolve(String propertyReferenceRepresentation,
+      Object... parameters) {
+    return new ObjectPropertyReference(
+        this.entityReferenceResolver.resolve(propertyReferenceRepresentation,
+            EntityType.OBJECT_PROPERTY, parameters));
+  }
+
   @Override
   public ObjectPropertyReference resolve(String propertyReferenceRepresentation) {
-    return new ObjectPropertyReference(entityReferenceResolver.resolve(
-        propertyReferenceRepresentation, EntityType.OBJECT_PROPERTY));
+    return new ObjectPropertyReference(
+        this.entityReferenceResolver.resolve(propertyReferenceRepresentation,
+            EntityType.OBJECT_PROPERTY));
   }
 }

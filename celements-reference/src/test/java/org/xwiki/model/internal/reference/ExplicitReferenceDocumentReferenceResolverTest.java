@@ -32,7 +32,7 @@ import org.xwiki.model.reference.EntityReference;
  * Unit tests for
  * {@link org.xwiki.model.internal.reference.ExplicitReferenceDocumentReferenceResolver}.
  *
- * @version $Id$
+ * @version $Id: bf88a00b4f2e14e17ef391953c4045ea5e909f20 $
  * @since 2.2.3
  */
 public class ExplicitReferenceDocumentReferenceResolverTest {
@@ -41,14 +41,14 @@ public class ExplicitReferenceDocumentReferenceResolverTest {
 
   @Before
   public void setUp() throws Exception {
-    resolver = new ExplicitReferenceDocumentReferenceResolver();
-    ReflectionUtils.setFieldValue(resolver, "entityReferenceResolver",
+    this.resolver = new ExplicitReferenceDocumentReferenceResolver();
+    ReflectionUtils.setFieldValue(this.resolver, "entityReferenceResolver",
         new ExplicitStringEntityReferenceResolver());
   }
 
   @Test
   public void testResolveWithExplicitDocumentReference() {
-    DocumentReference reference = resolver.resolve(null,
+    DocumentReference reference = this.resolver.resolve(null,
         new DocumentReference("wiki", "space", "page"));
 
     assertEquals("page", reference.getName());

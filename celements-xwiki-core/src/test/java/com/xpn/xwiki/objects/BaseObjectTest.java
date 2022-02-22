@@ -24,8 +24,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.SpaceReference;
-import org.xwiki.model.reference.WikiReference;
 
 import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
@@ -142,40 +140,6 @@ public class BaseObjectTest extends AbstractBridgedComponentTestCase {
     assertNotEquals(obj.getGuid(), duplicate.getGuid());
     assertFalse(duplicate.hasValidId());
     assertEquals(0, duplicate.getId());
-  }
-
-  @Test
-  public void test_docRef_immutability() {
-    BaseObject obj = new BaseObject();
-    DocumentReference docRef = new DocumentReference("db", "space", "doc");
-    DocumentReference docRefClone = new DocumentReference("db", "space", "doc");
-    obj.setDocumentReference(docRef);
-    destroyDocRefIntegrity(docRef);
-    destroyDocRefIntegrity(obj.getDocumentReference());
-    assertEquals(docRefClone, obj.getDocumentReference());
-  }
-
-  @Test
-  public void test_classRef_immutability() {
-    BaseObject obj = new BaseObject();
-    obj.setDocumentReference(new DocumentReference("db", "space", "doc"));
-    DocumentReference classDocRef = new DocumentReference("db", "space", "class");
-    DocumentReference classDocRefClone = new DocumentReference("db", "space", "class");
-    obj.setXClassReference(classDocRef);
-    destroyDocRefIntegrity(classDocRef);
-    destroyDocRefIntegrity(obj.getXClassReference());
-    assertEquals(classDocRefClone, obj.getXClassReference());
-  }
-
-  private void destroyDocRefIntegrity(DocumentReference docRef) {
-    docRef.setName("changed");
-    docRef.getWikiReference().setName("changed");
-    docRef.getWikiReference().setChild(null);
-    docRef.getLastSpaceReference().setName("changed");
-    docRef.getLastSpaceReference().setChild(null);
-    docRef.getLastSpaceReference().setParent(new WikiReference("changed"));
-    docRef.setName("changed");
-    docRef.setParent(new SpaceReference("changed", new WikiReference("space")));
   }
 
   @Test

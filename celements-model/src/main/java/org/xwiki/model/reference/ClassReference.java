@@ -1,8 +1,6 @@
 package org.xwiki.model.reference;
 
-import static com.celements.model.util.References.*;
 import static com.google.common.base.Preconditions.*;
-import static java.text.MessageFormat.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,49 +20,26 @@ import com.xpn.xwiki.web.Utils;
 @Immutable
 public class ClassReference extends EntityReference implements ImmutableReference, ClassIdentity {
 
-  private static final long serialVersionUID = -8664491352611685779L;
-
-  private boolean initialised = false;
+  private static final long serialVersionUID = 2L;
 
   public ClassReference(EntityReference reference) {
     super(reference.getName(), reference.getType(), reference.getParent());
-    setChild(reference.getChild());
-    initialised = true;
   }
 
   public ClassReference(String spaceName, String className) {
     super(className, EntityType.DOCUMENT, new EntityReference(spaceName, EntityType.SPACE));
-    initialised = true;
+
   }
 
   public ClassReference(String fullName) {
     this(extractPart(fullName, 0), extractPart(fullName, 1));
   }
 
-  private void checkInit() {
-    if (initialised) {
-      throw new IllegalStateException(format("unable to modify already initialised {0}: {1}",
-          this.getClass().getSimpleName(), this));
-    }
-  }
-
   @Override
-  public void setName(String name) {
-    checkInit();
-    super.setName(name);
-  }
-
-  @Override
-  public void setParent(EntityReference parent) {
-    checkInit();
+  protected void setParent(EntityReference parent) {
     checkArgument((parent != null) && (parent.getType() == EntityType.SPACE),
         "Invalid parent reference [" + parent + "] for a class reference");
     super.setParent(new EntityReference(parent.getName(), EntityType.SPACE));
-  }
-
-  @Override
-  public EntityReference getParent() {
-    return super.getParent().clone();
   }
 
   private String getParentName() {
@@ -72,16 +47,7 @@ public class ClassReference extends EntityReference implements ImmutableReferenc
   }
 
   @Override
-  public void setChild(EntityReference child) {
-    checkInit();
-    if (child != null) {
-      super.setChild(cloneRef(child));
-    }
-  }
-
-  @Override
-  public void setType(EntityType type) {
-    checkInit();
+  protected void setType(EntityType type) {
     checkArgument(type == EntityType.DOCUMENT, "Invalid type [" + type + "] for a class reference");
     super.setType(EntityType.DOCUMENT);
   }
@@ -91,6 +57,7 @@ public class ClassReference extends EntityReference implements ImmutableReferenc
     return this;
   }
 
+  @Deprecated
   @Override
   public EntityReference getMutable() {
     return new EntityReference(getName(), getType(), getParent());
@@ -117,7 +84,7 @@ public class ClassReference extends EntityReference implements ImmutableReferenc
 
   @Override
   public DocumentReference getDocRef(WikiReference wikiRef) {
-    return new ImmutableDocumentReference(getName(), new SpaceReference(getParentName(), wikiRef));
+    return new DocumentReference(getName(), new SpaceReference(getParentName(), wikiRef));
   }
 
   @Override

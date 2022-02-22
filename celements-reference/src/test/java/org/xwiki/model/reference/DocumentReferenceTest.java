@@ -30,7 +30,7 @@ import org.xwiki.model.EntityType;
 /**
  * Unit tests for {@link org.xwiki.model.reference.DocumentReference}.
  *
- * @version $Id$
+ * @version $Id: 45198820c9570f5ff26bf4be23b8f91cbfe50538 $
  * @since 2.2M1
  */
 public class DocumentReferenceTest {
@@ -63,7 +63,7 @@ public class DocumentReferenceTest {
       new DocumentReference("page", null);
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid parent reference [null] for a document reference",
+      assertEquals("Invalid parent reference [null] in a document reference",
           expected.getMessage());
     }
   }
@@ -76,7 +76,7 @@ public class DocumentReferenceTest {
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] for a "
+          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] in a "
               + "document reference",
           expected.getMessage());
     }
@@ -92,23 +92,12 @@ public class DocumentReferenceTest {
     new DocumentReference(
         reference.getWikiReference().getName(), reference.getLastSpaceReference().getName(),
         reference.getName());
-
-    // Verify parent/child relationships
-    assertSame(reference, reference.getParent().getChild());
-    assertSame(spaceReference, reference.getParent().getParent().getChild());
   }
 
   @Test
   public void testGetWikiReference() {
     DocumentReference reference = new DocumentReference("wiki", "space", "page");
     assertEquals(new WikiReference("wiki"), reference.getWikiReference());
-  }
-
-  @Test
-  public void testSetWikiReference() {
-    DocumentReference reference = new DocumentReference("wiki", "space", "page");
-    reference.setWikiReference(new WikiReference("newwiki"));
-    assertEquals(new DocumentReference("newwiki", "space", "page"), reference);
   }
 
   @Test

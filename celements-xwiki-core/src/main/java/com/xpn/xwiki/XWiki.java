@@ -101,7 +101,6 @@ import org.xwiki.cache.eviction.EntryEvictionConfiguration;
 import org.xwiki.cache.eviction.LRUEvictionConfiguration;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -120,6 +119,7 @@ import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
+import com.celements.model.reference.RefBuilder;
 import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.api.User;
@@ -2793,10 +2793,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   private XWikiContext getXWikiContext() {
     Execution execution = Utils.getComponent(Execution.class);
-
-    ExecutionContext ec = execution.getContext();
-
-    return ec != null ? (XWikiContext) ec.getProperty("xwikicontext") : null;
+    if (execution.getContext() != null) {
+      return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    }
+    return null;
   }
 
   /**
@@ -4504,18 +4504,18 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public boolean copyDocument(String docname, String targetdocname, String sourceWiki,
       String targetWiki, String wikilanguage, boolean reset, boolean force,
       boolean resetCreationData, XWikiContext context) throws XWikiException {
-    DocumentReference sourceDocumentReference = this.currentMixedDocumentReferenceResolver.resolve(
-        docname);
+    DocumentReference sourceDocumentReference = this.currentMixedDocumentReferenceResolver
+        .resolve(docname);
     if (!StringUtils.isEmpty(sourceWiki)) {
-      sourceDocumentReference.setWikiReference(new WikiReference(sourceWiki));
+      sourceDocumentReference = RefBuilder.from(sourceDocumentReference).wiki(sourceWiki)
+          .build(DocumentReference.class);
     }
-
-    DocumentReference targetDocumentReference = this.currentMixedDocumentReferenceResolver.resolve(
-        targetdocname);
+    DocumentReference targetDocumentReference = this.currentMixedDocumentReferenceResolver
+        .resolve(targetdocname);
     if (!StringUtils.isEmpty(targetWiki)) {
-      targetDocumentReference.setWikiReference(new WikiReference(targetWiki));
+      targetDocumentReference = RefBuilder.from(targetDocumentReference).wiki(targetWiki)
+          .build(DocumentReference.class);
     }
-
     return copyDocument(sourceDocumentReference, targetDocumentReference, wikilanguage, reset,
         force, resetCreationData, context);
   }

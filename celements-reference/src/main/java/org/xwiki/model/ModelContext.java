@@ -27,7 +27,7 @@ import org.xwiki.model.reference.EntityReference;
  * space, etc) placed in the
  * Execution Context.
  *
- * @version $Id$
+ * @version $Id: 18e1bd51d8e736e608ff86678776e046abae492c $
  * @since 2.2M1
  */
 @ComponentRole

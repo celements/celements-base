@@ -27,7 +27,7 @@ import org.xwiki.model.EntityType;
 /**
  * Unit tests for {@link WikiReference}.
  *
- * @version $Id$
+ * @version $Id: 12683b8b27b51f7f05b2c38f2fde8dd549a0da40 $
  * @since 2.2M1
  */
 public class WikiReferenceTest {

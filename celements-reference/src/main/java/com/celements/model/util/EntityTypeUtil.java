@@ -13,7 +13,6 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.ImmutableDocumentReference;
 import org.xwiki.model.reference.ObjectPropertyReference;
 import org.xwiki.model.reference.ObjectReference;
 import org.xwiki.model.reference.SpaceReference;
@@ -33,15 +32,10 @@ public class EntityTypeUtil {
       .<Class<? extends EntityReference>, EntityType>builder()
       .put(WikiReference.class, EntityType.WIKI)
       .put(SpaceReference.class, EntityType.SPACE)
-      .put(ImmutableDocumentReference.class, EntityType.DOCUMENT)
+      .put(DocumentReference.class, EntityType.DOCUMENT)
       .put(AttachmentReference.class, EntityType.ATTACHMENT)
       .put(ObjectReference.class, EntityType.OBJECT)
       .put(ObjectPropertyReference.class, EntityType.OBJECT_PROPERTY)
-      .build();
-  private static final Map<Class<? extends EntityReference>, Class<? extends EntityReference>> OVERRIDE_MAP = ImmutableMap
-      .<Class<? extends EntityReference>, Class<? extends EntityReference>>builder()
-      .put(DocumentReference.class, ImmutableDocumentReference.class)
-      // XXX add new (immutable) sub classes here
       .build();
 
   public static final String REGEX_WORD = "[a-zA-Z0-9_-]+";
@@ -67,7 +61,7 @@ public class EntityTypeUtil {
   @NotNull
   public static Optional<EntityType> getEntityTypeForClass(
       @NotNull Class<? extends EntityReference> token) {
-    token = checkClassOverride(checkNotNull(token));
+    token = checkNotNull(token);
     return Optional.fromNullable(ENTITY_TYPE_MAP.get(token));
   }
 
@@ -107,19 +101,6 @@ public class EntityTypeUtil {
   @NotNull
   public static Class<? extends EntityReference> getRootClass() {
     return checkNotNull(ENTITY_TYPE_MAP.inverse().get(getRootEntityType()));
-  }
-
-  /**
-   * @param token
-   * @return the override class (sub class of the given one) if there is one
-   */
-  @NotNull
-  @SuppressWarnings("unchecked")
-  public static <T extends EntityReference> Class<T> checkClassOverride(Class<T> token) {
-    if (OVERRIDE_MAP.containsKey(token)) {
-      return (Class<T>) OVERRIDE_MAP.get(token);
-    }
-    return token;
   }
 
   /**

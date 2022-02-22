@@ -27,7 +27,7 @@ import org.xwiki.model.EntityType;
 /**
  * Unit test for the Property reference ({@link ObjectPropertyReference}).
  *
- * @version $Id$
+ * @version $Id: 64854d2235bb74306a23dc77efc97356c33075bd $
  * @since 2.3M1
  */
 public class ObjectPropertyReferenceTest {
@@ -43,11 +43,8 @@ public class ObjectPropertyReferenceTest {
                 new EntityReference("Page", EntityType.DOCUMENT,
                     new EntityReference("Space", EntityType.SPACE,
                         new EntityReference("wiki", EntityType.WIKI))))));
-    assertEquals(reference,
-        new ObjectPropertyReference("wiki", "Space", "Page", "Object", "property"));
-    assertEquals(reference,
-        new ObjectPropertyReference("property", new ObjectReference("wiki", "Space", "Page",
-            "Object")));
+    assertEquals(reference, new ObjectPropertyReference("property", new ObjectReference("Object",
+        new DocumentReference("wiki", "Space", "Page"))));
   }
 
   @Test
@@ -68,7 +65,7 @@ public class ObjectPropertyReferenceTest {
           new EntityReference("property", EntityType.OBJECT_PROPERTY, null));
       fail("Should have thrown exception");
     } catch (IllegalArgumentException expected) {
-      assertEquals("Invalid parent reference [null] for an object property reference",
+      assertEquals("Invalid parent reference [null] in an object property reference",
           expected.getMessage());
     }
   }
@@ -84,7 +81,7 @@ public class ObjectPropertyReferenceTest {
       fail("Should have thrown exception");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Invalid parent reference [name = [Space], type = [SPACE], parent = [null]] for an object "
+          "Invalid parent reference [name = [Space], type = [SPACE], parent = [null]] in an object "
               + "property reference",
           expected.getMessage());
     }

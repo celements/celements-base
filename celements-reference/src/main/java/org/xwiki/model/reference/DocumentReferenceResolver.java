@@ -28,7 +28,7 @@ import org.xwiki.component.annotation.ComponentRole;
  * space reference,
  * reference values must not be null, etc).
  *
- * @version $Id$
+ * @version $Id: d64ce0a082833ae50466110da4857a124dcccae3 $
  * @since 2.2M1
  * @param <T>
  *          the type of the representation (eg a String)

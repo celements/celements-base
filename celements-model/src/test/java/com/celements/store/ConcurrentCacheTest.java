@@ -424,7 +424,7 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
   }
 
   private void createBaseObjects() {
-    DocumentReference testDocRefClone = new DocumentReference(testDocRef.clone());
+    DocumentReference testDocRefClone = new DocumentReference(testDocRef);
     BaseObject bObj1 = createBaseObject(0, new DocumentReference(wikiName, "Celements2",
         "MenuName"));
     bObj1.setDocumentReference(testDocRefClone);
@@ -690,7 +690,7 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
 
   private final BaseObject createBaseObject(int num, DocumentReference classRef) {
     BaseObject bObj = new BaseObject();
-    bObj.setXClassReference(new DocumentReference(classRef.clone()));
+    bObj.setXClassReference(new DocumentReference(classRef));
     bObj.setNumber(num);
     bObj.setId(bObj.hashCode(), IdVersion.XWIKI_2);
     return bObj;

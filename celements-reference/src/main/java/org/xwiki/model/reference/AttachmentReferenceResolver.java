@@ -28,7 +28,7 @@ import org.xwiki.component.annotation.ComponentRole;
  * which is a
  * document reference, reference values must not be null, etc).
  *
- * @version $Id$
+ * @version $Id: cfaeb3fac4882193de345074d091b9e179f22c6e $
  * @since 2.2M1
  * @param <T>
  *          the type of the representation (eg a String)

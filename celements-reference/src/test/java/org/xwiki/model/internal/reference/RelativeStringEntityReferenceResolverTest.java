@@ -30,7 +30,7 @@ import org.xwiki.model.reference.EntityReferenceResolver;
 /**
  * Unit tests for {@link org.xwiki.model.internal.reference.RelativeStringEntityReferenceResolver}.
  *
- * @version $Id$
+ * @version $Id: 44909dca5401c0aeb0911c6bed5f8b9469d16ad7 $
  * @since 2.2.3
  */
 public class RelativeStringEntityReferenceResolverTest {
@@ -39,7 +39,7 @@ public class RelativeStringEntityReferenceResolverTest {
 
   @Before
   public void setUp() {
-    resolver = new RelativeStringEntityReferenceResolver();
+    this.resolver = new RelativeStringEntityReferenceResolver();
   }
 
   @Test

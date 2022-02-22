@@ -8,18 +8,11 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.ImmutableDocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
-import com.celements.common.test.AbstractComponentTest;
-import com.celements.common.test.ExceptionAsserter;
-import com.celements.model.util.ModelUtils;
-import com.xpn.xwiki.web.Utils;
+public class RefBuilderTest {
 
-public class RefBuilderTest extends AbstractComponentTest {
-
-  ModelUtils modelUtils;
   WikiReference wikiRef;
   SpaceReference spaceRef;
   DocumentReference docRef;
@@ -27,10 +20,9 @@ public class RefBuilderTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    modelUtils = Utils.getComponent(ModelUtils.class);
     wikiRef = new WikiReference("wiki");
     spaceRef = new SpaceReference("space", wikiRef);
-    docRef = new ImmutableDocumentReference("doc", spaceRef);
+    docRef = new DocumentReference("doc", spaceRef);
     attRef = new AttachmentReference("att.jpg", docRef);
   }
 
@@ -124,21 +116,12 @@ public class RefBuilderTest extends AbstractComponentTest {
   }
 
   @Test
+
   public void test_incomplete() {
-    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class) {
-
-      @Override
-      protected void execute() throws Exception {
-        new RefBuilder().build();
-      }
-    }.evaluate();
-    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class) {
-
-      @Override
-      protected void execute() throws Exception {
-        new RefBuilder().with(spaceRef).build(DocumentReference.class);
-      }
-    }.evaluate();
+    assertThrows(IllegalArgumentException.class,
+        () -> new RefBuilder().build());
+    assertThrows(IllegalArgumentException.class,
+        () -> new RefBuilder().with(spaceRef).build(DocumentReference.class));
   }
 
   @Test

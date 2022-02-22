@@ -30,7 +30,7 @@ import org.xwiki.component.annotation.ComponentRole;
  *
  * @param <T>
  *          the type of the representation (e.g. a String)
- * @version $Id$
+ * @version $Id: ef73fb02be57b8221aefe80d38c38ebb400c3039 $
  * @since 2.3M1
  */
 @ComponentRole
@@ -41,5 +41,16 @@ public interface ObjectPropertyReferenceResolver<T> {
    *          the representation of an object reference (e.g. as a String)
    * @return the valid resolved object reference as an object
    */
+  @Deprecated
   ObjectPropertyReference resolve(T propertyReferenceRepresentation);
+
+  /**
+   * @param propertyReferenceRepresentation
+   *          the representation of an object reference (e.g. as a String)
+   * @param parameters
+   *          optional parameters. Their meaning depends on the resolver implementation
+   * @return the valid resolved object reference as an object
+   * @since 3.3M2
+   */
+  ObjectPropertyReference resolve(T propertyReferenceRepresentation, Object... parameters);
 }
