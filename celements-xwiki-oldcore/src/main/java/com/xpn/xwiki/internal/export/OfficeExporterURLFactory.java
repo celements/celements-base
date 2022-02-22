@@ -31,35 +31,36 @@ import com.xpn.xwiki.pdf.impl.PdfURLFactory;
 /**
  * URL factory used while exporting a wiki page as an office document.
  * <p>
- * Note: We extends {@link PdfURLFactory} for convenience. This is just a temporary solution. The entire export code
+ * Note: We extends {@link PdfURLFactory} for convenience. This is just a temporary solution. The
+ * entire export code
  * needs to be redesigned.
- * 
+ *
  * @version $Id$
  * @since 3.1M1
  */
-public class OfficeExporterURLFactory extends PdfURLFactory
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see PdfURLFactory#getURL(URL, XWikiContext)
-     */
-    @Override
-    public String getURL(URL url, XWikiContext context)
-    {
-        if (url != null && "file".equals(url.getProtocol())) {
-            @SuppressWarnings("unchecked")
-            Map<String, File> fileMapping = (Map<String, File>) context.get("pdfexport-file-mapping");
-            try {
-                File file = new File(url.toURI());
-                if (fileMapping.values().contains(file)) {
-                    // Embedded files are placed in the same folder as the HTML input file during office conversion.
-                    return file.getName();
-                }
-            } catch (URISyntaxException e) {
-                // Shouldn't happen. Ignore.
-            }
+public class OfficeExporterURLFactory extends PdfURLFactory {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see PdfURLFactory#getURL(URL, XWikiContext)
+   */
+  @Override
+  public String getURL(URL url, XWikiContext context) {
+    if ((url != null) && "file".equals(url.getProtocol())) {
+      @SuppressWarnings("unchecked")
+      Map<String, File> fileMapping = (Map<String, File>) context.get("pdfexport-file-mapping");
+      try {
+        File file = new File(url.toURI());
+        if (fileMapping.containsValue(file)) {
+          // Embedded files are placed in the same folder as the HTML input file during office
+          // conversion.
+          return file.getName();
         }
-        return super.getURL(url, context);
+      } catch (URISyntaxException e) {
+        // Shouldn't happen. Ignore.
+      }
     }
+    return super.getURL(url, context);
+  }
 }

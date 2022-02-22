@@ -23,73 +23,74 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
-import org.hibernate.Session;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.StringProperty;
-import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.migration.XWikiDBVersion;
 
 /**
  * Migration for XWIKI-883: global access preferences cannot be updated
+ *
  * @version $Id$
  */
-public class R4340XWIKI883Migrator extends AbstractXWikiHibernateMigrator
-{
-    /**
-     * {@inheritDoc}
-     * @see AbstractXWikiHibernateMigrator#getName()
-     */
-    public String getName()
-    {
-        return "R4340XWIKI883";
-    }
+public class R4340XWIKI883Migrator extends AbstractXWikiHibernateMigrator {
 
-    /**
-     * {@inheritDoc}
-     * @see com.xpn.xwiki.store.migration.hibernate.AbstractXWikiHibernateMigrator#getDescription()
-     */
-    public String getDescription()
-    {
-        return "See http://jira.xwiki.org/jira/browse/XWIKI-883";
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractXWikiHibernateMigrator#getName()
+   */
+  @Override
+  public String getName() {
+    return "R4340XWIKI883";
+  }
 
-    /** {@inheritDoc} */
-    public XWikiDBVersion getVersion()
-    {
-        return new XWikiDBVersion(4340);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.store.migration.hibernate.AbstractXWikiHibernateMigrator#getDescription()
+   */
+  @Override
+  public String getDescription() {
+    return "See http://jira.xwiki.org/jira/browse/XWIKI-883";
+  }
 
-    /** {@inheritDoc} */
-    public void migrate(XWikiHibernateMigrationManager manager, XWikiContext context)
-        throws XWikiException
-    {
-        manager.getStore(context).executeWrite(context, true, new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException
-            {
-                Query q = session.createQuery("select s from BaseObject o, StringProperty s where o.className like 'XWiki.XWiki%Rights' and o.id=s.id and (s.name='users' or s.name='groups')");
-                List lst = q.list();
-                if (lst.size()==0)
-                    return null;
-                List lst2 = new ArrayList(lst.size());
-                for (Iterator it=lst.iterator(); it.hasNext(); ) {
-                    StringProperty sp = (StringProperty) it.next();
-                    LargeStringProperty lsp = new LargeStringProperty();
-                    lsp.setId(sp.getId());
-                    lsp.setName(sp.getName());
-                    lsp.setValue(sp.getValue());
-                    lst2.add(lsp);
-                }
-                for (Iterator it=lst.iterator(); it.hasNext(); )
-                    session.delete(it.next());
-                for (Iterator it=lst2.iterator(); it.hasNext(); )
-                    session.save(it.next());
-                return null;
-            }
-        });
-    }
+  /** {@inheritDoc} */
+  @Override
+  public XWikiDBVersion getVersion() {
+    return new XWikiDBVersion(4340);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void migrate(XWikiHibernateMigrationManager manager, XWikiContext context)
+      throws XWikiException {
+    manager.getStore(context).executeWrite(context, true, session -> {
+      Query q = session.createQuery(
+          "select s from BaseObject o, StringProperty s where o.className like 'XWiki.XWiki%Rights' and o.id=s.id and (s.name='users' or s.name='groups')");
+      List lst = q.list();
+      if (lst.size() == 0) {
+        return null;
+      }
+      List lst2 = new ArrayList(lst.size());
+      for (Iterator it1 = lst.iterator(); it1.hasNext();) {
+        StringProperty sp = (StringProperty) it1.next();
+        LargeStringProperty lsp = new LargeStringProperty();
+        lsp.setId(sp.getId());
+        lsp.setName(sp.getName());
+        lsp.setValue(sp.getValue());
+        lst2.add(lsp);
+      }
+      for (Iterator it2 = lst.iterator(); it2.hasNext();) {
+        session.delete(it2.next());
+      }
+      for (Iterator it3 = lst2.iterator(); it3.hasNext();) {
+        session.save(it3.next());
+      }
+      return null;
+    });
+  }
 }

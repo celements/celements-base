@@ -19,8 +19,6 @@
  */
 package com.xpn.xwiki.internal.model.reference;
 
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 import org.junit.Assert;
 import org.junit.Before;
 import org.xwiki.model.EntityType;
@@ -28,44 +26,49 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
+import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+
 /**
  * Unit tests for {@link CurrentMixedReferenceEntityReferenceResolver}.
  *
  * @version $Id$
  * @since 2.3M1
  */
-public class CurrentMixedReferenceEntityReferenceResolverTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private static final String CURRENT_WIKI = "currentwiki";
+public class CurrentMixedReferenceEntityReferenceResolverTest
+    extends AbstractBridgedXWikiComponentTestCase {
 
-    private static final String CURRENT_SPACE = "currentspace";
+  private static final String CURRENT_WIKI = "currentwiki";
 
-    private static final String CURRENT_PAGE = "currentpage";
+  private static final String CURRENT_SPACE = "currentspace";
 
-    private EntityReferenceResolver<EntityReference> resolver;
+  private static final String CURRENT_PAGE = "currentpage";
 
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
+  private EntityReferenceResolver<EntityReference> resolver;
 
-        this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "currentmixed/reference");
-    }
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
 
-    @org.junit.Test
-    public void testResolveAttachmentReferenceWhenMissingParentsAndContextDocument()
-    {
-        getContext().setDatabase(CURRENT_WIKI);
-        getContext().setDoc(new XWikiDocument(new DocumentReference(CURRENT_WIKI, CURRENT_SPACE, CURRENT_PAGE)));
+    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class,
+        "currentmixed/reference");
+  }
 
-        EntityReference reference =
-                resolver.resolve(new EntityReference("filename", EntityType.ATTACHMENT), EntityType.ATTACHMENT);
+  @org.junit.Test
+  public void testResolveAttachmentReferenceWhenMissingParentsAndContextDocument() {
+    getContext().setDatabase(CURRENT_WIKI);
+    getContext().setDoc(
+        new XWikiDocument(new DocumentReference(CURRENT_WIKI, CURRENT_SPACE, CURRENT_PAGE)));
 
-        Assert.assertEquals("WebHome", reference.getParent().getName());
-        Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
-        Assert.assertEquals(CURRENT_SPACE, reference.getParent().getParent().getName());
-        Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
-        Assert.assertEquals(CURRENT_WIKI, reference.getParent().getParent().getParent().getName());
-        Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
-    }
+    EntityReference reference = resolver
+        .resolve(new EntityReference("filename", EntityType.ATTACHMENT), EntityType.ATTACHMENT);
+
+    Assert.assertEquals("WebHome", reference.getParent().getName());
+    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
+    Assert.assertEquals(CURRENT_SPACE, reference.getParent().getParent().getName());
+    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
+    Assert.assertEquals(CURRENT_WIKI, reference.getParent().getParent().getParent().getName());
+    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
+  }
 }

@@ -21,30 +21,27 @@
 package com.xpn.xwiki.criteria.impl;
 
 import junit.framework.TestCase;
-import com.xpn.xwiki.criteria.impl.Duration;
 
 /**
  * Unit tests for the {@link com.xpn.xwiki.criteria.impl.Duration} class.
  */
-public class DurationTest extends TestCase
-{
-    /**
-     * Test for {@link com.xpn.xwiki.criteria.impl.Duration#Duration(int, int, int, int)}
-     */
-    public void testConstructor()
-    {
-        doConstructorTest(0, 0, 0, 0);
-        doConstructorTest(1, 2, 3, 4);
-        doConstructorTest(-1, -2, -3, -4);
-        doConstructorTest(0, -2, 3, 0);
-    }
+public class DurationTest extends TestCase {
 
-    private void doConstructorTest(int years, int months, int weeks, int days)
-    {
-        Duration d = new Duration(years, months, weeks, days);
-        assertEquals(years, d.getYears());
-        assertEquals(months, d.getMonths());
-        assertEquals(weeks, d.getWeeks());
-        assertEquals(days, d.getDays());
-    }
+  /**
+   * Test for {@link com.xpn.xwiki.criteria.impl.Duration#Duration(int, int, int, int)}
+   */
+  public void testConstructor() {
+    doConstructorTest(0, 0, 0, 0);
+    doConstructorTest(1, 2, 3, 4);
+    doConstructorTest(-1, -2, -3, -4);
+    doConstructorTest(0, -2, 3, 0);
+  }
+
+  private void doConstructorTest(int years, int months, int weeks, int days) {
+    Duration d = new Duration(years, months, weeks, days);
+    assertEquals(years, d.getYears());
+    assertEquals(months, d.getMonths());
+    assertEquals(weeks, d.getWeeks());
+    assertEquals(days, d.getDays());
+  }
 }

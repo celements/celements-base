@@ -29,38 +29,34 @@ import java.util.Map;
 import com.xpn.xwiki.plugin.charts.exceptions.InvalidParamException;
 import com.xpn.xwiki.plugin.charts.exceptions.ParamException;
 
-public class DateChartParam extends DateFormatChartParam
-{
-    public DateChartParam(String name)
-    {
-        super(name);
-    }
+public class DateChartParam extends DateFormatChartParam {
 
-    public DateChartParam(String name, boolean optional)
-    {
-        super(name, optional);
-    }
+  public DateChartParam(String name) {
+    super(name);
+  }
 
-    @Override
-    public Class getType()
-    {
-        return Date.class;
-    }
+  public DateChartParam(String name, boolean optional) {
+    super(name, optional);
+  }
 
-    @Override
-    public Object convert(String value) throws ParamException
-    {
-        Map map = parseMap(value);
-        DateFormat format;
-        try {
-            format = (DateFormat) super.convert(value);
-        } catch (ParamException e) {
-            format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        }
-        try {
-            return format.parse(getStringArg(map, "value"));
-        } catch (ParseException e) {
-            throw new InvalidParamException("Invalid value for parameter :" + getName(), e);
-        }
+  @Override
+  public Class getType() {
+    return Date.class;
+  }
+
+  @Override
+  public Object convert(String value) throws ParamException {
+    Map map = parseMap(value);
+    DateFormat format;
+    try {
+      format = (DateFormat) super.convert(value);
+    } catch (ParamException e) {
+      format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     }
+    try {
+      return format.parse(getStringArg(map, "value"));
+    } catch (ParseException e) {
+      throw new InvalidParamException("Invalid value for parameter :" + getName(), e);
+    }
+  }
 }

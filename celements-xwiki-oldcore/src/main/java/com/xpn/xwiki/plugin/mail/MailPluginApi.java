@@ -21,99 +21,106 @@
 
 package com.xpn.xwiki.plugin.mail;
 
+import java.util.Properties;
+
+import javax.mail.FetchProfile;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Store;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.api.Api;
 
-import javax.mail.*;
-import java.util.Properties;
-
 public class MailPluginApi extends Api {
-    private MailPlugin plugin;
 
-    public MailPluginApi(MailPlugin plugin, XWikiContext context) {
-            super(context);
-            setPlugin(plugin);
-        }
+  private MailPlugin plugin;
 
-    public MailPlugin getPlugin() {
-        if (hasProgrammingRights()) {
-            return plugin;
-        }
-        return null;
+  public MailPluginApi(MailPlugin plugin, XWikiContext context) {
+    super(context);
+    setPlugin(plugin);
+  }
+
+  public MailPlugin getPlugin() {
+    if (hasProgrammingRights()) {
+      return plugin;
     }
+    return null;
+  }
 
-    public void setPlugin(MailPlugin plugin) {
-        this.plugin = plugin;
+  public void setPlugin(MailPlugin plugin) {
+    this.plugin = plugin;
+  }
+
+  public int checkMail(String provider, String server, String user, String password)
+      throws MessagingException {
+
+    // Get a session. Use a blank Properties object.
+    Session session = Session.getInstance(new Properties());
+
+    // Get a Store object
+    Store store = session.getStore(provider);
+    store.connect(server, user, password);
+
+    try {
+      // Get "INBOX"
+      Folder fldr = store.getFolder("INBOX");
+      fldr.open(Folder.READ_ONLY);
+      return fldr.getMessageCount();
+    } finally {
+      store.close();
     }
+  }
 
-    public int checkMail(String provider, String server, String user, String password) throws MessagingException {
+  public Message[] getMailHeaders(String provider, String server, String user, String password)
+      throws MessagingException {
+    // Get a session. Use a blank Properties object.
+    Session session = Session.getInstance(new Properties());
 
-        // Get a session.  Use a blank Properties object.
-        Session session = Session.getInstance(new Properties());
+    // Get a Store object
+    Store store = session.getStore(provider);
+    store.connect(server, user, password);
 
-        // Get a Store object
-        Store store = session.getStore(provider);
-        store.connect(server, user, password);
-
-        try {
-            // Get "INBOX"
-            Folder fldr = store.getFolder("INBOX");
-            fldr.open(Folder.READ_ONLY);
-            int count = fldr.getMessageCount();
-            return count;
-        } finally {
-            store.close();
-        }
+    try {
+      // Get "INBOX"
+      Folder fldr = store.getFolder("INBOX");
+      fldr.open(Folder.READ_ONLY);
+      Message[] messages = new Message[fldr.getMessageCount()];
+      FetchProfile profile = new FetchProfile();
+      profile.add(FetchProfile.Item.CONTENT_INFO);
+      profile.add(FetchProfile.Item.ENVELOPE);
+      profile.add(FetchProfile.Item.FLAGS);
+      fldr.fetch(messages, profile);
+      return messages;
+    } finally {
+      store.close();
     }
+  }
 
-    public Message[] getMailHeaders(String provider, String server, String user, String password) throws MessagingException {
-         // Get a session.  Use a blank Properties object.
-         Session session = Session.getInstance(new Properties());
+  public Message[] getMail(String provider, String server, String user, String password)
+      throws MessagingException {
+    // Get a session. Use a blank Properties object.
+    Session session = Session.getInstance(new Properties());
 
-         // Get a Store object
-         Store store = session.getStore(provider);
-         store.connect(server, user, password);
+    // Get a Store object
+    Store store = session.getStore(provider);
+    store.connect(server, user, password);
 
-         try {
-             // Get "INBOX"
-             Folder fldr = store.getFolder("INBOX");
-             fldr.open(Folder.READ_ONLY);
-             Message[] messages = new Message[fldr.getMessageCount()];
-             FetchProfile profile = new FetchProfile();
-             profile.add(FetchProfile.Item.CONTENT_INFO);
-             profile.add(FetchProfile.Item.ENVELOPE);
-             profile.add(FetchProfile.Item.FLAGS);
-             fldr.fetch(messages, profile);
-             return messages;
-         } finally {
-             store.close();
-         }
-     }
-
-    public Message[] getMail(String provider, String server, String user, String password) throws MessagingException {
-        // Get a session.  Use a blank Properties object.
-        Session session = Session.getInstance(new Properties());
-
-        // Get a Store object
-        Store store = session.getStore(provider);
-        store.connect(server, user, password);
-
-        try {
-            // Get "INBOX"
-            Folder fldr = store.getFolder("INBOX");
-            fldr.open(Folder.READ_ONLY);
-            return fldr.getMessages();
-        } finally {
-            store.close();
-        }
+    try {
+      // Get "INBOX"
+      Folder fldr = store.getFolder("INBOX");
+      fldr.open(Folder.READ_ONLY);
+      return fldr.getMessages();
+    } finally {
+      store.close();
     }
+  }
 
-    public Store getStore(String provider) throws MessagingException {
-        // Get a session.  Use a blank Properties object.
-        Session session = Session.getInstance(new Properties());
+  public Store getStore(String provider) throws MessagingException {
+    // Get a session. Use a blank Properties object.
+    Session session = Session.getInstance(new Properties());
 
-        // Get a Store object
-        Store store = session.getStore(provider);
-        return store;
-    }
+    return session.getStore(provider);
+  }
 }

@@ -25,6 +25,4 @@ package com.xpn.xwiki.content.parsers;
  *
  * @version $Id$
  */
-public interface ContentParser
-{
-}
+public interface ContentParser {}

@@ -22,27 +22,30 @@ package com.xpn.xwiki.objects;
 
 import org.xwiki.model.reference.DocumentReference;
 
-public interface ElementInterface
-{
-    String toString();
+public interface ElementInterface {
 
-    /**
-     * @return the reference to the document in which this element is defined (for elements where this make sense,
-     *         for example for an XClass or a XObject).
-     * @since 2.2M2
-     */
-    DocumentReference getDocumentReference();
+  @Override
+  String toString();
 
-    /**
-     * @return the free form name (for elements which don't point to a reference, for example for instances of
-     *         {@link BaseProperty}).
-     */
-    String getName();
+  /**
+   * @return the reference to the document in which this element is defined (for elements where this
+   *         make sense,
+   *         for example for an XClass or a XObject).
+   * @since 2.2M2
+   */
+  DocumentReference getDocumentReference();
 
-    /**
-     * @since 2.2M2
-     */
-    void setDocumentReference(DocumentReference reference);
+  /**
+   * @return the free form name (for elements which don't point to a reference, for example for
+   *         instances of
+   *         {@link BaseProperty}).
+   */
+  String getName();
 
-    void setName(String name);
+  /**
+   * @since 2.2M2
+   */
+  void setDocumentReference(DocumentReference reference);
+
+  void setName(String name);
 }

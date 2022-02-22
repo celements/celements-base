@@ -28,63 +28,55 @@ import junit.framework.TestCase;
 
 /**
  * Verify the {@link XWikiNotificationManager}
- * 
+ *
  * @version $Id$
  */
-public class XWikiNotificationManagerTest extends TestCase
-{
+public class XWikiNotificationManagerTest extends TestCase {
 
-    private XWikiNotificationManager notificationManager;
+  private XWikiNotificationManager notificationManager;
 
-    protected void setUp() throws Exception
-    {
-        notificationManager = new XWikiNotificationManager();
-        super.setUp();
-    }
+  @Override
+  protected void setUp() throws Exception {
+    notificationManager = new XWikiNotificationManager();
+    super.setUp();
+  }
 
-    public void testRemoveRuleFromNamedRule()
-    {
-        XWikiNotificationRule rule1 = getDummyNotificationRule();
-        XWikiNotificationRule rule2 = getDummyNotificationRule();
-        assertNull(notificationManager.getNamedRules("testrule"));
-        notificationManager.addNamedRule("testrule", rule1);
-        notificationManager.addNamedRule("testrule", rule2);
-        assertEquals(2, notificationManager.getNamedRules("testrule").size());
-        notificationManager.removeNamedRule("testrule", rule1);
-        assertEquals(1, notificationManager.getNamedRules("testrule").size());
-        notificationManager.removeNamedRule("testrule", rule2);
-        assertNull(notificationManager.getNamedRules("testrule"));
-    }
+  public void testRemoveRuleFromNamedRule() {
+    XWikiNotificationRule rule1 = getDummyNotificationRule();
+    XWikiNotificationRule rule2 = getDummyNotificationRule();
+    assertNull(notificationManager.getNamedRules("testrule"));
+    notificationManager.addNamedRule("testrule", rule1);
+    notificationManager.addNamedRule("testrule", rule2);
+    assertEquals(2, notificationManager.getNamedRules("testrule").size());
+    notificationManager.removeNamedRule("testrule", rule1);
+    assertEquals(1, notificationManager.getNamedRules("testrule").size());
+    notificationManager.removeNamedRule("testrule", rule2);
+    assertNull(notificationManager.getNamedRules("testrule"));
+  }
 
-    public void testRemoveNamedRule()
-    {
-        assertNull(notificationManager.getNamedRules("testrule"));
-        notificationManager.addNamedRule("testrule", getDummyNotificationRule());
-        notificationManager.addNamedRule("testrule", getDummyNotificationRule());
-        assertEquals(2, notificationManager.getNamedRules("testrule").size());
-        notificationManager.removeNamedRule("testrule");
-        assertNull(notificationManager.getNamedRules("testrule"));
-    }
+  public void testRemoveNamedRule() {
+    assertNull(notificationManager.getNamedRules("testrule"));
+    notificationManager.addNamedRule("testrule", getDummyNotificationRule());
+    notificationManager.addNamedRule("testrule", getDummyNotificationRule());
+    assertEquals(2, notificationManager.getNamedRules("testrule").size());
+    notificationManager.removeNamedRule("testrule");
+    assertNull(notificationManager.getNamedRules("testrule"));
+  }
 
-    private XWikiNotificationRule getDummyNotificationRule()
-    {
-        return new XWikiNotificationRule()
-        {
-            public void preverify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context)
-            {
-            }
+  private XWikiNotificationRule getDummyNotificationRule() {
+    return new XWikiNotificationRule() {
 
-            public void preverify(XWikiDocument doc, String action, XWikiContext context)
-            {
-            }
+      @Override
+      public void preverify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context) {}
 
-            public void verify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context)
-            {
-            }
+      @Override
+      public void preverify(XWikiDocument doc, String action, XWikiContext context) {}
 
-            public void verify(XWikiDocument doc, String action, XWikiContext context)
-            {
-            }
-        };
-    }
+      @Override
+      public void verify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context) {}
+
+      @Override
+      public void verify(XWikiDocument doc, String action, XWikiContext context) {}
+    };
+  }
 }

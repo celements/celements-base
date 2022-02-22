@@ -19,61 +19,54 @@
  */
 package com.xpn.xwiki.doc;
 
-public class AttachmentDiff
-{
-    private String fileName;
+public class AttachmentDiff {
 
-    private String origVersion;
+  private String fileName;
 
-    private String newVersion;
+  private String origVersion;
 
-    public AttachmentDiff(String fileName, String origVersion, String newVersion)
-    {
-        setFileName(fileName);
-        setOrigVersion(origVersion);
-        setNewVersion(newVersion);
-    }
+  private String newVersion;
 
-    public String getFileName()
-    {
-        return fileName;
-    }
+  public AttachmentDiff(String fileName, String origVersion, String newVersion) {
+    setFileName(fileName);
+    setOrigVersion(origVersion);
+    setNewVersion(newVersion);
+  }
 
-    public void setFileName(String fileName)
-    {
-        this.fileName = fileName;
-    }
+  public String getFileName() {
+    return fileName;
+  }
 
-    public String getOrigVersion()
-    {
-        return origVersion;
-    }
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
+  }
 
-    public void setOrigVersion(String origVersion)
-    {
-        this.origVersion = origVersion;
-    }
+  public String getOrigVersion() {
+    return origVersion;
+  }
 
-    public String getNewVersion()
-    {
-        return newVersion;
-    }
+  public void setOrigVersion(String origVersion) {
+    this.origVersion = origVersion;
+  }
 
-    public void setNewVersion(String newVersion)
-    {
-        this.newVersion = newVersion;
-    }
+  public String getNewVersion() {
+    return newVersion;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String toString()
-    {
-        StringBuffer buf = new StringBuffer(fileName);
-        buf.append(": ");
-        buf.append(origVersion);
-        buf.append(" &gt; ");
-        buf.append(newVersion);
-        return buf.toString();
-    }
+  public void setNewVersion(String newVersion) {
+    this.newVersion = newVersion;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
+    StringBuffer buf = new StringBuffer(fileName);
+    buf.append(": ");
+    buf.append(origVersion);
+    buf.append(" &gt; ");
+    buf.append(newVersion);
+    return buf.toString();
+  }
 }

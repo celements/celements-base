@@ -49,69 +49,67 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYStepAreaRenderer;
 import org.jfree.chart.renderer.xy.XYStepRenderer;
 
-public class RendererClassChartParam extends ChoiceChartParam
-{
-    public RendererClassChartParam(String name)
-    {
-        super(name);
-    }
+public class RendererClassChartParam extends ChoiceChartParam {
 
-    public RendererClassChartParam(String name, boolean isOptional)
-    {
-        super(name, isOptional);
-    }
+  public RendererClassChartParam(String name) {
+    super(name);
+  }
 
-    @Override
-    protected void init()
-    {
-        // Pie (an anomaly)
-        addChoice("pie", PiePlot.class);
-        addChoice("pie_3d", PiePlot3D.class);
-        addChoice("ring", RingPlot.class);
+  public RendererClassChartParam(String name, boolean isOptional) {
+    super(name, isOptional);
+  }
 
-        // Bar (CategoryPlot)
-        addChoice("bar", BarRenderer.class);
-        addChoice("bar_3d", BarRenderer3D.class);
-        addChoice("waterfall_bar", WaterfallBarRenderer.class);
-        addChoice("interval_bar", IntervalBarRenderer.class);
-        addChoice("layered_bar", LayeredBarRenderer.class);
-        addChoice("stacked_bar", StackedBarRenderer.class);
-        addChoice("stacked_bar_3d", StackedBarRenderer3D.class);
-        addChoice("level", LevelRenderer.class);
-        addChoice("grouped_stacked_bar", GroupedStackedBarRenderer.class); // pretty much useless, unless groups can be
-                                                                           // defined
-        // addChoice("gantt", GanttRenderer.class); // looks like a default bar chart (which is not good)
+  @Override
+  protected void init() {
+    // Pie (an anomaly)
+    addChoice("pie", PiePlot.class);
+    addChoice("pie_3d", PiePlot3D.class);
+    addChoice("ring", RingPlot.class);
 
-        // Bar (XYPlot)
-        addChoice("xy_bar", XYBarRenderer.class);
-        addChoice("xy_clustered_bar", ClusteredXYBarRenderer.class);
-        addChoice("xy_stacked_bar", StackedXYBarRenderer.class);
+    // Bar (CategoryPlot)
+    addChoice("bar", BarRenderer.class);
+    addChoice("bar_3d", BarRenderer3D.class);
+    addChoice("waterfall_bar", WaterfallBarRenderer.class);
+    addChoice("interval_bar", IntervalBarRenderer.class);
+    addChoice("layered_bar", LayeredBarRenderer.class);
+    addChoice("stacked_bar", StackedBarRenderer.class);
+    addChoice("stacked_bar_3d", StackedBarRenderer3D.class);
+    addChoice("level", LevelRenderer.class);
+    addChoice("grouped_stacked_bar", GroupedStackedBarRenderer.class); // pretty much useless,
+                                                                       // unless groups can be
+                                                                       // defined
+    // addChoice("gantt", GanttRenderer.class); // looks like a default bar chart (which is not
+    // good)
 
-        // Line (CategoryPlot)
-        addChoice("line_and_shape", LineAndShapeRenderer.class);
-        addChoice("line_3d", LineRenderer3D.class);
-        addChoice("step", CategoryStepRenderer.class);
+    // Bar (XYPlot)
+    addChoice("xy_bar", XYBarRenderer.class);
+    addChoice("xy_clustered_bar", ClusteredXYBarRenderer.class);
+    addChoice("xy_stacked_bar", StackedXYBarRenderer.class);
 
-        // Line and Time (XYPlot)
-        addChoice("xy_line_and_shape", XYLineAndShapeRenderer.class);
-        addChoice("xy_line_3d", XYLine3DRenderer.class);
-        addChoice("xy_step", XYStepRenderer.class);
+    // Line (CategoryPlot)
+    addChoice("line_and_shape", LineAndShapeRenderer.class);
+    addChoice("line_3d", LineRenderer3D.class);
+    addChoice("step", CategoryStepRenderer.class);
 
-        // Area (CategoryPlot)
-        addChoice("area", AreaRenderer.class);
-        addChoice("stacked_area", StackedAreaRenderer.class);
+    // Line and Time (XYPlot)
+    addChoice("xy_line_and_shape", XYLineAndShapeRenderer.class);
+    addChoice("xy_line_3d", XYLine3DRenderer.class);
+    addChoice("xy_step", XYStepRenderer.class);
 
-        // Area (XYPlot)
-        addChoice("xy_area", XYAreaRenderer.class);
-        addChoice("xy_area2", XYAreaRenderer2.class);
-        addChoice("xy_stacked_area", StackedXYAreaRenderer.class);
-        addChoice("xy_stacked_area2", StackedXYAreaRenderer2.class);
-        addChoice("xy_step_area", XYStepAreaRenderer.class);
-    }
+    // Area (CategoryPlot)
+    addChoice("area", AreaRenderer.class);
+    addChoice("stacked_area", StackedAreaRenderer.class);
 
-    @Override
-    public Class getType()
-    {
-        return Class.class;
-    }
+    // Area (XYPlot)
+    addChoice("xy_area", XYAreaRenderer.class);
+    addChoice("xy_area2", XYAreaRenderer2.class);
+    addChoice("xy_stacked_area", StackedXYAreaRenderer.class);
+    addChoice("xy_stacked_area2", StackedXYAreaRenderer2.class);
+    addChoice("xy_step_area", XYStepAreaRenderer.class);
+  }
+
+  @Override
+  public Class getType() {
+    return Class.class;
+  }
 }

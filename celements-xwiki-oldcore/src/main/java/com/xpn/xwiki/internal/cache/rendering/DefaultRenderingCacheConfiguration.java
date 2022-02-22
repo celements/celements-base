@@ -32,234 +32,234 @@ import org.xwiki.model.reference.EntityReferenceSerializer;
 
 /**
  * Default implementation of {@link RenderingCacheConfiguration}.
- * 
+ *
  * @version $Id$
  * @since 2.4M1
  */
 @Component
-public class DefaultRenderingCacheConfiguration implements RenderingCacheConfiguration
-{
-    /**
-     * Configuration key prefix.
-     */
-    private static final String PREFIX = "core.renderingcache.";
+public class DefaultRenderingCacheConfiguration implements RenderingCacheConfiguration {
 
-    /**
-     * Name of the property indication if the cache is enabled or not.
-     */
-    private static final String PROPNAME_ENABLED = PREFIX + "enabled";
+  /**
+   * Configuration key prefix.
+   */
+  private static final String PREFIX = "core.renderingcache.";
 
-    /**
-     * Name of the property listing the references of the documents to cache.
-     */
-    private static final String PROPNAME_DOCUMENTS = PREFIX + "documents";
+  /**
+   * Name of the property indication if the cache is enabled or not.
+   */
+  private static final String PROPNAME_ENABLED = PREFIX + "enabled";
 
-    /**
-     * Name of the property indication the time to live of the elements in the cache.
-     */
-    private static final String PROPNAME_DURATION = PREFIX + "duration";
+  /**
+   * Name of the property listing the references of the documents to cache.
+   */
+  private static final String PROPNAME_DOCUMENTS = PREFIX + "documents";
 
-    /**
-     * The default time to live of the elements in the cache.
-     */
-    private static final int PROPVALUE_DURATION = 300;
+  /**
+   * Name of the property indication the time to live of the elements in the cache.
+   */
+  private static final String PROPNAME_DURATION = PREFIX + "duration";
 
-    /**
-     * Name of the property indication the size of the cache.
-     */
-    private static final String PROPNAME_SIZE = PREFIX + "size";
+  /**
+   * The default time to live of the elements in the cache.
+   */
+  private static final int PROPVALUE_DURATION = 300;
 
-    /**
-     * The default size of the cache.
-     */
-    private static final int PROPVALUE_SIZE = 100;
+  /**
+   * Name of the property indication the size of the cache.
+   */
+  private static final String PROPNAME_SIZE = PREFIX + "size";
 
-    /**
-     * xwiki.properties file configurations.
-     */
-    @Requirement("xwikiproperties")
-    private ConfigurationSource farmConfiguration;
+  /**
+   * The default size of the cache.
+   */
+  private static final int PROPVALUE_SIZE = 100;
 
-    /**
-     * Wiki configuration.
-     */
-    @Requirement("wiki")
-    private ConfigurationSource wikiConfiguration;
+  /**
+   * xwiki.properties file configurations.
+   */
+  @Requirement("xwikiproperties")
+  private ConfigurationSource farmConfiguration;
 
-    /**
-     * Used to serialize a document reference into a String.
-     */
-    @Requirement
-    private EntityReferenceSerializer<String> serializer;
+  /**
+   * Wiki configuration.
+   */
+  @Requirement("wiki")
+  private ConfigurationSource wikiConfiguration;
 
-    /**
-     * Used to serialize a document reference into a String.
-     */
-    @Requirement("compactwiki")
-    private EntityReferenceSerializer<String> wikiSerializer;
+  /**
+   * Used to serialize a document reference into a String.
+   */
+  @Requirement
+  private EntityReferenceSerializer<String> serializer;
 
-    /**
-     * USed to get the current wiki.
-     */
-    @Requirement
-    private ModelContext modelContext;
+  /**
+   * Used to serialize a document reference into a String.
+   */
+  @Requirement("compactwiki")
+  private EntityReferenceSerializer<String> wikiSerializer;
 
-    /**
-     * The cached pattern coming from xwiki.properties file.
-     */
-    private Pattern farmPattern;
+  /**
+   * USed to get the current wiki.
+   */
+  @Requirement
+  private ModelContext modelContext;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#isEnabled()
-     */
-    public boolean isEnabled()
-    {
-        return isFarmEnabled();
+  /**
+   * The cached pattern coming from xwiki.properties file.
+   */
+  private Pattern farmPattern;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#isEnabled()
+   */
+  @Override
+  public boolean isEnabled() {
+    return isFarmEnabled();
+  }
+
+  /**
+   * @return true if the rendering cache system is enabled in general
+   */
+  public boolean isFarmEnabled() {
+    return this.farmConfiguration.getProperty(PROPNAME_ENABLED, false);
+  }
+
+  /**
+   * @return true if the rendering cache system is enabled in general
+   */
+  public boolean isWikiEnabled() {
+    return this.wikiConfiguration.getProperty(PROPNAME_ENABLED, true);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#getDuration()
+   */
+  @Override
+  public int getDuration() {
+    return this.farmConfiguration.getProperty(PROPNAME_DURATION, PROPVALUE_DURATION);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#getSize()
+   */
+  @Override
+  public int getSize() {
+    return this.farmConfiguration.getProperty(PROPNAME_SIZE, PROPVALUE_SIZE);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#isCached(org.xwiki.model.reference.DocumentReference)
+   */
+  @Override
+  public boolean isCached(DocumentReference documentReference) {
+    if ((documentReference != null) && isFarmEnabled()) {
+      if (isCachedInFarm(documentReference)) {
+        return true;
+      }
+
+      return isCachedInWiki(documentReference);
     }
 
-    /**
-     * @return true if the rendering cache system is enabled in general
-     */
-    public boolean isFarmEnabled()
-    {
-        return this.farmConfiguration.getProperty(PROPNAME_ENABLED, false);
+    return false;
+  }
+
+  /**
+   * Indicate if the provided document's rendering result should be cached according to farm
+   * configuration.
+   *
+   * @param documentReference
+   *          the reference of the document
+   * @return true if the document should be cached, false otherwise
+   */
+  private boolean isCachedInFarm(DocumentReference documentReference) {
+    Pattern pattern = getFarmPattern();
+
+    if (pattern != null) {
+      String documentReferenceString = this.serializer.serialize(documentReference);
+
+      return pattern.matcher(documentReferenceString).matches();
     }
 
-    /**
-     * @return true if the rendering cache system is enabled in general
-     */
-    public boolean isWikiEnabled()
-    {
-        return this.wikiConfiguration.getProperty(PROPNAME_ENABLED, true);
+    return false;
+  }
+
+  /**
+   * Indicate if the provided document's rendering result should be cached according to wiki
+   * configuration.
+   *
+   * @param documentReference
+   *          the reference of the document
+   * @return true if the document should be cached, false otherwise
+   */
+  public boolean isCachedInWiki(DocumentReference documentReference) {
+    if (isWikiEnabled()
+        && (this.modelContext.getCurrentEntityReference() != null)
+        && documentReference.getWikiReference().getName().equals(
+            this.modelContext.getCurrentEntityReference().extractReference(EntityType.WIKI)
+                .getName())) {
+      Pattern pattern = getWikiPattern();
+
+      if (pattern != null) {
+        return pattern.matcher(this.serializer.serialize(documentReference)).matches()
+            || pattern.matcher(this.wikiSerializer.serialize(documentReference)).matches();
+      }
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#getDuration()
-     */
-    public int getDuration()
-    {
-        return this.farmConfiguration.getProperty(PROPNAME_DURATION, PROPVALUE_DURATION);
+    return false;
+  }
+
+  /**
+   * @return the pattern to match documents to cache according to farm configuration.
+   */
+  private Pattern getFarmPattern() {
+    if (this.farmPattern == null) {
+      this.farmPattern = getPattern(
+          this.farmConfiguration.getProperty(PROPNAME_DOCUMENTS, List.class));
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#getSize()
-     */
-    public int getSize()
-    {
-        return this.farmConfiguration.getProperty(PROPNAME_SIZE, PROPVALUE_SIZE);
-    }
+    return this.farmPattern;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.internal.cache.rendering.RenderingCacheConfiguration#isCached(org.xwiki.model.reference.DocumentReference)
-     */
-    public boolean isCached(DocumentReference documentReference)
-    {
-        if (documentReference != null && isFarmEnabled()) {
-            if (isCachedInFarm(documentReference)) {
-                return true;
-            }
+  /**
+   * @return the pattern to match documents to cache according to wiki configuration.
+   */
+  private Pattern getWikiPattern() {
+    return getPattern(this.wikiConfiguration.getProperty(PROPNAME_DOCUMENTS, List.class));
+  }
 
-            return isCachedInWiki(documentReference);
+  /**
+   * Convert a list of String patterns into one {@link Pattern} object.
+   *
+   * @param configuration
+   *          the {@link String} to convert to one {@link Pattern}
+   * @return {@link Pattern} version of the provided list of {@link String}.
+   */
+  private Pattern getPattern(List<String> configuration) {
+    Pattern pattern = null;
+
+    if ((configuration != null) && !configuration.isEmpty()) {
+      StringBuffer patternBuffer = new StringBuffer();
+
+      for (String patternString : configuration) {
+        if (patternBuffer.length() > 0) {
+          patternBuffer.append('|');
         }
+        patternBuffer.append('(');
+        patternBuffer.append(patternString);
+        patternBuffer.append(')');
+      }
 
-        return false;
+      pattern = Pattern.compile(patternBuffer.toString());
     }
 
-    /**
-     * Indicate if the provided document's rendering result should be cached according to farm configuration.
-     * 
-     * @param documentReference the reference of the document
-     * @return true if the document should be cached, false otherwise
-     */
-    private boolean isCachedInFarm(DocumentReference documentReference)
-    {
-        Pattern pattern = getFarmPattern();
-
-        if (pattern != null) {
-            String documentReferenceString = this.serializer.serialize(documentReference);
-
-            return pattern.matcher(documentReferenceString).matches();
-        }
-
-        return false;
-    }
-
-    /**
-     * Indicate if the provided document's rendering result should be cached according to wiki configuration.
-     * 
-     * @param documentReference the reference of the document
-     * @return true if the document should be cached, false otherwise
-     */
-    public boolean isCachedInWiki(DocumentReference documentReference)
-    {
-        if (isWikiEnabled()
-            && this.modelContext.getCurrentEntityReference() != null
-            && documentReference.getWikiReference().getName().equals(
-                this.modelContext.getCurrentEntityReference().extractReference(EntityType.WIKI).getName())) {
-            Pattern pattern = getWikiPattern();
-
-            if (pattern != null) {
-                return pattern.matcher(this.serializer.serialize(documentReference)).matches()
-                    || pattern.matcher(this.wikiSerializer.serialize(documentReference)).matches();
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return the pattern to match documents to cache according to farm configuration.
-     */
-    private Pattern getFarmPattern()
-    {
-        if (this.farmPattern == null) {
-            this.farmPattern = getPattern(this.farmConfiguration.getProperty(PROPNAME_DOCUMENTS, List.class));
-        }
-
-        return this.farmPattern;
-    }
-
-    /**
-     * @return the pattern to match documents to cache according to wiki configuration.
-     */
-    private Pattern getWikiPattern()
-    {
-        return getPattern(this.wikiConfiguration.getProperty(PROPNAME_DOCUMENTS, List.class));
-    }
-
-    /**
-     * Convert a list of String patterns into one {@link Pattern} object.
-     * 
-     * @param configuration the {@link String} to convert to one {@link Pattern}
-     * @return {@link Pattern} version of the provided list of {@link String}.
-     */
-    private Pattern getPattern(List<String> configuration)
-    {
-        Pattern pattern = null;
-
-        if (configuration != null && !configuration.isEmpty()) {
-            StringBuffer patternBuffer = new StringBuffer();
-
-            for (String patternString : configuration) {
-                if (patternBuffer.length() > 0) {
-                    patternBuffer.append('|');
-                }
-                patternBuffer.append('(');
-                patternBuffer.append(patternString);
-                patternBuffer.append(')');
-            }
-
-            pattern = Pattern.compile(patternBuffer.toString());
-        }
-
-        return pattern;
-    }
+    return pattern;
+  }
 }

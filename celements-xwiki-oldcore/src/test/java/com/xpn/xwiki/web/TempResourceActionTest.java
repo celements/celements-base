@@ -22,8 +22,6 @@ package com.xpn.xwiki.web;
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.jmock.Expectations;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,128 +31,135 @@ import org.xwiki.container.Container;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
 
+import junit.framework.Assert;
+
 /**
  * Unit tests for {@link TempResourceAction}.
- * 
+ *
  * @version $Id$
  */
-public class TempResourceActionTest extends AbstractBridgedComponentTestCase
-{
-    /**
-     * The action being tested.
-     */
-    private TempResourceAction action;
+public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
 
-    /**
-     * The base directory.
-     */
-    private File base;
+  /**
+   * The action being tested.
+   */
+  private TempResourceAction action;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see AbstractBridgedComponentTestCase#registerComponents()
-     */
-    @Override
-    protected void registerComponents() throws Exception
-    {
-        super.registerComponents();
+  /**
+   * The base directory.
+   */
+  private File base;
 
-        final Container mockContainer = registerMockComponent(Container.class);
-        final ApplicationContext mockAppContext = registerMockComponent(ApplicationContext.class);
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractBridgedComponentTestCase#registerComponents()
+   */
+  @Override
+  protected void registerComponents() throws Exception {
+    super.registerComponents();
 
-        getMockery().checking(new Expectations()
-        {
-            {
-                ignoring(mockContainer).setApplicationContext(with(any(ApplicationContext.class)));
-                allowing(mockContainer).getApplicationContext();
-                will(returnValue(mockAppContext));
-                allowing(mockAppContext).getTemporaryDirectory();
-                will(returnValue(base));
-            }
-        });
-    }
+    final Container mockContainer = registerMockComponent(Container.class);
+    final ApplicationContext mockAppContext = registerMockComponent(ApplicationContext.class);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see AbstractBridgedComponentTestCase#setUp()
-     */
-    @Override
-    @Before
-    public void setUp() throws Exception
-    {
-        base = new File(getClass().getResource("/").toURI());
+    getMockery().checking(new Expectations() {
 
-        super.setUp();
+      {
+        ignoring(mockContainer).setApplicationContext(with(any(ApplicationContext.class)));
+        allowing(mockContainer).getApplicationContext();
+        will(returnValue(mockAppContext));
+        allowing(mockAppContext).getTemporaryDirectory();
+        will(returnValue(base));
+      }
+    });
+  }
 
-        action = new TempResourceAction();
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractBridgedComponentTestCase#setUp()
+   */
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    base = new File(getClass().getResource("/").toURI());
 
-    /**
-     * Creates an empty file at the specified path.
-     * 
-     * @param path the file path
-     * @throws IOException if creating the empty file fails
-     */
-    private void createEmptyFile(String path) throws IOException
-    {
-        File emptyFile = new File(base, path);
-        emptyFile.getParentFile().mkdirs();
-        emptyFile.createNewFile();
-    }
+    super.setUp();
 
-    /**
-     * {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} should return {@code null} if the given URI
-     * doesn't match the known pattern.
-     */
-    @Test
-    public void testGetTemporaryFileForBadURI() throws Exception
-    {
-        createEmptyFile("temp/secret.txt");
-        Assert.assertNull(action.getTemporaryFile("/xwiki/bin/temp/secret.txt", getContext()));
-    }
+    action = new TempResourceAction();
+  }
 
-    /**
-     * {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} should prevent access to files outside the
-     * temporary directory by ignoring relative URIs (i.e. which use ".." to move to the parent folder).
-     */
-    @Test
-    public void testGetTemporaryFileForRelativeURI() throws Exception
-    {
-        createEmptyFile("temp/secret.txt");
-        Assert.assertNull(action.getTemporaryFile("/xwiki/bin/temp/../../module/secret.txt", getContext()));
-    }
+  /**
+   * Creates an empty file at the specified path.
+   *
+   * @param path
+   *          the file path
+   * @throws IOException
+   *           if creating the empty file fails
+   */
+  private void createEmptyFile(String path) throws IOException {
+    File emptyFile = new File(base, path);
+    emptyFile.getParentFile().mkdirs();
+    emptyFile.createNewFile();
+  }
 
-    /**
-     * Tests {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} when the file is missing.
-     */
-    @Test
-    public void testGetTemporaryFileMissing() throws Exception
-    {
-        Assert.assertFalse(new File(base, "temp/module/xwiki/Space/Page/file.txt").exists());
-        Assert.assertNull(action.getTemporaryFile("/xwiki/bin/temp/Space/Page/module/file.txt", getContext()));
-    }
+  /**
+   * {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} should return {@code null} if
+   * the given URI
+   * doesn't match the known pattern.
+   */
+  @Test
+  public void testGetTemporaryFileForBadURI() throws Exception {
+    createEmptyFile("temp/secret.txt");
+    Assert.assertNull(action.getTemporaryFile("/xwiki/bin/temp/secret.txt", getContext()));
+  }
 
-    /**
-     * Tests {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} when the file is present.
-     */
-    @Test
-    public void testGetTemporaryFile() throws Exception
-    {
-        getContext().setDatabase("wiki");
-        createEmptyFile("temp/module/wiki/Space/Page/file.txt");
-        Assert.assertNotNull(action.getTemporaryFile("/xwiki/bin/temp/Space/Page/module/file.txt", getContext()));
-    }
+  /**
+   * {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} should prevent access to
+   * files outside the
+   * temporary directory by ignoring relative URIs (i.e. which use ".." to move to the parent
+   * folder).
+   */
+  @Test
+  public void testGetTemporaryFileForRelativeURI() throws Exception {
+    createEmptyFile("temp/secret.txt");
+    Assert.assertNull(
+        action.getTemporaryFile("/xwiki/bin/temp/../../module/secret.txt", getContext()));
+  }
 
-    /**
-     * Tests {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} when the URL is over encoded.
-     */
-    @Test
-    public void testGetTemporaryFileForOverEncodedURL() throws Exception
-    {
-        createEmptyFile("temp/officeviewer/xwiki/Sp*ace/Pa-ge/presentation.odp/presentation-slide0.jpg");
-        Assert.assertNotNull(action.getTemporaryFile(
-            "/xwiki/bin/temp/Sp%2Aace/Pa%2Dge/officeviewer/presentation.odp/presentation-slide0.jpg", getContext()));
-    }
+  /**
+   * Tests {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} when the file is
+   * missing.
+   */
+  @Test
+  public void testGetTemporaryFileMissing() throws Exception {
+    Assert.assertFalse(new File(base, "temp/module/xwiki/Space/Page/file.txt").exists());
+    Assert.assertNull(
+        action.getTemporaryFile("/xwiki/bin/temp/Space/Page/module/file.txt", getContext()));
+  }
+
+  /**
+   * Tests {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} when the file is
+   * present.
+   */
+  @Test
+  public void testGetTemporaryFile() throws Exception {
+    getContext().setDatabase("wiki");
+    createEmptyFile("temp/module/wiki/Space/Page/file.txt");
+    Assert.assertNotNull(
+        action.getTemporaryFile("/xwiki/bin/temp/Space/Page/module/file.txt", getContext()));
+  }
+
+  /**
+   * Tests {@link TempResourceAction#getTemporaryFile(String, XWikiContext)} when the URL is over
+   * encoded.
+   */
+  @Test
+  public void testGetTemporaryFileForOverEncodedURL() throws Exception {
+    createEmptyFile(
+        "temp/officeviewer/xwiki/Sp*ace/Pa-ge/presentation.odp/presentation-slide0.jpg");
+    Assert.assertNotNull(action.getTemporaryFile(
+        "/xwiki/bin/temp/Sp%2Aace/Pa%2Dge/officeviewer/presentation.odp/presentation-slide0.jpg",
+        getContext()));
+  }
 }

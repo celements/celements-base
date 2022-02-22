@@ -33,88 +33,85 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
-public class ObjectRemoveAction extends XWikiAction
-{
-    protected BaseObject getObject(XWikiDocument doc, XWikiContext context)
-    {
-        ObjectRemoveForm form = (ObjectRemoveForm) context.getForm();
-        BaseObject obj = null;
+public class ObjectRemoveAction extends XWikiAction {
 
-        String className = form.getClassName();
-        int classId = form.getClassId();
-        if (StringUtils.isBlank(className)) {
-            ((VelocityContext) context.get("vcontext")).put("message", context.getMessageTool().get(
-                "platform.core.action.objectRemove.noClassnameSpecified"));
-        } else if (classId < 0) {
-            ((VelocityContext) context.get("vcontext")).put("message", context.getMessageTool().get(
-                "platform.core.action.objectRemove.noObjectSpecified"));
-        } else {
-            obj = doc.getObject(className, classId);
-            if (obj == null) {
-                ((VelocityContext) context.get("vcontext")).put("message", context.getMessageTool().get(
-                    "platform.core.action.objectRemove.invalidObject"));
-            }
-        }
-        return obj;
+  protected BaseObject getObject(XWikiDocument doc, XWikiContext context) {
+    ObjectRemoveForm form = (ObjectRemoveForm) context.getForm();
+    BaseObject obj = null;
+
+    String className = form.getClassName();
+    int classId = form.getClassId();
+    if (StringUtils.isBlank(className)) {
+      ((VelocityContext) context.get("vcontext")).put("message", context.getMessageTool().get(
+          "platform.core.action.objectRemove.noClassnameSpecified"));
+    } else if (classId < 0) {
+      ((VelocityContext) context.get("vcontext")).put("message", context.getMessageTool().get(
+          "platform.core.action.objectRemove.noObjectSpecified"));
+    } else {
+      obj = doc.getObject(className, classId);
+      if (obj == null) {
+        ((VelocityContext) context.get("vcontext")).put("message", context.getMessageTool().get(
+            "platform.core.action.objectRemove.invalidObject"));
+      }
+    }
+    return obj;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#action(XWikiContext)
+   */
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    // CSRF prevention
+    if (!csrfTokenCheck(context)) {
+      return false;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#action(XWikiContext)
-     */
-    @Override
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        // CSRF prevention
-        if (!csrfTokenCheck(context)) {
-            return false;
-        }
-
-        XWiki xwiki = context.getWiki();
-        XWikiResponse response = context.getResponse();
-        String username = context.getUser();
-        XWikiDocument doc = context.getDoc();
-        BaseObject obj = getObject(doc, context);
-        if (obj == null) {
-            return true;
-        }
-
-        doc.removeObject(obj);
-        doc.setAuthor(username);
-        xwiki.saveDocument(doc, context.getMessageTool().get("core.comment.deleteObject"), true, context);
-
-        if (Utils.isAjaxRequest(context)) {
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            response.setContentLength(0);
-        } else {
-            // forward to edit
-            String redirect = Utils.getRedirect("edit", context);
-            sendRedirect(response, redirect);
-        }
-        return false;
+    XWiki xwiki = context.getWiki();
+    XWikiResponse response = context.getResponse();
+    String username = context.getUser();
+    XWikiDocument doc = context.getDoc();
+    BaseObject obj = getObject(doc, context);
+    if (obj == null) {
+      return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#render(XWikiContext)
-     */
-    @Override
-    public String render(XWikiContext context) throws XWikiException
-    {
-        if (Utils.isAjaxRequest(context)) {
-            XWikiResponse response = context.getResponse();
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            response.setContentType("text/plain");
-            try {
-                response.getWriter().write("failed");
-                response.setContentLength(6);
-            } catch (IOException e) {
-            }
-            return null;
-        } else {
-            return "error";
-        }
+    doc.removeObject(obj);
+    doc.setAuthor(username);
+    xwiki.saveDocument(doc, context.getMessageTool().get("core.comment.deleteObject"), true,
+        context);
+
+    if (Utils.isAjaxRequest(context)) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      response.setContentLength(0);
+    } else {
+      // forward to edit
+      String redirect = Utils.getRedirect("edit", context);
+      sendRedirect(response, redirect);
     }
+    return false;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#render(XWikiContext)
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    if (Utils.isAjaxRequest(context)) {
+      XWikiResponse response = context.getResponse();
+      response.setStatus(HttpServletResponse.SC_CONFLICT);
+      response.setContentType("text/plain");
+      try {
+        response.getWriter().write("failed");
+        response.setContentLength(6);
+      } catch (IOException e) {}
+      return null;
+    } else {
+      return "error";
+    }
+  }
 }

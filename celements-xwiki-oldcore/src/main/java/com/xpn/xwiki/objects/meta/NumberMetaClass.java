@@ -26,37 +26,35 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.classes.NumberClass;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 
-public class NumberMetaClass extends PropertyMetaClass
-{
-    public NumberMetaClass()
-    {
-        super();
-        // setType("numbermetaclass");
-        setPrettyName("Number");
-        setName(NumberClass.class.getName());
+public class NumberMetaClass extends PropertyMetaClass {
 
-        StaticListClass type_class = new StaticListClass(this);
-        type_class.setName("numberType");
-        type_class.setPrettyName("Number Type");
-        type_class.setValues("integer|long|float|double");
-        type_class.setRelationalStorage(false);
-        type_class.setDisplayType("select");
-        type_class.setMultiSelect(false);
-        type_class.setSize(1);
-        safeput("numberType", type_class);
+  public NumberMetaClass() {
+    // setType("numbermetaclass");
+    setPrettyName("Number");
+    setName(NumberClass.class.getName());
 
-        NumberClass size_class = new NumberClass(this);
-        size_class.setName("size");
-        size_class.setPrettyName("Size");
-        size_class.setSize(5);
-        size_class.setNumberType("integer");
+    StaticListClass type_class = new StaticListClass(this);
+    type_class.setName("numberType");
+    type_class.setPrettyName("Number Type");
+    type_class.setValues("integer|long|float|double");
+    type_class.setRelationalStorage(false);
+    type_class.setDisplayType("select");
+    type_class.setMultiSelect(false);
+    type_class.setSize(1);
+    safeput("numberType", type_class);
 
-        safeput("numberType", type_class);
-        safeput("size", size_class);
-    }
+    NumberClass size_class = new NumberClass(this);
+    size_class.setName("size");
+    size_class.setPrettyName("Size");
+    size_class.setSize(5);
+    size_class.setNumberType("integer");
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new NumberClass();
-    }
+    safeput("numberType", type_class);
+    safeput("size", size_class);
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new NumberClass();
+  }
 }

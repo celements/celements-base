@@ -24,72 +24,77 @@ import com.xpn.xwiki.plugin.PluginException;
 
 /**
  * Rights Manager plugin base exception.
- * 
+ *
  * @version $Id$
  * @since XWiki Core 1.1.2, XWiki Core 1.2M2
  */
-public class RightsManagerException extends PluginException
-{
-    /**
-     * The default RightsManagerException.
-     */
-    private static final RightsManagerException DEFAULT_EXCEPTION = new RightsManagerException();
+public class RightsManagerException extends PluginException {
 
-    // //////
+  /**
+   * The default RightsManagerException.
+   */
+  private static final RightsManagerException DEFAULT_EXCEPTION = new RightsManagerException();
 
-    /**
-     * Create an RightsManagerException.
-     * 
-     * @param code the error code.
-     * @param message a literal message about this error.
-     */
-    public RightsManagerException(int code, String message)
-    {
-        super(RightsManagerPlugin.class, code, message);
-    }
+  // //////
 
-    /**
-     * Create an RightsManagerException. Replace any parameters found in the <code>message</code> by the passed
-     * <code>args</code> parameters. The format is the one used by {@link java.text.MessageFormat}.
-     * 
-     * @param code the error code.
-     * @param message a literal message about this error.
-     * @param e the exception this exception wrap.
-     * @param args the array of parameters to use for replacing "{N}" elements in the string. See
-     *            {@link java.text.MessageFormat} for the full syntax
-     */
-    public RightsManagerException(int code, String message, Throwable e, Object[] args)
-    {
-        super(RightsManagerPlugin.class, code, message, e, args);
-    }
+  /**
+   * Create an RightsManagerException.
+   *
+   * @param code
+   *          the error code.
+   * @param message
+   *          a literal message about this error.
+   */
+  public RightsManagerException(int code, String message) {
+    super(RightsManagerPlugin.class, code, message);
+  }
 
-    /**
-     * Create an RightsManagerException.
-     * 
-     * @param code the error code.
-     * @param message a literal message about this error.
-     * @param e the exception this exception wrap.
-     */
-    public RightsManagerException(int code, String message, Throwable e)
-    {
-        super(RightsManagerPlugin.class, code, message, e);
-    }
+  /**
+   * Create an RightsManagerException. Replace any parameters found in the <code>message</code> by
+   * the passed
+   * <code>args</code> parameters. The format is the one used by {@link java.text.MessageFormat}.
+   *
+   * @param code
+   *          the error code.
+   * @param message
+   *          a literal message about this error.
+   * @param e
+   *          the exception this exception wrap.
+   * @param args
+   *          the array of parameters to use for replacing "{N}" elements in the string. See
+   *          {@link java.text.MessageFormat} for the full syntax
+   */
+  public RightsManagerException(int code, String message, Throwable e, Object[] args) {
+    super(RightsManagerPlugin.class, code, message, e, args);
+  }
 
-    // //////
+  /**
+   * Create an RightsManagerException.
+   *
+   * @param code
+   *          the error code.
+   * @param message
+   *          a literal message about this error.
+   * @param e
+   *          the exception this exception wrap.
+   */
+  public RightsManagerException(int code, String message, Throwable e) {
+    super(RightsManagerPlugin.class, code, message, e);
+  }
 
-    /**
-     * Create default RightsManagerException.
-     */
-    private RightsManagerException()
-    {
-        super(RightsManagerPlugin.class, 0, "No error");
-    }
+  // //////
 
-    /**
-     * @return unique instance of the default RightsManagerException.
-     */
-    public static RightsManagerException getDefaultException()
-    {
-        return DEFAULT_EXCEPTION;
-    }
+  /**
+   * Create default RightsManagerException.
+   */
+  private RightsManagerException() {
+    super(RightsManagerPlugin.class, 0, "No error");
+  }
+
+  /**
+   * @return unique instance of the default RightsManagerException.
+   */
+  public static RightsManagerException getDefaultException() {
+    return DEFAULT_EXCEPTION;
+  }
 }

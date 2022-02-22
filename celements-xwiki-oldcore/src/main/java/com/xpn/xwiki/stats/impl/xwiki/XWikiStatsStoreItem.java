@@ -25,22 +25,24 @@ import java.util.List;
 
 /**
  * Object containing statistics information to store.
- * 
+ *
  * @version $Id$
  * @since 1.4M2
  */
-public interface XWikiStatsStoreItem
-{
-    /**
-     * @return identifier for this type of store item. This value is used to merge same statistics in one database
-     *         query.
-     */
-    String getId();
+public interface XWikiStatsStoreItem {
 
-    /**
-     * Store provided statistics into the database.
-     * 
-     * @param statsList the list of statistics item to store.
-     */
-    void store(List<XWikiStatsStoreItem> statsList);
+  /**
+   * @return identifier for this type of store item. This value is used to merge same statistics in
+   *         one database
+   *         query.
+   */
+  String getId();
+
+  /**
+   * Store provided statistics into the database.
+   *
+   * @param statsList
+   *          the list of statistics item to store.
+   */
+  void store(List<XWikiStatsStoreItem> statsList);
 }

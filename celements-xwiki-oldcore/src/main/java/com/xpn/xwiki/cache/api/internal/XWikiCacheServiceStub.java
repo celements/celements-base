@@ -23,9 +23,10 @@ package com.xpn.xwiki.cache.api.internal;
 
 import java.util.Properties;
 
-import org.xwiki.cache.CacheFactory;
 import org.xwiki.cache.CacheException;
+import org.xwiki.cache.CacheFactory;
 import org.xwiki.cache.config.CacheConfiguration;
+import org.xwiki.cache.eviction.EntryEvictionConfiguration;
 import org.xwiki.cache.eviction.LRUEvictionConfiguration;
 
 import com.xpn.xwiki.XWiki;
@@ -34,94 +35,97 @@ import com.xpn.xwiki.cache.api.XWikiCache;
 import com.xpn.xwiki.cache.api.XWikiCacheService;
 
 @Deprecated
-public class XWikiCacheServiceStub implements XWikiCacheService
-{
-    CacheFactory cacheFactory;
+public class XWikiCacheServiceStub implements XWikiCacheService {
 
-    CacheFactory localCacheFactory;
+  CacheFactory cacheFactory;
 
-    public XWikiCacheServiceStub(CacheFactory cacheFactory, CacheFactory localCacheFactory)
-    {
-        this.cacheFactory = cacheFactory;
-        this.localCacheFactory = localCacheFactory;
+  CacheFactory localCacheFactory;
+
+  public XWikiCacheServiceStub(CacheFactory cacheFactory, CacheFactory localCacheFactory) {
+    this.cacheFactory = cacheFactory;
+    this.localCacheFactory = localCacheFactory;
+  }
+
+  @Override
+  public void init(XWiki context) {}
+
+  @Override
+  public XWikiCache newCache(String cacheName) throws XWikiException {
+    CacheConfiguration configuration = new CacheConfiguration();
+    configuration.setConfigurationId(cacheName);
+
+    try {
+      return new XWikiCacheStub(this.cacheFactory.newCache(configuration));
+    } catch (CacheException e) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE,
+          XWikiException.ERROR_CACHE_INITIALIZING,
+          "Failed to create new cache", e);
     }
+  }
 
-    public void init(XWiki context)
-    {
+  @Override
+  public XWikiCache newCache(String cacheName, int capacity) throws XWikiException {
+    CacheConfiguration configuration = new CacheConfiguration();
+    configuration.setConfigurationId(cacheName);
+    LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
+    lru.setMaxEntries(capacity);
+    configuration.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
+
+    try {
+      return new XWikiCacheStub(this.cacheFactory.newCache(configuration));
+    } catch (CacheException e) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE,
+          XWikiException.ERROR_CACHE_INITIALIZING,
+          "Failed to create new cache", e);
     }
+  }
 
-    public XWikiCache newCache(String cacheName) throws XWikiException
-    {
-        CacheConfiguration configuration = new CacheConfiguration();
-        configuration.setConfigurationId(cacheName);
+  @Override
+  public XWikiCache newCache(String cacheName, Properties props) throws XWikiException {
+    return newCache(cacheName);
+  }
 
-        try {
-            return new XWikiCacheStub(this.cacheFactory.newCache(configuration));
-        } catch (CacheException e) {
-            throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE, XWikiException.ERROR_CACHE_INITIALIZING,
-                "Failed to create new cache", e);
-        }
+  @Override
+  public XWikiCache newCache(String cacheName, Properties props, int capacity)
+      throws XWikiException {
+    return newCache(cacheName, capacity);
+  }
+
+  @Override
+  public XWikiCache newLocalCache() throws XWikiException {
+    try {
+      return new XWikiCacheStub(this.localCacheFactory.newCache(new CacheConfiguration()));
+    } catch (CacheException e) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE,
+          XWikiException.ERROR_CACHE_INITIALIZING,
+          "Failed to create new cache", e);
     }
+  }
 
-    public XWikiCache newCache(String cacheName, int capacity) throws XWikiException
-    {
-        CacheConfiguration configuration = new CacheConfiguration();
-        configuration.setConfigurationId(cacheName);
-        LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
-        lru.setMaxEntries(capacity);
-        configuration.put(LRUEvictionConfiguration.CONFIGURATIONID, lru);
+  @Override
+  public XWikiCache newLocalCache(int capacity) throws XWikiException {
+    CacheConfiguration configuration = new CacheConfiguration();
+    LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
+    lru.setMaxEntries(capacity);
+    configuration.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
 
-        try {
-            return new XWikiCacheStub(this.cacheFactory.newCache(configuration));
-        } catch (CacheException e) {
-            throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE, XWikiException.ERROR_CACHE_INITIALIZING,
-                "Failed to create new cache", e);
-        }
+    try {
+      return new XWikiCacheStub(this.localCacheFactory.newCache(configuration));
+    } catch (CacheException e) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE,
+          XWikiException.ERROR_CACHE_INITIALIZING,
+          "Failed to create new cache", e);
     }
+  }
 
-    public XWikiCache newCache(String cacheName, Properties props) throws XWikiException
-    {
-        return newCache(cacheName);
-    }
+  @Override
+  public XWikiCache newLocalCache(Properties props) throws XWikiException {
+    return newLocalCache();
+  }
 
-    public XWikiCache newCache(String cacheName, Properties props, int capacity) throws XWikiException
-    {
-        return newCache(cacheName, capacity);
-    }
-
-    public XWikiCache newLocalCache() throws XWikiException
-    {
-        try {
-            return new XWikiCacheStub(this.localCacheFactory.newCache(new CacheConfiguration()));
-        } catch (CacheException e) {
-            throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE, XWikiException.ERROR_CACHE_INITIALIZING,
-                "Failed to create new cache", e);
-        }
-    }
-
-    public XWikiCache newLocalCache(int capacity) throws XWikiException
-    {
-        CacheConfiguration configuration = new CacheConfiguration();
-        LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
-        lru.setMaxEntries(capacity);
-        configuration.put(LRUEvictionConfiguration.CONFIGURATIONID, lru);
-
-        try {
-            return new XWikiCacheStub(this.localCacheFactory.newCache(configuration));
-        } catch (CacheException e) {
-            throw new XWikiException(XWikiException.MODULE_XWIKI_CACHE, XWikiException.ERROR_CACHE_INITIALIZING,
-                "Failed to create new cache", e);
-        }
-    }
-
-    public XWikiCache newLocalCache(Properties props) throws XWikiException
-    {
-        return newLocalCache();
-    }
-
-    public XWikiCache newLocalCache(Properties props, int capacity) throws XWikiException
-    {
-        return newLocalCache(capacity);
-    }
+  @Override
+  public XWikiCache newLocalCache(Properties props, int capacity) throws XWikiException {
+    return newLocalCache(capacity);
+  }
 
 }

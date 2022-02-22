@@ -26,37 +26,33 @@ import java.util.List;
 
 import com.xpn.xwiki.plugin.charts.exceptions.ParamException;
 
-public class ListChartParam extends AbstractChartParam
-{
-    private ChartParam param;
+public class ListChartParam extends AbstractChartParam {
 
-    public ListChartParam(ChartParam param)
-    {
-        this(param, true);
-    }
+  private ChartParam param;
 
-    public ListChartParam(ChartParam param, boolean optional)
-    {
-        super(param.getName(), optional);
-        this.param = param;
-    }
+  public ListChartParam(ChartParam param) {
+    this(param, true);
+  }
 
-    @Override
-    public Class getType()
-    {
-        return List.class;
-    }
+  public ListChartParam(ChartParam param, boolean optional) {
+    super(param.getName(), optional);
+    this.param = param;
+  }
 
-    @Override
-    public Object convert(String value) throws ParamException
-    {
-        List list = parseList(value);
-        List result = new ArrayList(list.size());
-        Iterator it = list.iterator();
-        while (it.hasNext()) {
-            String s = (String) it.next();
-            result.add(param.convert(s));
-        }
-        return result;
+  @Override
+  public Class getType() {
+    return List.class;
+  }
+
+  @Override
+  public Object convert(String value) throws ParamException {
+    List list = parseList(value);
+    List result = new ArrayList(list.size());
+    Iterator it = list.iterator();
+    while (it.hasNext()) {
+      String s = (String) it.next();
+      result.add(param.convert(s));
     }
+    return result;
+  }
 }

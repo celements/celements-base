@@ -34,36 +34,35 @@ import org.radeox.util.StringBufferWriter;
 
 import com.xpn.xwiki.render.macro.XWikiCodeMacro;
 
-public class CodeFilter extends RegexTokenFilter
-{
-    private static Log log = LogFactory.getLog(CodeFilter.class);
+public class CodeFilter extends RegexTokenFilter {
 
-    private Macro codeMacro = new XWikiCodeMacro();
-    
-    public CodeFilter()
-    {
-        super("\\{(code)(?::([^\\}]*))?\\}(.*?)\\{code}", MULTILINE);
+  private static Log log = LogFactory.getLog(CodeFilter.class);
+
+  private Macro codeMacro = new XWikiCodeMacro();
+
+  public CodeFilter() {
+    super("\\{(code)(?::([^\\}]*))?\\}(.*?)\\{code}", MULTILINE);
+  }
+
+  @Override
+  public void setInitialContext(InitialRenderContext context) {
+    this.codeMacro.setInitialContext(context);
+  }
+
+  @Override
+  public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    // Call the XWikiCodeMacro macro...
+    Writer writer = new StringBufferWriter(buffer);
+
+    MacroParameter mParams = context.getMacroParameter();
+    mParams.setParams(result.group(2));
+    mParams.setContent(result.group(3));
+
+    try {
+      this.codeMacro.execute(writer, mParams);
+    } catch (Throwable e) {
+      log.warn("CodeFilter: unable to format macro: " + result.group(1), e);
+      buffer.append("<div class=\"error\">" + result.group(1) + ": " + e.getMessage() + "</div>");
     }
-
-    public void setInitialContext(InitialRenderContext context)
-    {
-        this.codeMacro.setInitialContext(context);
-    }
-
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context)
-    {
-    	// Call the XWikiCodeMacro macro...
-        Writer writer = new StringBufferWriter(buffer);
-
-        MacroParameter mParams = context.getMacroParameter();
-        mParams.setParams(result.group(2));
-        mParams.setContent(result.group(3));
-
-        try {
-        	this.codeMacro.execute(writer, mParams);
-        } catch (Throwable e) {
-            log.warn("CodeFilter: unable to format macro: " + result.group(1), e);
-            buffer.append("<div class=\"error\">" + result.group(1) + ": " + e.getMessage() + "</div>");
-        }
-    }
+  }
 }

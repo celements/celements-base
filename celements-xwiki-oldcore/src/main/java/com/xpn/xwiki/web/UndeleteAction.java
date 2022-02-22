@@ -30,46 +30,46 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Action for restoring documents from the recycle bin.
- * 
+ *
  * @version $Id$
  * @since 1.2M1
  */
-public class UndeleteAction extends XWikiAction
-{
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        // CSRF prevention
-        if (!csrfTokenCheck(context)) {
-            return false;
-        }
+public class UndeleteAction extends XWikiAction {
 
-        XWiki xwiki = context.getWiki();
-        XWikiRequest request = context.getRequest();
-        XWikiResponse response = context.getResponse();
-        XWikiDocument doc = context.getDoc();
-
-        if (doc.isNew() && xwiki.hasRecycleBin(context)) {
-            String sindex = request.getParameter("id");
-            long index = Long.parseLong(sindex);
-            XWikiDocument newdoc = xwiki.getRecycleBinStore().restoreFromRecycleBin(doc, index, context, true);
-            xwiki.saveDocument(newdoc, "restored from recycle bin", context);
-            xwiki.getRecycleBinStore().deleteFromRecycleBin(doc, index, context, true);
-            // Save attachments
-            List<XWikiAttachment> attachlist = newdoc.getAttachmentList();
-            if (attachlist.size() > 0) {
-                for (XWikiAttachment attachment : attachlist) {
-                    // Do not increment attachment version
-                    attachment.setMetaDataDirty(false);
-                    attachment.getAttachment_content().setContentDirty(false);
-                    xwiki.getAttachmentStore().saveAttachmentContent(attachment, false, context, true);
-                }
-            }
-        }
-        sendRedirect(response, doc.getURL("view", context));
-        return false;
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    // CSRF prevention
+    if (!csrfTokenCheck(context)) {
+      return false;
     }
+
+    XWiki xwiki = context.getWiki();
+    XWikiRequest request = context.getRequest();
+    XWikiResponse response = context.getResponse();
+    XWikiDocument doc = context.getDoc();
+
+    if (doc.isNew() && xwiki.hasRecycleBin(context)) {
+      String sindex = request.getParameter("id");
+      long index = Long.parseLong(sindex);
+      XWikiDocument newdoc = xwiki.getRecycleBinStore().restoreFromRecycleBin(doc, index, context,
+          true);
+      xwiki.saveDocument(newdoc, "restored from recycle bin", context);
+      xwiki.getRecycleBinStore().deleteFromRecycleBin(doc, index, context, true);
+      // Save attachments
+      List<XWikiAttachment> attachlist = newdoc.getAttachmentList();
+      if (attachlist.size() > 0) {
+        for (XWikiAttachment attachment : attachlist) {
+          // Do not increment attachment version
+          attachment.setMetaDataDirty(false);
+          attachment.getAttachment_content().setContentDirty(false);
+          xwiki.getAttachmentStore().saveAttachmentContent(attachment, false, context, true);
+        }
+      }
+    }
+    sendRedirect(response, doc.getURL("view", context));
+    return false;
+  }
 }

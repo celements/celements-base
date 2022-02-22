@@ -26,65 +26,66 @@ import org.xwiki.observation.event.filter.FixedNameEventFilter;
 
 /**
  * Base class for all attachment {@link org.xwiki.observation.event.Event events}.
- * 
+ *
  * @version $Id$
  * @since 2.6RC2
  */
-public class AbstractAttachmentEvent extends AbstractDocumentEvent
-{
-    /**
-     * The version identifier for this Serializable class. Increment only if the <i>serialized</i> form of the class
-     * changes.
-     */
-    private static final long serialVersionUID = 1L;
+public class AbstractAttachmentEvent extends AbstractDocumentEvent {
 
-    /**
-     * The name of the attachment that is used in events.
-     */
-    private String name;
+  /**
+   * The version identifier for this Serializable class. Increment only if the <i>serialized</i>
+   * form of the class
+   * changes.
+   */
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * Constructor initializing the event filter with an
-     * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event will match any
-     * other attachment event (add, update, delete).
-     */
-    public AbstractAttachmentEvent()
-    {
-        super();
-    }
+  /**
+   * The name of the attachment that is used in events.
+   */
+  private String name;
 
-    /**
-     * Constructor initializing the event filter with a {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
-     * meaning that this event will match only attachment events affecting the document matching the passed document
-     * name.
-     * 
-     * @param documentName the name of the updated document to match
-     * @param name the name of the attachment added/updated/deleted
-     */
-    public AbstractAttachmentEvent(String documentName, String name)
-    {
-        // TODO: depreciate this constructor and add a constructor taking a document reference instead
-        super(new FixedNameEventFilter(documentName));
-        this.name = name;
-    }
+  /**
+   * Constructor initializing the event filter with an
+   * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event
+   * will match any
+   * other attachment event (add, update, delete).
+   */
+  public AbstractAttachmentEvent() {}
 
-    /**
-     * Constructor using a custom {@link EventFilter}.
-     * 
-     * @param eventFilter the filter to use for matching events
-     */
-    public AbstractAttachmentEvent(EventFilter eventFilter)
-    {
-        super(eventFilter);
-    }
+  /**
+   * Constructor initializing the event filter with a
+   * {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
+   * meaning that this event will match only attachment events affecting the document matching the
+   * passed document
+   * name.
+   *
+   * @param documentName
+   *          the name of the updated document to match
+   * @param name
+   *          the name of the attachment added/updated/deleted
+   */
+  public AbstractAttachmentEvent(String documentName, String name) {
+    // TODO: depreciate this constructor and add a constructor taking a document reference instead
+    super(new FixedNameEventFilter(documentName));
+    this.name = name;
+  }
 
-    /**
-     * Retrieves the name of the attachment added/updated/deleted in the event.
-     * 
-     * @return name name of the attachment
-     */
-    public String getName()
-    {
-        return name;
-    }
+  /**
+   * Constructor using a custom {@link EventFilter}.
+   *
+   * @param eventFilter
+   *          the filter to use for matching events
+   */
+  public AbstractAttachmentEvent(EventFilter eventFilter) {
+    super(eventFilter);
+  }
+
+  /**
+   * Retrieves the name of the attachment added/updated/deleted in the event.
+   *
+   * @return name name of the attachment
+   */
+  public String getName() {
+    return name;
+  }
 }

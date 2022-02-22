@@ -11,7 +11,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details, published at 
+ * GNU Lesser General Public License for more details, published at
  * http://www.gnu.org/copyleft/lesser.html or in lesser.txt in the
  * root folder of this distribution.
 
@@ -33,10 +33,13 @@ import org.radeox.macro.parameter.MacroParameter;
 import com.xpn.xwiki.api.Document;
 
 public class UseMacro extends BaseLocaleMacro {
+
+  @Override
   public String getLocaleKey() {
     return "macro.use";
   }
 
+  @Override
   public void execute(Writer writer, MacroParameter params)
       throws IllegalArgumentException, IOException {
 
@@ -45,17 +48,18 @@ public class UseMacro extends BaseLocaleMacro {
     Document doc = (Document) vcontext.get("doc");
     com.xpn.xwiki.api.Object obj;
 
-      // We lookup the className for this object
+    // We lookup the className for this object
     String classname = params.get("classname", 0);
 
     // Optionnaly we see if it was asked for an object number
     String snb = params.get("nb", 1);
 
     // We find the corresponding object
-    if (snb!=null)
-     obj = doc.getObject(classname, Integer.parseInt(snb));
-    else
-     obj = doc.getObject(classname);
+    if (snb != null) {
+      obj = doc.getObject(classname, Integer.parseInt(snb));
+    } else {
+      obj = doc.getObject(classname);
+    }
 
     // We assign this object as the used object
     // Future calls to doc.display() or {field} will make use of this object

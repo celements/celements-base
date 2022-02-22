@@ -36,44 +36,44 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Validate {@link DocumentEventConverter};
- * 
+ *
  * @version $Id$
  */
-public class DocumentEventConverterTest extends AbstractBridgedXWikiComponentTestCase
-{
-    public void testConvertWithOriginalDocNull() throws Exception
-    {
-        EventConverterManager eventConverterManager = getComponentManager().lookup(EventConverterManager.class);
+public class DocumentEventConverterTest extends AbstractBridgedXWikiComponentTestCase {
 
-        // local -> remote
+  public void testConvertWithOriginalDocNull() throws Exception {
+    EventConverterManager eventConverterManager = getComponentManager()
+        .lookup(EventConverterManager.class);
 
-        LocalEventData localEvent = new LocalEventData();
-        localEvent.setEvent(new DocumentUpdatedEvent(new DocumentReference("wiki","space","page")));
-        localEvent.setSource(new XWikiDocument("wiki", "space", "page"));
-        localEvent.setData(new XWikiContext());
+    // local -> remote
 
-        RemoteEventData remoteEvent = eventConverterManager.createRemoteEventData(localEvent);
+    LocalEventData localEvent = new LocalEventData();
+    localEvent.setEvent(new DocumentUpdatedEvent(new DocumentReference("wiki", "space", "page")));
+    localEvent.setSource(new XWikiDocument("wiki", "space", "page"));
+    localEvent.setData(new XWikiContext());
 
-        assertFalse(remoteEvent.getSource() instanceof XWikiDocument);
-        assertFalse(remoteEvent.getData() instanceof XWikiContext);
+    RemoteEventData remoteEvent = eventConverterManager.createRemoteEventData(localEvent);
 
-        // serialize/unserialize
-        ByteArrayOutputStream sos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(sos);
-        oos.writeObject(remoteEvent);
-        ByteArrayInputStream sis = new ByteArrayInputStream(sos.toByteArray());
-        ObjectInputStream ois = new ObjectInputStream(sis);
-        remoteEvent = (RemoteEventData) ois.readObject();
+    assertFalse(remoteEvent.getSource() instanceof XWikiDocument);
+    assertFalse(remoteEvent.getData() instanceof XWikiContext);
 
-        // remote -> local
+    // serialize/unserialize
+    ByteArrayOutputStream sos = new ByteArrayOutputStream();
+    ObjectOutputStream oos = new ObjectOutputStream(sos);
+    oos.writeObject(remoteEvent);
+    ByteArrayInputStream sis = new ByteArrayInputStream(sos.toByteArray());
+    ObjectInputStream ois = new ObjectInputStream(sis);
+    remoteEvent = (RemoteEventData) ois.readObject();
 
-        LocalEventData localEvent2 = eventConverterManager.createLocalEventData(remoteEvent);
+    // remote -> local
 
-        assertTrue(localEvent2.getSource() instanceof XWikiDocument);
-        assertTrue(localEvent2.getData() instanceof XWikiContext);
-        assertEquals("wiki", ((XWikiDocument) localEvent2.getSource()).getWikiName());
-        assertEquals("space", ((XWikiDocument) localEvent2.getSource()).getSpaceName());
-        assertEquals("page", ((XWikiDocument) localEvent2.getSource()).getPageName());
-        assertTrue(((XWikiDocument) localEvent2.getSource()).getOriginalDocument().isNew());
-    }
+    LocalEventData localEvent2 = eventConverterManager.createLocalEventData(remoteEvent);
+
+    assertTrue(localEvent2.getSource() instanceof XWikiDocument);
+    assertTrue(localEvent2.getData() instanceof XWikiContext);
+    assertEquals("wiki", ((XWikiDocument) localEvent2.getSource()).getWikiName());
+    assertEquals("space", ((XWikiDocument) localEvent2.getSource()).getSpaceName());
+    assertEquals("page", ((XWikiDocument) localEvent2.getSource()).getPageName());
+    assertTrue(((XWikiDocument) localEvent2.getSource()).getOriginalDocument().isNew());
+  }
 }

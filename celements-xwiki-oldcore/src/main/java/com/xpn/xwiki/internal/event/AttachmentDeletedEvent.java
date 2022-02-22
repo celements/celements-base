@@ -24,48 +24,50 @@ import org.xwiki.observation.event.filter.EventFilter;
 
 /**
  * An event triggered when an attachment is deleted.
- * 
+ *
  * @version $Id$
  * @since 2.6RC2
  */
-public class AttachmentDeletedEvent extends AbstractAttachmentEvent
-{
-    /**
-     * The version identifier for this Serializable class. Increment only if the <i>serialized</i> form of the class
-     * changes.
-     */
-    private static final long serialVersionUID = 1L;
+public class AttachmentDeletedEvent extends AbstractAttachmentEvent {
 
-    /**
-     * Constructor initializing the event filter with an
-     * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event will match any
-     * other attachment delete event.
-     */
-    public AttachmentDeletedEvent()
-    {
-        super();
-    }
+  /**
+   * The version identifier for this Serializable class. Increment only if the <i>serialized</i>
+   * form of the class
+   * changes.
+   */
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * Constructor initializing the event filter with a {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
-     * meaning that this event will match only attachment delete events affecting the document matching the passed
-     * document name.
-     * 
-     * @param documentName the name of the document to match
-     * @param name the name of the deleted attachment
-     */
-    public AttachmentDeletedEvent(String documentName, String name)
-    {
-        super(documentName, name);
-    }
+  /**
+   * Constructor initializing the event filter with an
+   * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event
+   * will match any
+   * other attachment delete event.
+   */
+  public AttachmentDeletedEvent() {}
 
-    /**
-     * Constructor using a custom {@link EventFilter}.
-     * 
-     * @param eventFilter the filter to use for matching events
-     */
-    public AttachmentDeletedEvent(EventFilter eventFilter)
-    {
-        super(eventFilter);
-    }
+  /**
+   * Constructor initializing the event filter with a
+   * {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
+   * meaning that this event will match only attachment delete events affecting the document
+   * matching the passed
+   * document name.
+   *
+   * @param documentName
+   *          the name of the document to match
+   * @param name
+   *          the name of the deleted attachment
+   */
+  public AttachmentDeletedEvent(String documentName, String name) {
+    super(documentName, name);
+  }
+
+  /**
+   * Constructor using a custom {@link EventFilter}.
+   *
+   * @param eventFilter
+   *          the filter to use for matching events
+   */
+  public AttachmentDeletedEvent(EventFilter eventFilter) {
+    super(eventFilter);
+  }
 }

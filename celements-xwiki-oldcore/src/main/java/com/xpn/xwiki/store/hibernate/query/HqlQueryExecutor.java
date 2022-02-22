@@ -35,130 +35,132 @@ import org.xwiki.query.QueryExecutor;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
+import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 import com.xpn.xwiki.util.Util;
 
 /**
  * QueryExecutor implementation for Hibernate Store.
- * 
+ *
  * @version $Id$
  * @since 1.6M1
  */
 @Component("hql")
-public class HqlQueryExecutor implements QueryExecutor, Initializable
-{
-    /**
-     * Session factory needed for register named queries mapping.
-     */
-    @Requirement
-    private HibernateSessionFactory sessionFactory;
+public class HqlQueryExecutor implements QueryExecutor, Initializable {
 
-    /**
-     * Path to hibernate mapping with named queries. Configured via component manager.
-     */
-    private String mappingPath = "queries.hbm.xml";
+  /**
+   * Session factory needed for register named queries mapping.
+   */
+  @Requirement
+  private HibernateSessionFactory sessionFactory;
 
-    /**
-     * Used for access to XWikiContext.
-     */
-    @Requirement
-    private Execution execution;
+  /**
+   * Path to hibernate mapping with named queries. Configured via component manager.
+   */
+  private String mappingPath = "queries.hbm.xml";
 
-    /**
-     * {@inheritDoc}
-     * @see Initializable#initialize()
-     */
-    public void initialize() throws InitializationException
-    {
-        this.sessionFactory.getConfiguration().addInputStream(Util.getResourceAsStream(this.mappingPath));
-    }
+  /**
+   * Used for access to XWikiContext.
+   */
+  @Requirement
+  private Execution execution;
 
-    /**
-     * {@inheritDoc}
-     */
-    public <T> List<T> execute(final Query query) throws QueryException
-    {
-        String olddatabase = getContext().getDatabase();
-        try {
-            if (query.getWiki() != null) {
-                getContext().setDatabase(query.getWiki());
-            }
-            return getStore().executeRead(getContext(), true, new HibernateCallback<List<T>>()
-            {
-                @SuppressWarnings("unchecked")
-                public List<T> doInHibernate(Session session)
-                {
-                    org.hibernate.Query hquery = createHibernateQuery(session, query);
-                    populateParameters(hquery, query);
-                    return hquery.list();
-                }
-            });
-        } catch (XWikiException e) {
-            throw new QueryException("Exception while execute query", query, e);
-        } finally {
-            getContext().setDatabase(olddatabase);
+  /**
+   * {@inheritDoc}
+   *
+   * @see Initializable#initialize()
+   */
+  @Override
+  public void initialize() throws InitializationException {
+    this.sessionFactory.getConfiguration()
+        .addInputStream(Util.getResourceAsStream(this.mappingPath));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public <T> List<T> execute(final Query query) throws QueryException {
+    String olddatabase = getContext().getDatabase();
+    try {
+      if (query.getWiki() != null) {
+        getContext().setDatabase(query.getWiki());
+      }
+      return getStore().executeRead(getContext(), true, new HibernateCallback<List<T>>() {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<T> doInHibernate(Session session) {
+          org.hibernate.Query hquery = createHibernateQuery(session, query);
+          populateParameters(hquery, query);
+          return hquery.list();
         }
+      });
+    } catch (XWikiException e) {
+      throw new QueryException("Exception while execute query", query, e);
+    } finally {
+      getContext().setDatabase(olddatabase);
     }
+  }
 
-    /**
-     * @param session hibernate session
-     * @param query Query object
-     * @return hibernate query
-     */
-    protected org.hibernate.Query createHibernateQuery(Session session, Query query)
-    {
-        return query.isNamed()
-            ? session.getNamedQuery(query.getStatement())
-            : session.createQuery(query.getStatement());
-    }
+  /**
+   * @param session
+   *          hibernate session
+   * @param query
+   *          Query object
+   * @return hibernate query
+   */
+  protected org.hibernate.Query createHibernateQuery(Session session, Query query) {
+    return query.isNamed()
+        ? session.getNamedQuery(query.getStatement())
+        : session.createQuery(query.getStatement());
+  }
 
-    /**
-     * @param hquery query to populate parameters
-     * @param query query from to populate.
-     */
-    protected void populateParameters(org.hibernate.Query hquery, Query query)
-    {
-        if (query.getOffset() > 0) {
-            hquery.setFirstResult(query.getOffset());
-        }
-        if (query.getLimit() > 0) {
-            hquery.setMaxResults(query.getLimit());
-        }
-        for (Entry<String, Object> e : query.getNamedParameters().entrySet()) {
-            hquery.setParameter(e.getKey(), e.getValue());
-        }
-        if (query.getPositionalParameters().size() > 0) {
-            int start = Collections.min(query.getPositionalParameters().keySet());
-            if (start == 0) {
-                // jdbc-style positional parameters. "?"
-                for (Entry<Integer, Object> e : query.getPositionalParameters().entrySet()) {
-                    hquery.setParameter(e.getKey(), e.getValue());
-                }
-            } else {
-                // jpql-style. "?index"
-                for (Entry<Integer, Object> e : query.getPositionalParameters().entrySet()) {
-                    // hack. hibernate assume "?1" is named parameter, so use string "1".
-                    hquery.setParameter("" + e.getKey(), e.getValue());
-                }
-            }
-        }
+  /**
+   * @param hquery
+   *          query to populate parameters
+   * @param query
+   *          query from to populate.
+   */
+  protected void populateParameters(org.hibernate.Query hquery, Query query) {
+    if (query.getOffset() > 0) {
+      hquery.setFirstResult(query.getOffset());
     }
+    if (query.getLimit() > 0) {
+      hquery.setMaxResults(query.getLimit());
+    }
+    for (Entry<String, Object> e : query.getNamedParameters().entrySet()) {
+      hquery.setParameter(e.getKey(), e.getValue());
+    }
+    if (query.getPositionalParameters().size() > 0) {
+      int start = Collections.min(query.getPositionalParameters().keySet());
+      if (start == 0) {
+        // jdbc-style positional parameters. "?"
+        for (Entry<Integer, Object> e : query.getPositionalParameters().entrySet()) {
+          hquery.setParameter(e.getKey(), e.getValue());
+        }
+      } else {
+        // jpql-style. "?index"
+        for (Entry<Integer, Object> e : query.getPositionalParameters().entrySet()) {
+          // hack. hibernate assume "?1" is named parameter, so use string "1".
+          hquery.setParameter("" + e.getKey(), e.getValue());
+        }
+      }
+    }
+  }
 
-    /**
-     * @return Store component
-     */
-    protected XWikiHibernateStore getStore()
-    {
-        return getContext().getWiki().getHibernateStore();
-    }
+  /**
+   * @return Store component
+   */
+  protected XWikiHibernateStore getStore() {
+    return getContext().getWiki().getHibernateStore();
+  }
 
-    /**
-     * @return XWiki Context
-     */
-    protected XWikiContext getContext()
-    {
-        return (XWikiContext) execution.getContext().getProperty("xwikicontext");
-    }
+  /**
+   * @return XWiki Context
+   */
+  protected XWikiContext getContext() {
+    return (XWikiContext) execution.getContext().getProperty("xwikicontext");
+  }
 }

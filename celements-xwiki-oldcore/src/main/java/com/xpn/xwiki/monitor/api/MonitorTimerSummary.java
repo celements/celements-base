@@ -22,52 +22,54 @@
 package com.xpn.xwiki.monitor.api;
 
 public class MonitorTimerSummary {
-    private String name;
-    private long duration = 0;
-    private long nbcalls = 0;
-    private long nbrequests = 0;
 
-    public MonitorTimerSummary(String name) {
-        this.name = name;
-    }
+  private String name;
+  private long duration = 0;
+  private long nbcalls = 0;
+  private long nbrequests = 0;
 
-    public String getName() {
-        return name;
-    }
+  public MonitorTimerSummary(String name) {
+    this.name = name;
+  }
 
-    public void addTimer(long duration) {
-        this.duration += duration;
-        this.nbcalls++;
-        this.nbrequests = 1;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public long getDuration() {
-        return duration;
-    }
+  public void addTimer(long duration) {
+    this.duration += duration;
+    this.nbcalls++;
+    this.nbrequests = 1;
+  }
 
-    public long getNbCalls() {
-        return nbcalls;
-    }
+  public long getDuration() {
+    return duration;
+  }
 
-    public void add(MonitorTimerSummary stimer) {
-        duration += stimer.getDuration();
-        nbcalls += stimer.getNbCalls();
-        nbrequests++;
-    }
+  public long getNbCalls() {
+    return nbcalls;
+  }
 
-    public long getRequests() {
-        return nbrequests;
-    }
+  public void add(MonitorTimerSummary stimer) {
+    duration += stimer.getDuration();
+    nbcalls += stimer.getNbCalls();
+    nbrequests++;
+  }
 
-    public String toString() {
-        StringBuffer str = new StringBuffer();
-        str.append(name);
-        str.append(": duration=");
-        str.append(getDuration());
-        str.append(" nbcalls=");
-        str.append(getNbCalls());
-        str.append(" nbrequests=");
-        str.append(getRequests());
-        return str.toString();
-    }
+  public long getRequests() {
+    return nbrequests;
+  }
+
+  @Override
+  public String toString() {
+    StringBuffer str = new StringBuffer();
+    str.append(name);
+    str.append(": duration=");
+    str.append(getDuration());
+    str.append(" nbcalls=");
+    str.append(getNbCalls());
+    str.append(" nbrequests=");
+    str.append(getRequests());
+    return str.toString();
+  }
 }

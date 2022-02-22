@@ -28,36 +28,37 @@ import com.xpn.xwiki.web.XWikiURLFactory;
 
 /**
  * Unit tests for {@link DefaultDocumentAccessBridge}.
- * 
+ *
  * @version $Id$
  */
-public class DefaultDocumentAccessBridgeTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private DocumentAccessBridge documentAccessBridge;
+public class DefaultDocumentAccessBridgeTest extends AbstractBridgedXWikiComponentTestCase {
 
-    private Mock mockXWiki;
+  private DocumentAccessBridge documentAccessBridge;
 
-    private Mock mockURLFactory;
+  private Mock mockXWiki;
 
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  private Mock mockURLFactory;
 
-        this.mockXWiki = mock(XWiki.class);
-        this.mockURLFactory = mock(XWikiURLFactory.class);
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-        getContext().setURLFactory((XWikiURLFactory) mockURLFactory.proxy());
-        getContext().setWiki((XWiki) mockXWiki.proxy());
+    this.mockXWiki = mock(XWiki.class);
+    this.mockURLFactory = mock(XWikiURLFactory.class);
 
-        this.documentAccessBridge = getComponentManager().lookup(DocumentAccessBridge.class);
-    }
+    getContext().setURLFactory((XWikiURLFactory) mockURLFactory.proxy());
+    getContext().setWiki((XWiki) mockXWiki.proxy());
 
-    public void testGetUrlEmptyDocument()
-    {
-        getContext().setDoc(new XWikiDocument("Space", "Page"));
-        this.mockXWiki.stubs().method("getURL").will(returnValue("/xwiki/bin/view/Main/WebHome"));
+    this.documentAccessBridge = getComponentManager().lookup(DocumentAccessBridge.class);
+  }
 
-        assertEquals("/xwiki/bin/view/Main/WebHome", this.documentAccessBridge.getURL("", "view", "", ""));
-        assertEquals("/xwiki/bin/view/Main/WebHome", this.documentAccessBridge.getURL(null, "view", "", ""));
-    }
+  public void testGetUrlEmptyDocument() {
+    getContext().setDoc(new XWikiDocument("Space", "Page"));
+    this.mockXWiki.stubs().method("getURL").will(returnValue("/xwiki/bin/view/Main/WebHome"));
+
+    assertEquals("/xwiki/bin/view/Main/WebHome",
+        this.documentAccessBridge.getURL("", "view", "", ""));
+    assertEquals("/xwiki/bin/view/Main/WebHome",
+        this.documentAccessBridge.getURL(null, "view", "", ""));
+  }
 }

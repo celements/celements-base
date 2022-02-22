@@ -1,30 +1,31 @@
 package com.xpn.xwiki.plugin.query;
 
 public class OrderClause extends Object {
-    public final static int ASC = 1;
-    public final static int DESC = 2;
 
-    private String property;
-    private int order;
+  public final static int ASC = 1;
+  public final static int DESC = 2;
 
-    public OrderClause(String property, int ascdesc) {
-        setProperty(property);
-        setOrder(ascdesc);
-    }
+  private String property;
+  private int order;
 
-    public String getProperty() {
-        return property;
-    }
+  public OrderClause(String property, int ascdesc) {
+    setProperty(property);
+    setOrder(ascdesc);
+  }
 
-    public void setProperty(String property) {
-        this.property = property;
-    }
+  public String getProperty() {
+    return property;
+  }
 
-    public int getOrder() {
-        return order;
-    }
+  public void setProperty(String property) {
+    this.property = property;
+  }
 
-    public void setOrder(int order) {
-        this.order = order;
-    }
+  public int getOrder() {
+    return order;
+  }
+
+  public void setOrder(int order) {
+    this.order = order;
+  }
 }

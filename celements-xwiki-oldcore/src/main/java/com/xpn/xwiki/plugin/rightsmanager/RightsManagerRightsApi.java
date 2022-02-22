@@ -33,73 +33,77 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * API for managing rights and inheritance.
- * 
+ *
  * @version $Id$
  * @since XWiki Core 1.1.2, XWiki Core 1.2M2
  */
-public class RightsManagerRightsApi extends Api
-{
-    /**
-     * Field name of the last error code inserted in context.
-     */
-    public static final String CONTEXT_LASTERRORCODE = RightsManagerPluginApi.CONTEXT_LASTERRORCODE;
+public class RightsManagerRightsApi extends Api {
 
-    /**
-     * Field name of the last api exception inserted in context.
-     */
-    public static final String CONTEXT_LASTEXCEPTION = RightsManagerPluginApi.CONTEXT_LASTEXCEPTION;
+  /**
+   * Field name of the last error code inserted in context.
+   */
+  public static final String CONTEXT_LASTERRORCODE = RightsManagerPluginApi.CONTEXT_LASTERRORCODE;
 
-    /**
-     * The logging toolkit.
-     */
-    protected static final Log LOG = LogFactory.getLog(RightsManagerRightsApi.class);
+  /**
+   * Field name of the last api exception inserted in context.
+   */
+  public static final String CONTEXT_LASTEXCEPTION = RightsManagerPluginApi.CONTEXT_LASTEXCEPTION;
 
-    /**
-     * Create an instance of RightsManageRightsApi.
-     * 
-     * @param context the XWiki context.
-     */
-    public RightsManagerRightsApi(XWikiContext context)
-    {
-        super(context);
+  /**
+   * The logging toolkit.
+   */
+  protected static final Log LOG = LogFactory.getLog(RightsManagerRightsApi.class);
+
+  /**
+   * Create an instance of RightsManageRightsApi.
+   *
+   * @param context
+   *          the XWiki context.
+   */
+  public RightsManagerRightsApi(XWikiContext context) {
+    super(context);
+  }
+
+  /**
+   * Log error and register {@link #CONTEXT_LASTERRORCODE} and {@link #CONTEXT_LASTEXCEPTION}.
+   *
+   * @param comment
+   *          the comment to use with {@link #LOG}.
+   * @param e
+   *          the exception.
+   */
+  private void logError(String comment, XWikiException e) {
+    LOG.error(comment, e);
+
+    this.context.put(CONTEXT_LASTERRORCODE, new Integer(e.getCode()));
+    this.context.put(CONTEXT_LASTEXCEPTION, e);
+  }
+
+  // Inheritance
+
+  /**
+   * Get the document containing inherited rights of provided document.
+   *
+   * @param spaceOrPage
+   *          the space of page where to get XWikiRights. If null get wiki rights.
+   * @return the document containing inherited rights of provided document.
+   * @throws XWikiException
+   *           error when browsing rights preferences.
+   */
+  public Document getParentPreference(String spaceOrPage) throws XWikiException {
+    Document parent = null;
+
+    try {
+      XWikiDocument xdoc = RightsManager.getInstance().getParentPreference(spaceOrPage, context);
+
+      parent = convert(xdoc);
+    } catch (RightsManagerException e) {
+      logError(
+          MessageFormat.format("Try to get parent rights preference for [{0}]",
+              spaceOrPage),
+          e);
     }
 
-    /**
-     * Log error and register {@link #CONTEXT_LASTERRORCODE} and {@link #CONTEXT_LASTEXCEPTION}.
-     * 
-     * @param comment the comment to use with {@link #LOG}.
-     * @param e the exception.
-     */
-    private void logError(String comment, XWikiException e)
-    {
-        LOG.error(comment, e);
-
-        this.context.put(CONTEXT_LASTERRORCODE, new Integer(e.getCode()));
-        this.context.put(CONTEXT_LASTEXCEPTION, e);
-    }
-
-    // Inheritance
-
-    /**
-     * Get the document containing inherited rights of provided document.
-     * 
-     * @param spaceOrPage the space of page where to get XWikiRights. If null get wiki rights.
-     * @return the document containing inherited rights of provided document.
-     * @throws XWikiException error when browsing rights preferences.
-     */
-    public Document getParentPreference(String spaceOrPage) throws XWikiException
-    {
-        Document parent = null;
-
-        try {
-            XWikiDocument xdoc = RightsManager.getInstance().getParentPreference(spaceOrPage, context);
-
-            parent = convert(xdoc);
-        } catch (RightsManagerException e) {
-            logError(MessageFormat.format("Try to get parent rights preference for [{0}]", new Object[] {spaceOrPage}),
-                e);
-        }
-
-        return parent;
-    }
+    return parent;
+  }
 }

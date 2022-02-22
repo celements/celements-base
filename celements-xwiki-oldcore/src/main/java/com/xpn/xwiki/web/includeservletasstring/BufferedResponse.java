@@ -19,68 +19,58 @@
  *
  */
 
-
-
-
 package com.xpn.xwiki.web.includeservletasstring;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
 public class BufferedResponse
-extends HttpServletResponseWrapper {
-  
-    protected HttpServletResponse internalResponse;
-    
-    protected BufferOutputStream outputStream;
-    protected PrintWriter writer;
-  
-    /** Creates a new instance of BufferedResponse */
-    public BufferedResponse(HttpServletResponse internalResponse) {
-      
-        super(internalResponse);
-      
-        this.internalResponse = internalResponse;
-    }
+    extends HttpServletResponseWrapper {
 
-    
-    public ServletOutputStream getOutputStream()
-    throws IOException
-    {
-        if( outputStream == null )
-        {
-            outputStream = new BufferOutputStream();
-        }
-        return outputStream;
-    }
+  protected HttpServletResponse internalResponse;
 
-    
-    public PrintWriter getWriter()
-    throws IOException
-    {
-        if( writer == null )
-        {
-            writer = new PrintWriter(new OutputStreamWriter(getOutputStream(), getCharacterEncoding()));
-        }
-        return writer;
+  protected BufferOutputStream outputStream;
+  protected PrintWriter writer;
+
+  /** Creates a new instance of BufferedResponse */
+  public BufferedResponse(HttpServletResponse internalResponse) {
+
+    super(internalResponse);
+
+    this.internalResponse = internalResponse;
+  }
+
+  @Override
+  public ServletOutputStream getOutputStream()
+      throws IOException {
+    if (outputStream == null) {
+      outputStream = new BufferOutputStream();
     }
-    
-    
-    public byte[] getBufferAsByteArray()
-    throws IOException
-    {
-        if( writer != null )
-        {
-            writer.flush();
-        }
-        outputStream.flush();
-        
-        return outputStream.getContentsAsByteArray();
+    return outputStream;
+  }
+
+  @Override
+  public PrintWriter getWriter()
+      throws IOException {
+    if (writer == null) {
+      writer = new PrintWriter(new OutputStreamWriter(getOutputStream(), getCharacterEncoding()));
     }
-    
-  
+    return writer;
+  }
+
+  public byte[] getBufferAsByteArray()
+      throws IOException {
+    if (writer != null) {
+      writer.flush();
+    }
+    outputStream.flush();
+
+    return outputStream.getContentsAsByteArray();
+  }
+
 }

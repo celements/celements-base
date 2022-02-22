@@ -26,96 +26,87 @@ import org.jmock.cglib.MockObjectTestCase;
 
 /**
  * Unit tests for the {@link com.xpn.xwiki.web.SkinAction} class.
- * 
+ *
  * @version $Id$
  */
-public class SkinActionTest extends MockObjectTestCase
-{
-    private SkinAction action;
+public class SkinActionTest extends MockObjectTestCase {
 
-    @Override
-    protected void setUp()
-    {
-        this.action = new SkinAction();
-    }
+  private SkinAction action;
 
-    public void testIsTextJavascriptJavaScriptMimetype()
-    {
-        assertTrue(this.action.isJavascriptMimeType("text/javascript"));
-    }
+  @Override
+  protected void setUp() {
+    this.action = new SkinAction();
+  }
 
-    public void testIsApplicationJavascriptJavaScriptMimetype()
-    {
-        assertTrue(this.action.isJavascriptMimeType("application/javascript"));
-    }
+  public void testIsTextJavascriptJavaScriptMimetype() {
+    assertTrue(this.action.isJavascriptMimeType("text/javascript"));
+  }
 
-    public void testIsApplicationXJavascriptJavaScriptMimetype()
-    {
-        assertTrue(this.action.isJavascriptMimeType("application/x-javascript"));
-    }
+  public void testIsApplicationJavascriptJavaScriptMimetype() {
+    assertTrue(this.action.isJavascriptMimeType("application/javascript"));
+  }
 
-    public void testIsTextEcmascriptJavaScriptMimetype()
-    {
-        assertTrue(this.action.isJavascriptMimeType("text/ecmascript"));
-    }
+  public void testIsApplicationXJavascriptJavaScriptMimetype() {
+    assertTrue(this.action.isJavascriptMimeType("application/x-javascript"));
+  }
 
-    public void testIsApplicationEcmascriptJavaScriptMimetype()
-    {
-        assertTrue(this.action.isJavascriptMimeType("application/ecmascript"));
-    }
+  public void testIsTextEcmascriptJavaScriptMimetype() {
+    assertTrue(this.action.isJavascriptMimeType("text/ecmascript"));
+  }
 
-    public void testNPEJavascriptMimetype()
-    {
-        assertFalse(this.action.isJavascriptMimeType(null));
-    }
+  public void testIsApplicationEcmascriptJavaScriptMimetype() {
+    assertTrue(this.action.isJavascriptMimeType("application/ecmascript"));
+  }
 
-    public void testIncorrectSkinFile()
-    {
-        try {
-            this.action.getSkinFilePath("../../resources/js/xwiki/xwiki.js", "colibri");
-            assertTrue("should fail", false);
-        } catch (IOException e) {
-            // good
-        }
-        try {
-            this.action.getSkinFilePath("../../../", "colibri");
-            assertTrue("should fail", false);
-        } catch (IOException e) {
-            // good
-        }
-        try {
-            this.action.getSkinFilePath("resources/js/xwiki/xwiki.js", "..");
-            assertTrue("should fail", false);
-        } catch (IOException e) {
-            // good
-        }
-        try {
-            this.action.getSkinFilePath("../resources/js/xwiki/xwiki.js", ".");
-            assertTrue("should fail", false);
-        } catch (IOException e) {
-            // good
-        }
-    }
+  public void testNPEJavascriptMimetype() {
+    assertFalse(this.action.isJavascriptMimeType(null));
+  }
 
-    public void testIncorrectResourceFile()
-    {
-        try {
-            this.action.getResourceFilePath("../../skins/js/xwiki/xwiki.js");
-            assertTrue("should fail", false);
-        } catch (IOException e) {
-            // good
-        }
-        try {
-            this.action.getResourceFilePath("../../../");
-            assertTrue("should fail", false);
-        } catch (IOException e) {
-            // good
-        }
-        try {
-            this.action.getResourceFilePath("../../redirect");
-            assertTrue("should fail", false);
-        } catch (IOException e) {
-            // good
-        }
+  public void testIncorrectSkinFile() {
+    try {
+      this.action.getSkinFilePath("../../resources/js/xwiki/xwiki.js", "colibri");
+      assertTrue("should fail", false);
+    } catch (IOException e) {
+      // good
     }
+    try {
+      this.action.getSkinFilePath("../../../", "colibri");
+      assertTrue("should fail", false);
+    } catch (IOException e) {
+      // good
+    }
+    try {
+      this.action.getSkinFilePath("resources/js/xwiki/xwiki.js", "..");
+      assertTrue("should fail", false);
+    } catch (IOException e) {
+      // good
+    }
+    try {
+      this.action.getSkinFilePath("../resources/js/xwiki/xwiki.js", ".");
+      assertTrue("should fail", false);
+    } catch (IOException e) {
+      // good
+    }
+  }
+
+  public void testIncorrectResourceFile() {
+    try {
+      this.action.getResourceFilePath("../../skins/js/xwiki/xwiki.js");
+      assertTrue("should fail", false);
+    } catch (IOException e) {
+      // good
+    }
+    try {
+      this.action.getResourceFilePath("../../../");
+      assertTrue("should fail", false);
+    } catch (IOException e) {
+      // good
+    }
+    try {
+      this.action.getResourceFilePath("../../redirect");
+      assertTrue("should fail", false);
+    } catch (IOException e) {
+      // good
+    }
+  }
 }

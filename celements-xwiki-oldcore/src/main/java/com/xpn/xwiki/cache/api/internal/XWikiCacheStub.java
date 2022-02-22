@@ -27,59 +27,58 @@ import com.xpn.xwiki.cache.api.XWikiCache;
 import com.xpn.xwiki.cache.api.XWikiCacheNeedsRefreshException;
 
 @Deprecated
-public class XWikiCacheStub implements XWikiCache
-{
-    Cache cache;
+public class XWikiCacheStub implements XWikiCache {
 
-    public XWikiCacheStub(Cache cache)
-    {
-        this.cache = cache;
+  Cache cache;
+
+  public XWikiCacheStub(Cache cache) {
+    this.cache = cache;
+  }
+
+  @Override
+  public void cancelUpdate(String key) {
+
+  }
+
+  @Override
+  public void flushAll() {
+    this.cache.removeAll();
+  }
+
+  @Override
+  public void flushEntry(String key) {
+    this.cache.remove(key);
+  }
+
+  @Override
+  public Object getFromCache(String key) throws XWikiCacheNeedsRefreshException {
+    Object value = this.cache.get(key);
+
+    if (value == null) {
+      throw new XWikiCacheNeedsRefreshException();
     }
 
-    public void cancelUpdate(String key)
-    {
+    return value;
+  }
 
-    }
+  @Override
+  public Object getFromCache(String key, int refeshPeriod)
+      throws XWikiCacheNeedsRefreshException {
+    return getFromCache(key);
+  }
 
-    public void flushAll()
-    {
-        this.cache.removeAll();
-    }
+  @Override
+  public int getNumberEntries() {
+    return 0;
+  }
 
-    public void flushEntry(String key)
-    {
-        this.cache.remove(key);
-    }
+  @Override
+  public void putInCache(String key, Object obj) {
+    this.cache.set(key, obj);
+  }
 
-    public Object getFromCache(String key) throws XWikiCacheNeedsRefreshException
-    {
-        Object value = this.cache.get(key);
+  @Override
+  public void setCapacity(int capacity) {
 
-        if (value == null) {
-            throw new XWikiCacheNeedsRefreshException();
-        }
-
-        return value;
-    }
-
-    public Object getFromCache(String key, int refeshPeriod)
-        throws XWikiCacheNeedsRefreshException
-    {
-        return getFromCache(key);
-    }
-
-    public int getNumberEntries()
-    {
-        return 0;
-    }
-
-    public void putInCache(String key, Object obj)
-    {
-        this.cache.set(key, obj);
-    }
-
-    public void setCapacity(int capacity)
-    {
-
-    }
+  }
 }

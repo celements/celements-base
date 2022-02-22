@@ -29,50 +29,48 @@ import com.xpn.xwiki.objects.BaseProperty;
  *
  * @version $Id$
  */
-public class Property extends Element
-{
-    /**
-     * The Constructor.
-     *
-     * @param property the internal {@link com.xpn.xwiki.objects.BaseProperty} to wrap.
-     * @param context the XWikiContext which may be used to get information about the current request.
-     */
-    public Property(BaseProperty property, XWikiContext context)
-    {
-        super(property, context);
-    }
+public class Property extends Element {
 
-    /**
-     * @return the internal {@link com.xpn.xwiki.objects.BaseProperty} which this Property wraps.
-     */
-    protected BaseProperty getBaseProperty()
-    {
-        return (BaseProperty) element;
-    }
+  /**
+   * The Constructor.
+   *
+   * @param property
+   *          the internal {@link com.xpn.xwiki.objects.BaseProperty} to wrap.
+   * @param context
+   *          the XWikiContext which may be used to get information about the current request.
+   */
+  public Property(BaseProperty property, XWikiContext context) {
+    super(property, context);
+  }
 
-    /**
-     * @return the internal {@link com.xpn.xwiki.objects.BaseProperty} which this Property wraps.
-     */
-    public BaseProperty getProperty()
-    {
-        if (hasProgrammingRights()) {
-            return (BaseProperty) element;
-        } else {
-            return null;
-        }
-    }
+  /**
+   * @return the internal {@link com.xpn.xwiki.objects.BaseProperty} which this Property wraps.
+   */
+  protected BaseProperty getBaseProperty() {
+    return (BaseProperty) element;
+  }
 
-    /**
-     * @return the actual value of the property, as a String, Number or List.
-     */
-    public java.lang.Object getValue()
-    {
-        // This is evil, any property which happens to be called 'password' will be masked. TODO fix.
-        if (element.getName().equals("password")
-            && !getXWikiContext().getWiki().getRightService().hasProgrammingRights(
-                getXWikiContext())) {
-            return null;
-        }
-        return ((BaseProperty) element).getValue();
+  /**
+   * @return the internal {@link com.xpn.xwiki.objects.BaseProperty} which this Property wraps.
+   */
+  public BaseProperty getProperty() {
+    if (hasProgrammingRights()) {
+      return (BaseProperty) element;
+    } else {
+      return null;
     }
+  }
+
+  /**
+   * @return the actual value of the property, as a String, Number or List.
+   */
+  public java.lang.Object getValue() {
+    // This is evil, any property which happens to be called 'password' will be masked. TODO fix.
+    if (element.getName().equals("password")
+        && !getXWikiContext().getWiki().getRightService().hasProgrammingRights(
+            getXWikiContext())) {
+      return null;
+    }
+    return ((BaseProperty) element).getValue();
+  }
 }

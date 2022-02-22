@@ -27,23 +27,27 @@ import com.xpn.xwiki.plugin.XWikiDefaultPlugin;
 import com.xpn.xwiki.plugin.XWikiPluginInterface;
 
 public class GooglePlugin extends XWikiDefaultPlugin implements XWikiPluginInterface {
-    public GooglePlugin(String name, String className, XWikiContext context) {
-        super(name, className, context);
-        init(context);
-    }
 
-    public String getName() {
-        return "google";
-    }
+  public GooglePlugin(String name, String className, XWikiContext context) {
+    super(name, className, context);
+    init(context);
+  }
 
-    public Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context) {
-        return new GooglePluginApi((GooglePlugin) plugin, context);
-    }
+  @Override
+  public String getName() {
+    return "google";
+  }
 
-    public void flushCache() {
-    }
+  @Override
+  public Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context) {
+    return new GooglePluginApi((GooglePlugin) plugin, context);
+  }
 
-    public void init(XWikiContext context) {
-        super.init(context);
-    }
+  @Override
+  public void flushCache() {}
+
+  @Override
+  public void init(XWikiContext context) {
+    super.init(context);
+  }
 }

@@ -29,30 +29,28 @@ import org.radeox.filter.regex.LocaleRegexTokenFilter;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.web.Utils;
 
-public class UrlFilter extends LocaleRegexTokenFilter implements CacheFilter
-{
-    private MessageFormat formatter;
+public class UrlFilter extends LocaleRegexTokenFilter implements CacheFilter {
 
-    @Override
-    protected String getLocaleKey()
-    {
-        return "filter.url";
-    }
+  private MessageFormat formatter;
 
-    @Override
-    public void setInitialContext(InitialRenderContext context)
-    {
-        super.setInitialContext(context);
-        String outputTemplate = this.outputMessages.getString(getLocaleKey() + ".print");
-        this.formatter = new MessageFormat(outputTemplate);
-    }
+  @Override
+  protected String getLocaleKey() {
+    return "filter.url";
+  }
 
-    @Override
-    public void handleMatch(StringBuffer buffer, org.radeox.regex.MatchResult result, FilterContext context)
-    {
-        XWikiContext xcontext = (XWikiContext) context.getRenderContext().get("xcontext");
-        String url = result.group(0);
-        url = Utils.createPlaceholder(url, xcontext);
-        buffer.append(this.formatter.format(new Object[] {url}));
-    }
+  @Override
+  public void setInitialContext(InitialRenderContext context) {
+    super.setInitialContext(context);
+    String outputTemplate = this.outputMessages.getString(getLocaleKey() + ".print");
+    this.formatter = new MessageFormat(outputTemplate);
+  }
+
+  @Override
+  public void handleMatch(StringBuffer buffer, org.radeox.regex.MatchResult result,
+      FilterContext context) {
+    XWikiContext xcontext = (XWikiContext) context.getRenderContext().get("xcontext");
+    String url = result.group(0);
+    url = Utils.createPlaceholder(url, xcontext);
+    buffer.append(this.formatter.format(new Object[] { url }));
+  }
 }

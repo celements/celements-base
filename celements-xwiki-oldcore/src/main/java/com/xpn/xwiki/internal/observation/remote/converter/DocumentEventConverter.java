@@ -39,66 +39,66 @@ import com.xpn.xwiki.doc.XWikiDocument;
  * Convert all document event to remote events and back to local events.
  * <p>
  * It also make sure the context contains the proper information like the user or the wiki.
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
 @Component("document")
-public class DocumentEventConverter extends AbstractXWikiEventConverter
-{
-    /**
-     * The events supported by this converter.
-     */
-    private Set<Class< ? extends Event>> events = new HashSet<Class< ? extends Event>>()
+public class DocumentEventConverter extends AbstractXWikiEventConverter {
+
+  /**
+   * The events supported by this converter.
+   */
+  private Set<Class<? extends Event>> events = new HashSet<Class<? extends Event>>() {
+
     {
-        {
-            add(DocumentDeletedEvent.class);
-            add(DocumentCreatedEvent.class);
-            add(DocumentUpdatedEvent.class);
-        }
-    };
+      add(DocumentDeletedEvent.class);
+      add(DocumentCreatedEvent.class);
+      add(DocumentUpdatedEvent.class);
+    }
+  };
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.observation.remote.converter.LocalEventConverter#toRemote(org.xwiki.observation.remote.LocalEventData,
-     *      org.xwiki.observation.remote.RemoteEventData)
-     */
-    public boolean toRemote(LocalEventData localEvent, RemoteEventData remoteEvent)
-    {
-        if (this.events.contains(localEvent.getEvent().getClass())) {
-            // fill the remote event
-            remoteEvent.setEvent((Serializable) localEvent.getEvent());
-            remoteEvent.setSource(serializeXWikiDocument((XWikiDocument) localEvent.getSource()));
-            remoteEvent.setData(serializeXWikiContext((XWikiContext) localEvent.getData()));
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.observation.remote.converter.LocalEventConverter#toRemote(org.xwiki.observation.remote.LocalEventData,
+   *      org.xwiki.observation.remote.RemoteEventData)
+   */
+  @Override
+  public boolean toRemote(LocalEventData localEvent, RemoteEventData remoteEvent) {
+    if (this.events.contains(localEvent.getEvent().getClass())) {
+      // fill the remote event
+      remoteEvent.setEvent((Serializable) localEvent.getEvent());
+      remoteEvent.setSource(serializeXWikiDocument((XWikiDocument) localEvent.getSource()));
+      remoteEvent.setData(serializeXWikiContext((XWikiContext) localEvent.getData()));
 
-            return true;
-        }
-
-        return false;
+      return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.observation.remote.converter.RemoteEventConverter#fromRemote(org.xwiki.observation.remote.RemoteEventData,
-     *      org.xwiki.observation.remote.LocalEventData)
-     */
-    public boolean fromRemote(RemoteEventData remoteEvent, LocalEventData localEvent)
-    {
-        if (this.events.contains(remoteEvent.getEvent().getClass())) {
-            // fill the local event
-            XWikiContext context = unserializeXWikiContext(remoteEvent.getData());
+    return false;
+  }
 
-            if (context != null) {
-                localEvent.setEvent((Event) remoteEvent.getEvent());
-                localEvent.setSource(unserializeDocument(remoteEvent.getSource()));
-                localEvent.setData(unserializeXWikiContext(remoteEvent.getData()));
-            }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.observation.remote.converter.RemoteEventConverter#fromRemote(org.xwiki.observation.remote.RemoteEventData,
+   *      org.xwiki.observation.remote.LocalEventData)
+   */
+  @Override
+  public boolean fromRemote(RemoteEventData remoteEvent, LocalEventData localEvent) {
+    if (this.events.contains(remoteEvent.getEvent().getClass())) {
+      // fill the local event
+      XWikiContext context = unserializeXWikiContext(remoteEvent.getData());
 
-            return true;
-        }
+      if (context != null) {
+        localEvent.setEvent((Event) remoteEvent.getEvent());
+        localEvent.setSource(unserializeDocument(remoteEvent.getSource()));
+        localEvent.setData(unserializeXWikiContext(remoteEvent.getData()));
+      }
 
-        return false;
+      return true;
     }
+
+    return false;
+  }
 }

@@ -20,6 +20,8 @@
  */
 package com.xpn.xwiki.web;
 
+import org.apache.velocity.VelocityContext;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Attachment;
@@ -27,43 +29,43 @@ import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.Util;
-import org.apache.velocity.VelocityContext;
 
 public class ViewAttachRevAction extends XWikiAction {
 
-    public String render(XWikiContext context) throws XWikiException {
-        XWikiRequest request = context.getRequest();
-        XWikiDocument doc = context.getDoc();
-        String path = request.getRequestURI();
-        String filename;
-        if (context.getMode() == XWikiContext.MODE_PORTLET)
-            filename = request.getParameter("filename");
-        else
-            filename = Util.decodeURI(path.substring(path.lastIndexOf("/") + 1), context);
-
-        XWikiAttachment attachment = null;
-        
-        if (context.getWiki().hasAttachmentRecycleBin(context)
-            && request.getParameter("rid") != null) {
-            int recycleId = Integer.parseInt(request.getParameter("rid"));
-            attachment = new XWikiAttachment(doc, filename);
-            attachment =
-                (XWikiAttachment) context.getWiki().getAttachmentRecycleBinStore()
-                    .restoreFromRecycleBin(attachment, recycleId, context, true);
-        } else if (request.getParameter("id") != null) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            attachment = (XWikiAttachment) doc.getAttachmentList().get(id);
-        } else {
-            attachment = doc.getAttachment(filename);
-            if (attachment == null) {
-                context.put("message", "attachmentdoesnotexist");
-                return "exception";
-            }
-        }
-        VelocityContext vcontext = (VelocityContext) context.get("vcontext");
-        vcontext.put("attachment", new Attachment((Document) vcontext.get("doc"), attachment, context));
-
-        return "viewattachrev";
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    XWikiRequest request = context.getRequest();
+    XWikiDocument doc = context.getDoc();
+    String path = request.getRequestURI();
+    String filename;
+    if (context.getMode() == XWikiContext.MODE_PORTLET) {
+      filename = request.getParameter("filename");
+    } else {
+      filename = Util.decodeURI(path.substring(path.lastIndexOf("/") + 1), context);
     }
+
+    XWikiAttachment attachment = null;
+
+    if (context.getWiki().hasAttachmentRecycleBin(context)
+        && (request.getParameter("rid") != null)) {
+      int recycleId = Integer.parseInt(request.getParameter("rid"));
+      attachment = new XWikiAttachment(doc, filename);
+      attachment = context.getWiki().getAttachmentRecycleBinStore()
+          .restoreFromRecycleBin(attachment, recycleId, context, true);
+    } else if (request.getParameter("id") != null) {
+      int id = Integer.parseInt(request.getParameter("id"));
+      attachment = doc.getAttachmentList().get(id);
+    } else {
+      attachment = doc.getAttachment(filename);
+      if (attachment == null) {
+        context.put("message", "attachmentdoesnotexist");
+        return "exception";
+      }
+    }
+    VelocityContext vcontext = (VelocityContext) context.get("vcontext");
+    vcontext.put("attachment", new Attachment((Document) vcontext.get("doc"), attachment, context));
+
+    return "viewattachrev";
+  }
 
 }

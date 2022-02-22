@@ -20,115 +20,121 @@
  */
 package com.xpn.xwiki.plugin.userdirectory;
 
+import java.util.List;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Api;
 
-import java.util.List;
-
 public class UserDirectoryPluginAPI extends Api {
-    UserDirectoryPlugin userDir;
 
-    public UserDirectoryPluginAPI(UserDirectoryPlugin userDirectory, XWikiContext context) {
-        super(context);
-        this.userDir = userDirectory;
-    }
+  UserDirectoryPlugin userDir;
 
-    public Group addGroup(XWikiContext context) throws XWikiException {
-        return userDir.addGroup(context);
-    }
+  public UserDirectoryPluginAPI(UserDirectoryPlugin userDirectory, XWikiContext context) {
+    super(context);
+    this.userDir = userDirectory;
+  }
 
-    public void updateGroup(XWikiContext context) throws XWikiException {
-        userDir.updateGroup(context);
-    }
+  public Group addGroup(XWikiContext context) throws XWikiException {
+    return userDir.addGroup(context);
+  }
 
-    public boolean groupExist(String name, XWikiContext context) throws XWikiException {
-        return userDir.groupExist(name, context);
-    }
+  public void updateGroup(XWikiContext context) throws XWikiException {
+    userDir.updateGroup(context);
+  }
 
-    public Group getGroup(String space, String name, XWikiContext context) throws XWikiException {
-        return userDir.getGroup(space, name, context);
-    }
+  public boolean groupExist(String name, XWikiContext context) throws XWikiException {
+    return userDir.groupExist(name, context);
+  }
 
-    public Group getGroup(String name, XWikiContext context) throws XWikiException {
-        return userDir.getGroup(name, context);
-    }
+  public Group getGroup(String space, String name, XWikiContext context) throws XWikiException {
+    return userDir.getGroup(space, name, context);
+  }
 
-    public List getAllGroupsPageName(XWikiContext context) throws XWikiException {
-        return userDir.getAllGroupsPageName(context);
-    }
+  public Group getGroup(String name, XWikiContext context) throws XWikiException {
+    return userDir.getGroup(name, context);
+  }
 
-    public List getAllGroups(XWikiContext context) throws XWikiException {
-        return userDir.getAllGroups(context);
-    }
+  public List getAllGroupsPageName(XWikiContext context) throws XWikiException {
+    return userDir.getAllGroupsPageName(context);
+  }
 
-    public List getAllGroups(String orderBy, XWikiContext context) throws XWikiException {
-        return userDir.getAllGroups(orderBy, context);
-    }
+  public List getAllGroups(XWikiContext context) throws XWikiException {
+    return userDir.getAllGroups(context);
+  }
 
-    public List getMembers(String grpPage, XWikiContext context) throws XWikiException {
-        return userDir.getMembers(grpPage, context);
-    }
+  public List getAllGroups(String orderBy, XWikiContext context) throws XWikiException {
+    return userDir.getAllGroups(orderBy, context);
+  }
 
-    public List getUnactivatedMembers(String grpPage, XWikiContext context) throws XWikiException {
-        return userDir.getUnactivatedMembers(grpPage, context);
-    }
+  public List getMembers(String grpPage, XWikiContext context) throws XWikiException {
+    return userDir.getMembers(grpPage, context);
+  }
 
-    public boolean addParentGroup(String childGroupName, String parentGroupName, XWikiContext context) throws XWikiException {
-        return userDir.addParentGroup(childGroupName, parentGroupName, context);
-    }
+  public List getUnactivatedMembers(String grpPage, XWikiContext context) throws XWikiException {
+    return userDir.getUnactivatedMembers(grpPage, context);
+  }
 
-    public boolean removeParentGroup(String childGroupName, String parentGroupName, XWikiContext context) throws XWikiException {
-        return userDir.removeParentGroup(childGroupName, parentGroupName, context);
-    }
+  public boolean addParentGroup(String childGroupName, String parentGroupName, XWikiContext context)
+      throws XWikiException {
+    return userDir.addParentGroup(childGroupName, parentGroupName, context);
+  }
 
-    public List getParentGroups(String grpName, XWikiContext context) throws XWikiException {
-        return userDir.getParentGroups(grpName, context);
-    }
+  public boolean removeParentGroup(String childGroupName, String parentGroupName,
+      XWikiContext context) throws XWikiException {
+    return userDir.removeParentGroup(childGroupName, parentGroupName, context);
+  }
 
-    public String inviteToGroup(String name, String firstName, String email, String group, XWikiContext context) throws XWikiException {
-        return userDir.inviteToGroup(name, firstName, email, group,  context);
-    }
+  public List getParentGroups(String grpName, XWikiContext context) throws XWikiException {
+    return userDir.getParentGroups(grpName, context);
+  }
 
-    public void addUserToGroup(String userPage, String group, XWikiContext context) throws XWikiException {
-        userDir.addUserToGroup(userPage, group,  context);
-    }
+  public String inviteToGroup(String name, String firstName, String email, String group,
+      XWikiContext context) throws XWikiException {
+    return userDir.inviteToGroup(name, firstName, email, group, context);
+  }
 
-    public String getUserName(String userPage, XWikiContext context) throws XWikiException {
-        return userDir.getUserName(userPage, context);
-    }
+  public void addUserToGroup(String userPage, String group, XWikiContext context)
+      throws XWikiException {
+    userDir.addUserToGroup(userPage, group, context);
+  }
 
-    public String getUserEmail(String userPage, XWikiContext context) throws XWikiException {
-        return userDir.getUserEmail(userPage, context);
-    }
+  public String getUserName(String userPage, XWikiContext context) throws XWikiException {
+    return userDir.getUserName(userPage, context);
+  }
 
-    public List getUsersDocumentName(String grpPage, XWikiContext context) throws XWikiException {
-        return userDir.getUsersDocumentName(grpPage, context);
-    }
+  public String getUserEmail(String userPage, XWikiContext context) throws XWikiException {
+    return userDir.getUserEmail(userPage, context);
+  }
 
-    public List getUsersDocument(String grpPage, XWikiContext context) throws XWikiException {
-        return userDir.getUsersDocument(grpPage, context);
-    }
+  public List getUsersDocumentName(String grpPage, XWikiContext context) throws XWikiException {
+    return userDir.getUsersDocumentName(grpPage, context);
+  }
 
+  public List getUsersDocument(String grpPage, XWikiContext context) throws XWikiException {
+    return userDir.getUsersDocument(grpPage, context);
+  }
 
-    public boolean removeMemberships(String userPage, String grpPage, XWikiContext context) throws XWikiException {
-        return userDir.removeMemberships(userPage, grpPage, context);
-    }
+  public boolean removeMemberships(String userPage, String grpPage, XWikiContext context)
+      throws XWikiException {
+    return userDir.removeMemberships(userPage, grpPage, context);
+  }
 
-    public void sendDeactivationEMail(String userPage, String grpPage, XWikiContext context) throws XWikiException {
-        userDir.sendDeactivationEMail(userPage, grpPage, context);
-    }
+  public void sendDeactivationEMail(String userPage, String grpPage, XWikiContext context)
+      throws XWikiException {
+    userDir.sendDeactivationEMail(userPage, grpPage, context);
+  }
 
-    public List getUserMemberships(String userPage, XWikiContext context) throws XWikiException {
-        return userDir.getUserMemberships(userPage, context);
-    }
+  public List getUserMemberships(String userPage, XWikiContext context) throws XWikiException {
+    return userDir.getUserMemberships(userPage, context);
+  }
 
-    public boolean deactivateAccount(String userPage, XWikiContext context) throws XWikiException {
-        return userDir.deactivateAccount(userPage, context);
-    }
+  public boolean deactivateAccount(String userPage, XWikiContext context) throws XWikiException {
+    return userDir.deactivateAccount(userPage, context);
+  }
 
-    public void resendInvitation(String userPage, XWikiContext context) throws XWikiException {
-        userDir.resendInvitation(userPage, context);
-    }
+  public void resendInvitation(String userPage, XWikiContext context) throws XWikiException {
+    userDir.resendInvitation(userPage, context);
+  }
 
 }

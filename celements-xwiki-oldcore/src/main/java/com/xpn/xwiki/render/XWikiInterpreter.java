@@ -19,19 +19,21 @@
  */
 package com.xpn.xwiki.render;
 
-import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
- * An interpreter parses strings and evaluate their content. It does not do any rendering (HTML, XML, etc) like
- * {@link XWikiRenderer} do. Example of Interpreters are Velocity and Groovy. An example of a Renderers is Radeox.
- * 
+ * An interpreter parses strings and evaluate their content. It does not do any rendering (HTML,
+ * XML, etc) like
+ * {@link XWikiRenderer} do. Example of Interpreters are Velocity and Groovy. An example of a
+ * Renderers is Radeox.
+ *
  * @version $Id$
  */
-public interface XWikiInterpreter
-{
-    /**
-     * @todo Do not require a XWikiDocument to be passed
-     */
-    String interpret(String content, XWikiDocument includingDoc, XWikiContext context);
+public interface XWikiInterpreter {
+
+  /**
+   * @todo Do not require a XWikiDocument to be passed
+   */
+  String interpret(String content, XWikiDocument includingDoc, XWikiContext context);
 }

@@ -27,36 +27,31 @@ import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.plugin.charts.exceptions.GenerateException;
 import com.xpn.xwiki.plugin.charts.params.ChartParams;
 
-public class ChartingPluginApi extends Api
-{
-    private ChartingPlugin plugin;
+public class ChartingPluginApi extends Api {
 
-    public ChartingPluginApi(ChartingPlugin plugin, XWikiContext context)
-    {
-        super(context);
-        setPlugin(plugin);
-    }
+  private ChartingPlugin plugin;
 
-    public void setPlugin(ChartingPlugin plugin)
-    {
-        this.plugin = plugin;
-    }
+  public ChartingPluginApi(ChartingPlugin plugin, XWikiContext context) {
+    super(context);
+    setPlugin(plugin);
+  }
 
-    public ChartingPlugin getPlugin()
-    {
-        if (hasProgrammingRights()) {
-            return plugin;
-        }
-        return null;
-    }
+  public void setPlugin(ChartingPlugin plugin) {
+    this.plugin = plugin;
+  }
 
-    public Chart generateChart(ChartParams params, XWikiContext context) throws GenerateException
-    {
-        return plugin.generateChart(params, context);
+  public ChartingPlugin getPlugin() {
+    if (hasProgrammingRights()) {
+      return plugin;
     }
+    return null;
+  }
 
-    public void outputFile(String filename, XWikiContext context) throws IOException
-    {
-        plugin.outputFile(filename, context);
-    }
+  public Chart generateChart(ChartParams params, XWikiContext context) throws GenerateException {
+    return plugin.generateChart(params, context);
+  }
+
+  public void outputFile(String filename, XWikiContext context) throws IOException {
+    plugin.outputFile(filename, context);
+  }
 }

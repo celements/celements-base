@@ -28,36 +28,34 @@ import com.xpn.xwiki.objects.classes.NumberClass;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 import com.xpn.xwiki.objects.classes.StringClass;
 
-public class BooleanMetaClass extends PropertyMetaClass
-{
-    public BooleanMetaClass()
-    {
-        super();
-        setPrettyName("Boolean");
-        setName(BooleanClass.class.getName());
+public class BooleanMetaClass extends PropertyMetaClass {
 
-        StaticListClass type_class = new StaticListClass(this);
-        type_class.setName("displayFormType");
-        type_class.setPrettyName("Display Form Type");
-        type_class.setValues("radio|checkbox|select");
-        safeput("displayFormType", type_class);
+  public BooleanMetaClass() {
+    setPrettyName("Boolean");
+    setName(BooleanClass.class.getName());
 
-        StringClass value_class = new StringClass(this);
-        value_class.setName("displayType");
-        value_class.setPrettyName("Display Type");
-        value_class.setSize(20);
-        safeput("displayType", value_class);
+    StaticListClass type_class = new StaticListClass(this);
+    type_class.setName("displayFormType");
+    type_class.setPrettyName("Display Form Type");
+    type_class.setValues("radio|checkbox|select");
+    safeput("displayFormType", type_class);
 
-        NumberClass default_value_class = new NumberClass(this);
-        default_value_class.setName("defaultValue");
-        default_value_class.setPrettyName("Default Value");
-        default_value_class.setSize(5);
-        default_value_class.setClassType("integer");
-        safeput("defaultValue", default_value_class);
-    }
+    StringClass value_class = new StringClass(this);
+    value_class.setName("displayType");
+    value_class.setPrettyName("Display Type");
+    value_class.setSize(20);
+    safeput("displayType", value_class);
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new BooleanClass();
-    }
+    NumberClass default_value_class = new NumberClass(this);
+    default_value_class.setName("defaultValue");
+    default_value_class.setPrettyName("Default Value");
+    default_value_class.setSize(5);
+    default_value_class.setClassType("integer");
+    safeput("defaultValue", default_value_class);
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new BooleanClass();
+  }
 }

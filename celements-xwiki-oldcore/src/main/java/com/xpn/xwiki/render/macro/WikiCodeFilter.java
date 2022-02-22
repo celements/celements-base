@@ -26,19 +26,21 @@ import org.radeox.macro.code.SourceCodeFormatter;
 
 public class WikiCodeFilter implements SourceCodeFormatter {
 
-  public WikiCodeFilter() {
-  }
+  public WikiCodeFilter() {}
 
+  @Override
   public String getName() {
     return "wiki";
   }
 
+  @Override
   public int getPriority() {
-        return 0;
-    }
+    return 0;
+  }
 
+  @Override
   public String filter(String input, FilterContext context) {
-      return input;
+    return input;
   }
 
 }

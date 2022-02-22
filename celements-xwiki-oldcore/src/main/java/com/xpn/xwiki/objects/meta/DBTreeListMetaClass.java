@@ -25,23 +25,21 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.classes.DBTreeListClass;
 import com.xpn.xwiki.objects.classes.StringClass;
 
-public class DBTreeListMetaClass extends DBListMetaClass
-{
-    public DBTreeListMetaClass()
-    {
-        super();
-        setPrettyName("Database Tree");
-        setName(DBTreeListClass.class.getName());
+public class DBTreeListMetaClass extends DBListMetaClass {
 
-        StringClass parentfield_class = new StringClass(this);
-        parentfield_class.setName("parentField");
-        parentfield_class.setPrettyName("Parent Field Name");
-        parentfield_class.setSize(20);
-        safeput("parentField", parentfield_class);
-    }
+  public DBTreeListMetaClass() {
+    setPrettyName("Database Tree");
+    setName(DBTreeListClass.class.getName());
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new DBTreeListClass();
-    }
+    StringClass parentfield_class = new StringClass(this);
+    parentfield_class.setName("parentField");
+    parentfield_class.setPrettyName("Parent Field Name");
+    parentfield_class.setSize(20);
+    safeput("parentField", parentfield_class);
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new DBTreeListClass();
+  }
 }

@@ -22,29 +22,25 @@ package com.xpn.xwiki.plugin.charts.params;
 
 import org.jfree.ui.HorizontalAlignment;
 
-public class HorizontalAlignmentChartParam extends ChoiceChartParam
-{
-    public HorizontalAlignmentChartParam(String name)
-    {
-        super(name);
-    }
+public class HorizontalAlignmentChartParam extends ChoiceChartParam {
 
-    public HorizontalAlignmentChartParam(String name, boolean isOptional)
-    {
-        super(name, isOptional);
-    }
+  public HorizontalAlignmentChartParam(String name) {
+    super(name);
+  }
 
-    @Override
-    public Class getType()
-    {
-        return HorizontalAlignment.class;
-    }
+  public HorizontalAlignmentChartParam(String name, boolean isOptional) {
+    super(name, isOptional);
+  }
 
-    @Override
-    protected void init()
-    {
-        addChoice("left", HorizontalAlignment.LEFT);
-        addChoice("right", HorizontalAlignment.RIGHT);
-        addChoice("center", HorizontalAlignment.CENTER);
-    }
+  @Override
+  public Class getType() {
+    return HorizontalAlignment.class;
+  }
+
+  @Override
+  protected void init() {
+    addChoice("left", HorizontalAlignment.LEFT);
+    addChoice("right", HorizontalAlignment.RIGHT);
+    addChoice("center", HorizontalAlignment.CENTER);
+  }
 }

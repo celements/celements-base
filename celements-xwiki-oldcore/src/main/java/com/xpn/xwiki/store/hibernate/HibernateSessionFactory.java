@@ -24,24 +24,25 @@ import org.hibernate.cfg.Configuration;
 import org.xwiki.component.annotation.ComponentRole;
 
 /**
- * Class used by Hibernate stores for obtain sessions. Simple holder for real sessionFactory and configuration for now.
- * 
+ * Class used by Hibernate stores for obtain sessions. Simple holder for real sessionFactory and
+ * configuration for now.
+ *
  * @version $Id$
  * @since 1.6M1
  */
 @ComponentRole
-public interface HibernateSessionFactory
-{
-    /**
-     * @return Hibernate Configuration object
-     */
-    Configuration getConfiguration();
+public interface HibernateSessionFactory {
 
-    /**
-     * @return Real Hibernate session factory
-     */
-    SessionFactory getSessionFactory();
+  /**
+   * @return Hibernate Configuration object
+   */
+  Configuration getConfiguration();
 
-    // NOTE: this method will be removed in 3rd step of XWIKI-2332
-    void setSessionFactory(SessionFactory sessionFactory);
+  /**
+   * @return Real Hibernate session factory
+   */
+  SessionFactory getSessionFactory();
+
+  // NOTE: this method will be removed in 3rd step of XWIKI-2332
+  void setSessionFactory(SessionFactory sessionFactory);
 }

@@ -19,97 +19,100 @@
  */
 package com.xpn.xwiki.criteria.impl;
 
-public class RevisionCriteriaFactory
-{
-    public RevisionCriteriaFactory()
-    {
-    }
+public class RevisionCriteriaFactory {
 
-    /**
-     * Creates a default RevisionCriteria, the default criteria matches the versions created by any
-     * author, from January 1, 1970, 00:00:00 GMT (epoch) to the current date, minor versions aren't
-     * included.
-     */
-    public RevisionCriteria createRevisionCriteria()
-    {
-        return new RevisionCriteria();
-    }
+  public RevisionCriteriaFactory() {}
 
-    /**
-     * Creates a revision criteria matching all the revisions created by the given author.
-     *
-     * @param author the author of the result set
-     * @return a new revision criteria
-     */
-    public RevisionCriteria createRevisionCriteria(String author)
-    {
-        return new RevisionCriteria(author, PeriodFactory.createMaximumPeriod(),
-            RangeFactory.createAllRange(), false);
-    }
+  /**
+   * Creates a default RevisionCriteria, the default criteria matches the versions created by any
+   * author, from January 1, 1970, 00:00:00 GMT (epoch) to the current date, minor versions aren't
+   * included.
+   */
+  public RevisionCriteria createRevisionCriteria() {
+    return new RevisionCriteria();
+  }
 
-    /**
-     * Creates a revision criteria matching all the revisions created by the given author.
-     *
-     * @param author the author of the result set
-     * @param includeMinorVersions include minor versions in the set
-     * @return a new revision criteria
-     */
-    public RevisionCriteria createRevisionCriteria(String author, boolean includeMinorVersions)
-    {
-        return new RevisionCriteria(author, PeriodFactory.createMaximumPeriod(),
-            RangeFactory.createAllRange(), includeMinorVersions);
-    }
+  /**
+   * Creates a revision criteria matching all the revisions created by the given author.
+   *
+   * @param author
+   *          the author of the result set
+   * @return a new revision criteria
+   */
+  public RevisionCriteria createRevisionCriteria(String author) {
+    return new RevisionCriteria(author, PeriodFactory.createMaximumPeriod(),
+        RangeFactory.createAllRange(), false);
+  }
 
-    /**
-     * Creates a revision criteria matching the revisions created by any author, during the given
-     * period.
-     *
-     * @param period the time period during which the revisions has been created
-     * @return a new revision criteria
-     */
-    public RevisionCriteria createRevisionCriteria(Period period)
-    {
-        return new RevisionCriteria("", period, RangeFactory.createAllRange(), false);
-    }
+  /**
+   * Creates a revision criteria matching all the revisions created by the given author.
+   *
+   * @param author
+   *          the author of the result set
+   * @param includeMinorVersions
+   *          include minor versions in the set
+   * @return a new revision criteria
+   */
+  public RevisionCriteria createRevisionCriteria(String author, boolean includeMinorVersions) {
+    return new RevisionCriteria(author, PeriodFactory.createMaximumPeriod(),
+        RangeFactory.createAllRange(), includeMinorVersions);
+  }
 
-    /**
-     * Creates a revision criteria matching the revisions created by any author, during the given
-     * period.
-     *
-     * @param period the time period during which the revisions has been created
-     * @param includeMinorVersions include minor versions in the set
-     * @return a new revision criteria
-     */
-    public RevisionCriteria createRevisionCriteria(Period period, boolean includeMinorVersions)
-    {
-        return new RevisionCriteria("", period, RangeFactory.createAllRange(), includeMinorVersions);
-    }
+  /**
+   * Creates a revision criteria matching the revisions created by any author, during the given
+   * period.
+   *
+   * @param period
+   *          the time period during which the revisions has been created
+   * @return a new revision criteria
+   */
+  public RevisionCriteria createRevisionCriteria(Period period) {
+    return new RevisionCriteria("", period, RangeFactory.createAllRange(), false);
+  }
 
-    /**
-     * Creates a revision criteria matching the revisions created by the given author, during the
-     * given period.
-     *
-     * @param author the author of the result set
-     * @param period the time period during which the revisions has been created
-     * @return a new revision criteria
-     */
-    public RevisionCriteria createRevisionCriteria(String author, Period period)
-    {
-        return new RevisionCriteria(author, period, RangeFactory.createAllRange(), false);
-    }
+  /**
+   * Creates a revision criteria matching the revisions created by any author, during the given
+   * period.
+   *
+   * @param period
+   *          the time period during which the revisions has been created
+   * @param includeMinorVersions
+   *          include minor versions in the set
+   * @return a new revision criteria
+   */
+  public RevisionCriteria createRevisionCriteria(Period period, boolean includeMinorVersions) {
+    return new RevisionCriteria("", period, RangeFactory.createAllRange(), includeMinorVersions);
+  }
 
-    /**
-     * Creates a revision criteria matching the revisions created by the given author, during the
-     * given period.
-     *
-     * @param author the author of the result set
-     * @param period the time period during which the revisions has been created
-     * @param includeMinorVersions include minor versions in the set
-     * @return a new revision criteria
-     */
-    public RevisionCriteria createRevisionCriteria(String author, Period period,
-        boolean includeMinorVersions)
-    {
-        return new RevisionCriteria(author, period, RangeFactory.createAllRange(), includeMinorVersions);
-    }
+  /**
+   * Creates a revision criteria matching the revisions created by the given author, during the
+   * given period.
+   *
+   * @param author
+   *          the author of the result set
+   * @param period
+   *          the time period during which the revisions has been created
+   * @return a new revision criteria
+   */
+  public RevisionCriteria createRevisionCriteria(String author, Period period) {
+    return new RevisionCriteria(author, period, RangeFactory.createAllRange(), false);
+  }
+
+  /**
+   * Creates a revision criteria matching the revisions created by the given author, during the
+   * given period.
+   *
+   * @param author
+   *          the author of the result set
+   * @param period
+   *          the time period during which the revisions has been created
+   * @param includeMinorVersions
+   *          include minor versions in the set
+   * @return a new revision criteria
+   */
+  public RevisionCriteria createRevisionCriteria(String author, Period period,
+      boolean includeMinorVersions) {
+    return new RevisionCriteria(author, period, RangeFactory.createAllRange(),
+        includeMinorVersions);
+  }
 }

@@ -22,35 +22,29 @@ package com.xpn.xwiki.plugin.charts.wizard;
 
 import com.xpn.xwiki.plugin.charts.source.TableDataSource;
 
-public class DatasourceDefaultsHelper
-{
-    public String getDefaultTableNumber()
-    {
-        return TableDataSource.DEFAULT_TABLE_NUMBER + "";
-    }
+public class DatasourceDefaultsHelper {
 
-    public String getDefaultRange()
-    {
-        return TableDataSource.DEFAULT_RANGE + "";
-    }
+  public String getDefaultTableNumber() {
+    return TableDataSource.DEFAULT_TABLE_NUMBER + "";
+  }
 
-    public String getDefaultHasHeaderRow()
-    {
-        return TableDataSource.DEFAULT_HAS_HEADER_ROW + "";
-    }
+  public String getDefaultRange() {
+    return TableDataSource.DEFAULT_RANGE + "";
+  }
 
-    public String getDefaultHasHeaderColumn()
-    {
-        return TableDataSource.DEFAULT_HAS_HEADER_COLUMN + "";
-    }
+  public String getDefaultHasHeaderRow() {
+    return TableDataSource.DEFAULT_HAS_HEADER_ROW + "";
+  }
 
-    public String getDefaultDecimalSymbol()
-    {
-        return TableDataSource.DEFAULT_DECIMAL_SYMBOL + "";
-    }
+  public String getDefaultHasHeaderColumn() {
+    return TableDataSource.DEFAULT_HAS_HEADER_COLUMN + "";
+  }
 
-    public String getDefaultIgnoreAlpha()
-    {
-        return TableDataSource.DEFAULT_IGNORE_ALPHA + "";
-    }
+  public String getDefaultDecimalSymbol() {
+    return TableDataSource.DEFAULT_DECIMAL_SYMBOL + "";
+  }
+
+  public String getDefaultIgnoreAlpha() {
+    return TableDataSource.DEFAULT_IGNORE_ALPHA + "";
+  }
 }

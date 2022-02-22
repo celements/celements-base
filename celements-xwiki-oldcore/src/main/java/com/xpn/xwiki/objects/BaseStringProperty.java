@@ -21,90 +21,84 @@
 
 package com.xpn.xwiki.objects;
 
-
 /**
  * Base string XProperty which all types of string XProperties extend.
  *
  * $Id$
  */
-public class BaseStringProperty extends BaseProperty
-{
-    /** The value of the string. */
-    private String value;
+public class BaseStringProperty extends BaseProperty {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.objects.BaseProperty#getValue()
-     */
-    @Override
-    public String getValue()
-    {
-        return this.value;
+  /** The value of the string. */
+  private String value;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.objects.BaseProperty#getValue()
+   */
+  @Override
+  public String getValue() {
+    return this.value;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.objects.BaseProperty#setValue(java.lang.Object)
+   */
+  @Override
+  public void setValue(Object value) {
+    this.value = (String) value;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.objects.BaseProperty#toText()
+   */
+  @Override
+  public String toText() {
+    String value = getValue();
+    if (value != null) {
+      return value;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.objects.BaseProperty#setValue(java.lang.Object)
-     */
-    @Override
-    public void setValue(Object value)
-    {
-        this.value = (String) value;
+    return "";
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.objects.BaseProperty#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    // Same Java object, they sure are equal
+    if (this == obj) {
+      return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.objects.BaseProperty#toText()
-     */
-    @Override
-    public String toText()
-    {
-        String value = getValue();
-        if (value != null) {
-            return value;
-        }
-
-        return "";
+    if (!super.equals(obj)) {
+      return false;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.objects.BaseProperty#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj)
-    {
-        // Same Java object, they sure are equal
-        if (this == obj) {
-            return true;
-        }
-
-        if (!super.equals(obj)) {
-            return false;
-        }
-
-        if ((getValue() == null) && (((BaseStringProperty) obj).getValue() == null)) {
-            return true;
-        }
-
-        return getValue().equals(((BaseStringProperty) obj).getValue());
+    if ((getValue() == null) && (((BaseStringProperty) obj).getValue() == null)) {
+      return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.objects.BaseProperty#clone()
-     */
-    @Override
-    public Object clone()
-    {
-        BaseStringProperty property = (BaseStringProperty) super.clone();
-        property.setValue(getValue());
+    return getValue().equals(((BaseStringProperty) obj).getValue());
+  }
 
-        return property;
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.objects.BaseProperty#clone()
+   */
+  @Override
+  public Object clone() {
+    BaseStringProperty property = (BaseStringProperty) super.clone();
+    property.setValue(getValue());
+
+    return property;
+  }
 }

@@ -30,60 +30,54 @@ import com.xpn.xwiki.criteria.impl.ScopeFactory;
 /**
  * Criteria service api.
  */
-public class CriteriaService extends Api
-{
-    public CriteriaService(XWikiContext context)
-    {
-        super(context);
-    }
+public class CriteriaService extends Api {
 
-    /**
-     * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Scope} objects in
-     *         velocity.
-     */
-    public ScopeFactory getScopeFactory()
-    {
-        return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
-            .getScopeFactory();
-    }
+  public CriteriaService(XWikiContext context) {
+    super(context);
+  }
 
-    /**
-     * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Period} objects in
-     *         velocity.
-     */
-    public PeriodFactory getPeriodFactory()
-    {
-        return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
-            .getPeriodFactory();
-    }
+  /**
+   * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Scope} objects in
+   *         velocity.
+   */
+  public ScopeFactory getScopeFactory() {
+    return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
+        .getScopeFactory();
+  }
 
-    /**
-     * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Duration} objects in
-     *         velocity.
-     */
-    public DurationFactory getDurationFactory()
-    {
-        return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
-            .getDurationFactory();
-    }
+  /**
+   * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Period} objects in
+   *         velocity.
+   */
+  public PeriodFactory getPeriodFactory() {
+    return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
+        .getPeriodFactory();
+  }
 
-    /**
-     * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Range} objects in
-     *         velocity.
-     */
-    public RangeFactory getRangeFactory()
-    {
-        return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
-            .getRangeFactory();
-    }
+  /**
+   * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Duration} objects in
+   *         velocity.
+   */
+  public DurationFactory getDurationFactory() {
+    return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
+        .getDurationFactory();
+  }
 
-    /**
-     * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.RevisionCriteria}
-     *         objects in velocity.
-     */
-    public RevisionCriteriaFactory getRevisionCriteriaFactory()
-    {
-        return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
-            .getRevisionCriteriaFactory();
-    }
+  /**
+   * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.Range} objects in
+   *         velocity.
+   */
+  public RangeFactory getRangeFactory() {
+    return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
+        .getRangeFactory();
+  }
+
+  /**
+   * @return A helper factory for creating {@link com.xpn.xwiki.criteria.impl.RevisionCriteria}
+   *         objects in velocity.
+   */
+  public RevisionCriteriaFactory getRevisionCriteriaFactory() {
+    return getXWikiContext().getWiki().getCriteriaService(getXWikiContext())
+        .getRevisionCriteriaFactory();
+  }
 }

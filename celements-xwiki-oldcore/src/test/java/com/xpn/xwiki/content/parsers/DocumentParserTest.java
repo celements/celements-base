@@ -19,64 +19,61 @@
  */
 package com.xpn.xwiki.content.parsers;
 
-import junit.framework.TestCase;
 import com.xpn.xwiki.content.Link;
+
+import junit.framework.TestCase;
 
 /**
  * Unit tests for {@link DocumentParser}.
  *
  * @version $Id$
  */
-public class DocumentParserTest extends TestCase
-{
-    public void testParseLinksWhenDocumentWithNoLinks() throws Exception
-    {
-        DocumentParser parser = new DocumentParser();
+public class DocumentParserTest extends TestCase {
 
-        ParsingResultCollection result = parser.parseLinks("No links in there");
-        assertFalse(result.hasInvalidElements());
-        assertTrue(result.getValidElements().isEmpty());
-    }
+  public void testParseLinksWhenDocumentWithNoLinks() throws Exception {
+    DocumentParser parser = new DocumentParser();
 
-    public void testParseLinks() throws Exception
-    {
-        DocumentParser parser = new DocumentParser();
+    ParsingResultCollection result = parser.parseLinks("No links in there");
+    assertFalse(result.hasInvalidElements());
+    assertTrue(result.getValidElements().isEmpty());
+  }
 
-        ParsingResultCollection result = parser.parseLinks("This is [link1]. This is [link2].");
-        assertFalse(result.hasInvalidElements());
-        assertEquals(2, result.getValidElements().size());
-        assertEquals("link1", ((Link) result.getValidElements().get(0)).getPage());
-        assertEquals("link2", ((Link) result.getValidElements().get(1)).getPage());
-    }
+  public void testParseLinks() throws Exception {
+    DocumentParser parser = new DocumentParser();
 
-    public void testParseLinksAndReplaceWhenNoSpaceInLink() throws Exception
-    {
-        DocumentParser parser = new DocumentParser();
-        Link linkToLookFor = new LinkParser().parse("XWiki.link1");
-        Link newLink = new LinkParser().parse("XWiki2.mylink");
+    ParsingResultCollection result = parser.parseLinks("This is [link1]. This is [link2].");
+    assertFalse(result.hasInvalidElements());
+    assertEquals(2, result.getValidElements().size());
+    assertEquals("link1", ((Link) result.getValidElements().get(0)).getPage());
+    assertEquals("link2", ((Link) result.getValidElements().get(1)).getPage());
+  }
 
-        ReplacementResultCollection result = parser.parseLinksAndReplace(
-            "This is [link1]. This is [link2].", linkToLookFor, newLink,
-            new RenamePageReplaceLinkHandler(), "XWiki");
+  public void testParseLinksAndReplaceWhenNoSpaceInLink() throws Exception {
+    DocumentParser parser = new DocumentParser();
+    Link linkToLookFor = new LinkParser().parse("XWiki.link1");
+    Link newLink = new LinkParser().parse("XWiki2.mylink");
 
-        assertEquals("This is [XWiki2.mylink]. This is [link2].", result.getModifiedContent());
-        assertEquals(1, result.getReplacedElements().size());
-    }
+    ReplacementResultCollection result = parser.parseLinksAndReplace(
+        "This is [link1]. This is [link2].", linkToLookFor, newLink,
+        new RenamePageReplaceLinkHandler(), "XWiki");
 
-    public void testParseLinksAndReplaceWhenPipeSeparatorInLink() throws Exception
-    {
-        DocumentParser parser = new DocumentParser();
-        LinkParser linkParser = new LinkParser();
+    assertEquals("This is [XWiki2.mylink]. This is [link2].", result.getModifiedContent());
+    assertEquals(1, result.getReplacedElements().size());
+  }
 
-        Link linkToLookFor = linkParser.parse("Space.Page");
-        Link newLink = new LinkParser().parse("Space2.Page2");
+  public void testParseLinksAndReplaceWhenPipeSeparatorInLink() throws Exception {
+    DocumentParser parser = new DocumentParser();
+    LinkParser linkParser = new LinkParser();
 
-        ReplacementResultCollection result = parser.parseLinksAndReplace(
-            "This is [Hello|Space.Page?param=${doc\\.fullName}].", linkToLookFor, newLink,
-            new RenamePageReplaceLinkHandler(), "Whatever");
+    Link linkToLookFor = linkParser.parse("Space.Page");
+    Link newLink = new LinkParser().parse("Space2.Page2");
 
-        assertEquals("This is [Hello|Space2.Page2?param=${doc\\.fullName}].",
-            result.getModifiedContent());
-    }
+    ReplacementResultCollection result = parser.parseLinksAndReplace(
+        "This is [Hello|Space.Page?param=${doc\\.fullName}].", linkToLookFor, newLink,
+        new RenamePageReplaceLinkHandler(), "Whatever");
+
+    assertEquals("This is [Hello|Space2.Page2?param=${doc\\.fullName}].",
+        result.getModifiedContent());
+  }
 
 }

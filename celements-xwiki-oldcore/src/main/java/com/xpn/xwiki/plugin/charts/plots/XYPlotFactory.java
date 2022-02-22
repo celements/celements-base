@@ -33,35 +33,34 @@ import com.xpn.xwiki.plugin.charts.params.ChartParams;
 import com.xpn.xwiki.plugin.charts.source.DataSource;
 
 /**
- * This class is not used directly but through area, bar and line (there is a sort of dynamic inheritance here)
+ * This class is not used directly but through area, bar and line (there is a sort of dynamic
+ * inheritance here)
  */
-public class XYPlotFactory
-{
-    private static XYPlotFactory uniqueInstance = new XYPlotFactory();
+public class XYPlotFactory {
 
-    private XYPlotFactory()
-    {
-        // empty
-    }
+  private static XYPlotFactory uniqueInstance = new XYPlotFactory();
 
-    public static XYPlotFactory getInstance()
-    {
-        return uniqueInstance;
-    }
+  private XYPlotFactory() {
+    // empty
+  }
 
-    public Plot create(DataSource dataSource, XYItemRenderer renderer, ChartParams params) throws GenerateException,
-        DataSourceException
-    {
-        NumberAxis domainAxis = new NumberAxis();
-        NumberAxis rangeAxis = new NumberAxis();
-        ChartCustomizer.customizeNumberAxis(domainAxis, params, ChartParams.AXIS_DOMAIN_PREFIX);
-        ChartCustomizer.customizeNumberAxis(rangeAxis, params, ChartParams.AXIS_RANGE_PREFIX);
+  public static XYPlotFactory getInstance() {
+    return uniqueInstance;
+  }
 
-        XYDataset dataset = TableXYDatasetFactory.getInstance().create(dataSource, params);
+  public Plot create(DataSource dataSource, XYItemRenderer renderer, ChartParams params)
+      throws GenerateException,
+      DataSourceException {
+    NumberAxis domainAxis = new NumberAxis();
+    NumberAxis rangeAxis = new NumberAxis();
+    ChartCustomizer.customizeNumberAxis(domainAxis, params, ChartParams.AXIS_DOMAIN_PREFIX);
+    ChartCustomizer.customizeNumberAxis(rangeAxis, params, ChartParams.AXIS_RANGE_PREFIX);
 
-        XYPlot plot = new XYPlot(dataset, domainAxis, rangeAxis, renderer);
+    XYDataset dataset = TableXYDatasetFactory.getInstance().create(dataSource, params);
 
-        ChartCustomizer.customizeXYPlot(plot, params);
-        return plot;
-    }
+    XYPlot plot = new XYPlot(dataset, domainAxis, rangeAxis, renderer);
+
+    ChartCustomizer.customizeXYPlot(plot, params);
+    return plot;
+  }
 }

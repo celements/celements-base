@@ -20,62 +20,53 @@
  */
 package com.xpn.xwiki.api;
 
-public class DocumentSection
-{
-    private int sectionNumber;
+public class DocumentSection {
 
-    private int sectionIndex;
+  private int sectionNumber;
 
-    private String sectionLevel;
+  private int sectionIndex;
 
-    private String sectionTitle;
+  private String sectionLevel;
 
-    public DocumentSection(int sectionNumber, int sectionIndex, String sectionLevel,
-        String sectionTitle)
-    {
-        setSectionNumber(sectionNumber);
-        setSectionIndex(sectionIndex);
-        setSectionLevel(sectionLevel);
-        setSectionTitle(sectionTitle);
-    }
+  private String sectionTitle;
 
-    public int getSectionNumber()
-    {
-        return this.sectionNumber;
-    }
+  public DocumentSection(int sectionNumber, int sectionIndex, String sectionLevel,
+      String sectionTitle) {
+    setSectionNumber(sectionNumber);
+    setSectionIndex(sectionIndex);
+    setSectionLevel(sectionLevel);
+    setSectionTitle(sectionTitle);
+  }
 
-    public void setSectionNumber(int sectionNumber)
-    {
-        this.sectionNumber = sectionNumber;
-    }
+  public int getSectionNumber() {
+    return this.sectionNumber;
+  }
 
-    public int getSectionIndex()
-    {
-        return this.sectionIndex;
-    }
+  public void setSectionNumber(int sectionNumber) {
+    this.sectionNumber = sectionNumber;
+  }
 
-    public void setSectionIndex(int sectionIndex)
-    {
-        this.sectionIndex = sectionIndex;
-    }
+  public int getSectionIndex() {
+    return this.sectionIndex;
+  }
 
-    public String getSectionLevel()
-    {
-        return this.sectionLevel;
-    }
+  public void setSectionIndex(int sectionIndex) {
+    this.sectionIndex = sectionIndex;
+  }
 
-    public void setSectionLevel(String sectionLevel)
-    {
-        this.sectionLevel = sectionLevel;
-    }
+  public String getSectionLevel() {
+    return this.sectionLevel;
+  }
 
-    public String getSectionTitle()
-    {
-        return sectionTitle;
-    }
+  public void setSectionLevel(String sectionLevel) {
+    this.sectionLevel = sectionLevel;
+  }
 
-    public void setSectionTitle(String sectionTitle)
-    {
-        this.sectionTitle = sectionTitle;
-    }
+  public String getSectionTitle() {
+    return sectionTitle;
+  }
+
+  public void setSectionTitle(String sectionTitle) {
+    this.sectionTitle = sectionTitle;
+  }
 }

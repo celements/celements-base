@@ -27,33 +27,31 @@ import com.xpn.xwiki.objects.classes.BooleanClass;
 import com.xpn.xwiki.objects.classes.NumberClass;
 import com.xpn.xwiki.objects.classes.StringClass;
 
-public class StringMetaClass extends PropertyMetaClass
-{
-    public StringMetaClass()
-    {
-        super();
-        // setType("stringmetaclass");
-        setPrettyName("String");
-        setName(StringClass.class.getName());
+public class StringMetaClass extends PropertyMetaClass {
 
-        NumberClass size_class = new NumberClass(this);
-        size_class.setName("size");
-        size_class.setPrettyName("Size");
-        size_class.setSize(5);
-        size_class.setNumberType("integer");
-        safeput("size", size_class);
+  public StringMetaClass() {
+    // setType("stringmetaclass");
+    setPrettyName("String");
+    setName(StringClass.class.getName());
 
-        BooleanClass picker_class = new BooleanClass(this);
-        picker_class.setName("picker");
-        picker_class.setPrettyName("Use Suggest");
-        picker_class.setDisplayType("yesno");
-        picker_class.setDisplayFormType("checkbox");
-        picker_class.setDefaultValue(1);
-        safeput("picker", picker_class);
-    }
+    NumberClass size_class = new NumberClass(this);
+    size_class.setName("size");
+    size_class.setPrettyName("Size");
+    size_class.setSize(5);
+    size_class.setNumberType("integer");
+    safeput("size", size_class);
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new StringClass();
-    }
+    BooleanClass picker_class = new BooleanClass(this);
+    picker_class.setName("picker");
+    picker_class.setPrettyName("Use Suggest");
+    picker_class.setDisplayType("yesno");
+    picker_class.setDisplayFormType("checkbox");
+    picker_class.setDefaultValue(1);
+    safeput("picker", picker_class);
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new StringClass();
+  }
 }

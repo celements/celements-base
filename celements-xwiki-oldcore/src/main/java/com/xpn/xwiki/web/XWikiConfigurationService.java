@@ -35,62 +35,64 @@ import com.xpn.xwiki.XWikiConfig;
 /**
  * Provide access to the configuration.
  * <p>
- * Do not use it if you have access to {@link XWiki#getXWikiPreference(String, com.xpn.xwiki.XWikiContext)}, this is
+ * Do not use it if you have access to
+ * {@link XWiki#getXWikiPreference(String, com.xpn.xwiki.XWikiContext)}, this is
  * just a hack for rare use case where we don't have access to the XWikiContext or ExecutionContext.
- * 
+ *
  * @version $Id$
  * @since 1.9.1
  */
-class XWikiConfigurationService
-{
-    private static final Log LOG = LogFactory.getLog(XWikiConfigurationService.class);
+class XWikiConfigurationService {
 
-    private static XWikiConfig config;
+  private static final Log LOG = LogFactory.getLog(XWikiConfigurationService.class);
 
-    public synchronized static String getProperty(String propertyKey, String defaultValue, ServletContext context)
-    {
-        if (config == null) {
-            // Make XWikiRequestProcessor own configuration loader since XWiki of Configuration component are not
-            // initialized at this time
-            InputStream xwikicfgis = null;
+  private static XWikiConfig config;
 
-            String configurationLocation;
-            try {
-                configurationLocation = XWiki.getConfigPath();
+  public synchronized static String getProperty(String propertyKey, String defaultValue,
+      ServletContext context) {
+    if (config == null) {
+      // Make XWikiRequestProcessor own configuration loader since XWiki of Configuration component
+      // are not
+      // initialized at this time
+      InputStream xwikicfgis = null;
 
-                // First try loading from a file.
-                File f = new File(configurationLocation);
-                try {
-                    if (f.exists()) {
-                        xwikicfgis = new FileInputStream(f);
-                    }
-                } catch (Exception e) {
-                    // Error loading the file. Most likely, the Security Manager prevented it.
-                    // We'll try loading it as a resource below.
-                    LOG.debug("Failed to load the file [" + configurationLocation + "] using direct "
-                        + "file access. The error was [" + e.getMessage() + "]. Trying to load it "
-                        + "as a resource using the Servlet Context...");
-                }
-                // Second, try loading it as a resource using the Servlet Context
-                if (xwikicfgis == null) {
-                    xwikicfgis = context.getResourceAsStream(configurationLocation);
-                    LOG.debug("Failed to load the file [" + configurationLocation + "] as a resource "
-                        + "using the Servlet Context. Trying to load it as classpath resource...");
-                }
+      String configurationLocation;
+      try {
+        configurationLocation = XWiki.getConfigPath();
 
-                // Third, try loading it from the classloader used to load this current class
-                if (xwikicfgis == null) {
-                    xwikicfgis = XWiki.class.getClassLoader().getResourceAsStream("xwiki.cfg");
-                }
-
-                config = new XWikiConfig(xwikicfgis);
-            } catch (Exception e) {
-                LOG.error("Faile to lod configuration", e);
-
-                config = new XWikiConfig();
-            }
+        // First try loading from a file.
+        File f = new File(configurationLocation);
+        try {
+          if (f.exists()) {
+            xwikicfgis = new FileInputStream(f);
+          }
+        } catch (Exception e) {
+          // Error loading the file. Most likely, the Security Manager prevented it.
+          // We'll try loading it as a resource below.
+          LOG.debug("Failed to load the file [" + configurationLocation + "] using direct "
+              + "file access. The error was [" + e.getMessage() + "]. Trying to load it "
+              + "as a resource using the Servlet Context...");
+        }
+        // Second, try loading it as a resource using the Servlet Context
+        if (xwikicfgis == null) {
+          xwikicfgis = context.getResourceAsStream(configurationLocation);
+          LOG.debug("Failed to load the file [" + configurationLocation + "] as a resource "
+              + "using the Servlet Context. Trying to load it as classpath resource...");
         }
 
-        return config.getProperty(propertyKey, defaultValue);
+        // Third, try loading it from the classloader used to load this current class
+        if (xwikicfgis == null) {
+          xwikicfgis = XWiki.class.getClassLoader().getResourceAsStream("xwiki.cfg");
+        }
+
+        config = new XWikiConfig(xwikicfgis);
+      } catch (Exception e) {
+        LOG.error("Faile to lod configuration", e);
+
+        config = new XWikiConfig();
+      }
     }
+
+    return config.getProperty(propertyKey, defaultValue);
+  }
 }

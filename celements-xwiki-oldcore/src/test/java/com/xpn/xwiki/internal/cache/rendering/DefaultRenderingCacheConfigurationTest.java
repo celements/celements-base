@@ -33,140 +33,136 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit test for {@link DefaultRenderingCacheConfiguration}.
- * 
+ *
  * @version $Id$
  * @since 2.4M1
  */
-public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private RenderingCacheConfiguration configuration;
+public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWikiComponentTestCase {
 
-    private DocumentReference documentReference;
+  private RenderingCacheConfiguration configuration;
 
-    @Override
-    protected void registerComponents() throws Exception
-    {
-        super.registerComponents();
+  private DocumentReference documentReference;
 
-        getComponentManager().registerComponent(MockConfigurationSource.getDescriptor("wiki"));
-    }
+  @Override
+  protected void registerComponents() throws Exception {
+    super.registerComponents();
 
-    private MockConfigurationSource getWikiConfigurationSource() throws Exception
-    {
-        return (MockConfigurationSource) getComponentManager().lookup(ConfigurationSource.class, "wiki");
-    }
+    getComponentManager().registerComponent(MockConfigurationSource.getDescriptor("wiki"));
+  }
 
-    private MockConfigurationSource getXWikiPropertiesConfigurationSource() throws Exception
-    {
-        return (MockConfigurationSource) getComponentManager().lookup(ConfigurationSource.class, "xwikiproperties");
-    }
+  private MockConfigurationSource getWikiConfigurationSource() throws Exception {
+    return (MockConfigurationSource) getComponentManager().lookup(ConfigurationSource.class,
+        "wiki");
+  }
 
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
+  private MockConfigurationSource getXWikiPropertiesConfigurationSource() throws Exception {
+    return (MockConfigurationSource) getComponentManager().lookup(ConfigurationSource.class,
+        "xwikiproperties");
+  }
 
-        this.configuration = getComponentManager().lookup(RenderingCacheConfiguration.class);
-        this.documentReference = new DocumentReference("wiki", "space", "page");
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
 
-        getContext().setDatabase("wiki");
-    }
+    this.configuration = getComponentManager().lookup(RenderingCacheConfiguration.class);
+    this.documentReference = new DocumentReference("wiki", "space", "page");
 
-    @Test
-    public void testIsCachedWithNoConfiguration() throws Exception
-    {
-        Assert.assertFalse(this.configuration.isCached(this.documentReference));
-    }
+    getContext().setDatabase("wiki");
+  }
 
-    @Test
-    public void testIsCachedWhenDisabled() throws Exception
-    {
-        MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  @Test
+  public void testIsCachedWithNoConfiguration() throws Exception {
+    Assert.assertFalse(this.configuration.isCached(this.documentReference));
+  }
 
-        source.setProperty("core.renderingcache.enabled", false);
+  @Test
+  public void testIsCachedWhenDisabled() throws Exception {
+    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
-        Assert.assertFalse(this.configuration.isCached(this.documentReference));
-    }
+    source.setProperty("core.renderingcache.enabled", false);
 
-    @Test
-    public void testIsCachedWhenDisabledWithNoConfiguration() throws Exception
-    {
-        MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+    Assert.assertFalse(this.configuration.isCached(this.documentReference));
+  }
 
-        source.setProperty("core.renderingcache.enabled", true);
+  @Test
+  public void testIsCachedWhenDisabledWithNoConfiguration() throws Exception {
+    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
-        Assert.assertFalse(this.configuration.isCached(this.documentReference));
-    }
+    source.setProperty("core.renderingcache.enabled", true);
 
-    @Test
-    public void testIsCachedWithExactReference() throws Exception
-    {
-        MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+    Assert.assertFalse(this.configuration.isCached(this.documentReference));
+  }
 
-        source.setProperty("core.renderingcache.enabled", true);
-        source.setProperty("core.renderingcache.documents", Collections.singletonList("wiki:space.page"));
+  @Test
+  public void testIsCachedWithExactReference() throws Exception {
+    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
-        Assert.assertTrue(this.configuration.isCached(this.documentReference));
-    }
+    source.setProperty("core.renderingcache.enabled", true);
+    source.setProperty("core.renderingcache.documents",
+        Collections.singletonList("wiki:space.page"));
 
-    @Test
-    public void testIsCachedWithWrongReference() throws Exception
-    {
-        MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+    Assert.assertTrue(this.configuration.isCached(this.documentReference));
+  }
 
-        source.setProperty("core.renderingcache.enabled", true);
-        source.setProperty("core.renderingcache.documents", Collections.singletonList("wrongreference"));
+  @Test
+  public void testIsCachedWithWrongReference() throws Exception {
+    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
-        Assert.assertFalse(this.configuration.isCached(this.documentReference));
-    }
+    source.setProperty("core.renderingcache.enabled", true);
+    source.setProperty("core.renderingcache.documents",
+        Collections.singletonList("wrongreference"));
 
-    @Test
-    public void testIsCachedWithOnePattern() throws Exception
-    {
-        MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+    Assert.assertFalse(this.configuration.isCached(this.documentReference));
+  }
 
-        source.setProperty("core.renderingcache.enabled", true);
-        source.setProperty("core.renderingcache.documents", Collections.singletonList("wiki:space.*"));
+  @Test
+  public void testIsCachedWithOnePattern() throws Exception {
+    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
-        Assert.assertTrue(this.configuration.isCached(this.documentReference));
-    }
+    source.setProperty("core.renderingcache.enabled", true);
+    source.setProperty("core.renderingcache.documents", Collections.singletonList("wiki:space.*"));
 
-    @Test
-    public void testIsCachedWithSeveralPattern() throws Exception
-    {
-        MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+    Assert.assertTrue(this.configuration.isCached(this.documentReference));
+  }
 
-        source.setProperty("core.renderingcache.enabled", true);
-        source.setProperty("core.renderingcache.documents", Arrays.asList("wrongreference", "wiki:space.*"));
+  @Test
+  public void testIsCachedWithSeveralPattern() throws Exception {
+    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
-        Assert.assertTrue(this.configuration.isCached(this.documentReference));
-    }
+    source.setProperty("core.renderingcache.enabled", true);
+    source.setProperty("core.renderingcache.documents",
+        Arrays.asList("wrongreference", "wiki:space.*"));
 
-    @Test
-    public void testIsCachedWithSeveralPattern2() throws Exception
-    {
-        MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+    Assert.assertTrue(this.configuration.isCached(this.documentReference));
+  }
 
-        source.setProperty("core.renderingcache.enabled", true);
-        source.setProperty("core.renderingcache.documents", Arrays.asList("wiki:space.*", "wrongreference"));
+  @Test
+  public void testIsCachedWithSeveralPattern2() throws Exception {
+    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
-        Assert.assertTrue(this.configuration.isCached(this.documentReference));
-    }
+    source.setProperty("core.renderingcache.enabled", true);
+    source.setProperty("core.renderingcache.documents",
+        Arrays.asList("wiki:space.*", "wrongreference"));
 
-    @Test
-    public void testIsCachedWithWikiConfiguration() throws Exception
-    {
-        getXWikiPropertiesConfigurationSource().setProperty("core.renderingcache.enabled", true);
+    Assert.assertTrue(this.configuration.isCached(this.documentReference));
+  }
 
-        MockConfigurationSource wikiSource = getWikiConfigurationSource();
+  @Test
+  public void testIsCachedWithWikiConfiguration() throws Exception {
+    getXWikiPropertiesConfigurationSource().setProperty("core.renderingcache.enabled", true);
 
-        wikiSource.setProperty("core.renderingcache.enabled", true);
-        wikiSource.setProperty("core.renderingcache.documents", Arrays.asList("wiki:space.*", "wrongreference"));
+    MockConfigurationSource wikiSource = getWikiConfigurationSource();
 
-        Assert.assertTrue(this.configuration.isCached(this.documentReference));
+    wikiSource.setProperty("core.renderingcache.enabled", true);
+    wikiSource.setProperty("core.renderingcache.documents",
+        Arrays.asList("wiki:space.*", "wrongreference"));
 
-        wikiSource.setProperty("core.renderingcache.documents", Arrays.asList("space.*", "wrongreference"));
+    Assert.assertTrue(this.configuration.isCached(this.documentReference));
 
-        Assert.assertTrue(this.configuration.isCached(this.documentReference));
-    }
+    wikiSource.setProperty("core.renderingcache.documents",
+        Arrays.asList("space.*", "wrongreference"));
+
+    Assert.assertTrue(this.configuration.isCached(this.documentReference));
+  }
 }

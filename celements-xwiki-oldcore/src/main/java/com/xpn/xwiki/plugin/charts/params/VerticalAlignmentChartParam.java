@@ -22,29 +22,25 @@ package com.xpn.xwiki.plugin.charts.params;
 
 import org.jfree.ui.VerticalAlignment;
 
-public class VerticalAlignmentChartParam extends ChoiceChartParam
-{
-    public VerticalAlignmentChartParam(String name)
-    {
-        super(name);
-    }
+public class VerticalAlignmentChartParam extends ChoiceChartParam {
 
-    public VerticalAlignmentChartParam(String name, boolean isOptional)
-    {
-        super(name, isOptional);
-    }
+  public VerticalAlignmentChartParam(String name) {
+    super(name);
+  }
 
-    @Override
-    public Class getType()
-    {
-        return VerticalAlignment.class;
-    }
+  public VerticalAlignmentChartParam(String name, boolean isOptional) {
+    super(name, isOptional);
+  }
 
-    @Override
-    public void init()
-    {
-        addChoice("top", VerticalAlignment.TOP);
-        addChoice("bottom", VerticalAlignment.BOTTOM);
-        addChoice("center", VerticalAlignment.CENTER);
-    }
+  @Override
+  public Class getType() {
+    return VerticalAlignment.class;
+  }
+
+  @Override
+  public void init() {
+    addChoice("top", VerticalAlignment.TOP);
+    addChoice("bottom", VerticalAlignment.BOTTOM);
+    addChoice("center", VerticalAlignment.CENTER);
+  }
 }

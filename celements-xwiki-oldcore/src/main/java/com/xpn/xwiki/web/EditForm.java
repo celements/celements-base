@@ -28,244 +28,210 @@ import org.apache.commons.lang.math.NumberUtils;
 
 import com.xpn.xwiki.util.Util;
 
-public class EditForm extends XWikiForm
-{
+public class EditForm extends XWikiForm {
 
-    // ---- Form fields -------------------------------------------------
-    private String content;
+  // ---- Form fields -------------------------------------------------
+  private String content;
 
-    private String web;
+  private String web;
 
-    private String name;
+  private String name;
 
-    private String parent;
+  private String parent;
 
-    private String creator;
+  private String creator;
 
-    private String template;
+  private String template;
 
-    private String language;
+  private String language;
 
-    private String defaultLanguage;
+  private String defaultLanguage;
 
-    private String defaultTemplate;
+  private String defaultTemplate;
 
-    private String title;
+  private String title;
 
-    private String comment;
+  private String comment;
 
-    private boolean isMinorEdit = false;
+  private boolean isMinorEdit = false;
 
-    private String tags;
+  private String tags;
 
-    private boolean lockForce;
+  private boolean lockForce;
 
-    private String syntaxId;
+  private String syntaxId;
 
-    @Override
-    public void readRequest()
-    {
-        XWikiRequest request = getRequest();
-        setContent(request.getParameter("content"));
-        setWeb(request.getParameter("web"));
-        setName(request.getParameter("name"));
-        setParent(request.getParameter("parent"));
-        setTemplate(request.getParameter("template"));
-        setDefaultTemplate(request.getParameter("default_template"));
-        setCreator(request.getParameter("creator"));
-        setLanguage(request.getParameter("language"));
-        setTitle(request.getParameter("title"));
-        setComment(request.getParameter("comment"));
-        setDefaultLanguage(request.getParameter("defaultLanguage"));
-        setTags(request.getParameterValues("tags"));
-        setLockForce("1".equals(request.getParameter("force")));
-        setMinorEdit(request.getParameter("minorEdit") != null);
-        setSyntaxId(request.getParameter("syntaxId"));
+  @Override
+  public void readRequest() {
+    XWikiRequest request = getRequest();
+    setContent(request.getParameter("content"));
+    setWeb(request.getParameter("web"));
+    setName(request.getParameter("name"));
+    setParent(request.getParameter("parent"));
+    setTemplate(request.getParameter("template"));
+    setDefaultTemplate(request.getParameter("default_template"));
+    setCreator(request.getParameter("creator"));
+    setLanguage(request.getParameter("language"));
+    setTitle(request.getParameter("title"));
+    setComment(request.getParameter("comment"));
+    setDefaultLanguage(request.getParameter("defaultLanguage"));
+    setTags(request.getParameterValues("tags"));
+    setLockForce("1".equals(request.getParameter("force")));
+    setMinorEdit(request.getParameter("minorEdit") != null);
+    setSyntaxId(request.getParameter("syntaxId"));
+  }
+
+  public void setTags(String[] parameter) {
+    if (parameter == null) {
+      this.tags = null;
+      return;
     }
-
-    public void setTags(String[] parameter)
-    {
-        if (parameter == null) {
-            this.tags = null;
-            return;
+    StringBuffer tags = new StringBuffer();
+    boolean first = true;
+    for (String element : parameter) {
+      if (!element.equals("")) {
+        if (first) {
+          first = false;
+        } else {
+          tags.append("|");
         }
-        StringBuffer tags = new StringBuffer();
-        boolean first = true;
-        for (int i = 0; i < parameter.length; ++i) {
-            if (!parameter[i].equals("")) {
-                if (first) {
-                    first = false;
-                } else {
-                    tags.append("|");
-                }
-                tags.append(parameter[i]);
-            }
-        }
-        this.tags = tags.toString();
+        tags.append(element);
+      }
     }
+    this.tags = tags.toString();
+  }
 
-    public String getTags()
-    {
-        return this.tags;
-    }
+  public String getTags() {
+    return this.tags;
+  }
 
-    public String getContent()
-    {
-        return this.content;
-    }
+  public String getContent() {
+    return this.content;
+  }
 
-    public void setContent(String content)
-    {
-        this.content = content;
-    }
+  public void setContent(String content) {
+    this.content = content;
+  }
 
-    public String getWeb()
-    {
-        return this.web;
-    }
+  public String getWeb() {
+    return this.web;
+  }
 
-    public void setWeb(String web)
-    {
-        this.web = web;
-    }
+  public void setWeb(String web) {
+    this.web = web;
+  }
 
-    public String getName()
-    {
-        return this.name;
-    }
+  public String getName() {
+    return this.name;
+  }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public String getLanguage()
-    {
-        return this.language;
-    }
+  public String getLanguage() {
+    return this.language;
+  }
 
-    public void setLanguage(String language)
-    {
-        this.language = Util.normalizeLanguage(language);
-    }
+  public void setLanguage(String language) {
+    this.language = Util.normalizeLanguage(language);
+  }
 
-    public int getObjectNumbers(String prefix)
-    {
-        String nb = getRequest().getParameter(prefix + "_nb");
-        return NumberUtils.toInt(nb);
-    }
+  public int getObjectNumbers(String prefix) {
+    String nb = getRequest().getParameter(prefix + "_nb");
+    return NumberUtils.toInt(nb);
+  }
 
-    public Map<String, String[]> getObject(String prefix)
-    {
-        @SuppressWarnings("unchecked")
-        Map<String, String[]> allParameters = getRequest().getParameterMap();
-        Map<String, String[]> result = new HashMap<String, String[]>();
-        for (String name : allParameters.keySet()) {
-            if (name.startsWith(prefix + "_")) {
-                String newname = name.substring(prefix.length() + 1);
-                result.put(newname, allParameters.get(name));
-            }
-        }
-        return result;
+  public Map<String, String[]> getObject(String prefix) {
+    @SuppressWarnings("unchecked")
+    Map<String, String[]> allParameters = getRequest().getParameterMap();
+    Map<String, String[]> result = new HashMap<>();
+    for (String name : allParameters.keySet()) {
+      if (name.startsWith(prefix + "_")) {
+        String newname = name.substring(prefix.length() + 1);
+        result.put(newname, allParameters.get(name));
+      }
     }
+    return result;
+  }
 
-    public String getParent()
-    {
-        return this.parent;
-    }
+  public String getParent() {
+    return this.parent;
+  }
 
-    public void setParent(String parent)
-    {
-        this.parent = parent;
-    }
+  public void setParent(String parent) {
+    this.parent = parent;
+  }
 
-    public String getCreator()
-    {
-        return this.creator;
-    }
+  public String getCreator() {
+    return this.creator;
+  }
 
-    public void setCreator(String creator)
-    {
-        this.creator = creator;
-    }
+  public void setCreator(String creator) {
+    this.creator = creator;
+  }
 
-    public String getTemplate()
-    {
-        return this.template;
-    }
+  public String getTemplate() {
+    return this.template;
+  }
 
-    public void setTemplate(String template)
-    {
-        this.template = template;
-    }
+  public void setTemplate(String template) {
+    this.template = template;
+  }
 
-    public String getDefaultTemplate()
-    {
-        return this.defaultTemplate;
-    }
+  public String getDefaultTemplate() {
+    return this.defaultTemplate;
+  }
 
-    public void setDefaultTemplate(String defaultTemplate)
-    {
-        this.defaultTemplate = defaultTemplate;
-    }
+  public void setDefaultTemplate(String defaultTemplate) {
+    this.defaultTemplate = defaultTemplate;
+  }
 
-    public String getDefaultLanguage()
-    {
-        return this.defaultLanguage;
-    }
+  public String getDefaultLanguage() {
+    return this.defaultLanguage;
+  }
 
-    public void setDefaultLanguage(String defaultLanguage)
-    {
-        this.defaultLanguage = Util.normalizeLanguage(defaultLanguage);
-    }
+  public void setDefaultLanguage(String defaultLanguage) {
+    this.defaultLanguage = Util.normalizeLanguage(defaultLanguage);
+  }
 
-    public String getTitle()
-    {
-        return this.title;
-    }
+  public String getTitle() {
+    return this.title;
+  }
 
-    public void setTitle(String title)
-    {
-        this.title = title;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public String getComment()
-    {
-        return this.comment;
-    }
+  public String getComment() {
+    return this.comment;
+  }
 
-    public void setComment(String comment)
-    {
-        this.comment = comment;
-    }
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
 
-    public boolean isMinorEdit()
-    {
-        return this.isMinorEdit;
-    }
+  public boolean isMinorEdit() {
+    return this.isMinorEdit;
+  }
 
-    public void setMinorEdit(boolean isMinorEdit)
-    {
-        this.isMinorEdit = isMinorEdit;
-    }
+  public void setMinorEdit(boolean isMinorEdit) {
+    this.isMinorEdit = isMinorEdit;
+  }
 
-    public boolean isLockForce()
-    {
-        return this.lockForce;
-    }
+  public boolean isLockForce() {
+    return this.lockForce;
+  }
 
-    public void setLockForce(boolean lockForce)
-    {
-        this.lockForce = lockForce;
-    }
+  public void setLockForce(boolean lockForce) {
+    this.lockForce = lockForce;
+  }
 
-    public String getSyntaxId()
-    {
-        return this.syntaxId;
-    }
+  public String getSyntaxId() {
+    return this.syntaxId;
+  }
 
-    public void setSyntaxId(String syntaxId)
-    {
-        this.syntaxId = syntaxId;
-    }
+  public void setSyntaxId(String syntaxId) {
+    this.syntaxId = syntaxId;
+  }
 }

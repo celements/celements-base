@@ -22,28 +22,25 @@ package com.xpn.xwiki.xmlrpc;
 
 /**
  * This is an helper class for storing XML RPC user information.
- * 
+ *
  * @version $Id$
  */
-public class XWikiXmlRpcUser
-{
-    private String userName;
+public class XWikiXmlRpcUser {
 
-    private String remoteIp;
+  private String userName;
 
-    public XWikiXmlRpcUser(String userName, String remoteIp)
-    {
-        this.userName = userName;
-        this.remoteIp = remoteIp;
-    }
+  private String remoteIp;
 
-    public String getName()
-    {
-        return userName;
-    }
+  public XWikiXmlRpcUser(String userName, String remoteIp) {
+    this.userName = userName;
+    this.remoteIp = remoteIp;
+  }
 
-    public String getRemoteIp()
-    {
-        return remoteIp;
-    }
+  public String getName() {
+    return userName;
+  }
+
+  public String getRemoteIp() {
+    return remoteIp;
+  }
 }

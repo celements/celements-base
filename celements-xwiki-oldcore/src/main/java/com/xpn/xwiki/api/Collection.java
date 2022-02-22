@@ -25,70 +25,61 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 
-public abstract class Collection extends Element
-{
-    public Collection(BaseCollection collection, XWikiContext context)
-    {
-        super(collection, context);
-    }
+public abstract class Collection extends Element {
 
-    protected BaseCollection getCollection()
-    {
-        return (BaseCollection) this.element;
-    }
+  public Collection(BaseCollection collection, XWikiContext context) {
+    super(collection, context);
+  }
 
-    public Class getxWikiClass()
-    {
-        return new Class(getCollection().getxWikiClass(getXWikiContext()), getXWikiContext());
-    }
+  protected BaseCollection getCollection() {
+    return (BaseCollection) this.element;
+  }
 
-    @Override
-    public String getName()
-    {
-        return getCollection().getName();
-    }
+  public Class getxWikiClass() {
+    return new Class(getCollection().getxWikiClass(getXWikiContext()), getXWikiContext());
+  }
 
-    public String getPrettyName()
-    {
-        return getCollection().getPrettyName();
-    }
+  @Override
+  public String getName() {
+    return getCollection().getName();
+  }
 
-    public int getNumber()
-    {
-        return getCollection().getNumber();
-    }
+  public String getPrettyName() {
+    return getCollection().getPrettyName();
+  }
 
-    public java.lang.Object[] getPropertyNames()
-    {
-        return getCollection().getPropertyNames();
-    }
+  public int getNumber() {
+    return getCollection().getNumber();
+  }
 
-    public Element[] getProperties()
-    {
-        @SuppressWarnings("unchecked")
-        java.util.Collection<BaseProperty> coll = getCollection().getFieldList();
-        if (coll == null) {
-            return null;
-        }
-        Property[] properties = new Property[coll.size()];
-        int i = 0;
-        for (BaseProperty prop : coll) {
-            properties[i++] = new Property(prop, getXWikiContext());
-        }
-        return properties;
-    }
+  public java.lang.Object[] getPropertyNames() {
+    return getCollection().getPropertyNames();
+  }
 
-    public Property getProperty(String name)
-    {
-        try {
-            PropertyInterface prop = getCollection().get(name);
-            if (prop == null) {
-                return null;
-            }
-
-            return new Property((BaseProperty) prop, getXWikiContext());
-        } catch (Exception e) {
-            return null;
-        }
+  public Element[] getProperties() {
+    @SuppressWarnings("unchecked")
+    java.util.Collection<BaseProperty> coll = getCollection().getFieldList();
+    if (coll == null) {
+      return null;
     }
+    Property[] properties = new Property[coll.size()];
+    int i = 0;
+    for (BaseProperty prop : coll) {
+      properties[i++] = new Property(prop, getXWikiContext());
+    }
+    return properties;
+  }
+
+  public Property getProperty(String name) {
+    try {
+      PropertyInterface prop = getCollection().get(name);
+      if (prop == null) {
+        return null;
+      }
+
+      return new Property((BaseProperty) prop, getXWikiContext());
+    } catch (Exception e) {
+      return null;
+    }
+  }
 }

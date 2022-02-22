@@ -26,23 +26,24 @@ import org.xwiki.model.internal.reference.AbstractReferenceEntityReferenceResolv
 import org.xwiki.model.reference.EntityReferenceValueProvider;
 
 /**
- * Resolve an {@link org.xwiki.model.reference.EntityReference} into a valid and absolute reference (with all required
+ * Resolve an {@link org.xwiki.model.reference.EntityReference} into a valid and absolute reference
+ * (with all required
  * parents filled in). The behavior is the one defined in
  * {@link com.xpn.xwiki.internal.model.reference.CurrentEntityReferenceValueProvider}.
- * 
+ *
  * @version $Id$
  * @since 2.2M1
  * @see com.xpn.xwiki.internal.model.reference.CurrentStringEntityReferenceResolver
  */
 @Component("current/reference")
-public class CurrentReferenceEntityReferenceResolver extends AbstractReferenceEntityReferenceResolver
-{
-    @Requirement("current")
-    private EntityReferenceValueProvider provider;
+public class CurrentReferenceEntityReferenceResolver
+    extends AbstractReferenceEntityReferenceResolver {
 
-    @Override
-    protected String getDefaultValue(EntityType type, Object... parameters)
-    {
-        return this.provider.getDefaultValue(type);
-    }
+  @Requirement("current")
+  private EntityReferenceValueProvider provider;
+
+  @Override
+  protected String getDefaultValue(EntityType type, Object... parameters) {
+    return this.provider.getDefaultValue(type);
+  }
 }

@@ -22,13 +22,13 @@ package com.xpn.xwiki.plugin.charts.params;
 
 import com.xpn.xwiki.plugin.charts.exceptions.ParamException;
 
-public interface ChartParam
-{
-    public String getName();
+public interface ChartParam {
 
-    public Class getType();
+  String getName();
 
-    public boolean isOptional();
+  Class getType();
 
-    public Object convert(String value) throws ParamException;
+  boolean isOptional();
+
+  Object convert(String value) throws ParamException;
 }

@@ -34,79 +34,85 @@ import com.xpn.xwiki.web.Utils;
 
 /**
  * Base class of interface {@link XWikiStatsStoreItem}.
- * 
+ *
  * @version $Id$
  * @since 1.4M2
  */
-public abstract class AbstractStatsStoreItem implements XWikiStatsStoreItem
-{
-    /**
-     * The XWiki context clone made when this statistics event occurred.
-     */
-    protected XWikiContext context;
+public abstract class AbstractStatsStoreItem implements XWikiStatsStoreItem {
 
-    /**
-     * The statistic name.
-     */
-    protected String name;
+  /**
+   * The XWiki context clone made when this statistics event occurred.
+   */
+  protected XWikiContext context;
 
-    /**
-     * The period date.
-     */
-    protected Date periodDate;
+  /**
+   * The statistic name.
+   */
+  protected String name;
 
-    /**
-     * The period type.
-     */
-    protected PeriodType periodType;
+  /**
+   * The period date.
+   */
+  protected Date periodDate;
 
-    /**
-     * The period.
-     */
-    protected int period;
+  /**
+   * The period type.
+   */
+  protected PeriodType periodType;
 
-    /**
-     * @param name the statistic name.
-     * @param periodDate the period date.
-     * @param periodType the period type.
-     * @param context the XWiki context.
-     */
-    public AbstractStatsStoreItem(String name, Date periodDate, PeriodType periodType, XWikiContext context)
-    {
-        this.name = name;
+  /**
+   * The period.
+   */
+  protected int period;
 
-        this.periodDate = periodDate;
-        this.periodType = periodType;
-        this.period = StatsUtil.getPeriodAsInt(this.periodDate, this.periodType);
+  /**
+   * @param name
+   *          the statistic name.
+   * @param periodDate
+   *          the period date.
+   * @param periodType
+   *          the period type.
+   * @param context
+   *          the XWiki context.
+   */
+  public AbstractStatsStoreItem(String name, Date periodDate, PeriodType periodType,
+      XWikiContext context) {
+    this.name = name;
 
-        this.context = (XWikiContext) context.clone();
+    this.periodDate = periodDate;
+    this.periodType = periodType;
+    this.period = StatsUtil.getPeriodAsInt(this.periodDate, this.periodType);
+
+    this.context = (XWikiContext) context.clone();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
+   */
+  @Override
+  public void store(List<XWikiStatsStoreItem> statsList) {
+    ExecutionContext econtext = Utils.getComponent(Execution.class).getContext();
+
+    XWikiContext currentContext = (XWikiContext) econtext
+        .getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+
+    try {
+      econtext.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, this.context);
+
+      storeInternal(statsList);
+    } finally {
+      econtext.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, currentContext);
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
-     */
-    public void store(List<XWikiStatsStoreItem> statsList)
-    {
-        ExecutionContext econtext = Utils.getComponent(Execution.class).getContext();
-
-        XWikiContext currentContext = (XWikiContext) econtext.getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
-
-        try {
-            econtext.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, this.context);
-
-            storeInternal(statsList);
-        } finally {
-            econtext.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, currentContext);
-        }
-    }
-
-    /**
-     * Store provided statistics into the database.
-     * 
-     * @param statsList the list of statistics item to store.
-     * @since 2.2.4
-     */
-    protected abstract void storeInternal(List<XWikiStatsStoreItem> statsList);
+  /**
+   * Store provided statistics into the database.
+   *
+   * @param statsList
+   *          the list of statistics item to store.
+   * @since 2.2.4
+   */
+  protected abstract void storeInternal(List<XWikiStatsStoreItem> statsList);
 }

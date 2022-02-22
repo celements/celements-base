@@ -25,20 +25,19 @@ import com.xpn.xwiki.XWikiException;
 
 /**
  * Create document action.
- * 
+ *
  * @version $Id$
  * @since 2.4M2
  */
-public class CreateAction extends XWikiAction
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#render(XWikiContext)
-     */
-    @Override
-    public String render(XWikiContext context) throws XWikiException
-    {
-        return "create";
-    }
+public class CreateAction extends XWikiAction {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#render(XWikiContext)
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    return "create";
+  }
 }

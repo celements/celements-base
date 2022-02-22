@@ -24,75 +24,69 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
-import org.hibernate.Session;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.migration.XWikiDBVersion;
 
 /**
- * Migration for XWIKI2977: Add a Globally Unique Identifier (GUID) to objects. This migrator adds GUIDs to existing
+ * Migration for XWIKI2977: Add a Globally Unique Identifier (GUID) to objects. This migrator adds
+ * GUIDs to existing
  * objects.
- * 
+ *
  * @version $Id$
  */
-public class R15428XWIKI2977Migrator extends AbstractXWikiHibernateMigrator
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see AbstractXWikiHibernateMigrator#getName()
-     */
-    public String getName()
-    {
-        return "R15428XWIKI2977";
-    }
+public class R15428XWIKI2977Migrator extends AbstractXWikiHibernateMigrator {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.store.migration.hibernate.AbstractXWikiHibernateMigrator#getDescription()
-     */
-    public String getDescription()
-    {
-        return "Add a GUID to existing objects when upgrading from pre-1.8M1.";
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractXWikiHibernateMigrator#getName()
+   */
+  @Override
+  public String getName() {
+    return "R15428XWIKI2977";
+  }
 
-    /** {@inheritDoc} */
-    public XWikiDBVersion getVersion()
-    {
-        return new XWikiDBVersion(15428);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.store.migration.hibernate.AbstractXWikiHibernateMigrator#getDescription()
+   */
+  @Override
+  public String getDescription() {
+    return "Add a GUID to existing objects when upgrading from pre-1.8M1.";
+  }
 
-    /** {@inheritDoc} */
-    @Override
-    public void migrate(XWikiHibernateMigrationManager manager, final XWikiContext context) throws XWikiException
-    {
-        // migrate data
-        manager.getStore(context).executeWrite(context, true, new HibernateCallback<Object>()
-        {
-            public Object doInHibernate(Session session) throws HibernateException, XWikiException
-            {
-                Query q = session.createQuery("select o from BaseObject o where o.guid is null");
-                List lst = q.list();
-                if (lst.size() == 0) {
-                    return null;
-                }
-                List<BaseObject> lst2 = new ArrayList<BaseObject>(lst.size());
-                for (Iterator it = lst.iterator(); it.hasNext();) {
-                    BaseObject o = (BaseObject) it.next();
-                    o.setGuid(UUID.randomUUID().toString());
-                    lst2.add(o);
-                }
-                for (BaseObject o : lst2) {
-                    session.update(o);
-                }
-                return null;
-            }
-        });
-    }
+  /** {@inheritDoc} */
+  @Override
+  public XWikiDBVersion getVersion() {
+    return new XWikiDBVersion(15428);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void migrate(XWikiHibernateMigrationManager manager, final XWikiContext context)
+      throws XWikiException {
+    // migrate data
+    manager.getStore(context).executeWrite(context, true, session -> {
+      Query q = session.createQuery("select o from BaseObject o where o.guid is null");
+      List lst = q.list();
+      if (lst.size() == 0) {
+        return null;
+      }
+      List<BaseObject> lst2 = new ArrayList<>(lst.size());
+      for (Iterator it = lst.iterator(); it.hasNext();) {
+        BaseObject o1 = (BaseObject) it.next();
+        o1.setGuid(UUID.randomUUID().toString());
+        lst2.add(o1);
+      }
+      for (BaseObject o2 : lst2) {
+        session.update(o2);
+      }
+      return null;
+    });
+  }
 }

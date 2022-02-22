@@ -5,46 +5,45 @@ import java.util.HashSet;
 
 /**
  * Contains a collection of users and groups.
- * 
+ *
  * @version $Id$
  * @since XWiki Core 1.1.2, XWiki Core 1.2M2
  */
-public class UsersGroups
-{
-    /**
-     * The collection of users.
-     */
-    public Collection<String> users = new HashSet<String>();
+public class UsersGroups {
 
-    /**
-     * The collection of groups.
-     */
-    public Collection<String> groups = new HashSet<String>();
+  /**
+   * The collection of users.
+   */
+  public Collection<String> users = new HashSet<>();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
+  /**
+   * The collection of groups.
+   */
+  public Collection<String> groups = new HashSet<>();
 
-        if (!users.isEmpty()) {
-            sb.append('{');
-            sb.append("users : ");
-            sb.append(users);
-            sb.append('}');
-        }
+  /**
+   * {@inheritDoc}
+   *
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
 
-        if (!groups.isEmpty()) {
-            sb.append('{');
-            sb.append("groups : ");
-            sb.append(groups);
-            sb.append('}');
-        }
-
-        return sb.toString();
+    if (!users.isEmpty()) {
+      sb.append('{');
+      sb.append("users : ");
+      sb.append(users);
+      sb.append('}');
     }
+
+    if (!groups.isEmpty()) {
+      sb.append('{');
+      sb.append("groups : ");
+      sb.append(groups);
+      sb.append('}');
+    }
+
+    return sb.toString();
+  }
 }

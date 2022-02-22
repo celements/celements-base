@@ -19,101 +19,90 @@
  */
 package com.xpn.xwiki.criteria.impl;
 
-import junit.framework.TestCase;
-
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * Unit tests for {@link com.xpn.xwiki.criteria.impl.Range}.
  *
  * @version $Id$
  */
-public class RangeTest extends TestCase
-{
-    /**
-     * Test for {@link com.xpn.xwiki.criteria.impl.Range#Range(int, int)}
-     */
-    public void testConstructor()
-    {
-        doConstructorTest(0, 0);
-        doConstructorTest(0, 5);
-        doConstructorTest(0, -7);
-        doConstructorTest(-10, 0);
-        doConstructorTest(-10, 4);
-        doConstructorTest(-10, -1);
-    }
+public class RangeTest extends TestCase {
 
-    private void doConstructorTest(int start, int size)
-    {
-        Range i = new Range(start, size);
-        assertEquals(i.getStart(), start);
-        assertEquals(i.getSize(), size);
-        assertEquals(i.getAbsoluteStart(), Math.abs(start));
-        assertEquals(i.getAbsoluteSize(), Math.abs(size));
-    }
+  /**
+   * Test for {@link com.xpn.xwiki.criteria.impl.Range#Range(int, int)}
+   */
+  public void testConstructor() {
+    doConstructorTest(0, 0);
+    doConstructorTest(0, 5);
+    doConstructorTest(0, -7);
+    doConstructorTest(-10, 0);
+    doConstructorTest(-10, 4);
+    doConstructorTest(-10, -1);
+  }
 
-    public static final List<String> zeroToHeight =
-        Arrays.asList(new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8"});
+  private void doConstructorTest(int start, int size) {
+    Range i = new Range(start, size);
+    assertEquals(i.getStart(), start);
+    assertEquals(i.getSize(), size);
+    assertEquals(i.getAbsoluteStart(), Math.abs(start));
+    assertEquals(i.getAbsoluteSize(), Math.abs(size));
+  }
 
-    public void testSubListWithStartZeroAndSizeZero()
-    {
-        Range range = new Range(0, 0);
-        assertEquals(range.subList(zeroToHeight), zeroToHeight);
-    }
+  public static final List<String> zeroToHeight = Arrays
+      .asList("0", "1", "2", "3", "4", "5", "6", "7", "8");
 
-    public void testSubListWithStartZeroAndSizeOneThousand()
-    {
-        Range range = new Range(0, 1000);
-        assertEquals(range.subList(zeroToHeight), zeroToHeight);
-    }
+  public void testSubListWithStartZeroAndSizeZero() {
+    Range range = new Range(0, 0);
+    assertEquals(range.subList(zeroToHeight), zeroToHeight);
+  }
 
-    public void testSubListWithHeadIntervalOne()
-    {
-        Range range = RangeFactory.createHeadRange(1);
-        List<String> zero = Arrays.asList(new String[]{"0"});
-        assertEquals(range.subList(zeroToHeight), zero);
-    }
+  public void testSubListWithStartZeroAndSizeOneThousand() {
+    Range range = new Range(0, 1000);
+    assertEquals(range.subList(zeroToHeight), zeroToHeight);
+  }
 
-    public void testSubListWithTailIntervalOne()
-    {
-        Range range = RangeFactory.createTailRange(1);
-        List<String> height = Arrays.asList(new String[]{"8"});
-        assertEquals(range.subList(zeroToHeight), height);
-    }
+  public void testSubListWithHeadIntervalOne() {
+    Range range = RangeFactory.createHeadRange(1);
+    List<String> zero = Arrays.asList("0");
+    assertEquals(range.subList(zeroToHeight), zero);
+  }
 
-    public void testSubListWithStartZeroAndPositiveSize()
-    {
-        Range range = new Range(0, 4);
-        List<String> zeroToThree = Arrays.asList(new String[]{"0", "1", "2", "3"});
-        assertEquals(range.subList(zeroToHeight), zeroToThree);
-    }
+  public void testSubListWithTailIntervalOne() {
+    Range range = RangeFactory.createTailRange(1);
+    List<String> height = Arrays.asList("8");
+    assertEquals(range.subList(zeroToHeight), height);
+  }
 
-    public void testSubListWithStartZeroAndNegativeSize()
-    {
-        Range range = new Range(0, -4);
-        List<String> fiveToHeight = Arrays.asList(new String[]{"5", "6", "7", "8"});
-        assertEquals(range.subList(zeroToHeight), fiveToHeight);
-    }
+  public void testSubListWithStartZeroAndPositiveSize() {
+    Range range = new Range(0, 4);
+    List<String> zeroToThree = Arrays.asList("0", "1", "2", "3");
+    assertEquals(range.subList(zeroToHeight), zeroToThree);
+  }
 
-    public void testSubListWithStartMinusTwoAndSizeFour()
-    {
-        Range range = new Range(-2, 4);
-        List<String> sevenToHeight = Arrays.asList(new String[]{"7", "8"});
-        assertEquals(range.subList(zeroToHeight), sevenToHeight);
-    }
+  public void testSubListWithStartZeroAndNegativeSize() {
+    Range range = new Range(0, -4);
+    List<String> fiveToHeight = Arrays.asList("5", "6", "7", "8");
+    assertEquals(range.subList(zeroToHeight), fiveToHeight);
+  }
 
-    public void testSubListWithStartMinusTwoAndSizeMinusFour()
-    {
-        Range range = new Range(-2, -4);
-        List<String> threeToSix = Arrays.asList(new String[]{"3", "4", "5", "6"});
-        assertEquals(range.subList(zeroToHeight), threeToSix);
-    }
+  public void testSubListWithStartMinusTwoAndSizeFour() {
+    Range range = new Range(-2, 4);
+    List<String> sevenToHeight = Arrays.asList("7", "8");
+    assertEquals(range.subList(zeroToHeight), sevenToHeight);
+  }
 
-    public void testSubListWithStartTwoAndSizeMinusFour()
-    {
-        Range range = new Range(2, -4);
-        List<String> zeroToOne = Arrays.asList(new String[]{"0", "1"});
-        assertEquals(range.subList(zeroToHeight), zeroToOne);
-    }
+  public void testSubListWithStartMinusTwoAndSizeMinusFour() {
+    Range range = new Range(-2, -4);
+    List<String> threeToSix = Arrays.asList("3", "4", "5", "6");
+    assertEquals(range.subList(zeroToHeight), threeToSix);
+  }
+
+  public void testSubListWithStartTwoAndSizeMinusFour() {
+    Range range = new Range(2, -4);
+    List<String> zeroToOne = Arrays.asList("0", "1");
+    assertEquals(range.subList(zeroToHeight), zeroToOne);
+  }
 }

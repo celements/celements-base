@@ -23,50 +23,53 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 
 /**
- * Action used to get a resource that is a part of a page loaded asynchronously generally for performance reasons. Like
+ * Action used to get a resource that is a part of a page loaded asynchronously generally for
+ * performance reasons. Like
  * <code>download</code> or <code>skin</code> but for wiki content.
  * <p>
- * This means that by default there is not UI and it's not registered in the statistics since the main page is already
+ * This means that by default there is not UI and it's not registered in the statistics since the
+ * main page is already
  * logged.
- * 
+ *
  * @version $Id$
  */
-public class GetAction extends XWikiAction
-{
-    /**
-     * The identifier of the view action.
-     * 
-     * @todo need an enumerated class for actions.
-     */
-    public static final String GET_ACTION = "get";
+public class GetAction extends XWikiAction {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#action(com.xpn.xwiki.XWikiContext)
-     */
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        boolean shouldRender = true;
+  /**
+   * The identifier of the view action.
+   *
+   * @todo need an enumerated class for actions.
+   */
+  public static final String GET_ACTION = "get";
 
-        context.put("action", GET_ACTION);
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#action(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    boolean shouldRender = true;
 
-        return shouldRender;
-    }
+    context.put("action", GET_ACTION);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#render(com.xpn.xwiki.XWikiContext)
-     */
-    public String render(XWikiContext context) throws XWikiException
-    {
-        handleRevision(context);
+    return shouldRender;
+  }
 
-        // In case a search engine spider should end up calling the /get/ action, point them to the view action with
-        // a Content-Location header. http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.14
-        context.getResponse().setHeader("Content-Location", context.getDoc().getURL("view", context));
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#render(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    handleRevision(context);
 
-        return GET_ACTION;
-    }
+    // In case a search engine spider should end up calling the /get/ action, point them to the view
+    // action with
+    // a Content-Location header. http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.14
+    context.getResponse().setHeader("Content-Location", context.getDoc().getURL("view", context));
+
+    return GET_ACTION;
+  }
 }

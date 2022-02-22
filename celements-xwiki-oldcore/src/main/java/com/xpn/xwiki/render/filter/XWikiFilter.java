@@ -22,6 +22,4 @@ package com.xpn.xwiki.render.filter;
 
 import org.radeox.filter.Filter;
 
-public interface XWikiFilter extends Filter
-{
-}
+public interface XWikiFilter extends Filter {}

@@ -27,132 +27,114 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class XWikiBatcherStats
-{
-    private static final Log log = LogFactory.getLog(XWikiBatcherStats.class);
+public class XWikiBatcherStats {
 
-    private List sqlList = new ArrayList();
+  private static final Log log = LogFactory.getLog(XWikiBatcherStats.class);
 
-    private List recentSqlList = new ArrayList();
+  private List sqlList = new ArrayList();
 
-    private boolean resetOnNextSQL = false;
+  private List recentSqlList = new ArrayList();
 
-    private int preparedSQLCounter = 0;
+  private boolean resetOnNextSQL = false;
 
-    private int executeBatchCounter = 0;
+  private int preparedSQLCounter = 0;
 
-    private int abortBatchCounter = 0;
+  private int executeBatchCounter = 0;
 
-    private int resultSetCounter = 0;
+  private int abortBatchCounter = 0;
 
-    private int addToBatchCounter = 0;
+  private int resultSetCounter = 0;
 
-    public void resetStats()
-    {
-        sqlList = new ArrayList();
-        preparedSQLCounter = 0;
-        executeBatchCounter = 0;
-        abortBatchCounter = 0;
-        resultSetCounter = 0;
-        addToBatchCounter = 0;
+  private int addToBatchCounter = 0;
+
+  public void resetStats() {
+    sqlList = new ArrayList();
+    preparedSQLCounter = 0;
+    executeBatchCounter = 0;
+    abortBatchCounter = 0;
+    resultSetCounter = 0;
+    addToBatchCounter = 0;
+  }
+
+  public List getSqlList() {
+    return sqlList;
+  }
+
+  public List getRecentSqlList() {
+    return recentSqlList;
+  }
+
+  public void resetRecentSqlList() {
+    recentSqlList = new ArrayList();
+  }
+
+  public void addToSqlList(String sql) {
+    if (resetOnNextSQL) {
+      resetRecentSqlList();
+      resetOnNextSQL = false;
     }
+    this.recentSqlList.add(sql);
+    this.sqlList.add(sql);
+  }
 
-    public List getSqlList()
-    {
-        return sqlList;
-    }
+  public void resetOnNextSQL() {
+    resetOnNextSQL = true;
+  }
 
-    public List getRecentSqlList()
-    {
-        return recentSqlList;
-    }
+  public int getPreparedSQLCounter() {
+    return preparedSQLCounter;
+  }
 
-    public void resetRecentSqlList()
-    {
-        recentSqlList = new ArrayList();
-    }
+  public void incrementPreparedSQLCounter() {
+    this.preparedSQLCounter++;
+  }
 
-    public void addToSqlList(String sql)
-    {
-        if (resetOnNextSQL) {
-            resetRecentSqlList();
-            resetOnNextSQL = false;
-        }
-        this.recentSqlList.add(sql);
-        this.sqlList.add(sql);
-    }
+  public int getExecuteBatchCounter() {
+    return executeBatchCounter;
+  }
 
-    public void resetOnNextSQL()
-    {
-        resetOnNextSQL = true;
-    }
+  public void incrementExecuteBatchCounter() {
+    this.executeBatchCounter++;
+  }
 
-    public int getPreparedSQLCounter()
-    {
-        return preparedSQLCounter;
-    }
+  public int getAbortBatchCounter() {
+    return abortBatchCounter;
+  }
 
-    public void incrementPreparedSQLCounter()
-    {
-        this.preparedSQLCounter++;
-    }
+  public void incrementAbortBatchCounter() {
+    this.abortBatchCounter++;
+  }
 
-    public int getExecuteBatchCounter()
-    {
-        return executeBatchCounter;
-    }
+  public int getResultSetCounter() {
+    return resultSetCounter;
+  }
 
-    public void incrementExecuteBatchCounter()
-    {
-        this.executeBatchCounter++;
-    }
+  public void incrementResultSetCounter() {
+    this.resultSetCounter++;
+  }
 
-    public int getAbortBatchCounter()
-    {
-        return abortBatchCounter;
-    }
+  public int getAddToBatchCounter() {
+    return addToBatchCounter;
+  }
 
-    public void incrementAbortBatchCounter()
-    {
-        this.abortBatchCounter++;
-    }
+  public void incrementAddToBatchCounter() {
+    this.addToBatchCounter++;
+  }
 
-    public int getResultSetCounter()
-    {
-        return resultSetCounter;
+  public void printSQLList(PrintStream out) {
+    out.println("SQL: number of queries " + sqlList.size());
+    for (Object element : sqlList) {
+      out.println("SQL: " + element);
     }
+    out.flush();
+  }
 
-    public void incrementResultSetCounter()
-    {
-        this.resultSetCounter++;
+  public void logSQLList() {
+    if (log.isDebugEnabled()) {
+      log.debug("SQL: number of queries " + sqlList.size());
+      for (Object element : sqlList) {
+        log.debug("SQL: " + element);
+      }
     }
-
-    public int getAddToBatchCounter()
-    {
-        return addToBatchCounter;
-    }
-
-    public void incrementAddToBatchCounter()
-    {
-        this.addToBatchCounter++;
-    }
-
-    public void printSQLList(PrintStream out)
-    {
-        out.println("SQL: number of queries " + sqlList.size());
-        for (int i = 0; i < sqlList.size(); i++) {
-            out.println("SQL: " + sqlList.get(i));
-        }
-        out.flush();
-    }
-
-    public void logSQLList()
-    {
-        if (log.isDebugEnabled()) {
-            log.debug("SQL: number of queries " + sqlList.size());
-            for (int i = 0; i < sqlList.size(); i++) {
-                log.debug("SQL: " + sqlList.get(i));
-            }
-        }
-    }
+  }
 }

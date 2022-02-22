@@ -29,89 +29,92 @@ import org.apache.commons.logging.LogFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.stats.impl.VisitStats;
 import com.xpn.xwiki.stats.impl.StatsUtil.PeriodType;
+import com.xpn.xwiki.stats.impl.VisitStats;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 
 /**
  * Store visit statistics into the database.
- * 
+ *
  * @version $Id$
  * @since 1.4M2
  */
-public class VisitStatsStoreItem extends AbstractStatsStoreItem
-{
-    /**
-     * Logging tools.
-     */
-    private static final Log LOG = LogFactory.getLog(DocumentStatsStoreItem.class);
+public class VisitStatsStoreItem extends AbstractStatsStoreItem {
 
-    /**
-     * The {@link VisitStats} object to store.
-     */
-    private VisitStats visitStats;
+  /**
+   * Logging tools.
+   */
+  private static final Log LOG = LogFactory.getLog(DocumentStatsStoreItem.class);
 
-    /**
-     * Create new instance of {@link VisitStatsStoreItem}.
-     * 
-     * @param visitStats the {@link VisitStats} object to store.
-     * @param context the XWiki context.
-     */
-    public VisitStatsStoreItem(VisitStats visitStats, XWikiContext context)
-    {
-        super(visitStats.getName(), new Date(), PeriodType.MONTH, context);
-        this.period = visitStats.getPeriod();
+  /**
+   * The {@link VisitStats} object to store.
+   */
+  private VisitStats visitStats;
 
-        this.visitStats = (VisitStats) visitStats.clone();
+  /**
+   * Create new instance of {@link VisitStatsStoreItem}.
+   *
+   * @param visitStats
+   *          the {@link VisitStats} object to store.
+   * @param context
+   *          the XWiki context.
+   */
+  public VisitStatsStoreItem(VisitStats visitStats, XWikiContext context) {
+    super(visitStats.getName(), new Date(), PeriodType.MONTH, context);
+    this.period = visitStats.getPeriod();
+
+    this.visitStats = (VisitStats) visitStats.clone();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
+   */
+  @Override
+  public String getId() {
+    return String.format("%s %s %s %s", getClass(), this.visitStats.getName(),
+        this.visitStats.getUniqueID(),
+        this.visitStats.getCookie());
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
+   */
+  @Override
+  public void storeInternal(List<XWikiStatsStoreItem> stats) {
+    VisitStatsStoreItem firstItem = (VisitStatsStoreItem) stats.get(0);
+    VisitStats oldVisitStats = firstItem.visitStats.getOldObject();
+
+    VisitStatsStoreItem lastItem = (VisitStatsStoreItem) stats.get(stats.size() - 1);
+    VisitStats newVisitStats = lastItem.visitStats;
+
+    XWikiHibernateStore store = this.context.getWiki().getHibernateStore();
+    if (store == null) {
+      return;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
-     */
-    public String getId()
-    {
-        return String.format("%s %s %s %s", getClass(), this.visitStats.getName(), this.visitStats.getUniqueID(),
-            this.visitStats.getCookie());
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
-     */
-    public void storeInternal(List<XWikiStatsStoreItem> stats)
-    {
-        VisitStatsStoreItem firstItem = (VisitStatsStoreItem) stats.get(0);
-        VisitStats oldVisitStats = firstItem.visitStats.getOldObject();
-
-        VisitStatsStoreItem lastItem = (VisitStatsStoreItem) stats.get(stats.size() - 1);
-        VisitStats newVisitStats = lastItem.visitStats;
-
-        XWikiHibernateStore store = this.context.getWiki().getHibernateStore();
-        if (store == null) {
-            return;
-        }
-
+    try {
+      // In case we have store the old object then we need to remove it before saving the
+      // other one because the ID info have changed
+      if (oldVisitStats != null) {
         try {
-            // In case we have store the old object then we need to remove it before saving the
-            // other one because the ID info have changed
-            if (oldVisitStats != null) {
-                try {
-                    // TODO Fix use of deprecated call.
-                    store.deleteXWikiCollection(oldVisitStats, this.context, true, true);
-                } catch (Exception e) {
-                    if (LOG.isWarnEnabled()) {
-                        LOG.warn("Failed to delete old visit statistics object from database [" + getId() + "]");
-                    }
-                }
-            }
-
-            // TODO Fix use of deprecated call.
-            store.saveXWikiCollection(newVisitStats, this.context, true);
-        } catch (XWikiException e) {
-            LOG.error("Failed to save visit statictics object [" + getId() + "]");
+          // TODO Fix use of deprecated call.
+          store.deleteXWikiCollection(oldVisitStats, this.context, true, true);
+        } catch (Exception e) {
+          if (LOG.isWarnEnabled()) {
+            LOG.warn(
+                "Failed to delete old visit statistics object from database [" + getId() + "]");
+          }
         }
+      }
+
+      // TODO Fix use of deprecated call.
+      store.saveXWikiCollection(newVisitStats, this.context, true);
+    } catch (XWikiException e) {
+      LOG.error("Failed to save visit statictics object [" + getId() + "]");
     }
+  }
 }

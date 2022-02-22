@@ -49,7 +49,7 @@ import com.xpn.xwiki.render.XWikiRadeoxRenderEngine;
  * <p>
  * You can get the content from an attachment using Velocity, as in:
  * </p>
- * 
+ *
  * <pre>
  * {svg}
  * $doc.getAttachment('image.svg').getContentAsString()
@@ -58,77 +58,83 @@ import com.xpn.xwiki.render.XWikiRadeoxRenderEngine;
  * <p>
  * The macro relies on the {@link SVGPlugin} to actually transform the SVG content into an image.
  * </p>
- * 
+ *
  * @deprecated The Radeox macros are deprecated in favor of the new wiki macros.
  * @version $Id$
  */
 @Deprecated
-public class SVGMacro extends BaseLocaleMacro
-{
-    /**
-     * The name of the macro.
-     * 
-     * @see org.radeox.macro.BaseLocaleMacro#getLocaleKey()
-     */
-    public String getLocaleKey()
-    {
-        return "macro.svg";
+public class SVGMacro extends BaseLocaleMacro {
+
+  /**
+   * The name of the macro.
+   *
+   * @see org.radeox.macro.BaseLocaleMacro#getLocaleKey()
+   */
+  @Override
+  public String getLocaleKey() {
+    return "macro.svg";
+  }
+
+  /**
+   * Main macro execution method, replaces the macro instance with the generated output.
+   *
+   * @param writer
+   *          the place where to write the output
+   * @param params
+   *          the parameters this macro is called with
+   * @throws IllegalArgumentException
+   *           if the mandatory argument ({@code text}) is missing
+   * @throws IOException
+   *           if the output cannot be written
+   * @see org.radeox.macro.BaseMacro#execute(Writer, MacroParameter)
+   */
+  @Override
+  public void execute(Writer writer, MacroParameter params)
+      throws IllegalArgumentException, IOException {
+    RenderContext context = params.getContext();
+    RenderEngine engine = context.getRenderEngine();
+
+    XWikiContext xcontext = ((XWikiRadeoxRenderEngine) engine).getXWikiContext();
+    XWiki xwiki = xcontext.getWiki();
+
+    SVGPlugin plugin = (SVGPlugin) xwiki.getPlugin("svg", xcontext);
+    // If the SVG plugin is not loaded, exit.
+    if (plugin == null) {
+      writer.write("Plugin not loaded");
+      return;
     }
-
-    /**
-     * Main macro execution method, replaces the macro instance with the generated output.
-     * 
-     * @param writer the place where to write the output
-     * @param params the parameters this macro is called with
-     * @throws IllegalArgumentException if the mandatory argument ({@code text}) is missing
-     * @throws IOException if the output cannot be written
-     * @see org.radeox.macro.BaseMacro#execute(Writer, MacroParameter)
-     */
-    @Override
-    public void execute(Writer writer, MacroParameter params) throws IllegalArgumentException, IOException
-    {
-        RenderContext context = params.getContext();
-        RenderEngine engine = context.getRenderEngine();
-
-        XWikiContext xcontext = ((XWikiRadeoxRenderEngine) engine).getXWikiContext();
-        XWiki xwiki = xcontext.getWiki();
-
-        SVGPlugin plugin = (SVGPlugin) xwiki.getPlugin("svg", xcontext);
-        // If the SVG plugin is not loaded, exit.
-        if (plugin == null) {
-            writer.write("Plugin not loaded");
-            return;
-        }
-        // {svg:alternate text|height|width}
-        StringBuffer str = new StringBuffer();
-        String text = params.get("text", 0);
-        String height = params.get("height", 1);
-        if (StringUtils.isBlank(height) || "none".equals(height) || !StringUtils.isNumeric(height.trim())) {
-            height = "400";
-        }
-        String width = params.get("width", 2);
-        if (StringUtils.isBlank(width) || "none".equals(width) || !StringUtils.isNumeric(width.trim())) {
-            width = "400";
-        }
-        try {
-            int intHeight = Integer.parseInt(height.trim());
-            int intWidth = Integer.parseInt(width.trim());
-            String svgtext = StringUtils.trimToEmpty(params.getContent());
-            str.append("<img src=\"");
-            // The SVG plugin generates the image and returns an URL for accessing it.
-            str.append(plugin.getSVGImageURL(svgtext, intHeight, intWidth, xcontext));
-            str.append("\" ");
-            str.append("height=\"" + height + "\" ");
-            str.append("width=\"" + width + "\" ");
-            str.append("alt=\"");
-            str.append(text);
-            str.append("\" />");
-            writer.write(str.toString());
-        } catch (Throwable t) {
-            XWikiException e =
-                new XWikiException(XWikiException.MODULE_XWIKI_PLUGINS, XWikiException.ERROR_XWIKI_UNKNOWN,
-                    "SVG Issue", t);
-            writer.write("Exception converting SVG: " + e.getFullMessage());
-        }
+    // {svg:alternate text|height|width}
+    StringBuffer str = new StringBuffer();
+    String text = params.get("text", 0);
+    String height = params.get("height", 1);
+    if (StringUtils.isBlank(height) || "none".equals(height)
+        || !StringUtils.isNumeric(height.trim())) {
+      height = "400";
     }
+    String width = params.get("width", 2);
+    if (StringUtils.isBlank(width) || "none".equals(width)
+        || !StringUtils.isNumeric(width.trim())) {
+      width = "400";
+    }
+    try {
+      int intHeight = Integer.parseInt(height.trim());
+      int intWidth = Integer.parseInt(width.trim());
+      String svgtext = StringUtils.trimToEmpty(params.getContent());
+      str.append("<img src=\"");
+      // The SVG plugin generates the image and returns an URL for accessing it.
+      str.append(plugin.getSVGImageURL(svgtext, intHeight, intWidth, xcontext));
+      str.append("\" ");
+      str.append("height=\"" + height + "\" ");
+      str.append("width=\"" + width + "\" ");
+      str.append("alt=\"");
+      str.append(text);
+      str.append("\" />");
+      writer.write(str.toString());
+    } catch (Throwable t) {
+      XWikiException e = new XWikiException(XWikiException.MODULE_XWIKI_PLUGINS,
+          XWikiException.ERROR_XWIKI_UNKNOWN,
+          "SVG Issue", t);
+      writer.write("Exception converting SVG: " + e.getFullMessage());
+    }
+  }
 }

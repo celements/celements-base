@@ -28,11 +28,10 @@ import junit.framework.TestCase;
  *
  * @version $Id$
  */
-public class LinkTest extends TestCase
-{
-    public void testGetNormalizedLinkWhenEmptyLink() throws Exception
-    {
-        Link link = new Link();
-        assertEquals("Main.WebHome", link.getNormalizedLink("Main").toString());
-    }
+public class LinkTest extends TestCase {
+
+  public void testGetNormalizedLinkWhenEmptyLink() throws Exception {
+    Link link = new Link();
+    assertEquals("Main.WebHome", link.getNormalizedLink("Main").toString());
+  }
 }

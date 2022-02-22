@@ -33,39 +33,38 @@ import com.xpn.xwiki.util.Util;
 /**
  * Returns rendered mathematical formulae to the client. The formulae are images rendered by the
  * {@link org.xwiki.formula.FormulaRenderer} component, and stored inside an {@link ImageStorage}.
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
-public class TexAction extends XWikiAction
-{
-    /** Logging helper object */
-    private static final Log LOG = LogFactory.getLog(TexAction.class);
+public class TexAction extends XWikiAction {
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String render(XWikiContext context) throws XWikiException
-    {
-        XWikiRequest request = context.getRequest();
-        XWikiResponse response = context.getResponse();
-        String path = request.getRequestURI();
-        // Expected /xwiki/bin/tex/Current/Document/image_identifier
-        String filename = Util.decodeURI(path.substring(path.lastIndexOf("/") + 1), context);
-        ImageStorage storage = Utils.getComponent(ImageStorage.class);
-        ImageData image = storage.get(filename);
-        if (image == null) {
-            return "docdoesnotexist";
-        }
-        response.setContentLength(image.getData().length);
-        response.setContentType(image.getMimeType());
-        try {
-            response.getOutputStream().write(image.getData());
-        } catch (IOException e) {
-            LOG.info("Failed to send image to the client");
-        }
+  /** Logging helper object */
+  private static final Log LOG = LogFactory.getLog(TexAction.class);
 
-        return null;
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    XWikiRequest request = context.getRequest();
+    XWikiResponse response = context.getResponse();
+    String path = request.getRequestURI();
+    // Expected /xwiki/bin/tex/Current/Document/image_identifier
+    String filename = Util.decodeURI(path.substring(path.lastIndexOf("/") + 1), context);
+    ImageStorage storage = Utils.getComponent(ImageStorage.class);
+    ImageData image = storage.get(filename);
+    if (image == null) {
+      return "docdoesnotexist";
     }
+    response.setContentLength(image.getData().length);
+    response.setContentType(image.getMimeType());
+    try {
+      response.getOutputStream().write(image.getData());
+    } catch (IOException e) {
+      LOG.info("Failed to send image to the client");
+    }
+
+    return null;
+  }
 }

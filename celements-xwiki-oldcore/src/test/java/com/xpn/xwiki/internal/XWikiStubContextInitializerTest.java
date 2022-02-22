@@ -30,53 +30,47 @@ import com.xpn.xwiki.util.XWikiStubContextProvider;
 
 /**
  * Validate XWikiStubContextInitializer and DefaultXWikiStubContextProvider.
- * 
+ *
  * @version $Id$
  */
-public class XWikiStubContextInitializerTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private ExecutionContextManager executionContextManager;
+public class XWikiStubContextInitializerTest extends AbstractBridgedXWikiComponentTestCase {
 
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  private ExecutionContextManager executionContextManager;
 
-        this.executionContextManager = getComponentManager().lookup(ExecutionContextManager.class);
-    }
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-    public void testWithAndWithoutXWikiContext() throws Exception
-    {
-        XWikiContext xcontext = new XWikiContext();
-        xcontext.put("key", "value");
-        xcontext.setWiki(new XWiki());
+    this.executionContextManager = getComponentManager().lookup(ExecutionContextManager.class);
+  }
 
-        ExecutionContext context = new ExecutionContext();
-        context.setProperty("xwikicontext", xcontext);
+  public void testWithAndWithoutXWikiContext() throws Exception {
+    XWikiContext xcontext = new XWikiContext();
+    xcontext.put("key", "value");
+    xcontext.setWiki(new XWiki());
 
-        getComponentManager().lookup(XWikiStubContextProvider.class).initialize(xcontext);
+    ExecutionContext context = new ExecutionContext();
+    context.setProperty("xwikicontext", xcontext);
 
-        final ExecutionContext daemonContext = new ExecutionContext();
+    getComponentManager().lookup(XWikiStubContextProvider.class).initialize(xcontext);
 
-        Thread thread = new Thread(new Runnable()
-        {
-            public void run()
-            {
-                try {
-                    executionContextManager.initialize(daemonContext);
-                } catch (ExecutionContextException e) {
-                    fail("Failed to initialize execution context: " + e.getStackTrace());
-                }
-            }
-        });
+    final ExecutionContext daemonContext = new ExecutionContext();
 
-        thread.run();
-        thread.join();
+    Thread thread = new Thread(() -> {
+      try {
+        executionContextManager.initialize(daemonContext);
+      } catch (ExecutionContextException e) {
+        fail("Failed to initialize execution context: " + e.getStackTrace());
+      }
+    });
 
-        XWikiContext daemonXcontext = (XWikiContext) daemonContext.getProperty("xwikicontext");
-        assertNotNull(daemonXcontext);
-        assertNotSame(xcontext, daemonXcontext);
-        assertEquals("value", daemonXcontext.get("key"));
-        assertNotNull(daemonXcontext.getWiki());
-    }
+    thread.run();
+    thread.join();
+
+    XWikiContext daemonXcontext = (XWikiContext) daemonContext.getProperty("xwikicontext");
+    assertNotNull(daemonXcontext);
+    assertNotSame(xcontext, daemonXcontext);
+    assertEquals("value", daemonXcontext.get("key"));
+    assertNotNull(daemonXcontext.getWiki());
+  }
 }

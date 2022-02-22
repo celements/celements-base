@@ -24,91 +24,76 @@ package com.xpn.xwiki.plugin.packaging;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.api.Api;
 
-public class DocumentInfoAPI extends Api
-{
-    private DocumentInfo doc;
+public class DocumentInfoAPI extends Api {
 
-    public DocumentInfoAPI(DocumentInfo doc, XWikiContext context)
-    {
-        super(context);
-        this.doc = doc;
-    }
+  private DocumentInfo doc;
 
-    public DocumentInfo getDocInfo()
-    {
-        if (hasProgrammingRights()) {
-            return doc;
-        }
-        return null;
-    }
+  public DocumentInfoAPI(DocumentInfo doc, XWikiContext context) {
+    super(context);
+    this.doc = doc;
+  }
 
-    public boolean isNew()
-    {
-        return doc.isNew();
+  public DocumentInfo getDocInfo() {
+    if (hasProgrammingRights()) {
+      return doc;
     }
+    return null;
+  }
 
-    public int getFileType()
-    {
-        return doc.getFileType();
-    }
+  public boolean isNew() {
+    return doc.isNew();
+  }
 
-    public void setFileType(int fileType)
-    {
-        doc.setFileType(fileType);
-    }
+  public int getFileType() {
+    return doc.getFileType();
+  }
 
-    public String getFullName()
-    {
-        return doc.getFullName();
-    }
+  public void setFileType(int fileType) {
+    doc.setFileType(fileType);
+  }
 
-    /**
-     * @return the language of the described document
-     * 
-     * @since 2.2M1
-     */
-    public String getLanguage()
-    {
-        return doc.getLanguage();
-    }
-    
-    public int isInstallable()
-    {
-        return doc.isInstallable();
-    }
+  public String getFullName() {
+    return doc.getFullName();
+  }
 
-    public int getAction()
-    {
-        return doc.getAction();
-    }
+  /**
+   * @return the language of the described document
+   *
+   * @since 2.2M1
+   */
+  public String getLanguage() {
+    return doc.getLanguage();
+  }
 
-    public void setAction(int action)
-    {
-        doc.setAction(action);
-    }
+  public int isInstallable() {
+    return doc.isInstallable();
+  }
 
-    public int testInstall(XWikiContext context)
-    {
-        return doc.testInstall(false, context);
-    }
+  public int getAction() {
+    return doc.getAction();
+  }
 
-    public int testInstall(boolean isAdmin, XWikiContext context)
-    {
-        return doc.testInstall(isAdmin, context);
-    }
+  public void setAction(int action) {
+    doc.setAction(action);
+  }
 
-    public static String installStatusToString(int status)
-    {
-        return DocumentInfo.installStatusToString(status);
-    }
+  public int testInstall(XWikiContext context) {
+    return doc.testInstall(false, context);
+  }
 
-    public static String actionToString(int status)
-    {
-        return DocumentInfo.actionToString(status);
-    }
+  public int testInstall(boolean isAdmin, XWikiContext context) {
+    return doc.testInstall(isAdmin, context);
+  }
 
-    public static int actionToInt(String status)
-    {
-        return DocumentInfo.actionToInt(status);
-    }
+  public static String installStatusToString(int status) {
+    return DocumentInfo.installStatusToString(status);
+  }
+
+  public static String actionToString(int status) {
+    return DocumentInfo.actionToString(status);
+  }
+
+  public static int actionToInt(String status) {
+    return DocumentInfo.actionToInt(status);
+  }
 }

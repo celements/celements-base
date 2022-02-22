@@ -27,51 +27,47 @@ import com.xpn.xwiki.doc.rcs.XWikiRCSNodeInfo;
 
 /**
  * API object for get info about some version of Document.
- * 
+ *
  * @version $Id$
  */
-public class RevisionInfo extends Api
-{
-    /** used for get all information. */
-    private XWikiRCSNodeInfo nodeInfo;
+public class RevisionInfo extends Api {
 
-    /**
-     * @param nodeInfo - from that nodeinfo all information is getting
-     * @param context - needed for {@link Api}
-     */
-    public RevisionInfo(XWikiRCSNodeInfo nodeInfo, XWikiContext context)
-    {
-        super(context);
-        this.nodeInfo = nodeInfo;
-    }
+  /** used for get all information. */
+  private XWikiRCSNodeInfo nodeInfo;
 
-    /** @return version of this revision */
-    public String getVersion()
-    {
-        return nodeInfo.getId().getVersion().toString();
-    }
+  /**
+   * @param nodeInfo
+   *          - from that nodeinfo all information is getting
+   * @param context
+   *          - needed for {@link Api}
+   */
+  public RevisionInfo(XWikiRCSNodeInfo nodeInfo, XWikiContext context) {
+    super(context);
+    this.nodeInfo = nodeInfo;
+  }
 
-    /** @return date of this revision */
-    public Date getDate()
-    {
-        return nodeInfo.getDate();
-    }
+  /** @return version of this revision */
+  public String getVersion() {
+    return nodeInfo.getId().getVersion().toString();
+  }
 
-    /** @return author of this revision */
-    public String getAuthor()
-    {
-        return nodeInfo.getAuthor();
-    }
+  /** @return date of this revision */
+  public Date getDate() {
+    return nodeInfo.getDate();
+  }
 
-    /** @return revision comment */
-    public String getComment()
-    {
-        return nodeInfo.getComment();
-    }
+  /** @return author of this revision */
+  public String getAuthor() {
+    return nodeInfo.getAuthor();
+  }
 
-    /** @return is revision is minor */
-    public boolean isMinorEdit()
-    {
-        return nodeInfo.isMinorEdit();
-    }
+  /** @return revision comment */
+  public String getComment() {
+    return nodeInfo.getComment();
+  }
+
+  /** @return is revision is minor */
+  public boolean isMinorEdit() {
+    return nodeInfo.isMinorEdit();
+  }
 }

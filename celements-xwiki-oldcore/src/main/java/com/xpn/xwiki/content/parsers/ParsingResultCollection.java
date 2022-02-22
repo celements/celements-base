@@ -19,8 +19,8 @@
  */
 package com.xpn.xwiki.content.parsers;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Contains results data when parsing text in wiki syntax. The reason is that there can be syntax
@@ -30,57 +30,54 @@ import java.util.ArrayList;
  *
  * @version $Id$
  */
-public class ParsingResultCollection
-{
-    /**
-     * @see #getValidElements()
-     */
-    private List validElements = new ArrayList();
+public class ParsingResultCollection {
 
-    /**
-     * @see #getInvalidElementIds() 
-     */
-    private List invalidElementIds = new ArrayList();
+  /**
+   * @see #getValidElements()
+   */
+  private List validElements = new ArrayList();
 
-    /**
-     * @param validObject the object parsed when successful
-     */
-    void addValidElement(Object validObject)
-    {
-        this.validElements.add(validObject);
-    }
+  /**
+   * @see #getInvalidElementIds()
+   */
+  private List invalidElementIds = new ArrayList();
 
-    /**
-     * @param elementId the id representing the source content which lead to a parsing error.
-     *        Usually this is the source content itself.
-     */
-    void addInvalidElementId(String elementId)
-    {
-        this.invalidElementIds.add(elementId);
-    }
+  /**
+   * @param validObject
+   *          the object parsed when successful
+   */
+  void addValidElement(Object validObject) {
+    this.validElements.add(validObject);
+  }
 
-    /**
-     * @return the valid parsed elements. For example {@link com.xpn.xwiki.content.Link} objects.
-     */
-    public List getValidElements()
-    {
-        return this.validElements;
-    }
+  /**
+   * @param elementId
+   *          the id representing the source content which lead to a parsing error.
+   *          Usually this is the source content itself.
+   */
+  void addInvalidElementId(String elementId) {
+    this.invalidElementIds.add(elementId);
+  }
 
-    /**
-     * @return the parsing errors returned as ids. Usually the id is the source content that was
-     *         supposed to be parsed
-     */
-    public List getInvalidElementIds()
-    {
-        return this.invalidElementIds;
-    }
+  /**
+   * @return the valid parsed elements. For example {@link com.xpn.xwiki.content.Link} objects.
+   */
+  public List getValidElements() {
+    return this.validElements;
+  }
 
-    /**
-     * @return true if there are parsing errors or false otherwise
-     */
-    public boolean hasInvalidElements()
-    {
-        return (this.invalidElementIds.size() > 0);
-    }
+  /**
+   * @return the parsing errors returned as ids. Usually the id is the source content that was
+   *         supposed to be parsed
+   */
+  public List getInvalidElementIds() {
+    return this.invalidElementIds;
+  }
+
+  /**
+   * @return true if there are parsing errors or false otherwise
+   */
+  public boolean hasInvalidElements() {
+    return (this.invalidElementIds.size() > 0);
+  }
 }

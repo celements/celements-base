@@ -21,58 +21,58 @@
 
 package com.xpn.xwiki.cache.api;
 
+import java.util.Properties;
+
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiException;
 
-import java.util.Properties;
-
 @Deprecated
-public interface XWikiCacheService
-{
-    /**
-     * Initializes the service
-     */
-    public void init(XWiki context);
+public interface XWikiCacheService {
 
-    /*
-    * Returns a local only (never clustered) cache
-    */
-    public XWikiCache newLocalCache() throws XWikiException;
+  /**
+   * Initializes the service
+   */
+  void init(XWiki context);
 
-    /*
-     * Returns a local only (never clustered) cache with given capacity
-     */
-    public XWikiCache newLocalCache(int capacity) throws XWikiException;
+  /*
+   * Returns a local only (never clustered) cache
+   */
+  XWikiCache newLocalCache() throws XWikiException;
 
-    /*
-     * Returns a cache that could be configured to be clustered
-     */
-    public XWikiCache newCache(String cacheName) throws XWikiException;
+  /*
+   * Returns a local only (never clustered) cache with given capacity
+   */
+  XWikiCache newLocalCache(int capacity) throws XWikiException;
 
-    /*
-     * Returns a cache that could be configured to be clustered with the given capacity
-     */
-    public XWikiCache newCache(String cacheName, int capacity) throws XWikiException;
+  /*
+   * Returns a cache that could be configured to be clustered
+   */
+  XWikiCache newCache(String cacheName) throws XWikiException;
 
+  /*
+   * Returns a cache that could be configured to be clustered with the given capacity
+   */
+  XWikiCache newCache(String cacheName, int capacity) throws XWikiException;
 
-    /*
-     * Returns a custom cache
-     */
-    public XWikiCache newCache(String cacheName, Properties props) throws XWikiException;
+  /*
+   * Returns a custom cache
+   */
+  XWikiCache newCache(String cacheName, Properties props) throws XWikiException;
 
-    /*
-     * Returns a custom local cache
-     */
-    public XWikiCache newLocalCache(Properties props) throws XWikiException;
+  /*
+   * Returns a custom local cache
+   */
+  XWikiCache newLocalCache(Properties props) throws XWikiException;
 
-    /*
-     * Returns a custom cache with capacity
-     */
-    public XWikiCache newCache(String cacheName, Properties props, int capacity) throws XWikiException;
+  /*
+   * Returns a custom cache with capacity
+   */
+  XWikiCache newCache(String cacheName, Properties props, int capacity)
+      throws XWikiException;
 
-    /*
-     * Returns a custom local cache with capacity
-     */
-    public XWikiCache newLocalCache(Properties props, int capacity) throws XWikiException;
+  /*
+   * Returns a custom local cache with capacity
+   */
+  XWikiCache newLocalCache(Properties props, int capacity) throws XWikiException;
 
 }

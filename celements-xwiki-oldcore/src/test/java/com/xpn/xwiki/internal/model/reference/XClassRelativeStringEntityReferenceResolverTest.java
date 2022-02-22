@@ -19,12 +19,15 @@
  */
 package com.xpn.xwiki.internal.model.reference;
 
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
+
+import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit tests for {@link XClassRelativeStringEntityReferenceResolver}.
@@ -32,46 +35,46 @@ import org.xwiki.model.reference.EntityReferenceResolver;
  * @version $Id$
  * @since 2.2.3
  */
-public class XClassRelativeStringEntityReferenceResolverTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private EntityReferenceResolver<String> resolver;
+public class XClassRelativeStringEntityReferenceResolverTest
+    extends AbstractBridgedXWikiComponentTestCase {
 
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
+  private EntityReferenceResolver<String> resolver;
 
-        this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "xclass");
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+
+    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "xclass");
+  }
+
+  @Test
+  public void testResolve() {
+    EntityReference reference = this.resolver.resolve("page", EntityType.DOCUMENT);
+    Assert.assertEquals("page", reference.extractReference(EntityType.DOCUMENT).getName());
+    Assert.assertEquals("XWiki", reference.extractReference(EntityType.SPACE).getName());
+    Assert.assertNull(reference.extractReference(EntityType.WIKI));
+  }
+
+  @Test
+  public void testResolveWhenExplicitParameterAndNoPageInStringRepresentation() {
+    EntityReference reference = this.resolver.resolve("", EntityType.DOCUMENT,
+        new DocumentReference("dummy", "dummy", "page"));
+    Assert.assertEquals("page", reference.extractReference(EntityType.DOCUMENT).getName());
+    Assert.assertEquals("XWiki", reference.extractReference(EntityType.SPACE).getName());
+    Assert.assertNull(reference.extractReference(EntityType.WIKI));
+  }
+
+  @Test
+  public void testResolveWhenNoPageReferenceSpecified() {
+    try {
+      this.resolver.resolve("", EntityType.DOCUMENT);
+      Assert.fail("Should have thrown an exception here");
+    } catch (IllegalArgumentException expected) {
+      Assert.assertEquals(
+          "A Reference to a page must be passed as a parameter when the string to resolve "
+              + "doesn't specify a page",
+          expected.getMessage());
     }
-
-    @Test
-    public void testResolve()
-    {
-        EntityReference reference = this.resolver.resolve("page", EntityType.DOCUMENT);
-        Assert.assertEquals("page", reference.extractReference(EntityType.DOCUMENT).getName());
-        Assert.assertEquals("XWiki", reference.extractReference(EntityType.SPACE).getName());
-        Assert.assertNull(reference.extractReference(EntityType.WIKI));
-    }
-
-    @Test
-    public void testResolveWhenExplicitParameterAndNoPageInStringRepresentation()
-    {
-        EntityReference reference = this.resolver.resolve("", EntityType.DOCUMENT,
-            new DocumentReference("dummy", "dummy", "page"));
-        Assert.assertEquals("page", reference.extractReference(EntityType.DOCUMENT).getName());
-        Assert.assertEquals("XWiki", reference.extractReference(EntityType.SPACE).getName());
-        Assert.assertNull(reference.extractReference(EntityType.WIKI));
-    }
-
-    @Test
-    public void testResolveWhenNoPageReferenceSpecified()
-    {
-        try {
-            this.resolver.resolve("", EntityType.DOCUMENT);
-            Assert.fail("Should have thrown an exception here");
-        } catch (IllegalArgumentException expected) {
-            Assert.assertEquals("A Reference to a page must be passed as a parameter when the string to resolve "
-                + "doesn't specify a page", expected.getMessage());
-        }
-    }
+  }
 }

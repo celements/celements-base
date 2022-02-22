@@ -23,81 +23,70 @@ package com.xpn.xwiki.doc;
 
 import java.io.Serializable;
 
-public class XWikiLink extends Object implements Serializable
-{
-    private long docId;
+public class XWikiLink extends Object implements Serializable {
 
-    private String link;
+  private long docId;
 
-    private String fullName;
+  private String link;
 
-    public XWikiLink()
-    {
-        this.setDocId(0);
-    }
+  private String fullName;
 
-    public XWikiLink(long docId)
-    {
-        this.setDocId(docId);
-    }
+  public XWikiLink() {
+    this.setDocId(0);
+  }
 
-    public XWikiLink(long docId, String link, String fullName)
-    {
-        this.setDocId(docId);
-        this.setLink(link);
-        this.setFullName(fullName);
-    }
+  public XWikiLink(long docId) {
+    this.setDocId(docId);
+  }
 
-    public long getDocId()
-    {
-        return this.docId;
-    }
+  public XWikiLink(long docId, String link, String fullName) {
+    this.setDocId(docId);
+    this.setLink(link);
+    this.setFullName(fullName);
+  }
 
-    public void setDocId(long docId)
-    {
-        this.docId = docId;
-    }
+  public long getDocId() {
+    return this.docId;
+  }
 
-    public void setLink(String link)
-    {
-        this.link = link;
-    }
+  public void setDocId(long docId) {
+    this.docId = docId;
+  }
 
-    public String getLink()
-    {
-        return this.link;
-    }
+  public void setLink(String link) {
+    this.link = link;
+  }
 
-    public String getFullName()
-    {
-        return this.fullName;
-    }
+  public String getLink() {
+    return this.link;
+  }
 
-    public void setFullName(String fullName)
-    {
-        this.fullName = fullName;
-    }
+  public String getFullName() {
+    return this.fullName;
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Object#equals(Object)
-     */
-    @Override
-    public boolean equals(Object obj)
-    {
-        XWikiLink objlink = (XWikiLink) obj;
-        return (objlink.getDocId() == getDocId() && objlink.getLink().equals(getLink()));
-    }
+  public void setFullName(String fullName) {
+    this.fullName = fullName;
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Object#hashCode()
-     */
-    @Override
-    public int hashCode()
-    {
-        return ("" + getDocId() + this.link).hashCode();
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see Object#equals(Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    XWikiLink objlink = (XWikiLink) obj;
+    return ((objlink.getDocId() == getDocId()) && objlink.getLink().equals(getLink()));
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return ("" + getDocId() + this.link).hashCode();
+  }
 }

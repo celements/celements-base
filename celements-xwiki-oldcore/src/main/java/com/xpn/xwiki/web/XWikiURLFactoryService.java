@@ -23,7 +23,7 @@ package com.xpn.xwiki.web;
 
 import com.xpn.xwiki.XWikiContext;
 
-public interface XWikiURLFactoryService
-{
-    public XWikiURLFactory createURLFactory(int mode, XWikiContext context);
+public interface XWikiURLFactoryService {
+
+  XWikiURLFactory createURLFactory(int mode, XWikiContext context);
 }

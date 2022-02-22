@@ -28,64 +28,60 @@ import com.xpn.xwiki.XWikiException;
 
 /**
  * Register xwiki action.
- * 
+ *
  * @version $Id$
  */
-public class RegisterAction extends XWikiAction
-{
-    /** Name of the corresponding template and URL parameter. */
-    private static final String REGISTER = "register";
+public class RegisterAction extends XWikiAction {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.web.XWikiAction#action(com.xpn.xwiki.XWikiContext)
-     */
-    @Override
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        XWiki xwiki = context.getWiki();
-        XWikiRequest request = context.getRequest();
-        XWikiResponse response = context.getResponse();
+  /** Name of the corresponding template and URL parameter. */
+  private static final String REGISTER = "register";
 
-        String register = request.getParameter(REGISTER);
-        if (register != null && register.equals("1")) {
-            // CSRF prevention
-            if (!csrfTokenCheck(context)) {
-                return false;
-            }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.web.XWikiAction#action(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    XWiki xwiki = context.getWiki();
+    XWikiRequest request = context.getRequest();
+    XWikiResponse response = context.getResponse();
 
-            int useemail = xwiki.getXWikiPreferenceAsInt("use_email_verification", 0, context);
-            int result;
-            if (useemail == 1) {
-                result = xwiki.createUser(true, "edit", context);
-            } else {
-                result = xwiki.createUser(context);
-            }
-            VelocityContext vcontext = (VelocityContext) context.get("vcontext");
-            vcontext.put("reg", new Integer(result));
+    String register = request.getParameter(REGISTER);
+    if ((register != null) && register.equals("1")) {
+      // CSRF prevention
+      if (!csrfTokenCheck(context)) {
+        return false;
+      }
 
-            // Redirect if a redirection parameter is passed.
-            String redirect = Utils.getRedirect(request, null);
-            if (redirect == null) {
-                return true;
-            } else {
-                sendRedirect(response, redirect);
-                return false;
-            }
-        }
+      int useemail = xwiki.getXWikiPreferenceAsInt("use_email_verification", 0, context);
+      int result;
+      if (useemail == 1) {
+        result = xwiki.createUser(true, "edit", context);
+      } else {
+        result = xwiki.createUser(context);
+      }
+      VelocityContext vcontext = (VelocityContext) context.get("vcontext");
+      vcontext.put("reg", new Integer(result));
 
-        return true;
+      // Redirect if a redirection parameter is passed.
+      String redirect = Utils.getRedirect(request, null);
+      if (redirect == null) {} else {
+        sendRedirect(response, redirect);
+        return false;
+      }
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.web.XWikiAction#render(com.xpn.xwiki.XWikiContext)
-     */
-    @Override
-    public String render(XWikiContext context) throws XWikiException
-    {
-        return REGISTER;
-    }
+    return true;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.web.XWikiAction#render(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    return REGISTER;
+  }
 }

@@ -26,35 +26,32 @@ import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.plugin.XWikiDefaultPlugin;
 import com.xpn.xwiki.plugin.XWikiPluginInterface;
 
-public class PackagePlugin extends XWikiDefaultPlugin implements XWikiPluginInterface
-{
+public class PackagePlugin extends XWikiDefaultPlugin implements XWikiPluginInterface {
 
-    public PackagePlugin(String name, String className, XWikiContext context)
-    {
-        super(name, className, context);
-        init(context);
-    }
+  public PackagePlugin(String name, String className, XWikiContext context) {
+    super(name, className, context);
+    init(context);
+  }
 
-    public String getName()
-    {
-        return "package";
-    }
+  @Override
+  public String getName() {
+    return "package";
+  }
 
-    public Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context)
-    {
-        try {
-            return new PackageAPI(new Package(), context);
-        } catch (PackageException e) {
-            return null;
-        }
+  @Override
+  public Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context) {
+    try {
+      return new PackageAPI(new Package(), context);
+    } catch (PackageException e) {
+      return null;
     }
+  }
 
-    public void flushCache()
-    {
-    }
+  @Override
+  public void flushCache() {}
 
-    public void init(XWikiContext context)
-    {
-        super.init(context);
-    }
+  @Override
+  public void init(XWikiContext context) {
+    super.init(context);
+  }
 }

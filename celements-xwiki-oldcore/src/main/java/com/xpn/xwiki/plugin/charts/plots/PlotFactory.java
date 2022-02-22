@@ -27,7 +27,8 @@ import com.xpn.xwiki.plugin.charts.exceptions.GenerateException;
 import com.xpn.xwiki.plugin.charts.params.ChartParams;
 import com.xpn.xwiki.plugin.charts.source.DataSource;
 
-public interface PlotFactory
-{
-    public Plot create(DataSource dataSource, ChartParams params) throws GenerateException, DataSourceException;
+public interface PlotFactory {
+
+  Plot create(DataSource dataSource, ChartParams params)
+      throws GenerateException, DataSourceException;
 }

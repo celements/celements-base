@@ -25,22 +25,20 @@ import java.util.Map;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.plugin.charts.exceptions.DataSourceException;
 
-public class TableDataSourceFactory implements DataSourceFactory
-{
-    private static DataSourceFactory uniqueInstance = new TableDataSourceFactory();
+public class TableDataSourceFactory implements DataSourceFactory {
 
-    private TableDataSourceFactory()
-    {
-        // empty
-    }
+  private static DataSourceFactory uniqueInstance = new TableDataSourceFactory();
 
-    public static DataSourceFactory getInstance()
-    {
-        return uniqueInstance;
-    }
+  private TableDataSourceFactory() {
+    // empty
+  }
 
-    public DataSource create(Map params, XWikiContext context) throws DataSourceException
-    {
-        return new TableDataSource(params, context);
-    }
+  public static DataSourceFactory getInstance() {
+    return uniqueInstance;
+  }
+
+  @Override
+  public DataSource create(Map params, XWikiContext context) throws DataSourceException {
+    return new TableDataSource(params, context);
+  }
 }

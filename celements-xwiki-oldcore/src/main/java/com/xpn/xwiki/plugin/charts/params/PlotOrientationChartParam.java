@@ -22,28 +22,24 @@ package com.xpn.xwiki.plugin.charts.params;
 
 import org.jfree.chart.plot.PlotOrientation;
 
-public class PlotOrientationChartParam extends ChoiceChartParam
-{
-    public PlotOrientationChartParam(String name)
-    {
-        super(name);
-    }
+public class PlotOrientationChartParam extends ChoiceChartParam {
 
-    public PlotOrientationChartParam(String name, boolean isOptional)
-    {
-        super(name, isOptional);
-    }
+  public PlotOrientationChartParam(String name) {
+    super(name);
+  }
 
-    @Override
-    protected void init()
-    {
-        addChoice("horizontal", PlotOrientation.HORIZONTAL);
-        addChoice("vertical", PlotOrientation.VERTICAL);
-    }
+  public PlotOrientationChartParam(String name, boolean isOptional) {
+    super(name, isOptional);
+  }
 
-    @Override
-    public Class getType()
-    {
-        return PlotOrientation.class;
-    }
+  @Override
+  protected void init() {
+    addChoice("horizontal", PlotOrientation.HORIZONTAL);
+    addChoice("vertical", PlotOrientation.VERTICAL);
+  }
+
+  @Override
+  public Class getType() {
+    return PlotOrientation.class;
+  }
 }

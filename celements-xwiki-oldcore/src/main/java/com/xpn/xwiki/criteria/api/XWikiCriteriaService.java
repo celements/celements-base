@@ -19,21 +19,21 @@
  */
 package com.xpn.xwiki.criteria.api;
 
-import com.xpn.xwiki.criteria.impl.RevisionCriteriaFactory;
 import com.xpn.xwiki.criteria.impl.DurationFactory;
 import com.xpn.xwiki.criteria.impl.PeriodFactory;
 import com.xpn.xwiki.criteria.impl.RangeFactory;
+import com.xpn.xwiki.criteria.impl.RevisionCriteriaFactory;
 import com.xpn.xwiki.criteria.impl.ScopeFactory;
 
-public interface XWikiCriteriaService
-{
-    public DurationFactory getDurationFactory();
+public interface XWikiCriteriaService {
 
-    public PeriodFactory getPeriodFactory();
+  DurationFactory getDurationFactory();
 
-    public RangeFactory getRangeFactory();
+  PeriodFactory getPeriodFactory();
 
-    public RevisionCriteriaFactory getRevisionCriteriaFactory();
+  RangeFactory getRangeFactory();
 
-    public ScopeFactory getScopeFactory();
+  RevisionCriteriaFactory getRevisionCriteriaFactory();
+
+  ScopeFactory getScopeFactory();
 }

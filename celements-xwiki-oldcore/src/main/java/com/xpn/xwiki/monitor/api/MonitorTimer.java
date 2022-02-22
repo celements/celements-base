@@ -24,57 +24,59 @@ package com.xpn.xwiki.monitor.api;
 import java.util.Date;
 
 public class MonitorTimer extends Object {
-    private String name;
-    private String details;
-    private Date startDate;
-    private Date endDate;
 
-    public MonitorTimer(String name, String details) {
-        this.setName(name);
-        this.setDetails(details);
-    }
+  private String name;
+  private String details;
+  private Date startDate;
+  private Date endDate;
 
-    public void setStartDate() {
-        startDate = new Date();
-    }
+  public MonitorTimer(String name, String details) {
+    this.setName(name);
+    this.setDetails(details);
+  }
 
-    public void setEndDate() {
-        endDate = new Date();
-    }
+  public void setStartDate() {
+    startDate = new Date();
+  }
 
-    public long getDuration() {
-        return endDate.getTime()-startDate.getTime();
-    }
+  public void setEndDate() {
+    endDate = new Date();
+  }
 
-    public String getName() {
-        return name;
-    }
+  public long getDuration() {
+    return endDate.getTime() - startDate.getTime();
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getDetails() {
-        return details;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setDetails(String details) {
-        this.details = details;
-    }
+  public String getDetails() {
+    return details;
+  }
 
-    public String toString() {
-        StringBuffer str = new StringBuffer();
-        str.append(" Name: ");
-        str.append(name);
-        str.append(" Details: ");
-        str.append(" Start Date: ");
-        str.append(startDate);
-        str.append(" End Date: ");
-        str.append(endDate);
-        str.append(" Duration: ");
-        try {
-        str.append(endDate.getTime()-startDate.getTime());
-        } catch (Exception e) {}
-        return str.toString();
-    }
+  public void setDetails(String details) {
+    this.details = details;
+  }
+
+  @Override
+  public String toString() {
+    StringBuffer str = new StringBuffer();
+    str.append(" Name: ");
+    str.append(name);
+    str.append(" Details: ");
+    str.append(" Start Date: ");
+    str.append(startDate);
+    str.append(" End Date: ");
+    str.append(endDate);
+    str.append(" Duration: ");
+    try {
+      str.append(endDate.getTime() - startDate.getTime());
+    } catch (Exception e) {}
+    return str.toString();
+  }
 }

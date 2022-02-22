@@ -20,15 +20,19 @@
  */
 package com.xpn.xwiki.store.jcr;
 
-import javax.jcr.RepositoryException;
 import java.io.IOException;
+
+import javax.jcr.RepositoryException;
 
 /**
  * XWiki-specific jcr provider interface
  * Includes graffito jcr-mappings Persistent Manager
- * */
+ */
 public interface IJcrProvider {
-	XWikiJcrSession getSession(String workspace) throws RepositoryException;
-	boolean	initWorkspace(String workspace) throws RepositoryException, IOException;
-	void shutdown();
+
+  XWikiJcrSession getSession(String workspace) throws RepositoryException;
+
+  boolean initWorkspace(String workspace) throws RepositoryException, IOException;
+
+  void shutdown();
 }

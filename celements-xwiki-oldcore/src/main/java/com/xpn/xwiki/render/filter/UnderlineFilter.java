@@ -23,10 +23,10 @@ package com.xpn.xwiki.render.filter;
 import org.radeox.filter.CacheFilter;
 import org.radeox.filter.regex.LocaleRegexReplaceFilter;
 
-public class UnderlineFilter extends LocaleRegexReplaceFilter implements CacheFilter
-{
-    protected String getLocaleKey()
-    {
-        return "filter.underline";
-    }
+public class UnderlineFilter extends LocaleRegexReplaceFilter implements CacheFilter {
+
+  @Override
+  protected String getLocaleKey() {
+    return "filter.underline";
+  }
 }

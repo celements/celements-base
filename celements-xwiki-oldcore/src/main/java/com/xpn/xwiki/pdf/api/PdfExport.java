@@ -26,65 +26,68 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 
-public interface PdfExport
-{
-    /** Describes export types. */
-    static class ExportType
-    {
-        /** Export type: PDF. */
-        public static final ExportType PDF = new ExportType("application/pdf", "pdf");
+public interface PdfExport {
 
-        /** Export type: RTF. */
-        public static final ExportType RTF = new ExportType("application/rtf", "rtf");
+  /** Describes export types. */
+  static class ExportType {
 
-        /** The MIME type corresponding to this export type. */
-        private final String mimeType;
+    /** Export type: PDF. */
+    public static final ExportType PDF = new ExportType("application/pdf", "pdf");
 
-        /** The file extension corresponding to this export type. */
-        private final String extension;
+    /** Export type: RTF. */
+    public static final ExportType RTF = new ExportType("application/rtf", "rtf");
 
-        /**
-         * Constructor, specifying the target MIME type and file extension.
-         * 
-         * @param mimeType the standard MIME type for this export type
-         * @param extension the filename extension for this export type
-         */
-        public ExportType(String mimeType, String extension)
-        {
-            this.mimeType = mimeType;
-            this.extension = extension;
-        }
+    /** The MIME type corresponding to this export type. */
+    private final String mimeType;
 
-        /**
-         * @return the export content type
-         */
-        public String getMimeType()
-        {
-            return mimeType;
-        }
+    /** The file extension corresponding to this export type. */
+    private final String extension;
 
-        /**
-         * @return the filename extension corresponding to this export type
-         */
-        public String getExtension()
-        {
-            return extension;
-        }
+    /**
+     * Constructor, specifying the target MIME type and file extension.
+     *
+     * @param mimeType
+     *          the standard MIME type for this export type
+     * @param extension
+     *          the filename extension for this export type
+     */
+    public ExportType(String mimeType, String extension) {
+      this.mimeType = mimeType;
+      this.extension = extension;
     }
 
-    public void exportXHtml(byte[] xhtml, OutputStream out, ExportType type, XWikiContext context) throws XWikiException;
+    /**
+     * @return the export content type
+     */
+    public String getMimeType() {
+      return mimeType;
+    }
 
-    public void exportHtml(String xhtml, OutputStream out, ExportType type, XWikiContext context) throws XWikiException;
+    /**
+     * @return the filename extension corresponding to this export type
+     */
+    public String getExtension() {
+      return extension;
+    }
+  }
 
-    public void export(XWikiDocument doc, OutputStream out, ExportType type, XWikiContext context) throws XWikiException;
+  void exportXHtml(byte[] xhtml, OutputStream out, ExportType type, XWikiContext context)
+      throws XWikiException;
 
-    public void exportToPDF(XWikiDocument doc, OutputStream out, XWikiContext context) throws XWikiException;
+  void exportHtml(String xhtml, OutputStream out, ExportType type, XWikiContext context)
+      throws XWikiException;
 
-    public byte[] convertToStrictXHtml(byte[] input, XWikiContext context);
+  void export(XWikiDocument doc, OutputStream out, ExportType type, XWikiContext context)
+      throws XWikiException;
 
-    public String convertToStrictXHtml(String input);
+  void exportToPDF(XWikiDocument doc, OutputStream out, XWikiContext context)
+      throws XWikiException;
 
-    public byte[] convertXHtmlToXMLFO(byte[] input, XWikiContext context) throws XWikiException;
+  byte[] convertToStrictXHtml(byte[] input, XWikiContext context);
 
-    public String convertXHtmlToXMLFO(String input, XWikiContext context) throws XWikiException;
+  String convertToStrictXHtml(String input);
+
+  byte[] convertXHtmlToXMLFO(byte[] input, XWikiContext context) throws XWikiException;
+
+  String convertXHtmlToXMLFO(String input, XWikiContext context) throws XWikiException;
 }

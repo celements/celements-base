@@ -22,12 +22,8 @@ package com.xpn.xwiki.store.migration.hibernate;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.migration.XWikiDBVersion;
 
 /**
@@ -35,74 +31,69 @@ import com.xpn.xwiki.store.migration.XWikiDBVersion;
  * delete the old XWD_ARCHIVE field, as it will prevent saving documents, since that column used to
  * have a NOT NULL constraint. Also, Hibernate does not delete columns/tables that don't appear in
  * the mapping file, so the column must be manually dropped.
- * 
+ *
  * @version $Id$
  * @since 1.3M2
  * @since 1.2.2
  */
-public class R7350XWIKI2079Migrator extends AbstractXWikiHibernateMigrator
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.store.migration.hibernate.AbstractXWikiHibernateMigrator#getName()
-     */
-    public String getName()
-    {
-        return "R7345XWIKI2079";
-    }
+public class R7350XWIKI2079Migrator extends AbstractXWikiHibernateMigrator {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see AbstractXWikiHibernateMigrator#getDescription()
-     */
-    public String getDescription()
-    {
-        return "See http://jira.xwiki.org/jira/browse/XWIKI-2079";
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.store.migration.hibernate.AbstractXWikiHibernateMigrator#getName()
+   */
+  @Override
+  public String getName() {
+    return "R7345XWIKI2079";
+  }
 
-    /** {@inheritDoc} */
-    public XWikiDBVersion getVersion()
-    {
-        return new XWikiDBVersion(7350);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractXWikiHibernateMigrator#getDescription()
+   */
+  @Override
+  public String getDescription() {
+    return "See http://jira.xwiki.org/jira/browse/XWIKI-2079";
+  }
 
-    /** {@inheritDoc} */
-    public void migrate(XWikiHibernateMigrationManager manager, final XWikiContext context)
-        throws XWikiException
-    {
-        manager.getStore(context).executeWrite(context, true, new HibernateCallback<Object>()
-        {
-            public Object doInHibernate(Session session) throws HibernateException,
-                XWikiException
-            {
-                try {
-                    Statement stmt = session.connection().createStatement();
-                    stmt.executeUpdate("ALTER TABLE xwikidoc DROP COLUMN XWD_ARCHIVE");
-                    stmt.close();
-                } catch (SQLException ex) {
-                    // Maybe the column doesn't exist. Anyway, in case we're using a DBMS which
-                    // doesn't support DROP COLUMN (such as Derby < 10.3.1.4), we can try to alter
-                    // the column to allow NULL values.
-                    // TODO Can we check the exception and see what is happening?
-                    try {
-                        Statement stmt = session.connection().createStatement();
-                        stmt.executeUpdate("ALTER TABLE xwikidoc ALTER COLUMN XWD_ARCHIVE "
-                            + "SET DEFAULT ' '");
-                        stmt.close();
-                    } catch (SQLException ex2) {
-                        // Maybe the column doesn't exist, after all.
-                        /*
-                         * TODO Can we check the exception and see what is happening? If the
-                         * statements failed because they are not supported by the DBMS, then this
-                         * is a fatal error, perhaps we should stop serving request and notify the
-                         * admin
-                         */
-                    }
-                }
-                return Boolean.TRUE;
-            }
-        });
-    }
+  /** {@inheritDoc} */
+  @Override
+  public XWikiDBVersion getVersion() {
+    return new XWikiDBVersion(7350);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void migrate(XWikiHibernateMigrationManager manager, final XWikiContext context)
+      throws XWikiException {
+    manager.getStore(context).executeWrite(context, true, session -> {
+      try {
+        Statement stmt1 = session.connection().createStatement();
+        stmt1.executeUpdate("ALTER TABLE xwikidoc DROP COLUMN XWD_ARCHIVE");
+        stmt1.close();
+      } catch (SQLException ex) {
+        // Maybe the column doesn't exist. Anyway, in case we're using a DBMS which
+        // doesn't support DROP COLUMN (such as Derby < 10.3.1.4), we can try to alter
+        // the column to allow NULL values.
+        // TODO Can we check the exception and see what is happening?
+        try {
+          Statement stmt2 = session.connection().createStatement();
+          stmt2.executeUpdate("ALTER TABLE xwikidoc ALTER COLUMN XWD_ARCHIVE "
+              + "SET DEFAULT ' '");
+          stmt2.close();
+        } catch (SQLException ex2) {
+          // Maybe the column doesn't exist, after all.
+          /*
+           * TODO Can we check the exception and see what is happening? If the
+           * statements failed because they are not supported by the DBMS, then this
+           * is a fatal error, perhaps we should stop serving request and notify the
+           * admin
+           */
+        }
+      }
+      return Boolean.TRUE;
+    });
+  }
 }

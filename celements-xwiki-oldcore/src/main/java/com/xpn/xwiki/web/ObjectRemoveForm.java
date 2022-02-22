@@ -24,33 +24,30 @@ package com.xpn.xwiki.web;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class ObjectRemoveForm extends ObjectAddForm
-{
-    private int classId;
+public class ObjectRemoveForm extends ObjectAddForm {
 
-    private static final Log LOG = LogFactory.getLog(ObjectRemoveForm.class);
+  private int classId;
 
-    @Override
-    public void readRequest()
-    {
-        super.readRequest();
-        try {
-            setClassId(Integer.parseInt(getRequest().getParameter("classid")));
-        } catch (Exception ex) {
-            setClassId(-1);
-            LOG.warn("No or bad classid found while processing an objectremove request: "
-                + getRequest().getParameter("classid"));
-        }
+  private static final Log LOG = LogFactory.getLog(ObjectRemoveForm.class);
+
+  @Override
+  public void readRequest() {
+    super.readRequest();
+    try {
+      setClassId(Integer.parseInt(getRequest().getParameter("classid")));
+    } catch (Exception ex) {
+      setClassId(-1);
+      LOG.warn("No or bad classid found while processing an objectremove request: "
+          + getRequest().getParameter("classid"));
     }
+  }
 
-    public int getClassId()
-    {
-        return this.classId;
-    }
+  public int getClassId() {
+    return this.classId;
+  }
 
-    public void setClassId(int classId)
-    {
-        this.classId = classId;
-    }
+  public void setClassId(int classId) {
+    this.classId = classId;
+  }
 
 }

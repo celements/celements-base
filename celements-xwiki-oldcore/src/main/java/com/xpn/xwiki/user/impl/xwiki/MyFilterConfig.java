@@ -27,32 +27,31 @@ import java.util.Hashtable;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletContext;
 
-public class MyFilterConfig implements FilterConfig
-{
-    protected Hashtable params = new Hashtable();
+public class MyFilterConfig implements FilterConfig {
 
-    public String getFilterName()
-    {
-        return null;
-    }
+  protected Hashtable params = new Hashtable();
 
-    public ServletContext getServletContext()
-    {
-        return null;
-    }
+  @Override
+  public String getFilterName() {
+    return null;
+  }
 
-    public String getInitParameter(String s)
-    {
-        return (String) params.get(s);
-    }
+  @Override
+  public ServletContext getServletContext() {
+    return null;
+  }
 
-    public Enumeration getInitParameterNames()
-    {
-        return params.keys();
-    }
+  @Override
+  public String getInitParameter(String s) {
+    return (String) params.get(s);
+  }
 
-    public void setInitParameter(String key, String s)
-    {
-        params.put(key, s);
-    }
+  @Override
+  public Enumeration getInitParameterNames() {
+    return params.keys();
+  }
+
+  public void setInitParameter(String key, String s) {
+    params.put(key, s);
+  }
 }

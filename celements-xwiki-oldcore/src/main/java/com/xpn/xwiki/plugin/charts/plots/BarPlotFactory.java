@@ -34,53 +34,52 @@ import com.xpn.xwiki.plugin.charts.exceptions.GenerateException;
 import com.xpn.xwiki.plugin.charts.params.ChartParams;
 import com.xpn.xwiki.plugin.charts.source.DataSource;
 
-public class BarPlotFactory implements PlotFactory
-{
-    private static BarPlotFactory uniqueInstance = new BarPlotFactory();
+public class BarPlotFactory implements PlotFactory {
 
-    private BarPlotFactory()
-    {
-        // empty
-    }
+  private static BarPlotFactory uniqueInstance = new BarPlotFactory();
 
-    public static BarPlotFactory getInstance()
-    {
-        return uniqueInstance;
-    }
+  private BarPlotFactory() {
+    // empty
+  }
 
-    public Plot create(DataSource dataSource, ChartParams params) throws GenerateException, DataSourceException
-    {
-        Class rendererClass = params.getClass(ChartParams.RENDERER);
-        if (rendererClass == null || CategoryItemRenderer.class.isAssignableFrom(rendererClass)) {
-            CategoryItemRenderer renderer;
-            if (rendererClass != null) {
-                try {
-                    Constructor ctor = rendererClass.getConstructor(new Class[] {});
-                    renderer = (CategoryItemRenderer) ctor.newInstance(new Object[] {});
-                } catch (Throwable e) {
-                    throw new GenerateException(e);
-                }
-            } else {
-                renderer = new BarRenderer();
-            }
-            return CategoryPlotFactory.getInstance().create(dataSource, renderer, params);
-        } else if (XYItemRenderer.class.isAssignableFrom(rendererClass)) {
-            XYItemRenderer renderer;
-            if (rendererClass != null) {
-                try {
-                    Constructor ctor = rendererClass.getConstructor(new Class[] {});
-                    renderer = (XYItemRenderer) ctor.newInstance(new Object[] {});
-                } catch (Throwable e) {
-                    throw new GenerateException(e);
-                }
-            } else {
-                renderer = new XYBarRenderer(); // will never run
-            }
-            ChartCustomizer.customizeXYItemRenderer(renderer, params);
+  public static BarPlotFactory getInstance() {
+    return uniqueInstance;
+  }
 
-            return XYPlotFactory.getInstance().create(dataSource, renderer, params);
-        } else {
-            throw new GenerateException("Incompatible renderer class: " + rendererClass);
+  @Override
+  public Plot create(DataSource dataSource, ChartParams params)
+      throws GenerateException, DataSourceException {
+    Class rendererClass = params.getClass(ChartParams.RENDERER);
+    if ((rendererClass == null) || CategoryItemRenderer.class.isAssignableFrom(rendererClass)) {
+      CategoryItemRenderer renderer;
+      if (rendererClass != null) {
+        try {
+          Constructor ctor = rendererClass.getConstructor();
+          renderer = (CategoryItemRenderer) ctor.newInstance();
+        } catch (Throwable e) {
+          throw new GenerateException(e);
         }
+      } else {
+        renderer = new BarRenderer();
+      }
+      return CategoryPlotFactory.getInstance().create(dataSource, renderer, params);
+    } else if (XYItemRenderer.class.isAssignableFrom(rendererClass)) {
+      XYItemRenderer renderer;
+      if (rendererClass != null) {
+        try {
+          Constructor ctor = rendererClass.getConstructor();
+          renderer = (XYItemRenderer) ctor.newInstance();
+        } catch (Throwable e) {
+          throw new GenerateException(e);
+        }
+      } else {
+        renderer = new XYBarRenderer(); // will never run
+      }
+      ChartCustomizer.customizeXYItemRenderer(renderer, params);
+
+      return XYPlotFactory.getInstance().create(dataSource, renderer, params);
+    } else {
+      throw new GenerateException("Incompatible renderer class: " + rendererClass);
     }
+  }
 }

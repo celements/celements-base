@@ -35,45 +35,46 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
  * @version $Id$
  * @since 2.2M1
  */
-public class CurrentMixedStringDocumentReferenceResolverTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private static final String CURRENT_SPACE = "currentspace";
+public class CurrentMixedStringDocumentReferenceResolverTest
+    extends AbstractBridgedXWikiComponentTestCase {
 
-    private EntityReferenceResolver<String> resolver;
-    
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
+  private static final String CURRENT_SPACE = "currentspace";
 
-        this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "currentmixed");
-    }
+  private EntityReferenceResolver<String> resolver;
 
-    @org.junit.Test
-    public void testResolveDocumentReferenceWhenContextDocument() throws Exception
-    {
-        getContext().setDoc(new XWikiDocument(new DocumentReference("not used", CURRENT_SPACE, "notused")));
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
 
-        getContext().setDatabase("currentwiki");
+    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "currentmixed");
+  }
 
-        EntityReference reference = this.resolver.resolve("", EntityType.DOCUMENT);
-        Assert.assertEquals("currentwiki", reference.extractReference(EntityType.WIKI).getName());
-        Assert.assertEquals(CURRENT_SPACE, reference.extractReference(EntityType.SPACE).getName());
-        Assert.assertEquals("WebHome", reference.getName());
-    }
+  @org.junit.Test
+  public void testResolveDocumentReferenceWhenContextDocument() throws Exception {
+    getContext()
+        .setDoc(new XWikiDocument(new DocumentReference("not used", CURRENT_SPACE, "notused")));
 
-    @org.junit.Test
-    public void testResolveDocumentReferenceForDefaultWikiWhenNoContextDocument() throws Exception
-    {
-        getContext().setDatabase("currentwiki");
+    getContext().setDatabase("currentwiki");
 
-        EntityReference reference = this.resolver.resolve("space.page", EntityType.DOCUMENT);
+    EntityReference reference = this.resolver.resolve("", EntityType.DOCUMENT);
+    Assert.assertEquals("currentwiki", reference.extractReference(EntityType.WIKI).getName());
+    Assert.assertEquals(CURRENT_SPACE, reference.extractReference(EntityType.SPACE).getName());
+    Assert.assertEquals("WebHome", reference.getName());
+  }
 
-        // Make sure the resolved wiki is the current wiki and not the wiki from the current document (since that
-        // doc isn't set).
-        Assert.assertEquals("currentwiki", reference.extractReference(EntityType.WIKI).getName());
-        
-        Assert.assertEquals("space", reference.extractReference(EntityType.SPACE).getName());
-        Assert.assertEquals("page", reference.getName());
-    }
+  @org.junit.Test
+  public void testResolveDocumentReferenceForDefaultWikiWhenNoContextDocument() throws Exception {
+    getContext().setDatabase("currentwiki");
+
+    EntityReference reference = this.resolver.resolve("space.page", EntityType.DOCUMENT);
+
+    // Make sure the resolved wiki is the current wiki and not the wiki from the current document
+    // (since that
+    // doc isn't set).
+    Assert.assertEquals("currentwiki", reference.extractReference(EntityType.WIKI).getName());
+
+    Assert.assertEquals("space", reference.extractReference(EntityType.SPACE).getName());
+    Assert.assertEquals("page", reference.getName());
+  }
 }

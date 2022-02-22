@@ -22,52 +22,49 @@ package com.xpn.xwiki.plugin;
 
 import com.xpn.xwiki.XWikiException;
 
+public class PluginException extends XWikiException {
 
-public class PluginException extends XWikiException{
-    String pluginName = "";
+  String pluginName = "";
 
-    public PluginException(String pluginName, int code, String message, Throwable e, Object[] args)
-    {
-        super(XWikiException.MODULE_XWIKI_PLUGINS, code, pluginName + ": " + message, e, args);
-        setPluginName(pluginName);
-    }
+  public PluginException(String pluginName, int code, String message, Throwable e, Object[] args) {
+    super(XWikiException.MODULE_XWIKI_PLUGINS, code, pluginName + ": " + message, e, args);
+    setPluginName(pluginName);
+  }
 
-    public PluginException(String pluginName, int code, String message, Throwable e){
-        super(XWikiException.MODULE_XWIKI_PLUGINS, code, pluginName + ": " + message, e);
-        setPluginName(pluginName);
-    }
+  public PluginException(String pluginName, int code, String message, Throwable e) {
+    super(XWikiException.MODULE_XWIKI_PLUGINS, code, pluginName + ": " + message, e);
+    setPluginName(pluginName);
+  }
 
-    public PluginException(String pluginName, int code, String message){
-        super(XWikiException.MODULE_XWIKI_PLUGINS, code, pluginName + ": " + message);
-        setPluginName(pluginName);
-    }
+  public PluginException(String pluginName, int code, String message) {
+    super(XWikiException.MODULE_XWIKI_PLUGINS, code, pluginName + ": " + message);
+    setPluginName(pluginName);
+  }
 
-    //java.lang.Class aClass
-        public PluginException(java.lang.Class plugin, int code, String message, Throwable e, Object[] args)
-    {
-        super(XWikiException.MODULE_XWIKI_PLUGINS, code, plugin.getName() + ": " + message, e, args);
-        setPluginName(plugin.getName());
-    }
+  // java.lang.Class aClass
+  public PluginException(java.lang.Class plugin, int code, String message, Throwable e,
+      Object[] args) {
+    super(XWikiException.MODULE_XWIKI_PLUGINS, code, plugin.getName() + ": " + message, e, args);
+    setPluginName(plugin.getName());
+  }
 
-    public PluginException(java.lang.Class plugin, int code, String message, Throwable e){
-        super(XWikiException.MODULE_XWIKI_PLUGINS, code, plugin.getName() + ": " + message, e);
-        setPluginName(plugin.getName());
-    }
+  public PluginException(java.lang.Class plugin, int code, String message, Throwable e) {
+    super(XWikiException.MODULE_XWIKI_PLUGINS, code, plugin.getName() + ": " + message, e);
+    setPluginName(plugin.getName());
+  }
 
-    public PluginException(java.lang.Class plugin, int code, String message){
-        super(XWikiException.MODULE_XWIKI_PLUGINS, code, plugin.getName() + ": " + message);
-        setPluginName(plugin.getName());
-    }
+  public PluginException(java.lang.Class plugin, int code, String message) {
+    super(XWikiException.MODULE_XWIKI_PLUGINS, code, plugin.getName() + ": " + message);
+    setPluginName(plugin.getName());
+  }
 
-    public PluginException(){
-        super();
-    }
+  public PluginException() {}
 
-    public String getPluginName() {
-        return pluginName;
-    }
+  public String getPluginName() {
+    return pluginName;
+  }
 
-    public void setPluginName(String pluginName) {
-        this.pluginName = pluginName;
-    }
+  public void setPluginName(String pluginName) {
+    this.pluginName = pluginName;
+  }
 }

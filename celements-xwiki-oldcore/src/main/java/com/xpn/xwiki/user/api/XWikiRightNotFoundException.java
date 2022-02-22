@@ -23,19 +23,18 @@ package com.xpn.xwiki.user.api;
 
 public class XWikiRightNotFoundException extends Exception {
 
-    /**
-     * Could not find the item you were looking for you
-     */
-    public XWikiRightNotFoundException() {
-        super();
-    }
+  /**
+   * Could not find the item you were looking for you
+   */
+  public XWikiRightNotFoundException() {}
 
-    /**
-     * Could not find the item you were looking for you
-     *
-     * @param msg message you want to send
-     */
-    public XWikiRightNotFoundException(String msg) {
-        super(msg);
-    }
+  /**
+   * Could not find the item you were looking for you
+   *
+   * @param msg
+   *          message you want to send
+   */
+  public XWikiRightNotFoundException(String msg) {
+    super(msg);
+  }
 }

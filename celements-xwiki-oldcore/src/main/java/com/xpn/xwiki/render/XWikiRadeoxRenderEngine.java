@@ -40,299 +40,303 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.Util;
 
-public class XWikiRadeoxRenderEngine extends BaseRenderEngine implements WikiRenderEngine, ImageRenderEngine
-{
-    private static final Log LOG = LogFactory.getLog(XWikiRadeoxRenderEngine.class);
+public class XWikiRadeoxRenderEngine extends BaseRenderEngine
+    implements WikiRenderEngine, ImageRenderEngine {
 
-    private XWikiContext xwikiContext;
+  private static final Log LOG = LogFactory.getLog(XWikiRadeoxRenderEngine.class);
 
-    protected FilterPipe fp;
+  private XWikiContext xwikiContext;
 
-    public XWikiRadeoxRenderEngine(XWikiContext xwikiContext)
-    {
-        setXWikiContext(xwikiContext);
-    }
+  protected FilterPipe fp;
 
-    public XWikiRadeoxRenderEngine(InitialRenderContext ircontext, FilterPipe filterPipe, XWikiContext xwikiContext)
-    {
-        super(ircontext);
+  public XWikiRadeoxRenderEngine(XWikiContext xwikiContext) {
+    setXWikiContext(xwikiContext);
+  }
 
-        setXWikiContext(xwikiContext);
-        this.fp = filterPipe;
-    }
+  public XWikiRadeoxRenderEngine(InitialRenderContext ircontext, FilterPipe filterPipe,
+      XWikiContext xwikiContext) {
+    super(ircontext);
 
-    public XWikiContext getXWikiContext()
-    {
-        return this.xwikiContext;
-    }
+    setXWikiContext(xwikiContext);
+    this.fp = filterPipe;
+  }
 
-    public void setXWikiContext(XWikiContext context)
-    {
-        this.xwikiContext = context;
-    }
+  public XWikiContext getXWikiContext() {
+    return this.xwikiContext;
+  }
 
-    /**
-     * @see com.xpn.xwiki.render.XWikiRadeoxRenderer#initFilterPipe
-     */
-    @Override
-    protected void init()
-    {
-        // Do nothing and thus ensure that the filter Pipe is not initialized here. We are intializing it in
-        // XWikiRadeoxRenderer so that it's initialized only once in XWiki's lifetime.
-    }
+  public void setXWikiContext(XWikiContext context) {
+    this.xwikiContext = context;
+  }
 
-    /**
-     * Render an input with text markup and return a String with e.g. HTML
-     * 
-     * @param content String with the input to render
-     * @param context Special context for the filter engine, e.g. with configuration information
-     * @return result Output with rendered content
-     */
-    @Override
-    public String render(String content, RenderContext context)
-    {
-        FilterContext filterContext = new BaseFilterContext();
-        filterContext.setRenderContext(context);
-        return this.fp.filter(content, filterContext);
-    }
+  /**
+   * @see com.xpn.xwiki.render.XWikiRadeoxRenderer#initFilterPipe
+   */
+  @Override
+  protected void init() {
+    // Do nothing and thus ensure that the filter Pipe is not initialized here. We are intializing
+    // it in
+    // XWikiRadeoxRenderer so that it's initialized only once in XWiki's lifetime.
+  }
 
-    public String noaccents(String name)
-    {
-        return StringUtils.replace(Util.noaccents(name), " ", "");
-    }
+  /**
+   * Render an input with text markup and return a String with e.g. HTML
+   *
+   * @param content
+   *          String with the input to render
+   * @param context
+   *          Special context for the filter engine, e.g. with configuration information
+   * @return result Output with rendered content
+   */
+  @Override
+  public String render(String content, RenderContext context) {
+    FilterContext filterContext = new BaseFilterContext();
+    filterContext.setRenderContext(context);
+    return this.fp.filter(content, filterContext);
+  }
 
-    /**
-     * @param name the name of a wiki page
-     * @return true if the page exists or false otherwise
-     * @see org.radeox.api.engine.WikiRenderEngine#exists(String)
-     */
-    public boolean exists(String name)
-    {
-        String database = getXWikiContext().getDatabase();
-        try {
-            int colonIndex = name.indexOf(":");
-            if (colonIndex != -1) {
-                String db = name.substring(0, colonIndex);
-                name = name.substring(colonIndex + 1);
-                getXWikiContext().setDatabase(db);
-            }
+  public String noaccents(String name) {
+    return StringUtils.replace(Util.noaccents(name), " ", "");
+  }
 
-            name = StringUtils.substringBefore(StringUtils.substringBefore(name, "?"), "#");
+  /**
+   * @param name
+   *          the name of a wiki page
+   * @return true if the page exists or false otherwise
+   * @see org.radeox.api.engine.WikiRenderEngine#exists(String)
+   */
+  @Override
+  public boolean exists(String name) {
+    String database = getXWikiContext().getDatabase();
+    try {
+      int colonIndex = name.indexOf(":");
+      if (colonIndex != -1) {
+        String db = name.substring(0, colonIndex);
+        name = name.substring(colonIndex + 1);
+        getXWikiContext().setDatabase(db);
+      }
 
-            XWikiDocument doc = new XWikiDocument();
-            doc.setFullName(name);
+      name = StringUtils.substringBefore(StringUtils.substringBefore(name, "?"), "#");
 
-            // If the document exists with the initial name, then we use this one
-            if (getXWikiContext().getWiki().exists(doc.getFullName(), getXWikiContext())) {
-                return true;
-            }
+      XWikiDocument doc = new XWikiDocument();
+      doc.setFullName(name);
 
-            // If the document does not exists then we check the one converted (no accents and no spaces)
-            doc.setFullName(noaccents(name));
-            return getXWikiContext().getWiki().exists(doc.getFullName(), getXWikiContext());
-        } catch (Exception e) {
-            LOG.error("Failed to check if a document exists", e);
-
-            return false;
-        } finally {
-            // Reset the current wiki to the original one
-            getXWikiContext().setDatabase(database);
-        }
-
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.radeox.api.engine.WikiRenderEngine#showCreate()
-     */
-    public boolean showCreate()
-    {
+      // If the document exists with the initial name, then we use this one
+      if (getXWikiContext().getWiki().exists(doc.getFullName(), getXWikiContext())) {
         return true;
+      }
+
+      // If the document does not exists then we check the one converted (no accents and no spaces)
+      doc.setFullName(noaccents(name));
+      return getXWikiContext().getWiki().exists(doc.getFullName(), getXWikiContext());
+    } catch (Exception e) {
+      LOG.error("Failed to check if a document exists", e);
+
+      return false;
+    } finally {
+      // Reset the current wiki to the original one
+      getXWikiContext().setDatabase(database);
     }
 
-    /**
-     * Appends for example the &lt;a href&gt; HTML code for linking to a wiki page with the given name to the passed
-     * buffer.
-     * 
-     * @param buffer the string to append to
-     * @param name the name of the wiki page pointed to by the link
-     * @param view the text that will be shown to the user for the link
-     * @param anchor the anchor specified in the link if any (can be null)
-     * @see org.radeox.api.engine.WikiRenderEngine#appendLink(StringBuffer, String, String, String)
-     */
-    public void appendLink(StringBuffer buffer, String name, String view, String anchor)
-    {
-        if (name.length() == 0 && anchor != null) {
-            appendInternalLink(buffer, view, anchor);
-        } else {
-            String database = getXWikiContext().getDatabase();
-            XWikiContext context = getXWikiContext();
+  }
 
-            try {
-                String db = null;
-                int colonIndex = name.indexOf(":");
-                if (colonIndex != -1) {
-                    db = name.substring(0, colonIndex);
-                    name = name.substring(colonIndex + 1);
-                    context.setDatabase(db);
-                }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.radeox.api.engine.WikiRenderEngine#showCreate()
+   */
+  @Override
+  public boolean showCreate() {
+    return true;
+  }
 
-                String querystring = null;
-                int qsIndex = name.indexOf("?");
-                if (qsIndex != -1) {
-                    querystring = name.substring(qsIndex + 1);
-                    name = name.substring(0, qsIndex);
-                }
+  /**
+   * Appends for example the &lt;a href&gt; HTML code for linking to a wiki page with the given name
+   * to the passed
+   * buffer.
+   *
+   * @param buffer
+   *          the string to append to
+   * @param name
+   *          the name of the wiki page pointed to by the link
+   * @param view
+   *          the text that will be shown to the user for the link
+   * @param anchor
+   *          the anchor specified in the link if any (can be null)
+   * @see org.radeox.api.engine.WikiRenderEngine#appendLink(StringBuffer, String, String, String)
+   */
+  @Override
+  public void appendLink(StringBuffer buffer, String name, String view, String anchor) {
+    if ((name.length() == 0) && (anchor != null)) {
+      appendInternalLink(buffer, view, anchor);
+    } else {
+      String database = getXWikiContext().getDatabase();
+      XWikiContext context = getXWikiContext();
 
-                buffer.append("<span class=\"wikilink\"><a href=\"");
-
-                // If the document exists with the conversion of spaces and accents
-                // then we use this one
-                XWikiDocument newdoc = new XWikiDocument();
-                newdoc.setFullName(name, context);
-
-                // If the document does not exist, then we use the cleaned name (no accents and no spaces)
-                if (!context.getWiki().exists(newdoc.getFullName(), context)) {
-                    newdoc.setFullName(noaccents(name), context);
-                }
-
-                if ((db == null) || (database.equals(db))) {
-                    addLinkToContext(newdoc.getFullName(), context);
-                }
-
-                URL url =
-                    context.getURLFactory().createURL(newdoc.getSpace(), newdoc.getName(), "view", querystring, anchor,
-                        context);
-                buffer.append(context.getURLFactory().getURL(url, context));
-                buffer.append("\">");
-                buffer.append(cleanText(view));
-                buffer.append("</a></span>");
-            } finally {
-                context.setDatabase(database);
-            }
+      try {
+        String db = null;
+        int colonIndex = name.indexOf(":");
+        if (colonIndex != -1) {
+          db = name.substring(0, colonIndex);
+          name = name.substring(colonIndex + 1);
+          context.setDatabase(db);
         }
-    }
 
-    private String cleanText(String text)
-    {
-        return Util.escapeText(text);
-    }
-
-    private void addLinkToContext(String docname, XWikiContext context)
-    {
-        // Add to backlinks in context object
-        try {
-            @SuppressWarnings("unchecked")
-            List<String> links = (List<String>) context.get("links");
-            if (links == null) {
-                links = new ArrayList<String>();
-                context.put("links", links);
-            }
-            // We restrict the number of bytes in the document name, since:
-            // 1. It will throw an error on some DBMSs, as 255 is the column length
-            // 2. Such a long document name is not likely to occur, since the same limit is
-            // imposed on the document name length.
-            if (!links.contains(docname) && docname.getBytes().length <= 255) {
-                links.add(docname);
-            }
-        } catch (Exception e) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Error adding link to context", e);
-            }
+        String querystring = null;
+        int qsIndex = name.indexOf("?");
+        if (qsIndex != -1) {
+          querystring = name.substring(qsIndex + 1);
+          name = name.substring(0, qsIndex);
         }
-    }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.radeox.api.engine.WikiRenderEngine#appendLink(java.lang.StringBuffer, java.lang.String,
-     *      java.lang.String)
-     */
-    public void appendLink(StringBuffer buffer, String name, String view)
-    {
-        appendLink(buffer, name, view, null);
-    }
+        buffer.append("<span class=\"wikilink\"><a href=\"");
 
-    public void appendInternalLink(StringBuffer buffer, String text, String anchor)
-    {
-        buffer.append("<span class=\"wikilink\"><a href=\"#");
-        buffer.append(Util.encodeURI(anchor, getXWikiContext()));
+        // If the document exists with the conversion of spaces and accents
+        // then we use this one
+        XWikiDocument newdoc = new XWikiDocument();
+        newdoc.setFullName(name, context);
+
+        // If the document does not exist, then we use the cleaned name (no accents and no spaces)
+        if (!context.getWiki().exists(newdoc.getFullName(), context)) {
+          newdoc.setFullName(noaccents(name), context);
+        }
+
+        if ((db == null) || (database.equals(db))) {
+          addLinkToContext(newdoc.getFullName(), context);
+        }
+
+        URL url = context.getURLFactory().createURL(newdoc.getSpace(), newdoc.getName(), "view",
+            querystring, anchor,
+            context);
+        buffer.append(context.getURLFactory().getURL(url, context));
         buffer.append("\">");
-        if (text.length() == 0) {
-            text = anchor;
-        }
-        buffer.append(cleanText(text));
+        buffer.append(cleanText(view));
         buffer.append("</a></span>");
+      } finally {
+        context.setDatabase(database);
+      }
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.radeox.api.engine.WikiRenderEngine#appendCreateLink(java.lang.StringBuffer, java.lang.String,
-     *      java.lang.String)
-     */
-    public void appendCreateLink(StringBuffer buffer, String name, String view)
-    {
-        String database = getXWikiContext().getDatabase();
-        XWikiContext context = getXWikiContext();
+  private String cleanText(String text) {
+    return Util.escapeText(text);
+  }
 
-        try {
-            String db = null;
-            int colonIndex = name.indexOf(":");
-            if (colonIndex != -1) {
-                db = name.substring(0, colonIndex);
-                name = name.substring(colonIndex + 1);
-                context.setDatabase(db);
-            }
-
-            StringBuilder querystring = new StringBuilder();
-            int qsIndex = name.indexOf("?");
-            if (qsIndex != -1) {
-                querystring.append(name.substring(qsIndex + 1));
-                name = name.substring(0, qsIndex);
-            }
-
-            String newname = name;
-            XWikiDocument newdoc = new XWikiDocument();
-            newdoc.setFullName(newname, context);
-
-            XWikiDocument currentdoc = context.getDoc();
-            if (currentdoc != null) {
-                querystring.append(querystring.length() == 0 ? "" : "&amp;");
-                querystring.append("parent=").append(Util.encodeURI(currentdoc.getFullName(), context));
-            }
-
-            if ((db == null) || (database.equals(db))) {
-                // Backlinks computation
-                addLinkToContext(newdoc.getFullName(), context);
-            }
-
-            URL url =
-                context.getURLFactory().createURL(newdoc.getSpace(), newdoc.getName(), "edit", querystring.toString(),
-                    null, context);
-            String surl = context.getURLFactory().getURL(url, context);
-            buffer.append("<a class=\"wikicreatelink\" href=\"");
-            buffer.append(surl);
-            buffer.append("\">");
-            buffer.append("<span class=\"wikicreatelinktext\">");
-            buffer.append(cleanText(view));
-            buffer.append("</span>");
-            buffer.append("<span class=\"wikicreatelinkqm\">?</span>");
-            buffer.append("</a>");
-        } finally {
-            context.setDatabase(database);
-        }
+  private void addLinkToContext(String docname, XWikiContext context) {
+    // Add to backlinks in context object
+    try {
+      @SuppressWarnings("unchecked")
+      List<String> links = (List<String>) context.get("links");
+      if (links == null) {
+        links = new ArrayList<>();
+        context.put("links", links);
+      }
+      // We restrict the number of bytes in the document name, since:
+      // 1. It will throw an error on some DBMSs, as 255 is the column length
+      // 2. Such a long document name is not likely to occur, since the same limit is
+      // imposed on the document name length.
+      if (!links.contains(docname) && (docname.getBytes().length <= 255)) {
+        links.add(docname);
+      }
+    } catch (Exception e) {
+      if (LOG.isErrorEnabled()) {
+        LOG.error("Error adding link to context", e);
+      }
     }
+  }
 
-    /**
-     * Get a link to an image. This can be used by filters or macros to get images for e.g. external links or icons
-     * Should be refactored to get other images as well
-     * 
-     * @return result String with an HTML link to an image
-     */
-    public String getExternalImageLink()
-    {
-        return "";
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.radeox.api.engine.WikiRenderEngine#appendLink(java.lang.StringBuffer,
+   *      java.lang.String,
+   *      java.lang.String)
+   */
+  @Override
+  public void appendLink(StringBuffer buffer, String name, String view) {
+    appendLink(buffer, name, view, null);
+  }
+
+  public void appendInternalLink(StringBuffer buffer, String text, String anchor) {
+    buffer.append("<span class=\"wikilink\"><a href=\"#");
+    buffer.append(Util.encodeURI(anchor, getXWikiContext()));
+    buffer.append("\">");
+    if (text.length() == 0) {
+      text = anchor;
     }
+    buffer.append(cleanText(text));
+    buffer.append("</a></span>");
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.radeox.api.engine.WikiRenderEngine#appendCreateLink(java.lang.StringBuffer,
+   *      java.lang.String,
+   *      java.lang.String)
+   */
+  @Override
+  public void appendCreateLink(StringBuffer buffer, String name, String view) {
+    String database = getXWikiContext().getDatabase();
+    XWikiContext context = getXWikiContext();
+
+    try {
+      String db = null;
+      int colonIndex = name.indexOf(":");
+      if (colonIndex != -1) {
+        db = name.substring(0, colonIndex);
+        name = name.substring(colonIndex + 1);
+        context.setDatabase(db);
+      }
+
+      StringBuilder querystring = new StringBuilder();
+      int qsIndex = name.indexOf("?");
+      if (qsIndex != -1) {
+        querystring.append(name.substring(qsIndex + 1));
+        name = name.substring(0, qsIndex);
+      }
+
+      String newname = name;
+      XWikiDocument newdoc = new XWikiDocument();
+      newdoc.setFullName(newname, context);
+
+      XWikiDocument currentdoc = context.getDoc();
+      if (currentdoc != null) {
+        querystring.append(querystring.length() == 0 ? "" : "&amp;");
+        querystring.append("parent=").append(Util.encodeURI(currentdoc.getFullName(), context));
+      }
+
+      if ((db == null) || (database.equals(db))) {
+        // Backlinks computation
+        addLinkToContext(newdoc.getFullName(), context);
+      }
+
+      URL url = context.getURLFactory().createURL(newdoc.getSpace(), newdoc.getName(), "edit",
+          querystring.toString(),
+          null, context);
+      String surl = context.getURLFactory().getURL(url, context);
+      buffer.append("<a class=\"wikicreatelink\" href=\"");
+      buffer.append(surl);
+      buffer.append("\">");
+      buffer.append("<span class=\"wikicreatelinktext\">");
+      buffer.append(cleanText(view));
+      buffer.append("</span>");
+      buffer.append("<span class=\"wikicreatelinkqm\">?</span>");
+      buffer.append("</a>");
+    } finally {
+      context.setDatabase(database);
+    }
+  }
+
+  /**
+   * Get a link to an image. This can be used by filters or macros to get images for e.g. external
+   * links or icons
+   * Should be refactored to get other images as well
+   *
+   * @return result String with an HTML link to an image
+   */
+  @Override
+  public String getExternalImageLink() {
+    return "";
+  }
 }

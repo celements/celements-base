@@ -35,87 +35,90 @@ import com.xpn.xwiki.store.XWikiHibernateStore;
 
 /**
  * Store referer statistics into the database.
- * 
+ *
  * @version $Id$
  * @since 1.4M2
  */
-public class RefererStatsStoreItem extends AbstractStatsStoreItem
-{
-    /**
-     * Logging tools.
-     */
-    private static final Log LOG = LogFactory.getLog(RefererStatsStoreItem.class);
-    
-    /**
-     * The referer.
-     */
-    private String referer;
+public class RefererStatsStoreItem extends AbstractStatsStoreItem {
 
-    /**
-     * Create new instance of {@link RefererStatsStoreItem}.
-     * 
-     * @param name the full name of the document.
-     * @param periodDate the period date.
-     * @param periodType the period type.
-     * @param referer the referer.
-     * @param context the XWiki context.
-     */
-    public RefererStatsStoreItem(String name, Date periodDate, PeriodType periodType,
-        String referer, XWikiContext context)
-    {
-        super(name, periodDate, periodType, context);
+  /**
+   * Logging tools.
+   */
+  private static final Log LOG = LogFactory.getLog(RefererStatsStoreItem.class);
 
-        this.referer = referer;
+  /**
+   * The referer.
+   */
+  private String referer;
+
+  /**
+   * Create new instance of {@link RefererStatsStoreItem}.
+   *
+   * @param name
+   *          the full name of the document.
+   * @param periodDate
+   *          the period date.
+   * @param periodType
+   *          the period type.
+   * @param referer
+   *          the referer.
+   * @param context
+   *          the XWiki context.
+   */
+  public RefererStatsStoreItem(String name, Date periodDate, PeriodType periodType,
+      String referer, XWikiContext context) {
+    super(name, periodDate, periodType, context);
+
+    this.referer = referer;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
+   */
+  @Override
+  public String getId() {
+    return String.format("%s %s %s %s", getClass(), this.name, this.referer, this.period);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
+   */
+  @Override
+  public void storeInternal(List<XWikiStatsStoreItem> stats) {
+    RefererStatsStoreItem lastItem = (RefererStatsStoreItem) stats.get(stats.size() - 1);
+
+    XWikiHibernateStore store = context.getWiki().getHibernateStore();
+    if (store == null) {
+      return;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
-     */
-    public String getId()
-    {
-        return String.format("%s %s %s %s", getClass(), this.name, this.referer, this.period);
+    RefererStats refererStat = new RefererStats(lastItem.name, lastItem.referer,
+        lastItem.periodDate,
+        lastItem.periodType);
+
+    // Load old statistics object from database
+    try {
+      // TODO Fix use of deprecated call.
+      store.loadXWikiCollection(refererStat, context, true);
+    } catch (XWikiException e) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Failed to load referer statictics object [" + getId() + "]");
+      }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
-     */
-    public void storeInternal(List<XWikiStatsStoreItem> stats)
-    {
-        RefererStatsStoreItem lastItem =
-            (RefererStatsStoreItem) stats.get(stats.size() - 1);
+    // Increment counters
+    refererStat.setIntValue("pageViews", refererStat.getPageViews() + stats.size());
 
-        XWikiHibernateStore store = context.getWiki().getHibernateStore();
-        if (store == null) {
-            return;
-        }
-
-        RefererStats refererStat =
-            new RefererStats(lastItem.name, lastItem.referer, lastItem.periodDate,
-                lastItem.periodType);
-
-        // Load old statistics object from database
-        try {
-            // TODO Fix use of deprecated call.
-            store.loadXWikiCollection(refererStat, context, true);
-        } catch (XWikiException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Failed to load referer statictics object [" + getId() + "]");
-            }
-        }
-
-        // Increment counters
-        refererStat.setIntValue("pageViews", refererStat.getPageViews() + stats.size());
-
-        // Re-save statistics object
-        try {
-            // TODO Fix use of deprecated call.
-            store.saveXWikiCollection(refererStat, context, true);
-        } catch (XWikiException e) {
-            LOG.error("Failed to save referer statictics object [" + getId() + "]");
-        }
+    // Re-save statistics object
+    try {
+      // TODO Fix use of deprecated call.
+      store.saveXWikiCollection(refererStat, context, true);
+    } catch (XWikiException e) {
+      LOG.error("Failed to save referer statictics object [" + getId() + "]");
     }
+  }
 }

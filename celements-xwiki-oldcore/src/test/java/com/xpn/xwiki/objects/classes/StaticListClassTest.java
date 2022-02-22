@@ -24,23 +24,29 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit tests for {@link StaticListClass}.
- * 
+ *
  * @version $Id$
  */
-public class StaticListClassTest extends AbstractBridgedXWikiComponentTestCase
-{
-    /** Tests that {@link StaticListClass#getList} returns values sorted according to the property's sort option. */
-    public void testGetListIsSorted()
-    {
-        StaticListClass listClass = new StaticListClass();
-        listClass.setValues("a=A|c=D|d=C|b");
+public class StaticListClassTest extends AbstractBridgedXWikiComponentTestCase {
 
-        assertEquals("Default order was not preserved.", "[a, c, d, b]", listClass.getList(getContext()).toString());
-        listClass.setSort("none");
-        assertEquals("Default order was not preserved.", "[a, c, d, b]", listClass.getList(getContext()).toString());
-        listClass.setSort("id");
-        assertEquals("Items were not ordered by ID.", "[a, b, c, d]", listClass.getList(getContext()).toString());
-        listClass.setSort("value");
-        assertEquals("Items were not ordered by value.", "[a, b, d, c]", listClass.getList(getContext()).toString());
-    }
+  /**
+   * Tests that {@link StaticListClass#getList} returns values sorted according to the property's
+   * sort option.
+   */
+  public void testGetListIsSorted() {
+    StaticListClass listClass = new StaticListClass();
+    listClass.setValues("a=A|c=D|d=C|b");
+
+    assertEquals("Default order was not preserved.", "[a, c, d, b]",
+        listClass.getList(getContext()).toString());
+    listClass.setSort("none");
+    assertEquals("Default order was not preserved.", "[a, c, d, b]",
+        listClass.getList(getContext()).toString());
+    listClass.setSort("id");
+    assertEquals("Items were not ordered by ID.", "[a, b, c, d]",
+        listClass.getList(getContext()).toString());
+    listClass.setSort("value");
+    assertEquals("Items were not ordered by value.", "[a, b, d, c]",
+        listClass.getList(getContext()).toString());
+  }
 }

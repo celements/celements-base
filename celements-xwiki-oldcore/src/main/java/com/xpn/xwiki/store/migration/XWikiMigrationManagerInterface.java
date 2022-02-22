@@ -24,24 +24,30 @@ import com.xpn.xwiki.XWikiException;
 
 /**
  * Interface for all migration managers.
- * @version $Id$ 
+ *
+ * @version $Id$
  */
-public interface XWikiMigrationManagerInterface
-{
-    /**
-     * @return data version
-     * @param context - used everywhere
-     * @xwikicfg xwiki.store.migration.version - override data version
-     * @throws XWikiException if any error
-     */
-    XWikiDBVersion getDBVersion(XWikiContext context) throws XWikiException;
-    
-    /**
-     * @param context - used everywhere
-     * @throws XWikiException if any error
-     * @xwikicfg xwiki.store.migration.forced  - force run selected migrations and ignore all others
-     * @xwikicfg xwiki.store.migration.ignored - ignore selected migrations
-     * @throws XWikiException if any error
-     */
-    void startMigrations(XWikiContext context) throws XWikiException;
+public interface XWikiMigrationManagerInterface {
+
+  /**
+   * @return data version
+   * @param context
+   *          - used everywhere
+   * @xwikicfg xwiki.store.migration.version - override data version
+   * @throws XWikiException
+   *           if any error
+   */
+  XWikiDBVersion getDBVersion(XWikiContext context) throws XWikiException;
+
+  /**
+   * @param context
+   *          - used everywhere
+   * @throws XWikiException
+   *           if any error
+   * @xwikicfg xwiki.store.migration.forced - force run selected migrations and ignore all others
+   * @xwikicfg xwiki.store.migration.ignored - ignore selected migrations
+   * @throws XWikiException
+   *           if any error
+   */
+  void startMigrations(XWikiContext context) throws XWikiException;
 }

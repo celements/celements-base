@@ -25,69 +25,60 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
-public class Object extends Collection
-{
-    public Object(BaseObject obj, XWikiContext context)
-    {
-        super(obj, context);
-    }
+public class Object extends Collection {
 
-    protected BaseObject getBaseObject()
-    {
-        return (BaseObject) getCollection();
-    }
+  public Object(BaseObject obj, XWikiContext context) {
+    super(obj, context);
+  }
 
-    public BaseObject getXWikiObject()
-    {
-        if (hasProgrammingRights()) {
-            return (BaseObject) getCollection();
-        } else {
-            return null;
-        }
-    }
+  protected BaseObject getBaseObject() {
+    return (BaseObject) getCollection();
+  }
 
-    public String getGuid()
-    {
-        return getBaseObject().getGuid();
+  public BaseObject getXWikiObject() {
+    if (hasProgrammingRights()) {
+      return (BaseObject) getCollection();
+    } else {
+      return null;
     }
+  }
 
-    public void setGuid(String guid)
-    {
-        getBaseObject().setGuid(guid);
-    }
+  public String getGuid() {
+    return getBaseObject().getGuid();
+  }
 
-    public java.lang.Object get(String name)
-    {
-        try {
-            XWikiDocument doc = getBaseObject().getDocument(context);
-            return doc.display(name, this.getBaseObject(), getXWikiContext());
-        } catch (XWikiException e) {
-            return null;
-        }
-    }
+  public void setGuid(String guid) {
+    getBaseObject().setGuid(guid);
+  }
 
-    public java.lang.Object display(String name, String mode)
-    {
-        try {
-            XWikiDocument doc = getBaseObject().getDocument(context);
-            return doc.display(name, mode, this.getBaseObject(), getXWikiContext());
-        } catch (XWikiException e) {
-            return null;
-        }
+  public java.lang.Object get(String name) {
+    try {
+      XWikiDocument doc = getBaseObject().getDocument(context);
+      return doc.display(name, this.getBaseObject(), getXWikiContext());
+    } catch (XWikiException e) {
+      return null;
     }
+  }
 
-    @Override
-    public boolean equals(java.lang.Object arg0)
-    {
-        if (!(arg0 instanceof Object)) {
-            return false;
-        }
-        Object o = (Object) arg0;
-        return o.getXWikiContext().equals(getXWikiContext()) && this.element.equals(o.element);
+  public java.lang.Object display(String name, String mode) {
+    try {
+      XWikiDocument doc = getBaseObject().getDocument(context);
+      return doc.display(name, mode, this.getBaseObject(), getXWikiContext());
+    } catch (XWikiException e) {
+      return null;
     }
+  }
 
-    public void set(String fieldname, java.lang.Object value)
-    {
-        getBaseObject().set(fieldname, value, getXWikiContext());
+  @Override
+  public boolean equals(java.lang.Object arg0) {
+    if (!(arg0 instanceof Object)) {
+      return false;
     }
+    Object o = (Object) arg0;
+    return o.getXWikiContext().equals(getXWikiContext()) && this.element.equals(o.element);
+  }
+
+  public void set(String fieldname, java.lang.Object value) {
+    getBaseObject().set(fieldname, value, getXWikiContext());
+  }
 }

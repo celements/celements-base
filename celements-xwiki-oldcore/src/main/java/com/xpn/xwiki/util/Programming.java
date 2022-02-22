@@ -29,12 +29,10 @@ import java.lang.annotation.Target;
 
 /**
  * Indicates that a method requires programming rights to be executed.
- * 
+ *
  * @since 1.4M1
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Programming
-{
-}
+public @interface Programming {}

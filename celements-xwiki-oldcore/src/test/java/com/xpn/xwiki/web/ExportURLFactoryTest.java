@@ -32,68 +32,67 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
-public class ExportURLFactoryTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private Mock mockXWiki;
+public class ExportURLFactoryTest extends AbstractBridgedXWikiComponentTestCase {
 
-    /** Temporary directory where to put exported files. Will be deleted at the end of the test. */
-    private File tmpDir;
+  private Mock mockXWiki;
 
-    /** The tested instance. */
-    private ExportURLFactory urlFactory = new ExportURLFactory();
+  /** Temporary directory where to put exported files. Will be deleted at the end of the test. */
+  private File tmpDir;
 
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  /** The tested instance. */
+  private ExportURLFactory urlFactory = new ExportURLFactory();
 
-        this.mockXWiki = mock(XWiki.class);
-        this.mockXWiki.stubs().method("getWebAppPath").will(returnValue("/xwiki"));
-        this.mockXWiki.stubs().method("Param").will(returnValue(null));
-        getContext().setWiki((XWiki) this.mockXWiki.proxy());
-        getContext().setURL(new URL("http://www.xwiki.org/"));
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-        // The URLFactory uses a request to determine the values for the context and servlet path.
-        Mock mockXWikiResquest = mock(XWikiRequest.class, new Class[] {}, new Object[] {});
-        mockXWikiResquest.stubs().method("getScheme").will(returnValue("http"));
-        mockXWikiResquest.stubs().method("isSecure").will(returnValue(false));
-        mockXWikiResquest.stubs().method("getServletPath").will(returnValue("/bin"));
-        mockXWikiResquest.stubs().method("getContextPath").will(returnValue("/xwiki"));
-        mockXWikiResquest.stubs().method("getHeader").will(returnValue(null));
-        getContext().setRequest((XWikiRequest) mockXWikiResquest.proxy());
+    this.mockXWiki = mock(XWiki.class);
+    this.mockXWiki.stubs().method("getWebAppPath").will(returnValue("/xwiki"));
+    this.mockXWiki.stubs().method("Param").will(returnValue(null));
+    getContext().setWiki((XWiki) this.mockXWiki.proxy());
+    getContext().setURL(new URL("http://www.xwiki.org/"));
 
-        // Since the ExportURLFactory saves requested attachments to the disk, create a temporary folder to hold these
-        // files, which will be deleted after the test ends.
-        this.tmpDir = new File(System.getProperty("java.io.tmpdir"), "xwikitests");
-        this.tmpDir.mkdirs();
-        new File(this.tmpDir, "attachment").mkdir();
+    // The URLFactory uses a request to determine the values for the context and servlet path.
+    Mock mockXWikiResquest = mock(XWikiRequest.class, new Class[] {}, new Object[] {});
+    mockXWikiResquest.stubs().method("getScheme").will(returnValue("http"));
+    mockXWikiResquest.stubs().method("isSecure").will(returnValue(false));
+    mockXWikiResquest.stubs().method("getServletPath").will(returnValue("/bin"));
+    mockXWikiResquest.stubs().method("getContextPath").will(returnValue("/xwiki"));
+    mockXWikiResquest.stubs().method("getHeader").will(returnValue(null));
+    getContext().setRequest((XWikiRequest) mockXWikiResquest.proxy());
 
-        this.urlFactory.init(null, this.tmpDir, getContext());
-    }
+    // Since the ExportURLFactory saves requested attachments to the disk, create a temporary folder
+    // to hold these
+    // files, which will be deleted after the test ends.
+    this.tmpDir = new File(System.getProperty("java.io.tmpdir"), "xwikitests");
+    this.tmpDir.mkdirs();
+    new File(this.tmpDir, "attachment").mkdir();
 
-    /**
-     * Test that
-     * {@link ExportURLFactory#createAttachmentURL(String, String, String, String, String, com.xpn.xwiki.XWikiContext)}
-     * correctly escapes spaces into %20 when the exported document contains spaces in its name.
-     */
-    public void testCreateAttachmentURL() throws MalformedURLException
-    {
-        // Prepare the exported document and attachment.
-        XWikiDocument doc = new XWikiDocument(" Space ", "New  Page");
-        XWikiAttachment attachment = new XWikiAttachment(doc, "img .jpg");
-        attachment.setContent("test".getBytes());
-        doc.getAttachmentList().add(attachment);
-        this.mockXWiki.stubs().method("getDocument").will(returnValue(doc));
+    this.urlFactory.init(null, this.tmpDir, getContext());
+  }
 
-        URL url = this.urlFactory.createAttachmentURL("img .jpg", " Space ", "Pa ge", "view", "", "x", getContext());
-        assertEquals(new URL("file://attachment/x.%20Space%20.Pa%20ge.img%20.jpg"), url);
-    }
+  /**
+   * Test that
+   * {@link ExportURLFactory#createAttachmentURL(String, String, String, String, String, com.xpn.xwiki.XWikiContext)}
+   * correctly escapes spaces into %20 when the exported document contains spaces in its name.
+   */
+  public void testCreateAttachmentURL() throws MalformedURLException {
+    // Prepare the exported document and attachment.
+    XWikiDocument doc = new XWikiDocument(" Space ", "New  Page");
+    XWikiAttachment attachment = new XWikiAttachment(doc, "img .jpg");
+    attachment.setContent("test".getBytes());
+    doc.getAttachmentList().add(attachment);
+    this.mockXWiki.stubs().method("getDocument").will(returnValue(doc));
 
-    /** When the test is over, delete the folder where the exported attachments were placed. */
-    @Override
-    protected void tearDown() throws Exception
-    {
-        super.tearDown();
-        FileUtils.deleteDirectory(this.tmpDir);
-    }
+    URL url = this.urlFactory.createAttachmentURL("img .jpg", " Space ", "Pa ge", "view", "", "x",
+        getContext());
+    assertEquals(new URL("file://attachment/x.%20Space%20.Pa%20ge.img%20.jpg"), url);
+  }
+
+  /** When the test is over, delete the folder where the exported attachments were placed. */
+  @Override
+  protected void tearDown() throws Exception {
+    super.tearDown();
+    FileUtils.deleteDirectory(this.tmpDir);
+  }
 }

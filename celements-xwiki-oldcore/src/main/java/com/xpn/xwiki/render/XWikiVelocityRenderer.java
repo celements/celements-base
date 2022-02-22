@@ -38,178 +38,182 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
 
-public class XWikiVelocityRenderer implements XWikiRenderer, XWikiInterpreter
-{
-    /** Anything which doesn't contain any of these characters cannot be velocity code */
-    private static final String VELOCITY_CHARACTERS = "$#";
+public class XWikiVelocityRenderer implements XWikiRenderer, XWikiInterpreter {
 
-    private static final Log LOG = LogFactory.getLog(XWikiVelocityRenderer.class);
+  /** Anything which doesn't contain any of these characters cannot be velocity code */
+  private static final String VELOCITY_CHARACTERS = "$#";
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiInterpreter#interpret(String,XWikiDocument,XWikiContext)
-     */
-    public String interpret(String content, XWikiDocument contextdoc, XWikiContext context)
-    {
-        return render(content, contextdoc, contextdoc, context);
+  private static final Log LOG = LogFactory.getLog(XWikiVelocityRenderer.class);
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiInterpreter#interpret(String,XWikiDocument,XWikiContext)
+   */
+  @Override
+  public String interpret(String content, XWikiDocument contextdoc, XWikiContext context) {
+    return render(content, contextdoc, contextdoc, context);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiRenderer#render(String,XWikiDocument,XWikiDocument,XWikiContext)
+   */
+  @Override
+  public String render(String content, XWikiDocument contentdoc, XWikiDocument contextdoc,
+      XWikiContext context) {
+    // If there are no # or $ characters than the content doesn't contain any velocity code
+    // see: http://velocity.apache.org/engine/releases/velocity-1.5/vtl-reference-guide.html
+    if (StringUtils.containsNone(content, VELOCITY_CHARACTERS)) {
+      return content;
     }
+    VelocityManager velocityManager = Utils.getComponent(VelocityManager.class);
+    VelocityContext vcontext = velocityManager.getVelocityContext();
+    Document previousdoc = (Document) vcontext.get("doc");
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiRenderer#render(String,XWikiDocument,XWikiDocument,XWikiContext)
-     */
-    public String render(String content, XWikiDocument contentdoc, XWikiDocument contextdoc, XWikiContext context)
-    {
-        // If there are no # or $ characters than the content doesn't contain any velocity code
-        // see: http://velocity.apache.org/engine/releases/velocity-1.5/vtl-reference-guide.html
-        if (StringUtils.containsNone(content, VELOCITY_CHARACTERS)) {
-            return content;
+    content = context.getUtil().substitute("s/#include\\(/\\\\#include\\(/go", content);
+
+    try {
+      vcontext.put("doc", contextdoc.newDocument(context));
+      try {
+        // We need to do this in case there are any macros in the content
+        List<String> macrolist = context.getWiki().getIncludedMacros(contentdoc.getSpace(), content,
+            context);
+        if (macrolist != null) {
+          com.xpn.xwiki.XWiki xwiki = context.getWiki();
+          for (String docname : macrolist) {
+            LOG.debug(
+                "Pre-including macro topic " + docname + " in context " + contextdoc.getFullName());
+            xwiki.include(docname, true, context);
+          }
         }
-        VelocityManager velocityManager = Utils.getComponent(VelocityManager.class);
-        VelocityContext vcontext = velocityManager.getVelocityContext();
-        Document previousdoc = (Document) vcontext.get("doc");
+      } catch (Exception e) {
+        // Make sure we never fail
+        LOG.warn("Exception while pre-including macro topics", e);
+      }
 
-        content = context.getUtil().substitute("s/#include\\(/\\\\#include\\(/go", content);
+      return evaluate(content, contextdoc.getPrefixedFullName(), vcontext, context);
+    } finally {
+      if (previousdoc != null) {
+        vcontext.put("doc", previousdoc);
+      }
+    }
+  }
 
-        try {
-            vcontext.put("doc", contextdoc.newDocument(context));
-            try {
-                // We need to do this in case there are any macros in the content
-                List<String> macrolist = context.getWiki().getIncludedMacros(contentdoc.getSpace(), content, context);
-                if (macrolist != null) {
-                    com.xpn.xwiki.XWiki xwiki = context.getWiki();
-                    for (String docname : macrolist) {
-                        LOG.debug("Pre-including macro topic " + docname + " in context " + contextdoc.getFullName());
-                        xwiki.include(docname, true, context);
-                    }
-                }
-            } catch (Exception e) {
-                // Make sure we never fail
-                LOG.warn("Exception while pre-including macro topics", e);
-            }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.render.XWikiRenderer#flushCache()
+   */
+  @Override
+  public void flushCache() {
+    // To change body of implemented methods use File | Settings | File Templates.
+  }
 
-            return evaluate(content, contextdoc.getPrefixedFullName(), vcontext, context);
-        } finally {
-            if (previousdoc != null) {
-                vcontext.put("doc", previousdoc);
-            }
+  public static String evaluate(String content, String name, VelocityContext vcontext,
+      XWikiContext context) {
+    StringWriter writer = new StringWriter();
+    try {
+      VelocityManager velocityManager = Utils.getComponent(VelocityManager.class);
+      velocityManager.getVelocityEngine().evaluate(vcontext, writer, name, content);
+      return writer.toString();
+    } catch (Exception e) {
+      e.printStackTrace();
+      Object[] args = { name };
+      XWikiException xe = new XWikiException(XWikiException.MODULE_XWIKI_RENDERING,
+          XWikiException.ERROR_XWIKI_RENDERING_VELOCITY_EXCEPTION,
+          "Error while parsing velocity page {0}",
+          e, args);
+      return Util.getHTMLExceptionMessage(xe, context);
+    }
+  }
+
+  private void generateFunction(StringBuffer result, String param, String data,
+      XWikiVirtualMacro macro) {
+    Map<String, String> namedparams = new HashMap<>();
+    List<String> unnamedparams = new ArrayList<>();
+    if ((param != null) && (!param.trim().equals(""))) {
+      String[] params = StringUtils.split(param, "|");
+      for (String param2 : params) {
+        String[] rparam = StringUtils.split(param2, "=");
+        if (rparam.length == 1) {
+          unnamedparams.add(param2);
+        } else {
+          namedparams.put(rparam[0], rparam[1]);
         }
+      }
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.render.XWikiRenderer#flushCache()
-     */
-    public void flushCache()
-    {
-        // To change body of implemented methods use File | Settings | File Templates.
-    }
+    result.append("#");
+    result.append(macro.getFunctionName());
+    result.append("(");
 
-    public static String evaluate(String content, String name, VelocityContext vcontext, XWikiContext context)
-    {
-        StringWriter writer = new StringWriter();
+    List<String> macroparam = macro.getParams();
+    int j = 0;
+    for (int i = 0; i < macroparam.size(); i++) {
+      String name = macroparam.get(i);
+      String value = namedparams.get(name);
+      if (value == null) {
         try {
-            VelocityManager velocityManager = Utils.getComponent(VelocityManager.class);
-            velocityManager.getVelocityEngine().evaluate(vcontext, writer, name, content);
-            return writer.toString();
+          value = unnamedparams.get(j);
+          j++;
         } catch (Exception e) {
-            e.printStackTrace();
-            Object[] args = {name};
-            XWikiException xe =
-                new XWikiException(XWikiException.MODULE_XWIKI_RENDERING,
-                    XWikiException.ERROR_XWIKI_RENDERING_VELOCITY_EXCEPTION, "Error while parsing velocity page {0}",
-                    e, args);
-            return Util.getHTMLExceptionMessage(xe, context);
+          value = "";
         }
+      }
+      if (i > 0) {
+        result.append(" ");
+      }
+      result.append("\"");
+      result.append(value.replaceAll("\"", "\\\\\""));
+      result.append("\"");
     }
 
-    private void generateFunction(StringBuffer result, String param, String data, XWikiVirtualMacro macro)
-    {
-        Map<String, String> namedparams = new HashMap<String, String>();
-        List<String> unnamedparams = new ArrayList<String>();
-        if ((param != null) && (!param.trim().equals(""))) {
-            String[] params = StringUtils.split(param, "|");
-            for (int i = 0; i < params.length; i++) {
-                String[] rparam = StringUtils.split(params[i], "=");
-                if (rparam.length == 1) {
-                    unnamedparams.add(params[i]);
-                } else {
-                    namedparams.put(rparam[0], rparam[1]);
-                }
-            }
-        }
-
-        result.append("#");
-        result.append(macro.getFunctionName());
-        result.append("(");
-
-        List<String> macroparam = macro.getParams();
-        int j = 0;
-        for (int i = 0; i < macroparam.size(); i++) {
-            String name = macroparam.get(i);
-            String value = namedparams.get(name);
-            if (value == null) {
-                try {
-                    value = unnamedparams.get(j);
-                    j++;
-                } catch (Exception e) {
-                    value = "";
-                }
-            }
-            if (i > 0) {
-                result.append(" ");
-            }
-            result.append("\"");
-            result.append(value.replaceAll("\"", "\\\\\""));
-            result.append("\"");
-        }
-
-        if (data != null) {
-            result.append(" ");
-            result.append("\"");
-            result.append(data.replaceAll("\"", "\\\\\""));
-            result.append("\"");
-        }
-        result.append(")");
+    if (data != null) {
+      result.append(" ");
+      result.append("\"");
+      result.append(data.replaceAll("\"", "\\\\\""));
+      result.append("\"");
     }
+    result.append(")");
+  }
 
-    private void addVelocityMacros(StringBuffer result, XWikiContext context)
-    {
-        Object macroAdded = context.get("velocityMacrosAdded");
-        if (macroAdded == null) {
-            context.put("velocityMacrosAdded", "1");
-            String velocityMacrosDocumentName = context.getWiki().getXWikiPreference("macros_velocity", context);
-            if (velocityMacrosDocumentName.trim().length() > 0) {
-                try {
-                    XWikiDocument doc = context.getWiki().getDocument(velocityMacrosDocumentName, context);
-                    result.append(doc.getContent());
-                } catch (XWikiException e) {
-                    if (LOG.isErrorEnabled()) {
-                        LOG.error("Impossible to load velocity macros doc " + velocityMacrosDocumentName);
-                    }
-                }
-            }
+  private void addVelocityMacros(StringBuffer result, XWikiContext context) {
+    Object macroAdded = context.get("velocityMacrosAdded");
+    if (macroAdded == null) {
+      context.put("velocityMacrosAdded", "1");
+      String velocityMacrosDocumentName = context.getWiki().getXWikiPreference("macros_velocity",
+          context);
+      if (velocityMacrosDocumentName.trim().length() > 0) {
+        try {
+          XWikiDocument doc = context.getWiki().getDocument(velocityMacrosDocumentName, context);
+          result.append(doc.getContent());
+        } catch (XWikiException e) {
+          if (LOG.isErrorEnabled()) {
+            LOG.error("Impossible to load velocity macros doc " + velocityMacrosDocumentName);
+          }
         }
+      }
     }
+  }
 
-    public String convertSingleLine(String macroname, String param, String allcontent, XWikiVirtualMacro macro,
-        XWikiContext context)
-    {
-        StringBuffer result = new StringBuffer();
-        addVelocityMacros(result, context);
-        generateFunction(result, param, null, macro);
-        return result.toString();
-    }
+  @Override
+  public String convertSingleLine(String macroname, String param, String allcontent,
+      XWikiVirtualMacro macro,
+      XWikiContext context) {
+    StringBuffer result = new StringBuffer();
+    addVelocityMacros(result, context);
+    generateFunction(result, param, null, macro);
+    return result.toString();
+  }
 
-    public String convertMultiLine(String macroname, String param, String data, String allcontent,
-        XWikiVirtualMacro macro, XWikiContext context)
-    {
-        StringBuffer result = new StringBuffer();
-        addVelocityMacros(result, context);
-        generateFunction(result, param, data, macro);
-        return result.toString();
-    }
+  @Override
+  public String convertMultiLine(String macroname, String param, String data, String allcontent,
+      XWikiVirtualMacro macro, XWikiContext context) {
+    StringBuffer result = new StringBuffer();
+    addVelocityMacros(result, context);
+    generateFunction(result, param, data, macro);
+    return result.toString();
+  }
 }

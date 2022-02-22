@@ -26,23 +26,21 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 import com.xpn.xwiki.objects.classes.StringClass;
 
-public class StaticListMetaClass extends ListMetaClass
-{
-    public StaticListMetaClass()
-    {
-        super();
-        setPrettyName("Static List");
-        setName(StaticListClass.class.getName());
+public class StaticListMetaClass extends ListMetaClass {
 
-        StringClass values_class = new StringClass(this);
-        values_class.setName("values");
-        values_class.setPrettyName("Values");
-        values_class.setSize(40);
-        safeput("values", values_class);
-    }
+  public StaticListMetaClass() {
+    setPrettyName("Static List");
+    setName(StaticListClass.class.getName());
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new StaticListClass();
-    }
+    StringClass values_class = new StringClass(this);
+    values_class.setName("values");
+    values_class.setPrettyName("Values");
+    values_class.setSize(40);
+    safeput("values", values_class);
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new StaticListClass();
+  }
 }

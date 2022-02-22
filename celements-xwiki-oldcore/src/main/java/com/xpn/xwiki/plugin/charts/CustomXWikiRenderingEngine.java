@@ -30,23 +30,22 @@ import com.xpn.xwiki.render.DefaultXWikiRenderingEngine;
 import com.xpn.xwiki.render.XWikiRadeoxRenderer;
 import com.xpn.xwiki.render.XWikiRenderer;
 
-public class CustomXWikiRenderingEngine extends DefaultXWikiRenderingEngine
-{
-    public CustomXWikiRenderingEngine(XWiki xwiki, XWikiContext context) throws XWikiException
-    {
-        super(xwiki, context);
-        List<String> unneededRenderers = new LinkedList<String>();
-        boolean found = false;
-        for (String name : getRendererNames()) {
-            XWikiRenderer renderer = getRenderer(name);
-            if (renderer instanceof XWikiRadeoxRenderer || found) {
-                found = true;
-                unneededRenderers.add(name);
-            }
-        }
+public class CustomXWikiRenderingEngine extends DefaultXWikiRenderingEngine {
 
-        for (String name : unneededRenderers) {
-            removeRenderer(name);
-        }
+  public CustomXWikiRenderingEngine(XWiki xwiki, XWikiContext context) throws XWikiException {
+    super(xwiki, context);
+    List<String> unneededRenderers = new LinkedList<>();
+    boolean found = false;
+    for (String name : getRendererNames()) {
+      XWikiRenderer renderer = getRenderer(name);
+      if ((renderer instanceof XWikiRadeoxRenderer) || found) {
+        found = true;
+        unneededRenderers.add(name);
+      }
     }
+
+    for (String name : unneededRenderers) {
+      removeRenderer(name);
+    }
+  }
 }

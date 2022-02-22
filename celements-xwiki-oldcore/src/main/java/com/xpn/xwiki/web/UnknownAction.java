@@ -29,21 +29,22 @@ import com.xpn.xwiki.XWikiException;
  * Forwards to the action specified in xwiki.cfg parameter:
  * xwiki.unknownActionResponse
  * or exception if xwiki.unknownActionResponse is not defined.
- * 
+ *
  * @version $Id$
  */
-public class UnknownAction extends XWikiAction 
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#render(com.xpn.xwiki.XWikiContext)
-     */
-    public String render(XWikiContext context) throws XWikiException {
-        String defaultAction = context.getWiki().Param("xwiki.unknownActionResponse", "exception");
-        // Set the action in the context because code which uses $xcontext.getAction()
-        // should get the desired action instead of "unknown"
-        context.setAction(defaultAction);
-        return defaultAction;
-    }
+public class UnknownAction extends XWikiAction {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#render(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    String defaultAction = context.getWiki().Param("xwiki.unknownActionResponse", "exception");
+    // Set the action in the context because code which uses $xcontext.getAction()
+    // should get the desired action instead of "unknown"
+    context.setAction(defaultAction);
+    return defaultAction;
+  }
 }

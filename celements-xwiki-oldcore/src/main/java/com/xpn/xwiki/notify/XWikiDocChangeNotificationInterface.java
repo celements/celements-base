@@ -26,12 +26,14 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 @Deprecated
 public interface XWikiDocChangeNotificationInterface {
-    public static int EVENT_CHANGE = 0;
-    public static int EVENT_NEW = 1;
-    public static int EVENT_DELETE = 2;
-    public static int EVENT_UPDATE_CONTENT = 3;
-    public static int EVENT_UPDATE_OBJECT = 4;
-    public static int EVENT_UPDATE_CLASS = 5;
 
-    public void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc, int event, XWikiContext context);
+  int EVENT_CHANGE = 0;
+  int EVENT_NEW = 1;
+  int EVENT_DELETE = 2;
+  int EVENT_UPDATE_CONTENT = 3;
+  int EVENT_UPDATE_OBJECT = 4;
+  int EVENT_UPDATE_CLASS = 5;
+
+  void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc,
+      int event, XWikiContext context);
 }

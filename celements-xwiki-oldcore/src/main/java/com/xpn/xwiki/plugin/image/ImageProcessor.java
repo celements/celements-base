@@ -30,48 +30,62 @@ import org.xwiki.component.annotation.ComponentRole;
 
 /**
  * Component used to process images.
- * 
+ *
  * @version $Id$
  * @since 2.5M2
  */
 @ComponentRole
-public interface ImageProcessor
-{
-    /**
-     * Reads an image from an input stream.
-     * 
-     * @param inputStream the input stream to read the image from
-     * @return the read image
-     * @throws IOException if reading the image fails
-     */
-    Image readImage(InputStream inputStream) throws IOException;
+public interface ImageProcessor {
 
-    /**
-     * Encodes the given image to match the specified mime type, if possible, and writes it to the output stream, using
-     * the specified compression quality if appropriate.
-     * 
-     * @param image the image to be written to the output stream
-     * @param mimeType the image mime type (e.g. (e.g. "image/jpeg" or "image/png")
-     * @param quality the compression quality; use this parameter to reduce the size, i.e. the number of bytes, of the
-     *            image
-     * @param out the output stream to write the image to
-     * @throws IOException if writing the image fails
-     */
-    void writeImage(RenderedImage image, String mimeType, float quality, OutputStream out) throws IOException;
+  /**
+   * Reads an image from an input stream.
+   *
+   * @param inputStream
+   *          the input stream to read the image from
+   * @return the read image
+   * @throws IOException
+   *           if reading the image fails
+   */
+  Image readImage(InputStream inputStream) throws IOException;
 
-    /**
-     * Scales the given image to the specified dimensions.
-     * 
-     * @param image the image to be scaled
-     * @param width the new image width
-     * @param height the new image height
-     * @return the scaled image
-     */
-    RenderedImage scaleImage(Image image, int width, int height);
+  /**
+   * Encodes the given image to match the specified mime type, if possible, and writes it to the
+   * output stream, using
+   * the specified compression quality if appropriate.
+   *
+   * @param image
+   *          the image to be written to the output stream
+   * @param mimeType
+   *          the image mime type (e.g. (e.g. "image/jpeg" or "image/png")
+   * @param quality
+   *          the compression quality; use this parameter to reduce the size, i.e. the number of
+   *          bytes, of the
+   *          image
+   * @param out
+   *          the output stream to write the image to
+   * @throws IOException
+   *           if writing the image fails
+   */
+  void writeImage(RenderedImage image, String mimeType, float quality, OutputStream out)
+      throws IOException;
 
-    /**
-     * @param mimeType the mime type to be checked
-     * @return {@code true} if the given mime type is supported, {@code false} otherwise
-     */
-    boolean isMimeTypeSupported(String mimeType);
+  /**
+   * Scales the given image to the specified dimensions.
+   *
+   * @param image
+   *          the image to be scaled
+   * @param width
+   *          the new image width
+   * @param height
+   *          the new image height
+   * @return the scaled image
+   */
+  RenderedImage scaleImage(Image image, int width, int height);
+
+  /**
+   * @param mimeType
+   *          the mime type to be checked
+   * @return {@code true} if the given mime type is supported, {@code false} otherwise
+   */
+  boolean isMimeTypeSupported(String mimeType);
 }

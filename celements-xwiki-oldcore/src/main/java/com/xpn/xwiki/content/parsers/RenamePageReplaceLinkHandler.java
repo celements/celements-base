@@ -26,89 +26,92 @@ import com.xpn.xwiki.content.Link;
  *
  * @version $Id$
  */
-public class RenamePageReplaceLinkHandler implements ReplaceLinkHandler
-{
-    /**
-     * {@inheritDoc}
-     *
-     * <p>Two links are equal if they point to the same document and within the same location
-     * in that document.</p>
-     * 
-     * @see ReplaceLinkHandler#compare(Link, Link) 
-     */
-    public boolean compare(Link linkToLookFor, Link linkToReplace)
-    {
-        boolean result;
+public class RenamePageReplaceLinkHandler implements ReplaceLinkHandler {
 
-        if ((linkToLookFor == null) || (linkToReplace == null)) {
-            result = false;
-        } else {
-            result =
-                (((linkToLookFor.getAnchor() != null)
-                        && linkToLookFor.getAnchor().equals(linkToReplace.getAnchor()))
-                    || ((linkToLookFor.getAnchor() == null) && (linkToReplace.getAnchor() == null)))
-                && (((linkToLookFor.getInterWikiAlias() != null)
-                        && linkToLookFor.getInterWikiAlias().equals(
-                            linkToReplace.getInterWikiAlias()))
-                    || ((linkToLookFor.getInterWikiAlias() == null)
-                        && (linkToReplace.getInterWikiAlias() == null)))
-                && (((linkToLookFor.getPage() != null)
-                        && linkToLookFor.getPage().equals(linkToReplace.getPage()))
-                    || ((linkToLookFor.getPage() == null) && (linkToReplace.getPage() == null)))
-                && (((linkToLookFor.getSpace() != null)
-                        && linkToLookFor.getSpace().equals(linkToReplace.getSpace()))
-                    || ((linkToLookFor.getSpace() == null) && (linkToReplace.getSpace() == null)))
-                && (((linkToLookFor.getURI() != null)
-                        && linkToLookFor.getURI().equals(linkToReplace.getURI()))
-                    || ((linkToLookFor.getURI() == null) && (linkToReplace.getURI() == null)))
-                && (((linkToLookFor.getVirtualWikiAlias() != null)
-                        && linkToLookFor.getVirtualWikiAlias().equals(
-                            linkToReplace.getVirtualWikiAlias()))
-                    || ((linkToLookFor.getVirtualWikiAlias() == null)
-                        && (linkToReplace.getVirtualWikiAlias() == null)));
-        }
+  /**
+   * {@inheritDoc}
+   *
+   * <p>
+   * Two links are equal if they point to the same document and within the same location
+   * in that document.
+   * </p>
+   *
+   * @see ReplaceLinkHandler#compare(Link, Link)
+   */
+  @Override
+  public boolean compare(Link linkToLookFor, Link linkToReplace) {
+    boolean result;
 
-        return result;
+    if ((linkToLookFor == null) || (linkToReplace == null)) {
+      result = false;
+    } else {
+      result = (((linkToLookFor.getAnchor() != null)
+          && linkToLookFor.getAnchor().equals(linkToReplace.getAnchor()))
+          || ((linkToLookFor.getAnchor() == null) && (linkToReplace.getAnchor() == null)))
+          && (((linkToLookFor.getInterWikiAlias() != null)
+              && linkToLookFor.getInterWikiAlias().equals(
+                  linkToReplace.getInterWikiAlias()))
+              || ((linkToLookFor.getInterWikiAlias() == null)
+                  && (linkToReplace.getInterWikiAlias() == null)))
+          && (((linkToLookFor.getPage() != null)
+              && linkToLookFor.getPage().equals(linkToReplace.getPage()))
+              || ((linkToLookFor.getPage() == null) && (linkToReplace.getPage() == null)))
+          && (((linkToLookFor.getSpace() != null)
+              && linkToLookFor.getSpace().equals(linkToReplace.getSpace()))
+              || ((linkToLookFor.getSpace() == null) && (linkToReplace.getSpace() == null)))
+          && (((linkToLookFor.getURI() != null)
+              && linkToLookFor.getURI().equals(linkToReplace.getURI()))
+              || ((linkToLookFor.getURI() == null) && (linkToReplace.getURI() == null)))
+          && (((linkToLookFor.getVirtualWikiAlias() != null)
+              && linkToLookFor.getVirtualWikiAlias().equals(
+                  linkToReplace.getVirtualWikiAlias()))
+              || ((linkToLookFor.getVirtualWikiAlias() == null)
+                  && (linkToReplace.getVirtualWikiAlias() == null)));
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * <p>Keep the query string, alias and target in the link to replace if they are not
-     * specified in the new link.</p>
-     *
-     * @see ReplaceLinkHandler#getReplacementLink(Link, Link)}
-     */
-    public Link getReplacementLink(Link newLink, Link linkToReplace)
-    {
-        Link replacementLink = new Link();
+    return result;
+  }
 
-        replacementLink.setPage(newLink.getPage());
-        replacementLink.setSpace(newLink.getSpace());
-        replacementLink.setAnchor(newLink.getAnchor());
-        replacementLink.setInterWikiAlias(newLink.getInterWikiAlias());
-        replacementLink.setURI(newLink.getURI());
-        replacementLink.setVirtualWikiAlias(newLink.getVirtualWikiAlias());
-        replacementLink.setUsePipeDelimiterSymbol(linkToReplace.isUsingPipeDelimiter());
+  /**
+   * {@inheritDoc}
+   *
+   * <p>
+   * Keep the query string, alias and target in the link to replace if they are not
+   * specified in the new link.
+   * </p>
+   *
+   * @see ReplaceLinkHandler#getReplacementLink(Link, Link)}
+   */
+  @Override
+  public Link getReplacementLink(Link newLink, Link linkToReplace) {
+    Link replacementLink = new Link();
 
-        if (newLink.getAlias() != null) {
-            replacementLink.setAlias(newLink.getAlias());
-        } else {
-            replacementLink.setAlias(linkToReplace.getAlias());
-        }
+    replacementLink.setPage(newLink.getPage());
+    replacementLink.setSpace(newLink.getSpace());
+    replacementLink.setAnchor(newLink.getAnchor());
+    replacementLink.setInterWikiAlias(newLink.getInterWikiAlias());
+    replacementLink.setURI(newLink.getURI());
+    replacementLink.setVirtualWikiAlias(newLink.getVirtualWikiAlias());
+    replacementLink.setUsePipeDelimiterSymbol(linkToReplace.isUsingPipeDelimiter());
 
-        if (newLink.getTarget() != null) {
-            replacementLink.setTarget(newLink.getTarget());
-        } else {
-            replacementLink.setTarget(linkToReplace.getTarget());
-        }
-
-        if (newLink.getQueryString() != null) {
-            replacementLink.setQueryString(newLink.getQueryString());
-        } else {
-            replacementLink.setQueryString(linkToReplace.getQueryString());
-        }
-
-        return replacementLink;
+    if (newLink.getAlias() != null) {
+      replacementLink.setAlias(newLink.getAlias());
+    } else {
+      replacementLink.setAlias(linkToReplace.getAlias());
     }
+
+    if (newLink.getTarget() != null) {
+      replacementLink.setTarget(newLink.getTarget());
+    } else {
+      replacementLink.setTarget(linkToReplace.getTarget());
+    }
+
+    if (newLink.getQueryString() != null) {
+      replacementLink.setQueryString(newLink.getQueryString());
+    } else {
+      replacementLink.setQueryString(linkToReplace.getQueryString());
+    }
+
+    return replacementLink;
+  }
 }

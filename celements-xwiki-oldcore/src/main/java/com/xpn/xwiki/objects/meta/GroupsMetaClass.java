@@ -5,25 +5,23 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.classes.BooleanClass;
 import com.xpn.xwiki.objects.classes.GroupsClass;
 
-public class GroupsMetaClass extends ListMetaClass
-{
-    public GroupsMetaClass()
-    {
-        super();
-        setPrettyName("List of Groups");
-        setName(GroupsClass.class.getName());
+public class GroupsMetaClass extends ListMetaClass {
 
-        BooleanClass uselist_class = new BooleanClass(this);
-        uselist_class.setName("usesList");
-        uselist_class.setPrettyName("Uses List");
-        uselist_class.setDisplayType("yesno");
-        uselist_class.setDisplayFormType("checkbox");
-        uselist_class.setDefaultValue(1);
-        safeput("usesList", uselist_class);
-    }
+  public GroupsMetaClass() {
+    setPrettyName("List of Groups");
+    setName(GroupsClass.class.getName());
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new GroupsClass();
-    }
+    BooleanClass uselist_class = new BooleanClass(this);
+    uselist_class.setName("usesList");
+    uselist_class.setPrettyName("Uses List");
+    uselist_class.setDisplayType("yesno");
+    uselist_class.setDisplayFormType("checkbox");
+    uselist_class.setDefaultValue(1);
+    safeput("usesList", uselist_class);
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new GroupsClass();
+  }
 }

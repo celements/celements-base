@@ -40,154 +40,146 @@ import com.xpn.xwiki.store.XWikiHibernateBaseStore;
 
 /**
  * Realization of {@link AttachmentRecycleBinStore} for Hibernate-based storage.
- * 
+ *
  * @version $Id$
  * @since 1.4M1
  */
 @Component
-public class HibernateAttachmentRecycleBinStore extends XWikiHibernateBaseStore implements AttachmentRecycleBinStore
-{
-    /** String used to annotate unchecked exceptions. */
-    private static final String ANOTATE_UNCHECKED = "unchecked";
+public class HibernateAttachmentRecycleBinStore extends XWikiHibernateBaseStore
+    implements AttachmentRecycleBinStore {
 
-    /** Constant string used to refer Document ID. */
-    private static final String DOC_ID = "docId";
+  /** String used to annotate unchecked exceptions. */
+  private static final String ANOTATE_UNCHECKED = "unchecked";
 
-    /** Constant string used to refer date. */
-    private static final String DATE = "date";
+  /** Constant string used to refer Document ID. */
+  private static final String DOC_ID = "docId";
 
-    /**
-     * Constructor used by {@link XWiki} during storage initialization.
-     * 
-     * @param context The current context.
-     * @deprecated 1.6M1. Use ComponentManager.lookup(AttachmentRecycleBinStore.class) instead.
-     */
-    @Deprecated
-    public HibernateAttachmentRecycleBinStore(XWikiContext context)
-    {
-        super(context.getWiki(), context);
-    }
+  /** Constant string used to refer date. */
+  private static final String DATE = "date";
 
-    /**
-     * Empty constructor needed for component manager.
-     */
-    public HibernateAttachmentRecycleBinStore()
-    {
-    }
+  /**
+   * Constructor used by {@link XWiki} during storage initialization.
+   *
+   * @param context
+   *          The current context.
+   * @deprecated 1.6M1. Use ComponentManager.lookup(AttachmentRecycleBinStore.class) instead.
+   */
+  @Deprecated
+  public HibernateAttachmentRecycleBinStore(XWikiContext context) {
+    super(context.getWiki(), context);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void saveToRecycleBin(XWikiAttachment attachment, String deleter, Date date, XWikiContext context,
-        boolean bTransaction) throws XWikiException
-    {
-        final DeletedAttachment trashAtachment = new DeletedAttachment(attachment, deleter, date, context);
-        executeWrite(context, bTransaction, new HibernateCallback<Object>()
-        {
-            public Object doInHibernate(Session session) throws HibernateException
-            {
-                session.save(trashAtachment);
-                return null;
-            }
-        });
-    }
+  /**
+   * Empty constructor needed for component manager.
+   */
+  public HibernateAttachmentRecycleBinStore() {}
 
-    /**
-     * {@inheritDoc}
-     */
-    public XWikiAttachment restoreFromRecycleBin(final XWikiAttachment attachment, final long index,
-        final XWikiContext context, boolean bTransaction) throws XWikiException
-    {
-        return executeRead(context, bTransaction, new HibernateCallback<XWikiAttachment>()
-        {
-            public XWikiAttachment doInHibernate(Session session) throws HibernateException, XWikiException
-            {
-                try {
-                    DeletedAttachment trashAttachment =
-                        (DeletedAttachment) session.load(DeletedAttachment.class, Long.valueOf(index));
-                    return trashAttachment.restoreAttachment(attachment, context);
-                } catch (Exception ex) {
-                    // Invalid recycle entry.
-                    return null;
-                }
-            }
-        });
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void saveToRecycleBin(XWikiAttachment attachment, String deleter, Date date,
+      XWikiContext context,
+      boolean bTransaction) throws XWikiException {
+    final DeletedAttachment trashAtachment = new DeletedAttachment(attachment, deleter, date,
+        context);
+    executeWrite(context, bTransaction, session -> {
+      session.save(trashAtachment);
+      return null;
+    });
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public DeletedAttachment getDeletedAttachment(final long index, XWikiContext context, boolean bTransaction)
-        throws XWikiException
-    {
-        return executeRead(context, bTransaction, new HibernateCallback<DeletedAttachment>()
-        {
-            public DeletedAttachment doInHibernate(Session session) throws HibernateException, XWikiException
-            {
-                return (DeletedAttachment) session.get(DeletedAttachment.class, Long.valueOf(index));
-            }
-        });
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public XWikiAttachment restoreFromRecycleBin(final XWikiAttachment attachment, final long index,
+      final XWikiContext context, boolean bTransaction) throws XWikiException {
+    return executeRead(context, bTransaction, session -> {
+      try {
+        DeletedAttachment trashAttachment = (DeletedAttachment) session
+            .load(DeletedAttachment.class, Long.valueOf(index));
+        return trashAttachment.restoreAttachment(attachment, context);
+      } catch (Exception ex) {
+        // Invalid recycle entry.
+        return null;
+      }
+    });
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public List<DeletedAttachment> getAllDeletedAttachments(final XWikiAttachment attachment, XWikiContext context,
-        boolean bTransaction) throws XWikiException
-    {
-        return executeRead(context, bTransaction, new HibernateCallback<List<DeletedAttachment>>()
-        {
-            @SuppressWarnings(ANOTATE_UNCHECKED)
-            public List<DeletedAttachment> doInHibernate(Session session) throws HibernateException, XWikiException
-            {
-                Criteria c = session.createCriteria(DeletedAttachment.class);
-                if (attachment != null) {
-                    c.add(Restrictions.eq(DOC_ID, attachment.getDocId()));
-                    if (!StringUtils.isBlank(attachment.getFilename())) {
-                        c.add(Restrictions.eq("filename", attachment.getFilename()));
-                    }
-                }
-                return c.addOrder(Order.desc(DATE)).list();
-            }
-        });
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public DeletedAttachment getDeletedAttachment(final long index, XWikiContext context,
+      boolean bTransaction)
+      throws XWikiException {
+    return executeRead(context, bTransaction,
+        session -> (DeletedAttachment) session.get(DeletedAttachment.class, Long.valueOf(index)));
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public List<DeletedAttachment> getAllDeletedAttachments(final XWikiDocument doc, XWikiContext context,
-        boolean bTransaction) throws XWikiException
-    {
-        return executeRead(context, bTransaction, new HibernateCallback<List<DeletedAttachment>>()
-        {
-            @SuppressWarnings(ANOTATE_UNCHECKED)
-            public List<DeletedAttachment> doInHibernate(Session session) throws HibernateException, XWikiException
-            {
-                assert doc != null;
-                return session.createCriteria(DeletedAttachment.class).add(Restrictions.eq(DOC_ID, doc.getId()))
-                    .addOrder(Order.desc(DATE)).list();
-            }
-        });
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<DeletedAttachment> getAllDeletedAttachments(final XWikiAttachment attachment,
+      XWikiContext context,
+      boolean bTransaction) throws XWikiException {
+    return executeRead(context, bTransaction, new HibernateCallback<List<DeletedAttachment>>() {
 
-    /**
-     * {@inheritDoc}
-     */
-    public void deleteFromRecycleBin(final long index, XWikiContext context, boolean bTransaction)
-        throws XWikiException
-    {
-        executeWrite(context, bTransaction, new HibernateCallback<Object>()
-        {
-            public Object doInHibernate(Session session) throws HibernateException, XWikiException
-            {
-                try {
-                    session.createQuery("delete from " + DeletedAttachment.class.getName() + " where id=?").setLong(0,
-                        index).executeUpdate();
-                } catch (Exception ex) {
-                    // Invalid ID?
-                }
-                return null;
-            }
-        });
-    }
+      @Override
+      @SuppressWarnings(ANOTATE_UNCHECKED)
+      public List<DeletedAttachment> doInHibernate(Session session)
+          throws HibernateException, XWikiException {
+        Criteria c = session.createCriteria(DeletedAttachment.class);
+        if (attachment != null) {
+          c.add(Restrictions.eq(DOC_ID, attachment.getDocId()));
+          if (!StringUtils.isBlank(attachment.getFilename())) {
+            c.add(Restrictions.eq("filename", attachment.getFilename()));
+          }
+        }
+        return c.addOrder(Order.desc(DATE)).list();
+      }
+    });
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public List<DeletedAttachment> getAllDeletedAttachments(final XWikiDocument doc,
+      XWikiContext context,
+      boolean bTransaction) throws XWikiException {
+    return executeRead(context, bTransaction, new HibernateCallback<List<DeletedAttachment>>() {
+
+      @Override
+      @SuppressWarnings(ANOTATE_UNCHECKED)
+      public List<DeletedAttachment> doInHibernate(Session session)
+          throws HibernateException, XWikiException {
+        assert doc != null;
+        return session.createCriteria(DeletedAttachment.class)
+            .add(Restrictions.eq(DOC_ID, doc.getId()))
+            .addOrder(Order.desc(DATE)).list();
+      }
+    });
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void deleteFromRecycleBin(final long index, XWikiContext context, boolean bTransaction)
+      throws XWikiException {
+    executeWrite(context, bTransaction, session -> {
+      try {
+        session.createQuery("delete from " + DeletedAttachment.class.getName() + " where id=?")
+            .setLong(0,
+                index)
+            .executeUpdate();
+      } catch (Exception ex) {
+        // Invalid ID?
+      }
+      return null;
+    });
+  }
 }

@@ -31,67 +31,61 @@ import com.xpn.xwiki.api.Api;
 /**
  * API for {@link SyndEntrySource}
  */
-public class SyndEntrySourceApi extends Api
-{
-    public static final String SYND_ENTRY_SOURCE_EXCEPTION = "SyndEntrySourceException";
+public class SyndEntrySourceApi extends Api {
 
-    private SyndEntrySource source;
+  public static final String SYND_ENTRY_SOURCE_EXCEPTION = "SyndEntrySourceException";
 
-    public SyndEntrySourceApi(SyndEntrySource source, XWikiContext context)
-    {
-        super(context);
-        this.source = source;
+  private SyndEntrySource source;
+
+  public SyndEntrySourceApi(SyndEntrySource source, XWikiContext context) {
+    super(context);
+    this.source = source;
+  }
+
+  protected SyndEntrySource getSyndEntrySource() {
+    return this.source;
+  }
+
+  /**
+   * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
+   */
+  public boolean source(SyndEntry entry, Object obj, Map<String, Object> params) {
+    getXWikiContext().remove(SYND_ENTRY_SOURCE_EXCEPTION);
+    try {
+      this.source.source(entry, obj, params, getXWikiContext());
+      return true;
+    } catch (XWikiException e) {
+      getXWikiContext().put(SYND_ENTRY_SOURCE_EXCEPTION, e);
+      return false;
     }
+  }
 
-    protected SyndEntrySource getSyndEntrySource()
-    {
-        return this.source;
-    }
+  /**
+   * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
+   */
+  public boolean source(SyndEntry entry, Object obj) {
+    return this.source(entry, obj, new HashMap<String, Object>());
+  }
 
-    /**
-     * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
-     */
-    public boolean source(SyndEntry entry, Object obj, Map<String, Object> params)
-    {
-        getXWikiContext().remove(SYND_ENTRY_SOURCE_EXCEPTION);
-        try {
-            this.source.source(entry, obj, params, getXWikiContext());
-            return true;
-        } catch (XWikiException e) {
-            getXWikiContext().put(SYND_ENTRY_SOURCE_EXCEPTION, e);
-            return false;
-        }
+  /**
+   * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
+   */
+  public SyndEntry source(Object obj, Map<String, Object> params) {
+    getXWikiContext().remove(SYND_ENTRY_SOURCE_EXCEPTION);
+    try {
+      SyndEntry entry = new SyndEntryImpl();
+      this.source.source(entry, obj, params, getXWikiContext());
+      return entry;
+    } catch (XWikiException e) {
+      getXWikiContext().put(SYND_ENTRY_SOURCE_EXCEPTION, e);
+      return null;
     }
+  }
 
-    /**
-     * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
-     */
-    public boolean source(SyndEntry entry, Object obj)
-    {
-        return this.source(entry, obj, new HashMap<String, Object>());
-    }
-
-    /**
-     * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
-     */
-    public SyndEntry source(Object obj, Map<String, Object> params)
-    {
-        getXWikiContext().remove(SYND_ENTRY_SOURCE_EXCEPTION);
-        try {
-            SyndEntry entry = new SyndEntryImpl();
-            this.source.source(entry, obj, params, getXWikiContext());
-            return entry;
-        } catch (XWikiException e) {
-            getXWikiContext().put(SYND_ENTRY_SOURCE_EXCEPTION, e);
-            return null;
-        }
-    }
-
-    /**
-     * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
-     */
-    public SyndEntry source(Object obj)
-    {
-        return this.source(obj, new HashMap<String, Object>());
-    }
+  /**
+   * @see SyndEntrySource#source(SyndEntry, Object, java.util.Map, XWikiContext)
+   */
+  public SyndEntry source(Object obj) {
+    return this.source(obj, new HashMap<String, Object>());
+  }
 }

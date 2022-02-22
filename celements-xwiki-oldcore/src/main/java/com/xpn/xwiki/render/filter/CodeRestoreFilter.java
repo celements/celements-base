@@ -20,32 +20,31 @@
  */
 package com.xpn.xwiki.render.filter;
 
+import java.util.LinkedList;
+
 import org.radeox.filter.context.FilterContext;
 import org.radeox.filter.regex.RegexTokenFilter;
 import org.radeox.regex.MatchResult;
 
-import java.util.LinkedList;
-
 /**
  * @see CodeRemoveFilter
  */
-public class CodeRestoreFilter extends RegexTokenFilter
-{
-    public CodeRestoreFilter()
-    {
-        super("(\\{(code)(?::([^\\}]*))?\\})\\{code}", SINGLELINE);
-    }
+public class CodeRestoreFilter extends RegexTokenFilter {
 
-    /**
-     * @see CodeRemoveFilter#handleMatch(StringBuffer, MatchResult, FilterContext) 
-     */
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context)
-    {
-        LinkedList contentList =
-            (LinkedList) context.getRenderContext().get(CodeRemoveFilter.CODE_MACRO_CONTENT);
-        
-    	buffer.append(result.group(1));
-    	buffer.append((String) contentList.removeFirst());
-    	buffer.append("{code}");
-    }
+  public CodeRestoreFilter() {
+    super("(\\{(code)(?::([^\\}]*))?\\})\\{code}", SINGLELINE);
+  }
+
+  /**
+   * @see CodeRemoveFilter#handleMatch(StringBuffer, MatchResult, FilterContext)
+   */
+  @Override
+  public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    LinkedList contentList = (LinkedList) context.getRenderContext()
+        .get(CodeRemoveFilter.CODE_MACRO_CONTENT);
+
+    buffer.append(result.group(1));
+    buffer.append((String) contentList.removeFirst());
+    buffer.append("{code}");
+  }
 }

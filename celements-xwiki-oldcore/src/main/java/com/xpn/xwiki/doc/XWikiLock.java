@@ -23,43 +23,44 @@ package com.xpn.xwiki.doc;
 import java.util.Date;
 
 public class XWikiLock extends Object {
-    protected String userName;
-    protected long docId;
-    protected Date date;
-    public XWikiLock(long docId, String userName) {
-        this.setDocId(docId);
-        this.setUserName(userName);
-        this.setDate(new Date());
-    }
 
-    public XWikiLock()
-    {
-        this.setDate(null);
-        this.setUserName(null);
-        this.setDocId(0);
-    }
+  protected String userName;
+  protected long docId;
+  protected Date date;
 
-    public String getUserName() {
-        return userName;
-    }
+  public XWikiLock(long docId, String userName) {
+    this.setDocId(docId);
+    this.setUserName(userName);
+    this.setDate(new Date());
+  }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+  public XWikiLock() {
+    this.setDate(null);
+    this.setUserName(null);
+    this.setDocId(0);
+  }
 
-    public long getDocId() {
-        return docId;
-    }
+  public String getUserName() {
+    return userName;
+  }
 
-    public void setDocId(long docId) {
-        this.docId = docId;
-    }
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
 
-    public Date getDate() {
-        return date;
-    }
+  public long getDocId() {
+    return docId;
+  }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
+  public void setDocId(long docId) {
+    this.docId = docId;
+  }
+
+  public Date getDate() {
+    return date;
+  }
+
+  public void setDate(Date date) {
+    this.date = date;
+  }
 }

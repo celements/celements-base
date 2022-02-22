@@ -21,5 +21,4 @@
 
 package com.xpn.xwiki.objects;
 
-public class IntegerProperty extends NumberProperty {
-}
+public class IntegerProperty extends NumberProperty {}

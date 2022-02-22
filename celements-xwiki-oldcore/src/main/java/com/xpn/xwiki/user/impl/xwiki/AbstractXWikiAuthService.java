@@ -35,67 +35,74 @@ import com.xpn.xwiki.web.Utils;
 
 /**
  * Common methods useful to all Authentication services implementations.
- * 
+ *
  * @version $Id$
  */
-public abstract class AbstractXWikiAuthService implements XWikiAuthService
-{
-    /**
-     * Logging tool.
-     */
-    private static final Log LOG = LogFactory.getLog(AbstractXWikiAuthService.class);
+public abstract class AbstractXWikiAuthService implements XWikiAuthService {
 
-    /**
-     * The XWiki config property for storing the superadmin password.
-     */
-    private static final String SUPERADMIN_PASSWORD_CONFIG = "xwiki.superadminpassword";
+  /**
+   * Logging tool.
+   */
+  private static final Log LOG = LogFactory.getLog(AbstractXWikiAuthService.class);
 
-    /**
-     * @param username the username to check for superadmin access. Examples: "xwiki:XWiki.superadmin",
-     *            "XWiki.superAdmin", "superadmin", etc
-     * @return true if the username is that of the superadmin (whatever the case) or false otherwise
-     */
-    protected boolean isSuperAdmin(String username)
-    {
-        // FIXME: this method should probably use a XWikiRightService#isSuperadmin(String) method, see
-        // XWikiRightServiceImpl#isSuperadmin(String)
+  /**
+   * The XWiki config property for storing the superadmin password.
+   */
+  private static final String SUPERADMIN_PASSWORD_CONFIG = "xwiki.superadminpassword";
 
-        // Note 1: we use the default document reference resolver here but it doesn't matter since we only care about
-        //         the resolved page name.
-        // Note 2: we use a resolver since the passed username could contain the wiki and/or space too and we want
-        //         to retrieve only the page name
-        DocumentReference documentReference = Utils.getComponent(DocumentReferenceResolver.class).resolve(username);
-        return StringUtils.equalsIgnoreCase(documentReference.getName(), XWikiRightService.SUPERADMIN_USER);
+  /**
+   * @param username
+   *          the username to check for superadmin access. Examples: "xwiki:XWiki.superadmin",
+   *          "XWiki.superAdmin", "superadmin", etc
+   * @return true if the username is that of the superadmin (whatever the case) or false otherwise
+   */
+  protected boolean isSuperAdmin(String username) {
+    // FIXME: this method should probably use a XWikiRightService#isSuperadmin(String) method, see
+    // XWikiRightServiceImpl#isSuperadmin(String)
+
+    // Note 1: we use the default document reference resolver here but it doesn't matter since we
+    // only care about
+    // the resolved page name.
+    // Note 2: we use a resolver since the passed username could contain the wiki and/or space too
+    // and we want
+    // to retrieve only the page name
+    DocumentReference documentReference = Utils.getComponent(DocumentReferenceResolver.class)
+        .resolve(username);
+    return StringUtils.equalsIgnoreCase(documentReference.getName(),
+        XWikiRightService.SUPERADMIN_USER);
+  }
+
+  /**
+   * @param password
+   *          the superadmin password to check against the superadmin password located in XWiki's
+   *          config file
+   * @param context
+   *          the XWiki context object, allowing access to XWiki's config
+   * @return a null Principal is the user hasn't been validated as Superadmin or a Super Admin
+   *         Principal otherwise
+   */
+  protected Principal authenticateSuperAdmin(String password, XWikiContext context) {
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Authenticate superadmin");
     }
 
-    /**
-     * @param password the superadmin password to check against the superadmin password located in XWiki's config file
-     * @param context the XWiki context object, allowing access to XWiki's config
-     * @return a null Principal is the user hasn't been validated as Superadmin or a Super Admin Principal otherwise
-     */
-    protected Principal authenticateSuperAdmin(String password, XWikiContext context)
-    {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("Authenticate superadmin");
-        }
+    Principal principal;
 
-        Principal principal;
-
-        // Security check: only decide that the passed user is the super admin if the
-        // super admin password is configured in XWiki's configuration.
-        String superadminpassword = context.getWiki().Param(SUPERADMIN_PASSWORD_CONFIG);
-        if ((superadminpassword != null) && (superadminpassword.equals(password))) {
-            if (context.isMainWiki()) {
-                principal = new SimplePrincipal(XWikiRightService.SUPERADMIN_USER_FULLNAME);
-            } else {
-                principal =
-                    new SimplePrincipal(context.getMainXWiki() + ":" + XWikiRightService.SUPERADMIN_USER_FULLNAME);
-            }
-        } else {
-            principal = null;
-            context.put("message", "invalidcredentials");
-        }
-
-        return principal;
+    // Security check: only decide that the passed user is the super admin if the
+    // super admin password is configured in XWiki's configuration.
+    String superadminpassword = context.getWiki().Param(SUPERADMIN_PASSWORD_CONFIG);
+    if ((superadminpassword != null) && (superadminpassword.equals(password))) {
+      if (context.isMainWiki()) {
+        principal = new SimplePrincipal(XWikiRightService.SUPERADMIN_USER_FULLNAME);
+      } else {
+        principal = new SimplePrincipal(
+            context.getMainXWiki() + ":" + XWikiRightService.SUPERADMIN_USER_FULLNAME);
+      }
+    } else {
+      principal = null;
+      context.put("message", "invalidcredentials");
     }
+
+    return principal;
+  }
 }

@@ -25,96 +25,99 @@ package com.xpn.xwiki.internal;
  * @version $Id$
  * @since 2.0M4
  */
-public interface WikiMacroConstants
-{
-    /**
-     * Constant for representing XWiki.WikiMacroClass xwiki class.
-     */
-    String WIKI_MACRO_CLASS = "XWiki.WikiMacroClass";
-    
-    /**
-     * Constant for representing macro id property.
-     */
-    String MACRO_ID_PROPERTY = "id";
+public interface WikiMacroConstants {
 
-    /**
-     * Constant for representing macro name property.
-     */
-    String MACRO_NAME_PROPERTY = "name";
+  /**
+   * Constant for representing XWiki.WikiMacroClass xwiki class.
+   */
+  String WIKI_MACRO_CLASS = "XWiki.WikiMacroClass";
 
-    /**
-     * Constant for representing macro description property.
-     */
-    String MACRO_DESCRIPTION_PROPERTY = "description";
+  /**
+   * Constant for representing macro id property.
+   */
+  String MACRO_ID_PROPERTY = "id";
 
-    /**
-     * Constant for representing default macro category property.
-     */
-    String MACRO_DEFAULT_CATEGORY_PROPERTY = "defaultCategory";
+  /**
+   * Constant for representing macro name property.
+   */
+  String MACRO_NAME_PROPERTY = "name";
 
-    /**
-     * Name of the macro visibility property in the Wiki Macro Class.
-     */
-    String MACRO_VISIBILITY_PROPERTY = "visibility";
-    
-    /**
-     * Constant for representing macro inline support property.
-     */
-    String MACRO_INLINE_PROPERTY = "supportsInlineMode";
+  /**
+   * Constant for representing macro description property.
+   */
+  String MACRO_DESCRIPTION_PROPERTY = "description";
 
-    /**
-     * Constant for representing macro content type property.
-     */
-    String MACRO_CONTENT_TYPE_PROPERTY = "contentType";
+  /**
+   * Constant for representing default macro category property.
+   */
+  String MACRO_DEFAULT_CATEGORY_PROPERTY = "defaultCategory";
 
-    /**
-     * Constant for representing macro content mandatory status.
-     */
-    String MACRO_CONTENT_MANDATORY = "Mandatory";
+  /**
+   * Name of the macro visibility property in the Wiki Macro Class.
+   */
+  String MACRO_VISIBILITY_PROPERTY = "visibility";
 
-    /**
-     * Constant for representing macro content optional status.
-     */
-    String MACRO_CONTENT_OPTIONAL = "Optional";
+  /**
+   * Constant for representing macro inline support property.
+   */
+  String MACRO_INLINE_PROPERTY = "supportsInlineMode";
 
-    /**
-     * Constant for representing macro content empty status.
-     */
-    String MACRO_CONTENT_EMPTY = "No content";
+  /**
+   * Constant for representing macro content type property.
+   */
+  String MACRO_CONTENT_TYPE_PROPERTY = "contentType";
 
-    /**
-     * Constant for representing macro content description property.
-     */
-    String MACRO_CONTENT_DESCRIPTION_PROPERTY = "contentDescription";
+  /**
+   * Constant for representing macro content mandatory status.
+   */
+  String MACRO_CONTENT_MANDATORY = "Mandatory";
 
-    /**
-     * Constant for representing macro code property.
-     */
-    String MACRO_CODE_PROPERTY = "code";
+  /**
+   * Constant for representing macro content optional status.
+   */
+  String MACRO_CONTENT_OPTIONAL = "Optional";
 
-    /**
-     * Constant for representing XWiki.WikiMacroParameterClass xwiki class.
-     */
-    String WIKI_MACRO_PARAMETER_CLASS = "XWiki.WikiMacroParameterClass";
+  /**
+   * Constant for representing macro content empty status.
+   */
+  String MACRO_CONTENT_EMPTY = "No content";
 
-    /**
-     * Constant for representing parameter name property. Same as MACRO_NAME_PROPERTY (Check style Fix)
-     */
-    String PARAMETER_NAME_PROPERTY = "name";
+  /**
+   * Constant for representing macro content description property.
+   */
+  String MACRO_CONTENT_DESCRIPTION_PROPERTY = "contentDescription";
 
-    /**
-     * Constant for representing parameter description property. Same as MACRO_DESCRIPTION_PROPERTY (Check style Fix)
-     */
-    String PARAMETER_DESCRIPTION_PROPERTY = "description";
+  /**
+   * Constant for representing macro code property.
+   */
+  String MACRO_CODE_PROPERTY = "code";
 
-    /**
-     * Constant for representing parameter mandatory property.
-     */
-    String PARAMETER_MANDATORY_PROPERTY = "mandatory";
-    
-    /**
-     * Constant for representing parameter defaultValue property.
-     * @since 2.3M1
-     */
-    String PARAMETER_DEFAULT_VALUE_PROPERTY = "defaultValue";
+  /**
+   * Constant for representing XWiki.WikiMacroParameterClass xwiki class.
+   */
+  String WIKI_MACRO_PARAMETER_CLASS = "XWiki.WikiMacroParameterClass";
+
+  /**
+   * Constant for representing parameter name property. Same as MACRO_NAME_PROPERTY (Check style
+   * Fix)
+   */
+  String PARAMETER_NAME_PROPERTY = "name";
+
+  /**
+   * Constant for representing parameter description property. Same as MACRO_DESCRIPTION_PROPERTY
+   * (Check style Fix)
+   */
+  String PARAMETER_DESCRIPTION_PROPERTY = "description";
+
+  /**
+   * Constant for representing parameter mandatory property.
+   */
+  String PARAMETER_MANDATORY_PROPERTY = "mandatory";
+
+  /**
+   * Constant for representing parameter defaultValue property.
+   *
+   * @since 2.3M1
+   */
+  String PARAMETER_DEFAULT_VALUE_PROPERTY = "defaultValue";
 }

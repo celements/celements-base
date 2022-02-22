@@ -32,134 +32,143 @@ import com.xpn.xwiki.util.Util;
 
 /**
  * Default implementation for {@link HibernateSessionFactory}.
- * 
+ *
  * @version $Id$
  * @since 2.0M1
  */
 // TODO: This was coded by Artem. Find out why we need this as a component.
 @Component
-public class DefaultHibernateSessionFactory implements HibernateSessionFactory
-{
-    /**
-     * Hibernate configuration object.
-     */
-    private Configuration configuration = new Configuration()
-    {
-        private static final long serialVersionUID = 1L;
+public class DefaultHibernateSessionFactory implements HibernateSessionFactory {
 
-        /**
-         * Whether the Hibernate Configuration has alreayd been initialized or not. We do this so that the
-         * Hibernate {@link org.hibernate.cfg.Configuration#configure()} methods can be called several times in a
-         * row without causing some Duplicate Mapping errors, see our overridden
-         * {@link #getConfigurationInputStream(String)} below.
-         */
-        private boolean isConfigurationInitialized;
+  /**
+   * Hibernate configuration object.
+   */
+  private Configuration configuration = new Configuration() {
 
-        /**
-         * {@inheritDoc}
-         * @see org.hibernate.cfg.Configuration#configure()
-         */
-        @Override public Configuration configure() throws HibernateException
-        {
-            Configuration configuration;
-            if (this.isConfigurationInitialized) {
-                configuration = this;
-            } else {
-                configuration = super.configure();
-                this.isConfigurationInitialized = true;
-            }
-            return configuration;
-        }
-
-        /**
-         * {@inheritDoc}
-         * @see org.hibernate.cfg.Configuration#configure(String) 
-         */
-        @Override public Configuration configure(String resource) throws HibernateException
-        {
-            Configuration configuration;
-            if (this.isConfigurationInitialized) {
-                configuration = this;
-            } else {
-                configuration = super.configure(resource);
-                this.isConfigurationInitialized = true;
-            }
-            return configuration;
-        }
-
-        /**
-         * {@inheritDoc}
-         * @see org.hibernate.cfg.Configuration#configure(java.net.URL)
-         */
-        @Override public Configuration configure(URL url) throws HibernateException
-        {
-            Configuration configuration;
-            if (this.isConfigurationInitialized) {
-                configuration = this;
-            } else {
-                configuration = super.configure(url);
-                this.isConfigurationInitialized = true;
-            }
-            return configuration;
-        }
-
-        /**
-         * {@inheritDoc}
-         * @see org.hibernate.cfg.Configuration#configure(java.io.File) 
-         */
-        @Override public Configuration configure(File configFile) throws HibernateException
-        {
-            Configuration configuration;
-            if (this.isConfigurationInitialized) {
-                configuration = this;
-            } else {
-                configuration = super.configure(configFile);
-                this.isConfigurationInitialized = true;
-            }
-            return configuration;
-        }
-
-        // there is no #configure(InputStream) so we use #configure(String) and override #getConfigurationInputStream
-        @Override
-        protected InputStream getConfigurationInputStream(String resource) throws HibernateException
-        {
-            InputStream stream = Util.getResourceAsStream(resource);
-            if (stream == null) {
-                throw new HibernateException("Can't find [" + resource + "] for hibernate configuration");
-            }
-            return stream;
-        }
-    };
+    private static final long serialVersionUID = 1L;
 
     /**
-     * Real Hibernate session factory.
+     * Whether the Hibernate Configuration has alreayd been initialized or not. We do this so that
+     * the
+     * Hibernate {@link org.hibernate.cfg.Configuration#configure()} methods can be called several
+     * times in a
+     * row without causing some Duplicate Mapping errors, see our overridden
+     * {@link #getConfigurationInputStream(String)} below.
      */
-    private SessionFactory sessionFactory;
+    private boolean isConfigurationInitialized;
 
     /**
      * {@inheritDoc}
-     * @see HibernateSessionFactory#getConfiguration()
+     *
+     * @see org.hibernate.cfg.Configuration#configure()
      */
-    public Configuration getConfiguration()
-    {
-        return this.configuration;
+    @Override
+    public Configuration configure() throws HibernateException {
+      Configuration configuration;
+      if (this.isConfigurationInitialized) {
+        configuration = this;
+      } else {
+        configuration = super.configure();
+        this.isConfigurationInitialized = true;
+      }
+      return configuration;
     }
 
     /**
      * {@inheritDoc}
-     * @see HibernateSessionFactory#getSessionFactory()
+     *
+     * @see org.hibernate.cfg.Configuration#configure(String)
      */
-    public SessionFactory getSessionFactory()
-    {
-        return this.sessionFactory;
+    @Override
+    public Configuration configure(String resource) throws HibernateException {
+      Configuration configuration;
+      if (this.isConfigurationInitialized) {
+        configuration = this;
+      } else {
+        configuration = super.configure(resource);
+        this.isConfigurationInitialized = true;
+      }
+      return configuration;
     }
 
     /**
      * {@inheritDoc}
-     * @see HibernateSessionFactory#setSessionFactory(SessionFactory)
+     *
+     * @see org.hibernate.cfg.Configuration#configure(java.net.URL)
      */
-    public void setSessionFactory(SessionFactory sessionFactory)
-    {
-        this.sessionFactory = sessionFactory;
+    @Override
+    public Configuration configure(URL url) throws HibernateException {
+      Configuration configuration;
+      if (this.isConfigurationInitialized) {
+        configuration = this;
+      } else {
+        configuration = super.configure(url);
+        this.isConfigurationInitialized = true;
+      }
+      return configuration;
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @see org.hibernate.cfg.Configuration#configure(java.io.File)
+     */
+    @Override
+    public Configuration configure(File configFile) throws HibernateException {
+      Configuration configuration;
+      if (this.isConfigurationInitialized) {
+        configuration = this;
+      } else {
+        configuration = super.configure(configFile);
+        this.isConfigurationInitialized = true;
+      }
+      return configuration;
+    }
+
+    // there is no #configure(InputStream) so we use #configure(String) and override
+    // #getConfigurationInputStream
+    @Override
+    protected InputStream getConfigurationInputStream(String resource) throws HibernateException {
+      InputStream stream = Util.getResourceAsStream(resource);
+      if (stream == null) {
+        throw new HibernateException("Can't find [" + resource + "] for hibernate configuration");
+      }
+      return stream;
+    }
+  };
+
+  /**
+   * Real Hibernate session factory.
+   */
+  private SessionFactory sessionFactory;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see HibernateSessionFactory#getConfiguration()
+   */
+  @Override
+  public Configuration getConfiguration() {
+    return this.configuration;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see HibernateSessionFactory#getSessionFactory()
+   */
+  @Override
+  public SessionFactory getSessionFactory() {
+    return this.sessionFactory;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see HibernateSessionFactory#setSessionFactory(SessionFactory)
+   */
+  @Override
+  public void setSessionFactory(SessionFactory sessionFactory) {
+    this.sessionFactory = sessionFactory;
+  }
 }

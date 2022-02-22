@@ -25,42 +25,42 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit tests for the {@link NumberClass} class.
- * 
+ *
  * @version $Id$
  */
-public class NumberClassTest extends AbstractBridgedXWikiComponentTestCase
-{
-    /** Test the fromString method. */
-    public void testFromString()
-    {
-        // Create a default Number property
-        NumberClass nc = new NumberClass();
-        BaseClass bc = new BaseClass();
-        bc.setName("Some.Class");
-        nc.setObject(bc);
+public class NumberClassTest extends AbstractBridgedXWikiComponentTestCase {
 
-        // A String value containing non-numeric caracters can not be respresented as a numeric value, so this sould
-        // return null
-        assertNull(nc.fromString("asd"));
+  /** Test the fromString method. */
+  public void testFromString() {
+    // Create a default Number property
+    NumberClass nc = new NumberClass();
+    BaseClass bc = new BaseClass();
+    bc.setName("Some.Class");
+    nc.setObject(bc);
 
-        // A much too long number cannot be represented as a long value, so this should also return null
-        assertNull(nc.fromString("1111111111111111111111111111111111"));
+    // A String value containing non-numeric caracters can not be respresented as a numeric value,
+    // so this sould
+    // return null
+    assertNull(nc.fromString("asd"));
 
-        BaseProperty p;
+    // A much too long number cannot be represented as a long value, so this should also return null
+    assertNull(nc.fromString("1111111111111111111111111111111111"));
 
-        // A null value should lead to creating an object with an empty value
-        p = nc.fromString(null);
-        assertNotNull(p);
-        assertNull(p.getValue());
+    BaseProperty p;
 
-        // An empty String should lead to creating an object with an empty value
-        p = nc.fromString("");
-        assertNotNull(p);
-        assertNull(p.getValue());
+    // A null value should lead to creating an object with an empty value
+    p = nc.fromString(null);
+    assertNotNull(p);
+    assertNull(p.getValue());
 
-        // An integer value should lead to creating an object containing that integer as value
-        p = nc.fromString("4");
-        assertNotNull(p);
-        assertEquals(4, Integer.parseInt(p.getValue().toString()));
-    }
+    // An empty String should lead to creating an object with an empty value
+    p = nc.fromString("");
+    assertNotNull(p);
+    assertNull(p.getValue());
+
+    // An integer value should lead to creating an object containing that integer as value
+    p = nc.fromString("4");
+    assertNotNull(p);
+    assertEquals(4, Integer.parseInt(p.getValue().toString()));
+  }
 }

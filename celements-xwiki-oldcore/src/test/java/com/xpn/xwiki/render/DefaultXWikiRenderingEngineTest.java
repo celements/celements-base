@@ -20,8 +20,8 @@
  */
 package com.xpn.xwiki.render;
 
-import java.util.ArrayList;
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 
 import javax.servlet.ServletContext;
 
@@ -32,169 +32,177 @@ import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
-import com.xpn.xwiki.web.Utils;
-import com.xpn.xwiki.web.XWikiServletContext;
 import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
+import com.xpn.xwiki.web.Utils;
+import com.xpn.xwiki.web.XWikiServletContext;
 
 /**
  * Unit tests for {@link DefaultXWikiRenderingEngine}.
- * 
+ *
  * @version $Id$
  */
-public class DefaultXWikiRenderingEngineTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private DefaultXWikiRenderingEngine engine;
+public class DefaultXWikiRenderingEngineTest extends AbstractBridgedXWikiComponentTestCase {
 
-    private XWiki xwiki;
+  private DefaultXWikiRenderingEngine engine;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  private XWiki xwiki;
 
-        XWikiConfig config = new XWikiConfig();
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase#setUp()
+   */
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-        Mock mockServletContext = mock(ServletContext.class);
-        ByteArrayInputStream bais = new ByteArrayInputStream("code=wiki:code:type:content".getBytes());
-        mockServletContext.stubs().method("getResourceAsStream").with(eq("/templates/macros.txt")).will(
-            returnValue(bais));
-        mockServletContext.stubs().method("getResourceAsStream").with(eq("/WEB-INF/oscache.properties")).will(
+    XWikiConfig config = new XWikiConfig();
+
+    Mock mockServletContext = mock(ServletContext.class);
+    ByteArrayInputStream bais = new ByteArrayInputStream("code=wiki:code:type:content".getBytes());
+    mockServletContext.stubs().method("getResourceAsStream").with(eq("/templates/macros.txt")).will(
+        returnValue(bais));
+    mockServletContext.stubs().method("getResourceAsStream").with(eq("/WEB-INF/oscache.properties"))
+        .will(
             returnValue(new ByteArrayInputStream("".getBytes())));
-        mockServletContext.stubs().method("getResourceAsStream").with(eq("/WEB-INF/oscache-local.properties")).will(
+    mockServletContext.stubs().method("getResourceAsStream")
+        .with(eq("/WEB-INF/oscache-local.properties")).will(
             returnValue(new ByteArrayInputStream("".getBytes())));
-        XWikiServletContext engineContext = new XWikiServletContext((ServletContext) mockServletContext.proxy());
+    XWikiServletContext engineContext = new XWikiServletContext(
+        (ServletContext) mockServletContext.proxy());
 
-        xwiki = new XWiki(config, getContext(), engineContext, false)
-        {
-            public String getSkin(XWikiContext context)
-            {
-                return "skin";
-            }
+    xwiki = new XWiki(config, getContext(), engineContext, false) {
 
-            public String getXWikiPreference(String prefname, String defaultValue, XWikiContext context)
-            {
-                return defaultValue;
-            }
+      @Override
+      public String getSkin(XWikiContext context) {
+        return "skin";
+      }
 
-            public String getSpacePreference(String prefname, String defaultValue, XWikiContext context)
-            {
-                return defaultValue;
-            }
+      @Override
+      public String getXWikiPreference(String prefname, String defaultValue, XWikiContext context) {
+        return defaultValue;
+      }
 
-            protected void registerWikiMacros()
-            {
+      @Override
+      public String getSpacePreference(String prefname, String defaultValue, XWikiContext context) {
+        return defaultValue;
+      }
 
-            }
+      @Override
+      protected void registerWikiMacros() {
 
-            public XWikiRightService getRightService()
-            {
-                return new XWikiRightServiceImpl()
-                {
-                    public boolean hasProgrammingRights(XWikiDocument doc, XWikiContext context)
-                    {
-                        return true;
-                    }
-                };
-            }
+      }
+
+      @Override
+      public XWikiRightService getRightService() {
+        return new XWikiRightServiceImpl() {
+
+          @Override
+          public boolean hasProgrammingRights(XWikiDocument doc, XWikiContext context) {
+            return true;
+          }
         };
-        xwiki.setVersion("1.0");
+      }
+    };
+    xwiki.setVersion("1.0");
 
-        // Ensure that no Velocity Templates are going to be used when executing Velocity since otherwise
-        // the Velocity init would fail (since by default the macros.vm templates wouldn't be found as we're
-        // not providing it in our unit test resources).
-        xwiki.getConfig().setProperty("xwiki.render.velocity.macrolist", "");
+    // Ensure that no Velocity Templates are going to be used when executing Velocity since
+    // otherwise
+    // the Velocity init would fail (since by default the macros.vm templates wouldn't be found as
+    // we're
+    // not providing it in our unit test resources).
+    xwiki.getConfig().setProperty("xwiki.render.velocity.macrolist", "");
 
-        this.engine = (DefaultXWikiRenderingEngine) xwiki.getRenderingEngine();
+    this.engine = (DefaultXWikiRenderingEngine) xwiki.getRenderingEngine();
 
-        // Make sure the wiki in the context will say that we have programming permission.
-        getContext().setWiki(this.xwiki);
-    }
+    // Make sure the wiki in the context will say that we have programming permission.
+    getContext().setWiki(this.xwiki);
+  }
 
-    public void testRenderTextWhenUsingCodeMacro() throws Exception
-    {
-        // We verify that the code macro doesn't render wiki markup, velocity, HTML, or other radeox
-        // macros.
-        // We also ensure that any Radeox macro coming after the code macro is rendered properly.
-        // Last we also ensure that a second code macro works too.
-        String text =
-            "{code:none}\n" + "1 Title\n" + "c:\\dev\n" + "#info(\"test\")\n" + "<pre>hello</pre>\n"
-                + "$xwiki.getVersion()\n" + "{style}style{style}\n" + "&#123;code}nested&#123;code}\n"
-                + "<% print(\"hello\") %>\n" + "{code}\n" + "{table}\n" + "a | b\n" + "c | d\n" + "{table}\n"
-                + "#set ($var = 'dummy')\n" + "{code:none}\n" + "1 Something\n" + "{code}";
+  public void testRenderTextWhenUsingCodeMacro() throws Exception {
+    // We verify that the code macro doesn't render wiki markup, velocity, HTML, or other radeox
+    // macros.
+    // We also ensure that any Radeox macro coming after the code macro is rendered properly.
+    // Last we also ensure that a second code macro works too.
+    String text = "{code:none}\n" + "1 Title\n" + "c:\\dev\n" + "#info(\"test\")\n"
+        + "<pre>hello</pre>\n"
+        + "$xwiki.getVersion()\n" + "{style}style{style}\n" + "&#123;code}nested&#123;code}\n"
+        + "<% print(\"hello\") %>\n" + "{code}\n" + "{table}\n" + "a | b\n" + "c | d\n"
+        + "{table}\n"
+        + "#set ($var = 'dummy')\n" + "{code:none}\n" + "1 Something\n" + "{code}";
 
-        String expectedText =
-            "<div class=\"code\"><pre>1 Title\n" + "c:&#92;dev\n" + "&#35;info(\"test\")\n"
-                + "&#60;pre&#62;hello&#60;/pre&#62;\n" + "&#36;xwiki.getVersion()\n"
-                + "&#123;style&#125;style&#123;style&#125;\n" + "&&#35;123;code&#125;nested&&#35;123;code&#125;\n"
-                + "&#60;% print(\"hello\") %&#62;</pre></div>\n"
-                + "<table class=\"wiki-table\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><th>a</th>"
-                + "<th>b</th></tr><tr class=\"table-odd\"><td>c</td><td>d</td></tr></table>\n"
-                + "<div class=\"code\"><pre>1 Something</pre></div>";
+    String expectedText = "<div class=\"code\"><pre>1 Title\n" + "c:&#92;dev\n"
+        + "&#35;info(\"test\")\n"
+        + "&#60;pre&#62;hello&#60;/pre&#62;\n" + "&#36;xwiki.getVersion()\n"
+        + "&#123;style&#125;style&#123;style&#125;\n"
+        + "&&#35;123;code&#125;nested&&#35;123;code&#125;\n"
+        + "&#60;% print(\"hello\") %&#62;</pre></div>\n"
+        + "<table class=\"wiki-table\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><th>a</th>"
+        + "<th>b</th></tr><tr class=\"table-odd\"><td>c</td><td>d</td></tr></table>\n"
+        + "<div class=\"code\"><pre>1 Something</pre></div>";
 
-        XWikiDocument document = new XWikiDocument();
-        assertEquals(expectedText, engine.renderText(text, document, getContext()));
-    }
+    XWikiDocument document = new XWikiDocument();
+    assertEquals(expectedText, engine.renderText(text, document, getContext()));
+  }
 
-    /**
-     * Test that links are preserved after rendering. XWIKI-2672
-     */
-    public void testLinksAndCache() throws Exception
-    {
-        String link = "http://some:123/link";
-        String text = "$context.setCacheDuration(1800)\n" + link;
-        XWikiDocument document = new XWikiDocument();
+  /**
+   * Test that links are preserved after rendering. XWIKI-2672
+   */
+  public void testLinksAndCache() throws Exception {
+    String link = "http://some:123/link";
+    String text = "$context.setCacheDuration(1800)\n" + link;
+    XWikiDocument document = new XWikiDocument();
 
-        Utils.enablePlaceholders(getContext());
-        String out = engine.renderText(text, document, getContext());
-        assertTrue(out.contains(link));
-    }
+    Utils.enablePlaceholders(getContext());
+    String out = engine.renderText(text, document, getContext());
+    assertTrue(out.contains(link));
+  }
 
-    public void testRenderGroovy() throws Exception
-    {
-        assertEquals("hello world", engine.renderText("<% println(\"hello world\"); %>", 
-                                        new XWikiDocument(), getContext()));
-    }
+  public void testRenderGroovy() throws Exception {
+    assertEquals("hello world", engine.renderText("<% println(\"hello world\"); %>",
+        new XWikiDocument(), getContext()));
+  }
 
-    public void testSwitchOrderOfRenderers() throws Exception
-    {
-        String text = "#set($x = '<' + '% println(\"hello world\"); %' + '>')\n$x";
-        String velocityFirst = "hello world";
-        String groovyFirst = "<% println(\"hello world\"); %>";
+  public void testSwitchOrderOfRenderers() throws Exception {
+    String text = "#set($x = '<' + '% println(\"hello world\"); %' + '>')\n$x";
+    String velocityFirst = "hello world";
+    String groovyFirst = "<% println(\"hello world\"); %>";
 
-        XWikiDocument document = new XWikiDocument();
+    XWikiDocument document = new XWikiDocument();
 
-        // Prove that the renderers are in the right order by default.
-        assertEquals(engine.getRendererNames(), new ArrayList<String>(){{
-            add("mapping");
-            add("groovy");
-            add("velocity");
-            add("plugin");
-            add("wiki");
-            add("xwiki");
-        }});
+    // Prove that the renderers are in the right order by default.
+    assertEquals(engine.getRendererNames(), new ArrayList<String>() {
 
-        assertEquals(groovyFirst, engine.renderText(text, document, getContext()));
+      {
+        add("mapping");
+        add("groovy");
+        add("velocity");
+        add("plugin");
+        add("wiki");
+        add("xwiki");
+      }
+    });
 
-        xwiki.getConfig().put("xwiki.render.renderingorder",
-                              "macromapping, velocity, groovy, plugin, wiki, wikiwiki");
+    assertEquals(groovyFirst, engine.renderText(text, document, getContext()));
 
-        DefaultXWikiRenderingEngine myEngine = new DefaultXWikiRenderingEngine(xwiki, getContext());
+    xwiki.getConfig().put("xwiki.render.renderingorder",
+        "macromapping, velocity, groovy, plugin, wiki, wikiwiki");
 
-        assertEquals(myEngine.getRendererNames(), new ArrayList<String>(){{
-            add("mapping");
-            add("velocity");
-            add("groovy");
-            add("plugin");
-            add("wiki");
-            add("xwiki");
-        }});
+    DefaultXWikiRenderingEngine myEngine = new DefaultXWikiRenderingEngine(xwiki, getContext());
 
-        assertEquals(velocityFirst, myEngine.renderText(text, document, getContext()));
-    }
+    assertEquals(myEngine.getRendererNames(), new ArrayList<String>() {
+
+      {
+        add("mapping");
+        add("velocity");
+        add("groovy");
+        add("plugin");
+        add("wiki");
+        add("xwiki");
+      }
+    });
+
+    assertEquals(velocityFirst, myEngine.renderText(text, document, getContext()));
+  }
 }

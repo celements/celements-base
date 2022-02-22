@@ -21,39 +21,43 @@
 
 package com.xpn.xwiki.render.macro;
 
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.render.XWikiRadeoxRenderEngine;
+import java.io.IOException;
+import java.io.Writer;
+
 import org.radeox.api.engine.RenderEngine;
 import org.radeox.api.engine.context.RenderContext;
 import org.radeox.macro.BaseLocaleMacro;
 import org.radeox.macro.parameter.MacroParameter;
 
-import java.io.IOException;
-import java.io.Writer;
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.render.XWikiRadeoxRenderEngine;
 
-public class FormMacro  extends BaseLocaleMacro {
+public class FormMacro extends BaseLocaleMacro {
+
+  @Override
   public String getLocaleKey() {
     return "macro.form";
   }
 
+  @Override
   public void execute(Writer writer, MacroParameter params)
       throws IllegalArgumentException, IOException {
 
     RenderContext context = params.getContext();
     RenderEngine engine = context.getRenderEngine();
-    XWikiContext xcontext = ((XWikiRadeoxRenderEngine)engine).getXWikiContext();
+    XWikiContext xcontext = ((XWikiRadeoxRenderEngine) engine).getXWikiContext();
     XWikiDocument doc = xcontext.getDoc();
 
     String className = params.get("text", 0);
 
     String result;
-    if (className==null)
-        result = doc.displayForm(doc.getFullName(), xcontext);
-    else
-        result = doc.displayForm(className, xcontext);
-    
+    if (className == null) {
+      result = doc.displayForm(doc.getFullName(), xcontext);
+    } else {
+      result = doc.displayForm(className, xcontext);
+    }
+
     writer.write(result);
   }
 }
-

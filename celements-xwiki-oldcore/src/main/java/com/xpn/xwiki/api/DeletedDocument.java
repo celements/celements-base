@@ -34,148 +34,147 @@ import com.xpn.xwiki.util.Programming;
 
 /**
  * Information about a deleted document in the recycle bin.
- * 
+ *
  * @version $Id$
  */
-public class DeletedDocument extends Api
-{
-    /** Logging helper object. */
-    private static final Log LOG = LogFactory.getLog(DeletedDocument.class);
+public class DeletedDocument extends Api {
 
-    /**
-     * The internal object wrapped by this API.
-     */
-    private final XWikiDeletedDocument deletedDoc;
+  /** Logging helper object. */
+  private static final Log LOG = LogFactory.getLog(DeletedDocument.class);
 
-    /**
-     * Simple constructor, initializes a new API object with the current {@link com.xpn.xwiki.XWikiContext context} and
-     * the specified protected {@link com.xpn.xwiki.doc.XWikiDeletedDocument deleted document} object.
-     * 
-     * @param deletedDoc the internal object wrapped by this API
-     * @param context the current request context
-     */
-    public DeletedDocument(XWikiDeletedDocument deletedDoc, XWikiContext context)
-    {
-        super(context);
-        this.deletedDoc = deletedDoc;
+  /**
+   * The internal object wrapped by this API.
+   */
+  private final XWikiDeletedDocument deletedDoc;
+
+  /**
+   * Simple constructor, initializes a new API object with the current
+   * {@link com.xpn.xwiki.XWikiContext context} and
+   * the specified protected {@link com.xpn.xwiki.doc.XWikiDeletedDocument deleted document} object.
+   *
+   * @param deletedDoc
+   *          the internal object wrapped by this API
+   * @param context
+   *          the current request context
+   */
+  public DeletedDocument(XWikiDeletedDocument deletedDoc, XWikiContext context) {
+    super(context);
+    this.deletedDoc = deletedDoc;
+  }
+
+  /**
+   * @return full name of document (ie: Main.WebHome)
+   */
+  public String getFullName() {
+    return this.deletedDoc.getFullName();
+  }
+
+  /**
+   * @return language of document
+   */
+  public String getLanguage() {
+    return this.deletedDoc.getLanguage();
+  }
+
+  /**
+   * @return date of delete action
+   */
+  public Date getDate() {
+    return this.deletedDoc.getDate();
+  }
+
+  /**
+   * @return user which delete document
+   */
+  public String getDeleter() {
+    return this.deletedDoc.getDeleter();
+  }
+
+  /**
+   * @return id of deleted document. id is unique only for this document.
+   */
+  public long getId() {
+    return this.deletedDoc.getId();
+  }
+
+  /**
+   * Check if the current user has the right to restore the document.
+   *
+   * @return {@code true} if the current user can restore this document, {@code false} otherwise
+   */
+  public boolean canUndelete() {
+    try {
+      return hasAdminRights() || hasAccessLevel("undelete", getFullName());
+    } catch (XWikiException ex) {
+      // Public APIs should not throw exceptions
+      LOG.warn(String.format(
+          "Exception while checking if entry [%s] can be restored from the recycle bin",
+          getId()), ex);
+      return false;
     }
+  }
 
-    /**
-     * @return full name of document (ie: Main.WebHome)
-     */
-    public String getFullName()
-    {
-        return this.deletedDoc.getFullName();
+  /**
+   * @return {@code true} if the current user can permanently delete this document, {@code false}
+   *         otherwise
+   * @xwikicfg xwiki.store.recyclebin.adminWaitDays How many days should an administrator wait
+   *           before being able to
+   *           permanently delete this document from the recycle bin. 0 by default.
+   * @xwikicfg xwiki.store.recyclebin.waitDays How many days should a normal user with "delete"
+   *           right wait before
+   *           being able to permanently delete this document from the recycle bin. 7 by default.
+   */
+  public boolean canDelete() {
+    try {
+      XWikiDocument doc = new XWikiDocument();
+      doc.setFullName(getFullName(), this.context);
+      if (!hasAdminRights()
+          && !getXWikiContext().getWiki().getRightService().checkAccess("delete", doc,
+              this.context)) {
+        return false;
+      }
+      String waitdays;
+      XWikiConfig config = getXWikiContext().getWiki().getConfig();
+      if (hasAdminRights()) {
+        waitdays = config.getProperty("xwiki.store.recyclebin.adminWaitDays", "0");
+      } else {
+        waitdays = config.getProperty("xwiki.store.recyclebin.waitDays", "7");
+      }
+      int seconds = (int) ((Double.parseDouble(waitdays) * 24 * 60 * 60) + 0.5);
+      Calendar cal = Calendar.getInstance();
+      cal.setTime(getDate());
+      cal.add(Calendar.SECOND, seconds);
+      return cal.before(Calendar.getInstance());
+    } catch (Exception ex) {
+      // Public APIs should not throw exceptions
+      LOG.warn(String.format(
+          "Exception while checking if entry [%s] can be removed from the recycle bin",
+          getId()), ex);
+      return false;
     }
+  }
 
-    /**
-     * @return language of document
-     */
-    public String getLanguage()
-    {
-        return this.deletedDoc.getLanguage();
+  /**
+   * @return original deleted document if user has programming rights, else {@code null}.
+   */
+  @Programming
+  public XWikiDeletedDocument getDeletedDocument() {
+    if (hasProgrammingRights()) {
+      return this.deletedDoc;
+    } else {
+      return null;
     }
+  }
 
-    /**
-     * @return date of delete action
-     */
-    public Date getDate()
-    {
-        return this.deletedDoc.getDate();
+  /**
+   * @return the document as it is in the recycle bin
+   */
+  public Document getDocument() {
+    try {
+      return new Document(this.deletedDoc.restoreDocument(null, this.context), this.context);
+    } catch (XWikiException e) {
+      LOG.warn("Failed to parse deleted document: " + e.getMessage());
+      return null;
     }
-
-    /**
-     * @return user which delete document
-     */
-    public String getDeleter()
-    {
-        return this.deletedDoc.getDeleter();
-    }
-
-    /**
-     * @return id of deleted document. id is unique only for this document.
-     */
-    public long getId()
-    {
-        return this.deletedDoc.getId();
-    }
-
-    /**
-     * Check if the current user has the right to restore the document.
-     * 
-     * @return {@code true} if the current user can restore this document, {@code false} otherwise
-     */
-    public boolean canUndelete()
-    {
-        try {
-            return hasAdminRights() || hasAccessLevel("undelete", getFullName());
-        } catch (XWikiException ex) {
-            // Public APIs should not throw exceptions
-            LOG.warn(String.format("Exception while checking if entry [%s] can be restored from the recycle bin",
-                getId()), ex);
-            return false;
-        }
-    }
-
-    /**
-     * @return {@code true} if the current user can permanently delete this document, {@code false} otherwise
-     * @xwikicfg xwiki.store.recyclebin.adminWaitDays How many days should an administrator wait before being able to
-     *           permanently delete this document from the recycle bin. 0 by default.
-     * @xwikicfg xwiki.store.recyclebin.waitDays How many days should a normal user with "delete" right wait before
-     *           being able to permanently delete this document from the recycle bin. 7 by default.
-     */
-    public boolean canDelete()
-    {
-        try {
-            XWikiDocument doc = new XWikiDocument();
-            doc.setFullName(getFullName(), this.context);
-            if (!hasAdminRights()
-                && !getXWikiContext().getWiki().getRightService().checkAccess("delete", doc, this.context)) {
-                return false;
-            }
-            String waitdays;
-            XWikiConfig config = getXWikiContext().getWiki().getConfig();
-            if (hasAdminRights()) {
-                waitdays = config.getProperty("xwiki.store.recyclebin.adminWaitDays", "0");
-            } else {
-                waitdays = config.getProperty("xwiki.store.recyclebin.waitDays", "7");
-            }
-            int seconds = (int) (Double.parseDouble(waitdays) * 24 * 60 * 60 + 0.5);
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(getDate());
-            cal.add(Calendar.SECOND, seconds);
-            return cal.before(Calendar.getInstance());
-        } catch (Exception ex) {
-            // Public APIs should not throw exceptions
-            LOG.warn(String.format("Exception while checking if entry [%s] can be removed from the recycle bin",
-                getId()), ex);
-            return false;
-        }
-    }
-
-    /**
-     * @return original deleted document if user has programming rights, else {@code null}.
-     */
-    @Programming
-    public XWikiDeletedDocument getDeletedDocument()
-    {
-        if (hasProgrammingRights()) {
-            return this.deletedDoc;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @return the document as it is in the recycle bin
-     */
-    public Document getDocument()
-    {
-        try {
-            return new Document(this.deletedDoc.restoreDocument(null, this.context), this.context);
-        } catch (XWikiException e) {
-            LOG.warn("Failed to parse deleted document: " + e.getMessage());
-            return null;
-        }
-    }
+  }
 }

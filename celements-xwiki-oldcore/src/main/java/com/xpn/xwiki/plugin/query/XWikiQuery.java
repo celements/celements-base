@@ -33,120 +33,101 @@ import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.XWikiRequest;
 
-public class XWikiQuery extends XWikiCriteria
-{
-    protected boolean distinct = false;
+public class XWikiQuery extends XWikiCriteria {
 
-    protected List<String> displayProperties = new ArrayList<String>();
+  protected boolean distinct = false;
 
-    protected List<String> addProperties = new ArrayList<String>();
+  protected List<String> displayProperties = new ArrayList<>();
 
-    protected List<String> groupbyProperties = new ArrayList<String>();
+  protected List<String> addProperties = new ArrayList<>();
 
-    protected List<OrderClause> orderProperties = new ArrayList<OrderClause>();
+  protected List<String> groupbyProperties = new ArrayList<>();
 
-    public XWikiQuery()
-    {
-        super();
+  protected List<OrderClause> orderProperties = new ArrayList<>();
+
+  public XWikiQuery() {}
+
+  public XWikiQuery(XWikiRequest request, String className, XWikiContext context)
+      throws XWikiException {
+    String[] columns = request.getParameterValues(className + "_" + "searchcolumns");
+    setDisplayProperties(columns);
+    String[] order = request.getParameterValues(className + "_" + "searchorder");
+    setOrderProperties(order);
+    BaseClass bclass = context.getWiki().getDocument(className, context).getxWikiClass();
+    Set<String> properties = bclass.getPropertyList();
+    Iterator<String> propid = properties.iterator();
+    while (propid.hasNext()) {
+      String propname = propid.next();
+      Map<String, String[]> map = Util.getObject(request, className + "_" + propname);
+      ((PropertyClass) (bclass.get(propname))).fromSearchMap(this, map);
     }
+  }
 
-    public XWikiQuery(XWikiRequest request, String className, XWikiContext context)
-        throws XWikiException
-    {
-        super();
-        String[] columns = request.getParameterValues(className + "_" + "searchcolumns");
-        setDisplayProperties(columns);
-        String[] order = request.getParameterValues(className + "_" + "searchorder");
-        setOrderProperties(order);
-        BaseClass bclass = context.getWiki().getDocument(className, context).getxWikiClass();
-        Set<String> properties = bclass.getPropertyList();
-        Iterator<String> propid = properties.iterator();
-        while (propid.hasNext()) {
-            String propname = (String) propid.next();
-            Map<String, String[]> map = Util.getObject(request, className + "_" + propname);
-            ((PropertyClass) (bclass.get(propname))).fromSearchMap(this, map);
-        }
+  private void setOrderProperties(String[] order) {
+    orderProperties.clear();
+    if (order != null) {
+      for (String element : order) {
+        OrderClause oclause = new OrderClause(element, OrderClause.ASC);
+        orderProperties.add(oclause);
+      }
     }
+  }
 
-    private void setOrderProperties(String[] order)
-    {
-        orderProperties.clear();
-        if (order != null) {
-            for (int i = 0; i < order.length; i++) {
-                OrderClause oclause = new OrderClause(order[i], OrderClause.ASC);
-                orderProperties.add(oclause);
-            }
-        }
-    }
+  public void reset() {
+    displayProperties = new ArrayList<>();
+    addProperties = new ArrayList<>();
+    groupbyProperties = new ArrayList<>();
+    orderProperties = new ArrayList<>();
+  }
 
-    public void reset()
-    {
-        displayProperties = new ArrayList<String>();
-        addProperties = new ArrayList<String>();
-        groupbyProperties = new ArrayList<String>();
-        orderProperties = new ArrayList<OrderClause>();
-    }
+  public void setDistinct(boolean distinct) {
+    this.distinct = distinct;
+  }
 
-    public void setDistinct(boolean distinct)
-    {
-        this.distinct = distinct;
-    }
+  public boolean isDistinct() {
+    return distinct;
+  }
 
-    public boolean isDistinct()
-    {
-        return distinct;
-    }
+  public void setDisplayProperties(List<String> properties) {
+    displayProperties = properties;
+  }
 
-    public void setDisplayProperties(List<String> properties)
-    {
-        displayProperties = properties;
+  public void setDisplayProperties(String[] properties) {
+    if (properties != null) {
+      displayProperties = Arrays.asList(properties);
     }
+  }
 
-    public void setDisplayProperties(String[] properties)
-    {
-        if (properties != null) {
-            displayProperties = Arrays.asList(properties);
-        }
-    }
+  public List<String> getDisplayProperties() {
+    return displayProperties;
+  }
 
-    public List<String> getDisplayProperties()
-    {
-        return displayProperties;
-    }
+  public void setDisplayProperty(String property) {
+    displayProperties = new ArrayList<>();
+    displayProperties.add(property);
+  }
 
-    public void setDisplayProperty(String property)
-    {
-        displayProperties = new ArrayList<String>();
-        displayProperties.add(property);
-    }
+  public void addProperty(String property) {
+    addProperties.add(property);
+  }
 
-    public void addProperty(String property)
-    {
-        addProperties.add(property);
-    }
+  public void addGroupByProperty(String property) {
+    groupbyProperties.add(property);
+  }
 
-    public void addGroupByProperty(String property)
-    {
-        groupbyProperties.add(property);
-    }
+  public void addOrderProperty(String property) {
+    orderProperties.add(new OrderClause(property, OrderClause.DESC));
+  }
 
-    public void addOrderProperty(String property)
-    {
-        orderProperties.add(new OrderClause(property, OrderClause.DESC));
-    }
+  public void addOrderProperty(String property, String order) {
+    addOrderProperty(property, order.equals("desc") ? OrderClause.DESC : OrderClause.ASC);
+  }
 
-    public void addOrderProperty(String property, String order)
-    {
-        addOrderProperty(property, order.equals("desc") ? OrderClause.DESC : OrderClause.ASC);
-    }
+  public void addOrderProperty(String property, int order) {
+    orderProperties.add(new OrderClause(property, order));
+  }
 
-    public void addOrderProperty(String property, int order)
-    {
-        orderProperties.add(new OrderClause(property, order));
-    }
-
-    public List<OrderClause> getOrderProperties()
-    {
-        return orderProperties;
-    }
+  public List<OrderClause> getOrderProperties() {
+    return orderProperties;
+  }
 }

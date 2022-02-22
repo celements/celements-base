@@ -33,73 +33,76 @@ import com.xpn.xwiki.doc.XWikiDocument;
 /**
  * The behavior is the following:
  * <ul>
- * <li>The wiki value used is the default wiki if no wiki was specified in the passed reference (or if it was empty).
+ * <li>The wiki value used is the default wiki if no wiki was specified in the passed reference (or
+ * if it was empty).
  * Note that this is different from using the current document's wiki value.</li>
- * <li>The space value used is the space from the current document reference if no space was specified in the passed
- * reference (or if it was empty). If the current document reference is not defined then the default space value is used
+ * <li>The space value used is the space from the current document reference if no space was
+ * specified in the passed
+ * reference (or if it was empty). If the current document reference is not defined then the default
+ * space value is used
  * instead.</li>
- * <li>The page value used is the page from the current document reference if no page was specified in the passed
- * reference (or if it was empty). If the current document reference is not defined then the default page value is used
+ * <li>The page value used is the page from the current document reference if no page was specified
+ * in the passed
+ * reference (or if it was empty). If the current document reference is not defined then the default
+ * page value is used
  * instead.</li>
  * </ul>
- * 
+ *
  * @version $Id$
  * @since 2.3M1
  */
 @Component("current")
-public class CurrentEntityReferenceValueProvider extends DefaultEntityReferenceValueProvider
-{
-    @Requirement
-    private ModelContext modelContext;
+public class CurrentEntityReferenceValueProvider extends DefaultEntityReferenceValueProvider {
 
-    @Requirement
-    private Execution execution;
+  @Requirement
+  private ModelContext modelContext;
 
-    @Override
-    public String getDefaultValue(EntityType type)
-    {
-        String result = null;
+  @Requirement
+  private Execution execution;
 
-        if (type == EntityType.WIKI) {
-            EntityReference wikiReference = this.modelContext.getCurrentEntityReference();
-            if (wikiReference != null) {
-                wikiReference = wikiReference.extractReference(EntityType.WIKI);
-            }
-            if (wikiReference != null) {
-                result = wikiReference.getName();
-            }
-        } else if (type == EntityType.SPACE || type == EntityType.DOCUMENT) {
-            XWikiContext xcontext = getContext();
-            if (xcontext != null) {
-                XWikiDocument currentDoc = xcontext.getDoc();
-                if (currentDoc != null) {
-                    if (type == EntityType.SPACE) {
-                        result = currentDoc.getDocumentReference().getLastSpaceReference().getName();
-                    } else {
-                        result = currentDoc.getDocumentReference().getName();
-                    }
-                }
-            }
+  @Override
+  public String getDefaultValue(EntityType type) {
+    String result = null;
+
+    if (type == EntityType.WIKI) {
+      EntityReference wikiReference = this.modelContext.getCurrentEntityReference();
+      if (wikiReference != null) {
+        wikiReference = wikiReference.extractReference(EntityType.WIKI);
+      }
+      if (wikiReference != null) {
+        result = wikiReference.getName();
+      }
+    } else if ((type == EntityType.SPACE) || (type == EntityType.DOCUMENT)) {
+      XWikiContext xcontext = getContext();
+      if (xcontext != null) {
+        XWikiDocument currentDoc = xcontext.getDoc();
+        if (currentDoc != null) {
+          if (type == EntityType.SPACE) {
+            result = currentDoc.getDocumentReference().getLastSpaceReference().getName();
+          } else {
+            result = currentDoc.getDocumentReference().getName();
+          }
         }
-
-        if (result == null) {
-            result = super.getDefaultValue(type);
-        }
-
-        return result;
+      }
     }
 
-    /**
-     * @return the XWiki Context used to bridge with the old API
-     */
-    private XWikiContext getContext()
-    {
-        XWikiContext xcontext = null;
-
-        if (this.execution.getContext() != null) {
-            xcontext = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
-        }
-
-        return xcontext;
+    if (result == null) {
+      result = super.getDefaultValue(type);
     }
+
+    return result;
+  }
+
+  /**
+   * @return the XWiki Context used to bridge with the old API
+   */
+  private XWikiContext getContext() {
+    XWikiContext xcontext = null;
+
+    if (this.execution.getContext() != null) {
+      xcontext = (XWikiContext) this.execution.getContext().getProperty("xwikicontext");
+    }
+
+    return xcontext;
+  }
 }

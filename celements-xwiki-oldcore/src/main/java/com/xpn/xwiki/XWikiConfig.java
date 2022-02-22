@@ -29,78 +29,74 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 
-public class XWikiConfig extends Properties
-{
-    public XWikiConfig()
-    {
-        // Default constructor so that properties can be added after constructing the instance
-        // by using XWikiConfig.put().
-    }
+public class XWikiConfig extends Properties {
 
-    public XWikiConfig(String path) throws XWikiException
-    {
-        try {
-            FileInputStream fis = new FileInputStream(path);
-            loadConfig(fis, path);
-        } catch (FileNotFoundException e) {
-            Object[] args = {path};
-            throw new XWikiException(XWikiException.MODULE_XWIKI_CONFIG,
-                XWikiException.ERROR_XWIKI_CONFIG_FILENOTFOUND, "Configuration file {0} not found", e, args);
-        }
-    }
+  public XWikiConfig() {
+    // Default constructor so that properties can be added after constructing the instance
+    // by using XWikiConfig.put().
+  }
 
-    public XWikiConfig(InputStream is) throws XWikiException
-    {
-        if (is != null) {
-            loadConfig(is, "");
-        }
+  public XWikiConfig(String path) throws XWikiException {
+    try {
+      FileInputStream fis = new FileInputStream(path);
+      loadConfig(fis, path);
+    } catch (FileNotFoundException e) {
+      Object[] args = { path };
+      throw new XWikiException(XWikiException.MODULE_XWIKI_CONFIG,
+          XWikiException.ERROR_XWIKI_CONFIG_FILENOTFOUND, "Configuration file {0} not found", e,
+          args);
     }
+  }
 
-    public void loadConfig(InputStream is, String path) throws XWikiException
-    {
-        try {
-            load(is);
-        } catch (IOException e) {
-            Object[] args = {path};
-            throw new XWikiException(XWikiException.MODULE_XWIKI_CONFIG, XWikiException.ERROR_XWIKI_CONFIG_FORMATERROR,
-                "Error reading configuration file", e, args);
-        }
+  public XWikiConfig(InputStream is) throws XWikiException {
+    if (is != null) {
+      loadConfig(is, "");
     }
+  }
 
-    /**
-     * @return array of string splited from property.
-     * @param param - name of property
-     */
-    public String[] getPropertyAsList(String param)
-    {
-        return StringUtils.split(getProperty(param, ""), " ,");
+  public void loadConfig(InputStream is, String path) throws XWikiException {
+    try {
+      load(is);
+    } catch (IOException e) {
+      Object[] args = { path };
+      throw new XWikiException(XWikiException.MODULE_XWIKI_CONFIG,
+          XWikiException.ERROR_XWIKI_CONFIG_FORMATERROR,
+          "Error reading configuration file", e, args);
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * This method trims the spaces around the value.
-     * </p>
-     * 
-     * @see java.util.Properties#getProperty(java.lang.String, java.lang.String)
-     */
-    @Override
-    public String getProperty(String key, String defaultValue)
-    {
-        return StringUtils.trim(super.getProperty(key, defaultValue));
-    }
+  /**
+   * @return array of string splited from property.
+   * @param param
+   *          - name of property
+   */
+  public String[] getPropertyAsList(String param) {
+    return StringUtils.split(getProperty(param, ""), " ,");
+  }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * This method trims the spaces around the value.
-     * </p>
-     * 
-     * @see java.util.Properties#getProperty(java.lang.String)
-     */
-    @Override
-    public String getProperty(String key)
-    {
-        return StringUtils.trim(super.getProperty(key));
-    }
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This method trims the spaces around the value.
+   * </p>
+   *
+   * @see java.util.Properties#getProperty(java.lang.String, java.lang.String)
+   */
+  @Override
+  public String getProperty(String key, String defaultValue) {
+    return StringUtils.trim(super.getProperty(key, defaultValue));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This method trims the spaces around the value.
+   * </p>
+   *
+   * @see java.util.Properties#getProperty(java.lang.String)
+   */
+  @Override
+  public String getProperty(String key) {
+    return StringUtils.trim(super.getProperty(key));
+  }
 }

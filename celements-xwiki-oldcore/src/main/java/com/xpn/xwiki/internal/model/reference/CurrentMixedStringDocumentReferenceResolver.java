@@ -29,7 +29,8 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceValueProvider;
 
 /**
- * Resolve a String representing an Entity Reference into an {@link org.xwiki.model.reference.EntityReference} object.
+ * Resolve a String representing an Entity Reference into an
+ * {@link org.xwiki.model.reference.EntityReference} object.
  * The behavior is the one defined in
  * {@link com.xpn.xwiki.internal.model.reference.CurrentMixedEntityReferenceValueProvider}.
  *
@@ -37,28 +38,31 @@ import org.xwiki.model.reference.EntityReferenceValueProvider;
  * @since 2.2M1
  */
 @Component("currentmixed")
-public class CurrentMixedStringDocumentReferenceResolver extends AbstractStringEntityReferenceResolver
-    implements DocumentReferenceResolver<String>
-{
-    @Requirement("currentmixed")
-    private EntityReferenceValueProvider provider;
+public class CurrentMixedStringDocumentReferenceResolver
+    extends AbstractStringEntityReferenceResolver
+    implements DocumentReferenceResolver<String> {
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.model.reference.DocumentReferenceResolver#resolve
-     */
-    public DocumentReference resolve(String documentReferenceRepresentation, Object... parameters)
-    {
-        return new DocumentReference(resolve(documentReferenceRepresentation, EntityType.DOCUMENT, parameters));
-    }
+  @Requirement("currentmixed")
+  private EntityReferenceValueProvider provider;
 
-    /**
-     * {@inheritDoc}
-     * @see DefaultStringEntityReferenceResolver#getDefaultValue
-     */
-    @Override
-    protected String getDefaultValue(EntityType type, Object... parameters)
-    {
-        return this.provider.getDefaultValue(type);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.model.reference.DocumentReferenceResolver#resolve
+   */
+  @Override
+  public DocumentReference resolve(String documentReferenceRepresentation, Object... parameters) {
+    return new DocumentReference(
+        resolve(documentReferenceRepresentation, EntityType.DOCUMENT, parameters));
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see DefaultStringEntityReferenceResolver#getDefaultValue
+   */
+  @Override
+  protected String getDefaultValue(EntityType type, Object... parameters) {
+    return this.provider.getDefaultValue(type);
+  }
 }

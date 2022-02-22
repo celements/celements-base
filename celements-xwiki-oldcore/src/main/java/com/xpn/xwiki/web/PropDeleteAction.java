@@ -29,26 +29,28 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 /**
- * Action for removing a property definition from the current class. The property to remove is specified in the {@code
+ * Action for removing a property definition from the current class. The property to remove is
+ * specified in the {@code
  * propname} request parameter, and the class is the one defined in the requested document.
- * 
+ *
  * @version $Id$
  * @since 2.4M2
  */
-public class PropDeleteAction extends AbstractPropChangeAction
-{
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void changePropertyDefinition(BaseClass xclass, String propertyName, XWikiContext context)
-        throws XWikiException
-    {
-        XWiki xwiki = context.getWiki();
-        XWikiDocument doc = context.getDoc();
+public class PropDeleteAction extends AbstractPropChangeAction {
 
-        xclass.removeField(propertyName);
-        xwiki.saveDocument(doc, context.getMessageTool().get("core.model.xclass.deleteClassProperty.versionSummary",
-            Collections.singletonList(propertyName)), true, context);
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void changePropertyDefinition(BaseClass xclass, String propertyName, XWikiContext context)
+      throws XWikiException {
+    XWiki xwiki = context.getWiki();
+    XWikiDocument doc = context.getDoc();
+
+    xclass.removeField(propertyName);
+    xwiki.saveDocument(doc,
+        context.getMessageTool().get("core.model.xclass.deleteClassProperty.versionSummary",
+            Collections.singletonList(propertyName)),
+        true, context);
+  }
 }

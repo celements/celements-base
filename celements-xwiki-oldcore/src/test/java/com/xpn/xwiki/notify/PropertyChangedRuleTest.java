@@ -21,6 +21,7 @@ package com.xpn.xwiki.notify;
 
 import org.jmock.Mock;
 import org.jmock.core.constraint.IsEqual;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -29,551 +30,541 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
-import org.xwiki.model.reference.DocumentReference;
 
 /**
  * Tests the {@link PropertyChangedRule} in the notification mechanism. <br />
- * The tests are done for the {@link DocChangeRule#verify(XWikiDocument, XWikiDocument, XWikiContext)} function and,
- * since this function should be symmetric with respect to its two document parameters, all the tests are done symmetric
- * too: each test function contains two asserttions, one for the result of <tt>verify(newdoc, olddoc, context)</tt>
- * and the other one for <tt>verify(olddoc, newdoc, context)</tt>; some tests cases might be duplicated by the
+ * The tests are done for the
+ * {@link DocChangeRule#verify(XWikiDocument, XWikiDocument, XWikiContext)} function and,
+ * since this function should be symmetric with respect to its two document parameters, all the
+ * tests are done symmetric
+ * too: each test function contains two asserttions, one for the result of
+ * <tt>verify(newdoc, olddoc, context)</tt>
+ * and the other one for <tt>verify(olddoc, newdoc, context)</tt>; some tests cases might be
+ * duplicated by the
  * symmetric call in another test function.
  */
 public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCase
-    implements XWikiDocChangeNotificationInterface
-{
-    private PropertyChangedRule rule;
+    implements XWikiDocChangeNotificationInterface {
 
-    private XWikiDocument classDoc;
+  private PropertyChangedRule rule;
 
-    private String testClassName = "Test.TestClass";
+  private XWikiDocument classDoc;
 
-    private DocumentReference testClassReference = new DocumentReference("xwiki", "Test", "TestClass");
+  private String testClassName = "Test.TestClass";
 
-    private BaseClass testClass;
+  private DocumentReference testClassReference = new DocumentReference("xwiki", "Test",
+      "TestClass");
 
-    private BaseClass otherClass;
+  private BaseClass testClass;
 
-    private String otherClassName = "Test.OtherClass";
+  private BaseClass otherClass;
 
-    private DocumentReference testOtherClassReference = new DocumentReference("xwiki", "Test", "OtherClass");
+  private String otherClassName = "Test.OtherClass";
 
-    private String testPropertyName = "field";
+  private DocumentReference testOtherClassReference = new DocumentReference("xwiki", "Test",
+      "OtherClass");
 
-    private XWikiContext context;
+  private String testPropertyName = "field";
 
-    private Mock mockXWiki;
+  private XWikiContext context;
 
-    private boolean passed;
+  private Mock mockXWiki;
 
-    /**
-     * Creates 2 classes: one that would actually be used to create objects and check property changes and the other one
-     * to be able to test behaviour when the document contains more than one type of objects. Creates a xwiki mock that
-     * only returns the above mentioned classes on {@link XWiki#getClass(String, XWikiContext)}.
-     */
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  private boolean passed;
 
-        this.context = new XWikiContext();
+  /**
+   * Creates 2 classes: one that would actually be used to create objects and check property changes
+   * and the other one
+   * to be able to test behaviour when the document contains more than one type of objects. Creates
+   * a xwiki mock that
+   * only returns the above mentioned classes on {@link XWiki#getClass(String, XWikiContext)}.
+   */
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-        this.mockXWiki = mock(XWiki.class);
-        this.mockXWiki.stubs().method("getXClass").with(new IsEqual(testClassReference), new IsEqual(this.context))
-            .will(returnValue(this.testClass));
-        this.mockXWiki.stubs().method("getXClass").with(new IsEqual(testOtherClassReference), new IsEqual(this.context))
-            .will(returnValue(this.otherClass));
+    this.context = new XWikiContext();
 
-        this.context.setWiki((XWiki) this.mockXWiki.proxy());
+    this.mockXWiki = mock(XWiki.class);
+    this.mockXWiki.stubs().method("getXClass")
+        .with(new IsEqual(testClassReference), new IsEqual(this.context))
+        .will(returnValue(this.testClass));
+    this.mockXWiki.stubs().method("getXClass")
+        .with(new IsEqual(testOtherClassReference), new IsEqual(this.context))
+        .will(returnValue(this.otherClass));
 
-        this.classDoc = new XWikiDocument("Test", "TestClass");
-        this.testClass = this.classDoc.getxWikiClass();
-        testClass.addTextField(this.testPropertyName, this.testPropertyName, 10);
+    this.context.setWiki((XWiki) this.mockXWiki.proxy());
 
-        XWikiDocument otherClassDoc = new XWikiDocument("Test", "OtherClass");
-        this.otherClass = otherClassDoc.getxWikiClass();
-        // Just to make tests a little more interesting
-        this.otherClass.addTextField(this.testPropertyName, this.testPropertyName, 10);
+    this.classDoc = new XWikiDocument("Test", "TestClass");
+    this.testClass = this.classDoc.getxWikiClass();
+    testClass.addTextField(this.testPropertyName, this.testPropertyName, 10);
 
-        this.rule = new PropertyChangedRule(this, this.testClassName, this.testPropertyName);
-    }
+    XWikiDocument otherClassDoc = new XWikiDocument("Test", "OtherClass");
+    this.otherClass = otherClassDoc.getxWikiClass();
+    // Just to make tests a little more interesting
+    this.otherClass.addTextField(this.testPropertyName, this.testPropertyName, 10);
 
-    public void testVerifySingleObjectNotChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+    this.rule = new PropertyChangedRule(this, this.testClassName, this.testPropertyName);
+  }
 
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+  public void testVerifySingleObjectNotChanged() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
-        oldObj.setStringValue(this.testPropertyName, "value");
-        newObj.setStringValue(this.testPropertyName, "value");
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
 
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
+    oldObj.setStringValue(this.testPropertyName, "value");
+    newObj.setStringValue(this.testPropertyName, "value");
 
-        // The rule should be symmetric. Do the inverse test too
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
 
-    public void testVerifySingleObjectChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+    // The rule should be symmetric. Do the inverse test too
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
 
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+  public void testVerifySingleObjectChanged() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
-        oldObj.setStringValue(this.testPropertyName, "value1");
-        newObj.setStringValue(this.testPropertyName, "value2");
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
 
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
+    oldObj.setStringValue(this.testPropertyName, "value1");
+    newObj.setStringValue(this.testPropertyName, "value2");
 
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
 
-    public void testVerifySingleObjectXWikiClassNotChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = (XWikiDocument) this.classDoc.clone();
-        XWikiDocument oldDoc = (XWikiDocument) this.classDoc.clone();
-
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
-
-        oldObj.setStringValue(this.testPropertyName, "value");
-        newObj.setStringValue(this.testPropertyName, "value");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsXWikiClassNotChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = (XWikiDocument) this.classDoc.clone();
-        XWikiDocument oldDoc = (XWikiDocument) this.classDoc.clone();
-
-        BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
-
-        otherOldObject.setStringValue(this.testPropertyName, "value1");
-        oldObj.setStringValue(this.testPropertyName, "value");
-        otherNewObject.setStringValue(this.testPropertyName, "value1");
-        newObj.setStringValue(this.testPropertyName, "value");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsXWikiClassChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = (XWikiDocument) this.classDoc.clone();
-        XWikiDocument oldDoc = (XWikiDocument) this.classDoc.clone();
-
-        BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
-
-        otherOldObject.setStringValue(this.testPropertyName, "value1");
-        oldObj.setStringValue(this.testPropertyName, "value1");
-        otherNewObject.setStringValue(this.testPropertyName, "value1");
-        newObj.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifySingleObjectXWikiClassChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = (XWikiDocument) this.classDoc.clone();
-        XWikiDocument oldDoc = (XWikiDocument) this.classDoc.clone();
-
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
-
-        oldObj.setStringValue(this.testPropertyName, "value1");
-        newObj.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsMultipleXWikiClassChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = (XWikiDocument) this.classDoc.clone();
-        XWikiDocument oldDoc = (XWikiDocument) this.classDoc.clone();
-
-        BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-
-        otherOldObject.setStringValue(this.testPropertyName, "value1");
-        oldObj.setStringValue(this.testPropertyName, "value1");
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-        otherNewObject.setStringValue(this.testPropertyName, "value1");
-        newObj.setStringValue(this.testPropertyName, "value1");
-        newObj2.setStringValue(this.testPropertyName, "value3");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsMultipleXWikiClassNotChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = (XWikiDocument) this.classDoc.clone();
-        XWikiDocument oldDoc = (XWikiDocument) this.classDoc.clone();
-
-        BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-
-        otherOldObject.setStringValue(this.testPropertyName, "value1");
-        oldObj.setStringValue(this.testPropertyName, "value1");
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-        otherNewObject.setStringValue(this.testPropertyName, "value1");
-        newObj.setStringValue(this.testPropertyName, "value1");
-        newObj2.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
-
-    public void testVerifyObjectAdded() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
-
-        newObj.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyObjectDeleted() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-
-        oldObj.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyNoObjectOfClassObjectDeleted() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.otherClassName, this.context);
-
-        newObj.setStringValue(this.testPropertyName, "value1");
-        oldObj.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyNoObjectOfClass() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject oldObj = oldDoc.newObject(this.otherClassName, this.context);
-        BaseObject newObj = newDoc.newObject(this.otherClassName, this.context);
-
-        newObj.setStringValue(this.testPropertyName, "value1");
-        oldObj.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsPropertyNotChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-        newObj2.setStringValue(this.testPropertyName, "value2");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsPropertyChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-        newObj2.setStringValue(this.testPropertyName, "value2");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj2.setStringValue(this.testPropertyName, "value3");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsOtherObjectAdded() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject newObjOtherClass = newDoc.newObject(this.otherClassName, this.context);
-        newObjOtherClass.setStringValue(this.testPropertyName, "value2");
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-        newObj2.setStringValue(this.testPropertyName, "value2");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsOtherObjectDeleted() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-        newObj2.setStringValue(this.testPropertyName, "value2");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject oldObjOtherClass = oldDoc.newObject(this.otherClassName, this.context);
-        oldObjOtherClass.setStringValue(this.testPropertyName, "value2");
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertFalse("My notification should not have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsObjectAdded() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-        newObj2.setStringValue(this.testPropertyName, "value2");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsObjectDeleted() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsOtherObjectAddedPropertyChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject newObjOtherClass = newDoc.newObject(this.otherClassName, this.context);
-        newObjOtherClass.setStringValue(this.testPropertyName, "value2");
-        BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
-        newObj2.setStringValue(this.testPropertyName, "value3");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void testVerifyMultipleObjectsClassChanged() throws XWikiException
-    {
-        XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
-        XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
-
-        BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
-        newObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject newObjOtherClass = newDoc.newObject(this.otherClassName, this.context);
-        newObjOtherClass.setStringValue(this.testPropertyName, "value2");
-
-        BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj1.setStringValue(this.testPropertyName, "value1");
-        BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
-        oldObj2.setStringValue(this.testPropertyName, "value2");
-
-        this.passed = false;
-        this.rule.verify(newDoc, oldDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-
-        // The rule should be symmetric. Do the inverse test too.
-        this.passed = false;
-        this.rule.verify(oldDoc, newDoc, this.context);
-        assertTrue("My notification should have been called", this.passed);
-    }
-
-    public void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc, int event,
-        XWikiContext context)
-    {
-        this.passed = true;
-    }
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifySingleObjectXWikiClassNotChanged() throws XWikiException {
+    XWikiDocument newDoc = this.classDoc.clone();
+    XWikiDocument oldDoc = this.classDoc.clone();
+
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+
+    oldObj.setStringValue(this.testPropertyName, "value");
+    newObj.setStringValue(this.testPropertyName, "value");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsXWikiClassNotChanged() throws XWikiException {
+    XWikiDocument newDoc = this.classDoc.clone();
+    XWikiDocument oldDoc = this.classDoc.clone();
+
+    BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+
+    otherOldObject.setStringValue(this.testPropertyName, "value1");
+    oldObj.setStringValue(this.testPropertyName, "value");
+    otherNewObject.setStringValue(this.testPropertyName, "value1");
+    newObj.setStringValue(this.testPropertyName, "value");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsXWikiClassChanged() throws XWikiException {
+    XWikiDocument newDoc = this.classDoc.clone();
+    XWikiDocument oldDoc = this.classDoc.clone();
+
+    BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+
+    otherOldObject.setStringValue(this.testPropertyName, "value1");
+    oldObj.setStringValue(this.testPropertyName, "value1");
+    otherNewObject.setStringValue(this.testPropertyName, "value1");
+    newObj.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifySingleObjectXWikiClassChanged() throws XWikiException {
+    XWikiDocument newDoc = this.classDoc.clone();
+    XWikiDocument oldDoc = this.classDoc.clone();
+
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+
+    oldObj.setStringValue(this.testPropertyName, "value1");
+    newObj.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsMultipleXWikiClassChanged() throws XWikiException {
+    XWikiDocument newDoc = this.classDoc.clone();
+    XWikiDocument oldDoc = this.classDoc.clone();
+
+    BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+
+    otherOldObject.setStringValue(this.testPropertyName, "value1");
+    oldObj.setStringValue(this.testPropertyName, "value1");
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+    otherNewObject.setStringValue(this.testPropertyName, "value1");
+    newObj.setStringValue(this.testPropertyName, "value1");
+    newObj2.setStringValue(this.testPropertyName, "value3");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsMultipleXWikiClassNotChanged() throws XWikiException {
+    XWikiDocument newDoc = this.classDoc.clone();
+    XWikiDocument oldDoc = this.classDoc.clone();
+
+    BaseObject otherOldObject = oldDoc.newObject(this.otherClassName, this.context);
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject otherNewObject = newDoc.newObject(this.otherClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+
+    otherOldObject.setStringValue(this.testPropertyName, "value1");
+    oldObj.setStringValue(this.testPropertyName, "value1");
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+    otherNewObject.setStringValue(this.testPropertyName, "value1");
+    newObj.setStringValue(this.testPropertyName, "value1");
+    newObj2.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
+
+  public void testVerifyObjectAdded() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj = newDoc.newObject(this.testClassName, this.context);
+
+    newObj.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyObjectDeleted() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+
+    oldObj.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyNoObjectOfClassObjectDeleted() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject oldObj = oldDoc.newObject(this.testClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.otherClassName, this.context);
+
+    newObj.setStringValue(this.testPropertyName, "value1");
+    oldObj.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyNoObjectOfClass() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject oldObj = oldDoc.newObject(this.otherClassName, this.context);
+    BaseObject newObj = newDoc.newObject(this.otherClassName, this.context);
+
+    newObj.setStringValue(this.testPropertyName, "value1");
+    oldObj.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsPropertyNotChanged() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+    newObj2.setStringValue(this.testPropertyName, "value2");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsPropertyChanged() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+    newObj2.setStringValue(this.testPropertyName, "value2");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj2.setStringValue(this.testPropertyName, "value3");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsOtherObjectAdded() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject newObjOtherClass = newDoc.newObject(this.otherClassName, this.context);
+    newObjOtherClass.setStringValue(this.testPropertyName, "value2");
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+    newObj2.setStringValue(this.testPropertyName, "value2");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsOtherObjectDeleted() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+    newObj2.setStringValue(this.testPropertyName, "value2");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject oldObjOtherClass = oldDoc.newObject(this.otherClassName, this.context);
+    oldObjOtherClass.setStringValue(this.testPropertyName, "value2");
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertFalse("My notification should not have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsObjectAdded() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+    newObj2.setStringValue(this.testPropertyName, "value2");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsObjectDeleted() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsOtherObjectAddedPropertyChanged() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject newObjOtherClass = newDoc.newObject(this.otherClassName, this.context);
+    newObjOtherClass.setStringValue(this.testPropertyName, "value2");
+    BaseObject newObj2 = newDoc.newObject(this.testClassName, this.context);
+    newObj2.setStringValue(this.testPropertyName, "value3");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  public void testVerifyMultipleObjectsClassChanged() throws XWikiException {
+    XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
+    XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
+
+    BaseObject newObj1 = newDoc.newObject(this.testClassName, this.context);
+    newObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject newObjOtherClass = newDoc.newObject(this.otherClassName, this.context);
+    newObjOtherClass.setStringValue(this.testPropertyName, "value2");
+
+    BaseObject oldObj1 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj1.setStringValue(this.testPropertyName, "value1");
+    BaseObject oldObj2 = oldDoc.newObject(this.testClassName, this.context);
+    oldObj2.setStringValue(this.testPropertyName, "value2");
+
+    this.passed = false;
+    this.rule.verify(newDoc, oldDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+
+    // The rule should be symmetric. Do the inverse test too.
+    this.passed = false;
+    this.rule.verify(oldDoc, newDoc, this.context);
+    assertTrue("My notification should have been called", this.passed);
+  }
+
+  @Override
+  public void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc,
+      int event,
+      XWikiContext context) {
+    this.passed = true;
+  }
 }

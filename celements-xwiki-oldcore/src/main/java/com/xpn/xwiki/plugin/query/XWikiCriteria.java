@@ -20,38 +20,37 @@
  */
 package com.xpn.xwiki.plugin.query;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import com.xpn.xwiki.util.Util;
 
-import java.util.*;
+public class XWikiCriteria {
 
-public class XWikiCriteria
-{
-    protected Map<String, Object> params = new HashMap<String, Object>();
+  protected Map<String, Object> params = new HashMap<>();
 
-    public Object getParameter(String field)
-    {
-        return params.get(field);
+  public Object getParameter(String field) {
+    return params.get(field);
+  }
+
+  public Map<String, Object> getParameters(String field) {
+    return Util.getSubMap(params, field);
+  }
+
+  public void setParam(String field, Object value) {
+    params.put(field, value);
+  }
+
+  public Set<String> getClasses() {
+    Set<String> set = new HashSet<>();
+    for (String key : params.keySet()) {
+      String objname = key.substring(0, key.indexOf('_'));
+      if ((!objname.equals("") && (!objname.equals("doc")))) {
+        set.add(objname);
+      }
     }
-
-    public Map<String, Object> getParameters(String field)
-    {
-        return Util.getSubMap(params, field);
-    }
-
-    public void setParam(String field, Object value)
-    {
-        params.put(field, value);
-    }
-
-    public Set<String> getClasses()
-    {
-        Set<String> set = new HashSet<String>();
-        for (Iterator<String> it = params.keySet().iterator(); it.hasNext();) {
-            String key = it.next();
-            String objname = key.substring(0, key.indexOf('_'));
-            if ((!objname.equals("") && (!objname.equals("doc"))))
-                set.add(objname);
-        }
-        return set;
-    }
+    return set;
+  }
 }

@@ -36,89 +36,90 @@ import com.xpn.xwiki.user.api.XWikiRightService;
 
 /**
  * Verify that notifications are correctly sent in the {@link XWiki} class.
- * 
+ *
  * @version $Id$
  */
-public class XWikiNotificationTest extends AbstractBridgedXWikiComponentTestCase
-{
-    public class TestListener implements XWikiDocChangeNotificationInterface
-    {
-        public boolean hasListenerBeenCalled = false;
+public class XWikiNotificationTest extends AbstractBridgedXWikiComponentTestCase {
 
-        public boolean expectedNewStatus = true;
+  public class TestListener implements XWikiDocChangeNotificationInterface {
 
-        public void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc, int event,
-            XWikiContext context)
-        {
-            assertEquals("Space.Page", newdoc.getFullName());
-            assertNotNull("Shouldn't have been null", olddoc);
-            assertEquals("Should have been new, since this is a new document", this.expectedNewStatus, olddoc.isNew());
-            this.hasListenerBeenCalled = true;
-        }
-    }
+    public boolean hasListenerBeenCalled = false;
 
-    XWiki xwiki;
+    public boolean expectedNewStatus = true;
 
     @Override
-    public void setUp() throws Exception
-    {
-        super.setUp();
-
-        this.xwiki = new XWiki();
-        getContext().setWiki(this.xwiki);
-
-        this.xwiki.setNotificationManager(new XWikiNotificationManager());
-
-        Mock mockStore = mock(XWikiStoreInterface.class);
-        mockStore.expects(atLeastOnce()).method("saveXWikiDoc");
-        mockStore.stubs().method("loadXWikiDoc").will(new CustomStub("Implements XWiki.getDocument")
-        {
-            public Object invoke(Invocation invocation) throws Throwable
-            {
-                return invocation.parameterValues.get(0);
-            }
-        });
-        this.xwiki.setStore((XWikiStoreInterface) mockStore.proxy());
+    public void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc,
+        int event,
+        XWikiContext context) {
+      assertEquals("Space.Page", newdoc.getFullName());
+      assertNotNull("Shouldn't have been null", olddoc);
+      assertEquals("Should have been new, since this is a new document", this.expectedNewStatus,
+          olddoc.isNew());
+      this.hasListenerBeenCalled = true;
     }
+  }
 
-    /**
-     * We only verify here that the saveDocument API calls the Notification Manager. Detailed tests of the notification
-     * classes are implemented in the notification package.
-     */
-    public void testSaveDocumentSendNotifications() throws Exception
-    {
-        TestListener listener = new TestListener();
-        this.xwiki.getNotificationManager().addGeneralRule(new DocChangeRule(listener));
+  XWiki xwiki;
 
-        XWikiDocument document = new XWikiDocument("Space", "Page");
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
 
-        this.xwiki.saveDocument(document, getContext());
-        assertTrue("Listener not called", listener.hasListenerBeenCalled);
-    }
+    this.xwiki = new XWiki();
+    getContext().setWiki(this.xwiki);
 
-    /**
-     * We only verify here that the saveDocument API calls the Notification Manager. Detailed tests of the notification
-     * classes are implemented in the notification package.
-     */
-    public void testSaveDocumentFromAPIUsesCorrectOriginalDocument() throws Exception
-    {
-        Mock mockRights = mock(XWikiRightService.class);
-        mockRights.stubs().method("hasAccessLevel").will(returnValue(true));
-        this.xwiki.setRightService((XWikiRightService) mockRights.proxy());
+    this.xwiki.setNotificationManager(new XWikiNotificationManager());
 
-        TestListener listener = new TestListener();
-        listener.expectedNewStatus = false;
-        this.xwiki.getNotificationManager().addGeneralRule(new DocChangeRule(listener));
+    Mock mockStore = mock(XWikiStoreInterface.class);
+    mockStore.expects(atLeastOnce()).method("saveXWikiDoc");
+    mockStore.stubs().method("loadXWikiDoc").will(new CustomStub("Implements XWiki.getDocument") {
 
-        XWikiDocument original = new XWikiDocument("Space", "Page");
-        original.setNew(false);
-        original.setContent("Old content");
-        XWikiDocument document = new XWikiDocument("Space", "Page");
-        document.setContent("New content");
-        document.setOriginalDocument(original);
+      @Override
+      public Object invoke(Invocation invocation) throws Throwable {
+        return invocation.parameterValues.get(0);
+      }
+    });
+    this.xwiki.setStore((XWikiStoreInterface) mockStore.proxy());
+  }
 
-        Document api = new Document(document, getContext());
-        api.save();
-        assertTrue("Listener not called", listener.hasListenerBeenCalled);
-    }
+  /**
+   * We only verify here that the saveDocument API calls the Notification Manager. Detailed tests of
+   * the notification
+   * classes are implemented in the notification package.
+   */
+  public void testSaveDocumentSendNotifications() throws Exception {
+    TestListener listener = new TestListener();
+    this.xwiki.getNotificationManager().addGeneralRule(new DocChangeRule(listener));
+
+    XWikiDocument document = new XWikiDocument("Space", "Page");
+
+    this.xwiki.saveDocument(document, getContext());
+    assertTrue("Listener not called", listener.hasListenerBeenCalled);
+  }
+
+  /**
+   * We only verify here that the saveDocument API calls the Notification Manager. Detailed tests of
+   * the notification
+   * classes are implemented in the notification package.
+   */
+  public void testSaveDocumentFromAPIUsesCorrectOriginalDocument() throws Exception {
+    Mock mockRights = mock(XWikiRightService.class);
+    mockRights.stubs().method("hasAccessLevel").will(returnValue(true));
+    this.xwiki.setRightService((XWikiRightService) mockRights.proxy());
+
+    TestListener listener = new TestListener();
+    listener.expectedNewStatus = false;
+    this.xwiki.getNotificationManager().addGeneralRule(new DocChangeRule(listener));
+
+    XWikiDocument original = new XWikiDocument("Space", "Page");
+    original.setNew(false);
+    original.setContent("Old content");
+    XWikiDocument document = new XWikiDocument("Space", "Page");
+    document.setContent("New content");
+    document.setOriginalDocument(original);
+
+    Document api = new Document(document, getContext());
+    api.save();
+    assertTrue("Listener not called", listener.hasListenerBeenCalled);
+  }
 }

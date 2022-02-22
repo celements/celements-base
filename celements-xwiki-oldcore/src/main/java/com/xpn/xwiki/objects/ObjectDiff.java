@@ -21,134 +21,117 @@
 
 package com.xpn.xwiki.objects;
 
-public class ObjectDiff extends Object
-{
-    private String className;
+public class ObjectDiff extends Object {
 
-    private int number;
+  private String className;
 
-    private String guid;
+  private int number;
 
-    private String propName;
-    
-    private String propType;
+  private String guid;
 
-    private Object prevValue;
+  private String propName;
 
-    private Object newValue;
+  private String propType;
 
-    private String action;
+  private Object prevValue;
 
-    @Deprecated
-    public ObjectDiff(String className, int number, String action, String propName, Object prevValue, Object newValue)
-    {
-        this(className, number, "", action, propName, "", prevValue, newValue);
-    }
+  private Object newValue;
 
-    public ObjectDiff(String className, int number, String guid, String action, String propName, String propType, 
-        Object prevValue, Object newValue)
-    {
-        this.setClassName(className);
-        this.setNumber(number);
-        this.setGuid(guid);
-        this.setAction(action);
-        this.setPropName(propName);
-        this.setPropType(propType);
-        this.setPrevValue(prevValue);
-        this.setNewValue(newValue);
-    }
+  private String action;
 
-    public String getClassName()
-    {
-        return this.className;
-    }
+  @Deprecated
+  public ObjectDiff(String className, int number, String action, String propName, Object prevValue,
+      Object newValue) {
+    this(className, number, "", action, propName, "", prevValue, newValue);
+  }
 
-    public void setClassName(String className)
-    {
-        this.className = className;
-    }
+  public ObjectDiff(String className, int number, String guid, String action, String propName,
+      String propType,
+      Object prevValue, Object newValue) {
+    this.setClassName(className);
+    this.setNumber(number);
+    this.setGuid(guid);
+    this.setAction(action);
+    this.setPropName(propName);
+    this.setPropType(propType);
+    this.setPrevValue(prevValue);
+    this.setNewValue(newValue);
+  }
 
-    public int getNumber()
-    {
-        return this.number;
-    }
+  public String getClassName() {
+    return this.className;
+  }
 
-    public void setNumber(int number)
-    {
-        this.number = number;
-    }
+  public void setClassName(String className) {
+    this.className = className;
+  }
 
-    public String getGuid()
-    {
-        return this.guid;
-    }
+  public int getNumber() {
+    return this.number;
+  }
 
-    public void setGuid(String guid)
-    {
-        this.guid = guid;
-    }
+  public void setNumber(int number) {
+    this.number = number;
+  }
 
-    public String getPropName()
-    {
-        return this.propName;
-    }
+  public String getGuid() {
+    return this.guid;
+  }
 
-    public void setPropName(String propName)
-    {
-        this.propName = propName;
-    }
-    
-    public String getPropType()
-    {
-        return this.propType;
-    }
-    
-    public void setPropType(String propType)
-    {
-        this.propType = propType;
-    }
+  public void setGuid(String guid) {
+    this.guid = guid;
+  }
 
-    public Object getPrevValue()
-    {
-        return this.prevValue;
-    }
+  public String getPropName() {
+    return this.propName;
+  }
 
-    public void setPrevValue(Object prevValue)
-    {
-        this.prevValue = prevValue;
-    }
+  public void setPropName(String propName) {
+    this.propName = propName;
+  }
 
-    public Object getNewValue()
-    {
-        return this.newValue;
-    }
+  public String getPropType() {
+    return this.propType;
+  }
 
-    public void setNewValue(Object newValue)
-    {
-        this.newValue = newValue;
-    }
+  public void setPropType(String propType) {
+    this.propType = propType;
+  }
 
-    public String getAction()
-    {
-        return this.action;
-    }
+  public Object getPrevValue() {
+    return this.prevValue;
+  }
 
-    public void setAction(String action)
-    {
-        this.action = action;
-    }
+  public void setPrevValue(Object prevValue) {
+    this.prevValue = prevValue;
+  }
 
-    @Override
-    public String toString()
-    {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(getClassName());
-        buffer.append(".");
-        buffer.append(getPropName());
-        buffer.append(": ");
-        buffer.append(getPrevValue().toString());
-        buffer.append(" &gt; ");
-        buffer.append(getNewValue().toString());
-        return buffer.toString();
-    }
+  public Object getNewValue() {
+    return this.newValue;
+  }
+
+  public void setNewValue(Object newValue) {
+    this.newValue = newValue;
+  }
+
+  public String getAction() {
+    return this.action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
+  }
+
+  @Override
+  public String toString() {
+    StringBuffer buffer = new StringBuffer();
+    buffer.append(getClassName());
+    buffer.append(".");
+    buffer.append(getPropName());
+    buffer.append(": ");
+    buffer.append(getPrevValue().toString());
+    buffer.append(" &gt; ");
+    buffer.append(getNewValue().toString());
+    return buffer.toString();
+  }
 }

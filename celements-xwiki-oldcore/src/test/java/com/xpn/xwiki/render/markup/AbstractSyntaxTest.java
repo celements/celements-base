@@ -32,52 +32,52 @@ import com.xpn.xwiki.render.XWikiRadeoxRenderer;
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 import com.xpn.xwiki.web.XWikiServletURLFactory;
 
-public abstract class AbstractSyntaxTest extends AbstractBridgedXWikiComponentTestCase
-{
-    protected XWikiContext context;
+public abstract class AbstractSyntaxTest extends AbstractBridgedXWikiComponentTestCase {
 
-    protected XWikiRadeoxRenderer renderer;
+  protected XWikiContext context;
 
-    private Mock mockXWiki;
+  protected XWikiRadeoxRenderer renderer;
 
-    protected XWikiDocument document;
+  private Mock mockXWiki;
 
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-        this.renderer = new XWikiRadeoxRenderer();
-        this.context = new XWikiContext();
+  protected XWikiDocument document;
 
-        this.mockXWiki = mock(XWiki.class);
-        // These are needed by the Link filter
-        this.mockXWiki.stubs().method("exists").will(returnValue(true));
-        this.mockXWiki.stubs().method("showViewAction").will(returnValue(true));
-        this.mockXWiki.stubs().method("skipDefaultSpaceInURLs").will(returnValue(true));
-        this.mockXWiki.stubs().method("useDefaultAction").will(returnValue(true));
-        this.mockXWiki.stubs().method("getDefaultSpace").will(returnValue("Main"));
-        this.mockXWiki.stubs().method("getEncoding").will(returnValue("UTF-8"));
-        this.mockXWiki.stubs().method("getServletPath").will(returnValue("bin/"));
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    this.renderer = new XWikiRadeoxRenderer();
+    this.context = new XWikiContext();
 
-        this.context.setWiki((XWiki) this.mockXWiki.proxy());
+    this.mockXWiki = mock(XWiki.class);
+    // These are needed by the Link filter
+    this.mockXWiki.stubs().method("exists").will(returnValue(true));
+    this.mockXWiki.stubs().method("showViewAction").will(returnValue(true));
+    this.mockXWiki.stubs().method("skipDefaultSpaceInURLs").will(returnValue(true));
+    this.mockXWiki.stubs().method("useDefaultAction").will(returnValue(true));
+    this.mockXWiki.stubs().method("getDefaultSpace").will(returnValue("Main"));
+    this.mockXWiki.stubs().method("getEncoding").will(returnValue("UTF-8"));
+    this.mockXWiki.stubs().method("getServletPath").will(returnValue("bin/"));
 
-        this.context.setURLFactory(new XWikiServletURLFactory(new URL("http://localhost/"), "xwiki/", "bin/"));
+    this.context.setWiki((XWiki) this.mockXWiki.proxy());
 
-        this.document = new XWikiDocument("Main", "WebHome");
+    this.context
+        .setURLFactory(new XWikiServletURLFactory(new URL("http://localhost/"), "xwiki/", "bin/"));
 
-        this.context.setDoc(this.document);
+    this.document = new XWikiDocument("Main", "WebHome");
+
+    this.context.setDoc(this.document);
+  }
+
+  protected void test(ArrayList<String> tests, ArrayList<String> expects) {
+    for (int i = 0; i < tests.size(); ++i) {
+      String result = this.renderer.render(tests.get(i).toString(), this.document, this.document,
+          this.context);
+      String expected = expects.get(i).toString();
+      if (expected.startsWith("...")) {
+        assertTrue(result.indexOf(expected.substring(3, expected.length() - 3)) > 0);
+      } else {
+        assertEquals(expected, result);
+      }
     }
-
-    protected void test(ArrayList<String> tests, ArrayList<String> expects)
-    {
-        for (int i = 0; i < tests.size(); ++i) {
-            String result = this.renderer.render(tests.get(i).toString(), this.document, this.document, this.context);
-            String expected = expects.get(i).toString();
-            if (expected.startsWith("...")) {
-                assertTrue(result.indexOf(expected.substring(3, expected.length() - 3)) > 0);
-            } else {
-                assertEquals(expected, result);
-            }
-        }
-    }
+  }
 }

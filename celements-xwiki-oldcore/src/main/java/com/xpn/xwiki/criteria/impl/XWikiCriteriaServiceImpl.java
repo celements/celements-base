@@ -19,30 +19,35 @@
  */
 package com.xpn.xwiki.criteria.impl;
 
-import com.xpn.xwiki.criteria.api.XWikiCriteriaService;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.criteria.api.XWikiCriteriaService;
 
-public class XWikiCriteriaServiceImpl implements XWikiCriteriaService
-{
-    public XWikiCriteriaServiceImpl(XWikiContext context) {}
-    
-    public DurationFactory getDurationFactory() {
-        return new DurationFactory();
-    }
+public class XWikiCriteriaServiceImpl implements XWikiCriteriaService {
 
-    public PeriodFactory getPeriodFactory() {
-        return new PeriodFactory();
-    }
+  public XWikiCriteriaServiceImpl(XWikiContext context) {}
 
-    public RangeFactory getRangeFactory() {
-        return new RangeFactory();
-    }
+  @Override
+  public DurationFactory getDurationFactory() {
+    return new DurationFactory();
+  }
 
-    public RevisionCriteriaFactory getRevisionCriteriaFactory() {
-        return new RevisionCriteriaFactory();
-    }
+  @Override
+  public PeriodFactory getPeriodFactory() {
+    return new PeriodFactory();
+  }
 
-    public ScopeFactory getScopeFactory() {
-        return new ScopeFactory();
-    }
+  @Override
+  public RangeFactory getRangeFactory() {
+    return new RangeFactory();
+  }
+
+  @Override
+  public RevisionCriteriaFactory getRevisionCriteriaFactory() {
+    return new RevisionCriteriaFactory();
+  }
+
+  @Override
+  public ScopeFactory getScopeFactory() {
+    return new ScopeFactory();
+  }
 }

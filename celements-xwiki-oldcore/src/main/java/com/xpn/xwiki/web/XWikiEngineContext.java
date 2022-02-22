@@ -26,10 +26,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public interface XWikiEngineContext {
-    public Object getAttribute(String name);
-    public void setAttribute(String name, Object value);
-    public String getRealPath(String path);
-    public URL getResource(String name) throws MalformedURLException;
-    public InputStream getResourceAsStream(String name);
-    public String getMimeType(String filename);
+
+  Object getAttribute(String name);
+
+  void setAttribute(String name, Object value);
+
+  String getRealPath(String path);
+
+  URL getResource(String name) throws MalformedURLException;
+
+  InputStream getResourceAsStream(String name);
+
+  String getMimeType(String filename);
 }

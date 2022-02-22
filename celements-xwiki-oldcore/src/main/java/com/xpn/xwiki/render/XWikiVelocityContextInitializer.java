@@ -20,22 +20,22 @@
  */
 package com.xpn.xwiki.render;
 
-import org.xwiki.velocity.VelocityContextInitializer;
+import org.apache.velocity.VelocityContext;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
-import org.apache.velocity.VelocityContext;
+import org.xwiki.velocity.VelocityContextInitializer;
 
 @Component("xwiki")
-public class XWikiVelocityContextInitializer implements VelocityContextInitializer
-{
-    @Requirement
-    private Execution execution;
+public class XWikiVelocityContextInitializer implements VelocityContextInitializer {
 
-    public void initialize(VelocityContext context)
-    {
-        // TODO: Move the Velocity Context initialization code currently located in
-        // VelocityManager.getVelocityContext() here. This requires some refactoring as
-        // it means the XWiki object must be initialized before this code is called.
-    }
+  @Requirement
+  private Execution execution;
+
+  @Override
+  public void initialize(VelocityContext context) {
+    // TODO: Move the Velocity Context initialization code currently located in
+    // VelocityManager.getVelocityContext() here. This requires some refactoring as
+    // it means the XWiki object must be initialized before this code is called.
+  }
 }

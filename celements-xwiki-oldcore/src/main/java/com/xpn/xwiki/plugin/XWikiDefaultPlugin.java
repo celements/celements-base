@@ -26,83 +26,99 @@ import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.doc.XWikiAttachment;
 
 public class XWikiDefaultPlugin implements XWikiPluginInterface {
-    private String name;
-    private String className;
 
-    public XWikiDefaultPlugin(String name, String className, XWikiContext context) {
-        setClassName(className);
-        setName(name);
+  private String name;
+  private String className;
+
+  public XWikiDefaultPlugin(String name, String className, XWikiContext context) {
+    setClassName(className);
+    setName(name);
+  }
+
+  @Override
+  public void init(XWikiContext context) {}
+
+  @Override
+  public void virtualInit(XWikiContext context) {}
+
+  @Override
+  public void flushCache(XWikiContext context) {
+    flushCache();
+  }
+
+  @Override
+  public void flushCache() {
+
+  }
+
+  @Override
+  public String commonTagsHandler(String line, XWikiContext context) {
+    return line;
+  }
+
+  @Override
+  public String startRenderingHandler(String line, XWikiContext context) {
+    return line;
+  }
+
+  @Override
+  public String outsidePREHandler(String line, XWikiContext context) {
+    return line;
+  }
+
+  @Override
+  public String insidePREHandler(String line, XWikiContext context) {
+    return line;
+  }
+
+  @Override
+  public String endRenderingHandler(String line, XWikiContext context) {
+    return line;
+  }
+
+  @Override
+  public Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context) {
+    return null;
+  }
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public void setName(String name) {
+    if (!name.equals(className)) {
+      this.name = name;
     }
+  }
 
-    public void init(XWikiContext context) {
-    }
+  @Override
+  public String getClassName() {
+    return name;
+  }
 
-    public void virtualInit(XWikiContext context) {
-    }
+  @Override
+  public void setClassName(String name) {
+    this.name = name;
+  }
 
-    public void flushCache(XWikiContext context) {
-        flushCache();
-    }
+  @Override
+  public void beginRendering(XWikiContext context) {}
 
-    public void flushCache() {
+  @Override
+  public void endRendering(XWikiContext context) {}
 
-    }
+  @Override
+  public void beginParsing(XWikiContext context) {}
 
-    public String commonTagsHandler(String line, XWikiContext context) {
-        return line;
-    }
+  @Override
+  public String endParsing(String content, XWikiContext context) {
+    return content;
+  }
 
-    public String startRenderingHandler(String line, XWikiContext context) {
-        return line;
-    }
-
-    public String outsidePREHandler(String line, XWikiContext context) {
-        return line;
-    }
-
-    public String insidePREHandler(String line, XWikiContext context) {
-        return line;
-    }
-
-    public String endRenderingHandler(String line, XWikiContext context) {
-        return line;
-    }
-
-    public Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context) {
-        return null;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        if (!name.equals(className))
-         this.name = name;
-    }
-
-    public String getClassName() {
-        return name;
-    }
-
-    public void setClassName(String name) {
-        this.name = name;
-    }
-
-    public void beginRendering(XWikiContext context) {
-    }
-
-    public void endRendering(XWikiContext context) {
-    }
-
-    public void beginParsing(XWikiContext context) {
-    }
-
-    public String endParsing(String content, XWikiContext context) {
-        return content;
-    }
-
-    public XWikiAttachment downloadAttachment(XWikiAttachment attachment, XWikiContext context) {
-    	return attachment;
-    }
+  @Override
+  public XWikiAttachment downloadAttachment(XWikiAttachment attachment, XWikiContext context) {
+    return attachment;
+  }
 }

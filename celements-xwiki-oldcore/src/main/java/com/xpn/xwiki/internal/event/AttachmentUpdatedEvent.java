@@ -24,48 +24,50 @@ import org.xwiki.observation.event.filter.EventFilter;
 
 /**
  * An event triggered when an attachment is updated.
- * 
+ *
  * @version $Id$
  * @since 2.6RC2
  */
-public class AttachmentUpdatedEvent extends AbstractAttachmentEvent
-{
-    /**
-     * The version identifier for this Serializable class. Increment only if the <i>serialized</i> form of the class
-     * changes.
-     */
-    private static final long serialVersionUID = 1L;
+public class AttachmentUpdatedEvent extends AbstractAttachmentEvent {
 
-    /**
-     * Constructor initializing the event filter with an
-     * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event will match any
-     * other attachment update event.
-     */
-    public AttachmentUpdatedEvent()
-    {
-        super();
-    }
+  /**
+   * The version identifier for this Serializable class. Increment only if the <i>serialized</i>
+   * form of the class
+   * changes.
+   */
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * Constructor initializing the event filter with a {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
-     * meaning that this event will match only attachment update events affecting the document matching the passed
-     * document name.
-     * 
-     * @param documentName the name of the document to match
-     * @param name the name of the updated attachment
-     */
-    public AttachmentUpdatedEvent(String documentName, String name)
-    {
-        super(documentName, name);
-    }
+  /**
+   * Constructor initializing the event filter with an
+   * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event
+   * will match any
+   * other attachment update event.
+   */
+  public AttachmentUpdatedEvent() {}
 
-    /**
-     * Constructor using a custom {@link EventFilter}.
-     * 
-     * @param eventFilter the filter to use for matching events
-     */
-    public AttachmentUpdatedEvent(EventFilter eventFilter)
-    {
-        super(eventFilter);
-    }
+  /**
+   * Constructor initializing the event filter with a
+   * {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
+   * meaning that this event will match only attachment update events affecting the document
+   * matching the passed
+   * document name.
+   *
+   * @param documentName
+   *          the name of the document to match
+   * @param name
+   *          the name of the updated attachment
+   */
+  public AttachmentUpdatedEvent(String documentName, String name) {
+    super(documentName, name);
+  }
+
+  /**
+   * Constructor using a custom {@link EventFilter}.
+   *
+   * @param eventFilter
+   *          the filter to use for matching events
+   */
+  public AttachmentUpdatedEvent(EventFilter eventFilter) {
+    super(eventFilter);
+  }
 }

@@ -24,44 +24,45 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Api;
 
+public class XWikiUserManagementToolsAPI extends Api {
 
-public class XWikiUserManagementToolsAPI extends Api{
-    private XWikiUserManagementTools userMngtTools;
+  private XWikiUserManagementTools userMngtTools;
 
-    public XWikiUserManagementToolsAPI(XWikiContext context) {
-        super(context);
-    }
+  public XWikiUserManagementToolsAPI(XWikiContext context) {
+    super(context);
+  }
 
-    public XWikiUserManagementToolsAPI(XWikiUserManagementTools xWikiUserManagementTools, XWikiContext context) {
-        this(context);
-        this.userMngtTools = xWikiUserManagementTools;
-    }
+  public XWikiUserManagementToolsAPI(XWikiUserManagementTools xWikiUserManagementTools,
+      XWikiContext context) {
+    this(context);
+    this.userMngtTools = xWikiUserManagementTools;
+  }
 
-    public String inviteUser(String name, String email) throws XWikiException {
-        return userMngtTools.inviteUser(name, email, getXWikiContext());
-    }
+  public String inviteUser(String name, String email) throws XWikiException {
+    return userMngtTools.inviteUser(name, email, getXWikiContext());
+  }
 
-    public boolean resendInvitation(String email) throws XWikiException {
-        return userMngtTools.resendInvitation(email, getXWikiContext());
-    }
+  public boolean resendInvitation(String email) throws XWikiException {
+    return userMngtTools.resendInvitation(email, getXWikiContext());
+  }
 
-    public String getUserSpace() {
-        return userMngtTools.getUserSpace(getXWikiContext());
-    }
+  public String getUserSpace() {
+    return userMngtTools.getUserSpace(getXWikiContext());
+  }
 
-    public String getUserPage(String email) {
-        return userMngtTools.getUserPage(email, getXWikiContext());
-    }
+  public String getUserPage(String email) {
+    return userMngtTools.getUserPage(email, getXWikiContext());
+  }
 
-    public boolean isValidEmail(String email) {
-        return userMngtTools.isValidEmail(email);
-    }
+  public boolean isValidEmail(String email) {
+    return userMngtTools.isValidEmail(email);
+  }
 
-    public String getUserName(String userPage) throws XWikiException {
-        return userMngtTools.getUserName(userPage, getXWikiContext());
-    }
+  public String getUserName(String userPage) throws XWikiException {
+    return userMngtTools.getUserName(userPage, getXWikiContext());
+  }
 
-    public String getEmail(String userPage) throws XWikiException {
-        return userMngtTools.getEmail(userPage, getXWikiContext());
-    }
+  public String getEmail(String userPage) throws XWikiException {
+    return userMngtTools.getEmail(userPage, getXWikiContext());
+  }
 }

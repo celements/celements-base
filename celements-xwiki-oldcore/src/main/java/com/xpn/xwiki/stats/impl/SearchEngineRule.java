@@ -23,60 +23,59 @@ package com.xpn.xwiki.stats.impl;
 
 /**
  * Matching tool able to find if a referer is a particular search engine.
- * 
+ *
  * @version $Id$
  */
-public class SearchEngineRule extends Object
-{
-    /**
-     * The search engine server address.
-     */
-    private String host;
-    
-    /**
-     * The regular expression to match.
-     */
-    private String regEx;
+public class SearchEngineRule extends Object {
 
-    /**
-     * @param host the search engine server address.
-     * @param regEx the regular expression to match.
-     */
-    public SearchEngineRule(String host, String regEx)
-    {
-        setRegEx(regEx);
-        setHost(host);
-    }
+  /**
+   * The search engine server address.
+   */
+  private String host;
 
-    /**
-     * @return the search engine server address.
-     */
-    public String getHost()
-    {
-        return host;
-    }
+  /**
+   * The regular expression to match.
+   */
+  private String regEx;
 
-    /**
-     * @param host the search engine server address.
-     */
-    public void setHost(String host)
-    {
-        this.host = host;
-    }
-    
-    /**
-     * @return the regular expression to match.
-     */
-    public String getRegEx()
-    {
-        return regEx;
-    }
+  /**
+   * @param host
+   *          the search engine server address.
+   * @param regEx
+   *          the regular expression to match.
+   */
+  public SearchEngineRule(String host, String regEx) {
+    setRegEx(regEx);
+    setHost(host);
+  }
 
-    /**
-     * @param regEx the regular expression to match.
-     */
-    public void setRegEx(String regEx)
-    {
-        this.regEx = regEx;
-    }
+  /**
+   * @return the search engine server address.
+   */
+  public String getHost() {
+    return host;
+  }
+
+  /**
+   * @param host
+   *          the search engine server address.
+   */
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  /**
+   * @return the regular expression to match.
+   */
+  public String getRegEx() {
+    return regEx;
+  }
+
+  /**
+   * @param regEx
+   *          the regular expression to match.
+   */
+  public void setRegEx(String regEx) {
+    this.regEx = regEx;
+  }
 }

@@ -35,105 +35,110 @@ import com.xpn.xwiki.store.XWikiHibernateStore;
 
 /**
  * Store document statistics into the database.
- * 
+ *
  * @version $Id$
  * @since 1.4M2
  */
-public class DocumentStatsStoreItem extends AbstractStatsStoreItem
-{
-    /**
-     * Logging tools.
-     */
-    private static final Log LOG = LogFactory.getLog(DocumentStatsStoreItem.class);
+public class DocumentStatsStoreItem extends AbstractStatsStoreItem {
 
-    /**
-     * The action made on provided wiki/space/document.
-     */
-    private String action;
+  /**
+   * Logging tools.
+   */
+  private static final Log LOG = LogFactory.getLog(DocumentStatsStoreItem.class);
 
-    /**
-     * Is this part of a user visit.
-     */
-    private boolean isVisit;
+  /**
+   * The action made on provided wiki/space/document.
+   */
+  private String action;
 
-    /**
-     * Create new instance of {@link DocumentStatsStoreItem}.
-     * 
-     * @param name can be:
-     *            <ul>
-     *            <li>"" for the entire wiki.</li>
-     *            <li>the space name.</li>
-     *            <li>the full document name.</li>
-     *            </ul>
-     * @param periodDate the period date.
-     * @param periodType the period type.
-     * @param action the action made on provided wiki/space/document.
-     * @param isVisit is this part of a user visit.
-     * @param context the XWiki context.
-     */
-    public DocumentStatsStoreItem(String name, Date periodDate, PeriodType periodType,
-        String action, boolean isVisit, XWikiContext context)
-    {
-        super(name, periodDate, periodType, context);
-        
-        this.action = action;
-        this.isVisit = isVisit;
+  /**
+   * Is this part of a user visit.
+   */
+  private boolean isVisit;
+
+  /**
+   * Create new instance of {@link DocumentStatsStoreItem}.
+   *
+   * @param name
+   *          can be:
+   *          <ul>
+   *          <li>"" for the entire wiki.</li>
+   *          <li>the space name.</li>
+   *          <li>the full document name.</li>
+   *          </ul>
+   * @param periodDate
+   *          the period date.
+   * @param periodType
+   *          the period type.
+   * @param action
+   *          the action made on provided wiki/space/document.
+   * @param isVisit
+   *          is this part of a user visit.
+   * @param context
+   *          the XWiki context.
+   */
+  public DocumentStatsStoreItem(String name, Date periodDate, PeriodType periodType,
+      String action, boolean isVisit, XWikiContext context) {
+    super(name, periodDate, periodType, context);
+
+    this.action = action;
+    this.isVisit = isVisit;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
+   */
+  @Override
+  public String getId() {
+    return String.format("%s %s %s %s", getClass(), this.name, this.action, this.period);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
+   */
+  @Override
+  public void storeInternal(List<XWikiStatsStoreItem> stats) {
+    DocumentStatsStoreItem lastItem = (DocumentStatsStoreItem) stats.get(stats.size() - 1);
+
+    XWikiHibernateStore store = context.getWiki().getHibernateStore();
+    if (store == null) {
+      return;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
-     */
-    public String getId()
-    {
-        return String.format("%s %s %s %s", getClass(), this.name, this.action, this.period);
+    DocumentStats documentStat = new DocumentStats(lastItem.name, lastItem.action,
+        lastItem.periodDate,
+        lastItem.periodType);
+
+    // Load old statistics object from database
+    try {
+      // TODO Fix use of deprecated call.
+      store.loadXWikiCollection(documentStat, context, true);
+    } catch (XWikiException e) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Failed to load document statictics object [" + getId() + "]");
+      }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
-     */
-    public void storeInternal(List<XWikiStatsStoreItem> stats)
-    {
-        DocumentStatsStoreItem lastItem = (DocumentStatsStoreItem) stats.get(stats.size() - 1);
+    // Increment counters
+    documentStat.setIntValue("pageViews", documentStat.getPageViews() + stats.size());
+    for (XWikiStatsStoreItem statItem : stats) {
+      DocumentStatsStoreItem docStat = (DocumentStatsStoreItem) statItem;
 
-        XWikiHibernateStore store = context.getWiki().getHibernateStore();
-        if (store == null) {
-            return;
-        }
-
-        DocumentStats documentStat =
-            new DocumentStats(lastItem.name, lastItem.action, lastItem.periodDate,
-                lastItem.periodType);
-
-        // Load old statistics object from database
-        try {
-            // TODO Fix use of deprecated call.
-            store.loadXWikiCollection(documentStat, context, true);
-        } catch (XWikiException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Failed to load document statictics object [" + getId() + "]");
-            }
-        }
-
-        // Increment counters
-        documentStat.setIntValue("pageViews", documentStat.getPageViews() + stats.size());
-        for (XWikiStatsStoreItem statItem : stats) {
-            DocumentStatsStoreItem docStat = (DocumentStatsStoreItem) statItem;
-
-            if (docStat.isVisit) {
-                documentStat.incVisits();
-            }
-        }
-
-        // Re-save statistics object
-        try {
-            // TODO Fix use of deprecated call.
-            store.saveXWikiCollection(documentStat, context, true);
-        } catch (XWikiException e) {
-            LOG.error("Failed to save document statictics object [" + getId() + "]");
-        }
+      if (docStat.isVisit) {
+        documentStat.incVisits();
+      }
     }
+
+    // Re-save statistics object
+    try {
+      // TODO Fix use of deprecated call.
+      store.saveXWikiCollection(documentStat, context, true);
+    } catch (XWikiException e) {
+      LOG.error("Failed to save document statictics object [" + getId() + "]");
+    }
+  }
 }

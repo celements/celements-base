@@ -19,8 +19,8 @@
  */
 package com.xpn.xwiki.content.parsers;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Provides accessors to find all elements that have been replaced successfully when parsing and
@@ -28,47 +28,45 @@ import java.util.ArrayList;
  *
  * @version $Id$
  */
-public class ReplacementResultCollection extends ParsingResultCollection
-{
-    /**
-     * @see #getReplacedElements()
-     */
-    private List replacedElements = new ArrayList();
+public class ReplacementResultCollection extends ParsingResultCollection {
 
-    /**
-     * @see #getModifiedContent()
-     */
-    private Object modifiedContent;
+  /**
+   * @see #getReplacedElements()
+   */
+  private List replacedElements = new ArrayList();
 
-    /**
-     * @param replacedObject the object replaced successfully
-     */
-    void addReplacedElement(Object replacedObject)
-    {
-        this.replacedElements.add(replacedObject);
-    }
+  /**
+   * @see #getModifiedContent()
+   */
+  private Object modifiedContent;
 
-    /**
-     * @return the replaced elements. For example {@link com.xpn.xwiki.content.Link} objects.
-     */
-    public List getReplacedElements()
-    {
-        return this.replacedElements;
-    }
+  /**
+   * @param replacedObject
+   *          the object replaced successfully
+   */
+  void addReplacedElement(Object replacedObject) {
+    this.replacedElements.add(replacedObject);
+  }
 
-    /**
-     * @param modifiedContent see {@link #getModifiedContent()}
-     */
-    public void setModifiedContent(Object modifiedContent)
-    {
-        this.modifiedContent = modifiedContent;
-    }
+  /**
+   * @return the replaced elements. For example {@link com.xpn.xwiki.content.Link} objects.
+   */
+  public List getReplacedElements() {
+    return this.replacedElements;
+  }
 
-    /**
-     * @return the modified content after the replacements have been done
-     */
-    public Object getModifiedContent()
-    {
-        return this.modifiedContent;
-    }
+  /**
+   * @param modifiedContent
+   *          see {@link #getModifiedContent()}
+   */
+  public void setModifiedContent(Object modifiedContent) {
+    this.modifiedContent = modifiedContent;
+  }
+
+  /**
+   * @return the modified content after the replacements have been done
+   */
+  public Object getModifiedContent() {
+    return this.modifiedContent;
+  }
 }

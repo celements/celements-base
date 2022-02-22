@@ -26,31 +26,41 @@ import com.xpn.xwiki.XWikiContext;
 
 /**
  * Cache rendering result.
- * 
+ *
  * @version $Id$
  * @since 2.4M1
  */
 @ComponentRole
-public interface RenderingCache
-{
-    /**
-     * The stored result of the rendering of the provided source.
-     * 
-     * @param documentReference the reference of the document being rendered
-     * @param source the source to render
-     * @param context the XWiki context
-     * @return the cached result, null if it has not been yet cached
-     */
-    String getRenderedContent(DocumentReference documentReference, String source, XWikiContext context);
+public interface RenderingCache {
 
-    /**
-     * Stored the result of the provided source rendering if the cache is enabled for the provided document.
-     * 
-     * @param documentReference the reference of the document being rendered
-     * @param source the source to render
-     * @param renderedContent rendering result to cache
-     * @param context the XWiki context
-     */
-    void setRenderedContent(DocumentReference documentReference, String source, String renderedContent,
-        XWikiContext context);
+  /**
+   * The stored result of the rendering of the provided source.
+   *
+   * @param documentReference
+   *          the reference of the document being rendered
+   * @param source
+   *          the source to render
+   * @param context
+   *          the XWiki context
+   * @return the cached result, null if it has not been yet cached
+   */
+  String getRenderedContent(DocumentReference documentReference, String source,
+      XWikiContext context);
+
+  /**
+   * Stored the result of the provided source rendering if the cache is enabled for the provided
+   * document.
+   *
+   * @param documentReference
+   *          the reference of the document being rendered
+   * @param source
+   *          the source to render
+   * @param renderedContent
+   *          rendering result to cache
+   * @param context
+   *          the XWiki context
+   */
+  void setRenderedContent(DocumentReference documentReference, String source,
+      String renderedContent,
+      XWikiContext context);
 }

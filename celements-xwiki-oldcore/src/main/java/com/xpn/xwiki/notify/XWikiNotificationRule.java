@@ -26,14 +26,15 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 @Deprecated
 public interface XWikiNotificationRule {
-    /**
-     * Note: olddoc is null when the document is new and has never been saved
-     */
-    public void verify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context);
 
-    public void preverify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context);
+  /**
+   * Note: olddoc is null when the document is new and has never been saved
+   */
+  void verify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context);
 
-    public void verify(XWikiDocument doc, String action, XWikiContext context);
+  void preverify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context);
 
-    public void preverify(XWikiDocument doc, String action, XWikiContext context);
+  void verify(XWikiDocument doc, String action, XWikiContext context);
+
+  void preverify(XWikiDocument doc, String action, XWikiContext context);
 }

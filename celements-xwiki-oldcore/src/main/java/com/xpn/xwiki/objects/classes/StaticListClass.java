@@ -35,112 +35,107 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
 
-public class StaticListClass extends ListClass
-{
+public class StaticListClass extends ListClass {
 
-    public StaticListClass(PropertyMetaClass wclass)
-    {
-        super("staticlist", "Static List", wclass);
-        setSeparators(" ,|");
+  public StaticListClass(PropertyMetaClass wclass) {
+    super("staticlist", "Static List", wclass);
+    setSeparators(" ,|");
+  }
+
+  public StaticListClass() {
+    this(null);
+  }
+
+  public String getValues() {
+    return getStringValue("values");
+  }
+
+  public void setValues(String values) {
+    setStringValue("values", values);
+  }
+
+  @Override
+  public List<String> getList(XWikiContext context) {
+    String sort = getSort();
+    if (StringUtils.isEmpty(sort) || "none".equals(sort)) {
+      return getListFromString(getValues());
     }
 
-    public StaticListClass()
-    {
-        this(null);
+    Map<String, ListItem> valuesMap = getMap(context);
+    List<ListItem> values = new ArrayList<>(valuesMap.size());
+    values.addAll(valuesMap.values());
+
+    if ("id".equals(sort)) {
+      Collections.sort(values, ListItem.ID_COMPARATOR);
+    } else if ("value".equals(sort)) {
+      Collections.sort(values, ListItem.VALUE_COMPARATOR);
     }
 
-    public String getValues()
-    {
-        return getStringValue("values");
+    List<String> result = new ArrayList<>(values.size());
+    for (ListItem value : values) {
+      result.add(value.getId());
     }
+    return result;
+  }
 
-    public void setValues(String values)
-    {
-        setStringValue("values", values);
-    }
+  @Override
+  public Map<String, ListItem> getMap(XWikiContext context) {
+    String values = getValues();
+    return getMapFromString(values);
+  }
 
-    @Override
-    public List<String> getList(XWikiContext context)
-    {
-        String sort = getSort();
-        if (StringUtils.isEmpty(sort) || "none".equals(sort)) {
-            return getListFromString(getValues());
-        }
+  @Override
+  public void displayEdit(StringBuffer buffer, String name, String prefix, BaseCollection object,
+      XWikiContext context) {
+    if (getDisplayType().equals("input")) {
+      input input = new input();
+      BaseProperty prop = (BaseProperty) object.safeget(name);
+      if (prop != null) {
+        input.setValue(prop.toFormString());
+      }
+      input.setType("text");
+      input.setSize(getSize());
+      input.setName(prefix + name);
+      input.setID(prefix + name);
+      input.setDisabled(isDisabled());
 
-        Map<String, ListItem> valuesMap = getMap(context);
-        List<ListItem> values = new ArrayList<ListItem>(valuesMap.size());
-        values.addAll(valuesMap.values());
+      if (isPicker()) {
+        input.setClass("suggested");
+        String path;
+        XWiki xwiki = context.getWiki();
+        path = xwiki.getURL("Main.WebHome", "view", context);
 
-        if ("id".equals(sort)) {
-            Collections.sort(values, ListItem.ID_COMPARATOR);
-        } else if ("value".equals(sort)) {
-            Collections.sort(values, ListItem.VALUE_COMPARATOR);
-        }
+        String classname = this.getObject().getName();
+        String fieldname = this.getName();
+        String secondCol = "-", firstCol = "-";
 
-        List<String> result = new ArrayList<String>(values.size());
-        for (ListItem value : values) {
-            result.add(value.getId());
-        }
-        return result;
-    }
-
-    @Override
-    public Map<String, ListItem> getMap(XWikiContext context)
-    {
-        String values = getValues();
-        return getMapFromString(values);
-    }
-
-    @Override
-    public void displayEdit(StringBuffer buffer, String name, String prefix, BaseCollection object, XWikiContext context)
-    {
-        if (getDisplayType().equals("input")) {
-            input input = new input();
-            BaseProperty prop = (BaseProperty) object.safeget(name);
-            if (prop != null) {
-                input.setValue(prop.toFormString());
-            }
-            input.setType("text");
-            input.setSize(getSize());
-            input.setName(prefix + name);
-            input.setID(prefix + name);
-            input.setDisabled(isDisabled());
-
-            if (isPicker()) {
-                input.setClass("suggested");
-                String path = "";
-                XWiki xwiki = context.getWiki();
-                path = xwiki.getURL("Main.WebHome", "view", context);
-
-                String classname = this.getObject().getName();
-                String fieldname = this.getName();
-                String secondCol = "-", firstCol = "-";
-
-                String script =
-                    "\"" + path + "?xpage=suggest&amp;classname=" + classname + "&amp;fieldname=" + fieldname
-                    + "&amp;firCol=" + firstCol + "&amp;secCol=" + secondCol + "&amp;\"";
-                String varname = "\"input\"";
-                String seps = "\"" + this.getSeparators() + "\"";
-                if (isMultiSelect()) {
-                    input.setOnFocus("new ajaxSuggest(this, {script:" + script + ", varname:" + varname + ", seps:"
-                        + seps + "} )");
-                } else {
-                    input.setOnFocus("new ajaxSuggest(this, {script:" + script + ", varname:" + varname + "} )");
-                }
-            }
-
-            buffer.append(input.toString());
-
-        } else if (getDisplayType().equals("radio") || getDisplayType().equals("checkbox")) {
-            displayRadioEdit(buffer, name, prefix, object, context);
+        String script = "\"" + path + "?xpage=suggest&amp;classname=" + classname
+            + "&amp;fieldname=" + fieldname
+            + "&amp;firCol=" + firstCol + "&amp;secCol=" + secondCol + "&amp;\"";
+        String varname = "\"input\"";
+        String seps = "\"" + this.getSeparators() + "\"";
+        if (isMultiSelect()) {
+          input.setOnFocus(
+              "new ajaxSuggest(this, {script:" + script + ", varname:" + varname + ", seps:"
+                  + seps + "} )");
         } else {
-            displaySelectEdit(buffer, name, prefix, object, context);
+          input.setOnFocus(
+              "new ajaxSuggest(this, {script:" + script + ", varname:" + varname + "} )");
         }
+      }
 
-        if (!getDisplayType().equals("input")) {
-            org.apache.ecs.xhtml.input hidden = new input(input.hidden, prefix + name, "");
-            hidden.setDisabled(isDisabled());
-            buffer.append(hidden);
-        }
+      buffer.append(input.toString());
+
+    } else if (getDisplayType().equals("radio") || getDisplayType().equals("checkbox")) {
+      displayRadioEdit(buffer, name, prefix, object, context);
+    } else {
+      displaySelectEdit(buffer, name, prefix, object, context);
     }
+
+    if (!getDisplayType().equals("input")) {
+      org.apache.ecs.xhtml.input hidden = new input(input.hidden, prefix + name, "");
+      hidden.setDisabled(isDisabled());
+      buffer.append(hidden);
+    }
+  }
 }

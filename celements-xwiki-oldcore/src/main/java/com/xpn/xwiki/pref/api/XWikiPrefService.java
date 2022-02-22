@@ -21,5 +21,4 @@
 
 package com.xpn.xwiki.pref.api;
 
-public interface XWikiPrefService {
-}
+public interface XWikiPrefService {}

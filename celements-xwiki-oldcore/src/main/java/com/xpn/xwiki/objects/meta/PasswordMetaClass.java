@@ -27,43 +27,41 @@ import com.xpn.xwiki.objects.classes.PasswordClass;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 import com.xpn.xwiki.objects.classes.StringClass;
 
-public class PasswordMetaClass extends StringMetaClass
-{
-    public static final String CLEAR = "Clear";
+public class PasswordMetaClass extends StringMetaClass {
 
-    public static final String ENCRYPTED = "Encrypted";
+  public static final String CLEAR = "Clear";
 
-    public static final String HASH = "Hash";
+  public static final String ENCRYPTED = "Encrypted";
 
-    public static final String SEPARATOR = "|";
+  public static final String HASH = "Hash";
 
-    public static final String ALGORITHM_KEY = "algorithm";
+  public static final String SEPARATOR = "|";
 
-    public PasswordMetaClass()
-    {
-        super();
-        setPrettyName("Password");
-        setName(PasswordClass.class.getName());
+  public static final String ALGORITHM_KEY = "algorithm";
 
-        StaticListClass storageType_class = new StaticListClass(this);
-        storageType_class.setName("storageType");
-        storageType_class.setPrettyName("Storage type");
-        storageType_class.setValues(HASH + SEPARATOR + CLEAR);// + SEPARATOR + ENCRYPTED
-        storageType_class.setRelationalStorage(false);
-        storageType_class.setDisplayType("select");
-        storageType_class.setMultiSelect(false);
-        storageType_class.setSize(1);
-        safeput("storageType", storageType_class);
+  public PasswordMetaClass() {
+    setPrettyName("Password");
+    setName(PasswordClass.class.getName());
 
-        StringClass encryptAlgorithm_class = new StringClass(this);
-        encryptAlgorithm_class.setName(ALGORITHM_KEY);
-        encryptAlgorithm_class.setPrettyName("Encryption/hash algorithm");
-        encryptAlgorithm_class.setSize(20);
-        safeput(ALGORITHM_KEY, encryptAlgorithm_class);
-    }
+    StaticListClass storageType_class = new StaticListClass(this);
+    storageType_class.setName("storageType");
+    storageType_class.setPrettyName("Storage type");
+    storageType_class.setValues(HASH + SEPARATOR + CLEAR);// + SEPARATOR + ENCRYPTED
+    storageType_class.setRelationalStorage(false);
+    storageType_class.setDisplayType("select");
+    storageType_class.setMultiSelect(false);
+    storageType_class.setSize(1);
+    safeput("storageType", storageType_class);
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new PasswordClass();
-    }
+    StringClass encryptAlgorithm_class = new StringClass(this);
+    encryptAlgorithm_class.setName(ALGORITHM_KEY);
+    encryptAlgorithm_class.setPrettyName("Encryption/hash algorithm");
+    encryptAlgorithm_class.setSize(20);
+    safeput(ALGORITHM_KEY, encryptAlgorithm_class);
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new PasswordClass();
+  }
 }

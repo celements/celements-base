@@ -19,39 +19,43 @@
  */
 package com.xpn.xwiki.render;
 
-import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.doc.XWikiDocument;
-
 import java.util.List;
 
-public interface XWikiRenderingEngine
-{
-    void virtualInit(XWikiContext context);
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.XWikiDocument;
 
-    void addRenderer(String name, XWikiRenderer renderer);
+public interface XWikiRenderingEngine {
 
-    XWikiRenderer getRenderer(String name);
+  void virtualInit(XWikiContext context);
 
-    List<XWikiRenderer> getRendererList();
+  void addRenderer(String name, XWikiRenderer renderer);
 
-    List<String> getRendererNames();
+  XWikiRenderer getRenderer(String name);
 
-    String renderDocument(XWikiDocument doc, XWikiContext context) throws XWikiException;
+  List<XWikiRenderer> getRendererList();
 
-    String renderDocument(XWikiDocument doc, XWikiDocument includingdoc, XWikiContext context) throws XWikiException;
+  List<String> getRendererNames();
 
-    String renderText(String text, XWikiDocument includingdoc, XWikiContext context);
+  String renderDocument(XWikiDocument doc, XWikiContext context) throws XWikiException;
 
-    String interpretText(String text, XWikiDocument includingdoc, XWikiContext context);
+  String renderDocument(XWikiDocument doc, XWikiDocument includingdoc, XWikiContext context)
+      throws XWikiException;
 
-    String renderText(String text, XWikiDocument contentdoc, XWikiDocument includingdoc, XWikiContext context);
+  String renderText(String text, XWikiDocument includingdoc, XWikiContext context);
 
-    void flushCache();
+  String interpretText(String text, XWikiDocument includingdoc, XWikiContext context);
 
-    String convertMultiLine(String macroname, String params, String data, String allcontent, XWikiVirtualMacro macro,
-        XWikiContext context);
+  String renderText(String text, XWikiDocument contentdoc, XWikiDocument includingdoc,
+      XWikiContext context);
 
-    String convertSingleLine(String macroname, String params, String allcontent, XWikiVirtualMacro macro,
-        XWikiContext context);
+  void flushCache();
+
+  String convertMultiLine(String macroname, String params, String data, String allcontent,
+      XWikiVirtualMacro macro,
+      XWikiContext context);
+
+  String convertSingleLine(String macroname, String params, String allcontent,
+      XWikiVirtualMacro macro,
+      XWikiContext context);
 }

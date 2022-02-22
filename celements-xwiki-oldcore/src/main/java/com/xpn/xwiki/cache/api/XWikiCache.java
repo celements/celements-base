@@ -21,15 +21,22 @@
 
 package com.xpn.xwiki.cache.api;
 
-
 @Deprecated
 public interface XWikiCache {
-    void setCapacity(int capacity);
-    void flushEntry(String key);
-    void putInCache(String key, Object obj);
-    Object getFromCache(String key) throws XWikiCacheNeedsRefreshException;
-    Object getFromCache(String key, int refeshPeriod) throws XWikiCacheNeedsRefreshException;
-    int getNumberEntries();
-    void cancelUpdate(String key);
-    void flushAll();
+
+  void setCapacity(int capacity);
+
+  void flushEntry(String key);
+
+  void putInCache(String key, Object obj);
+
+  Object getFromCache(String key) throws XWikiCacheNeedsRefreshException;
+
+  Object getFromCache(String key, int refeshPeriod) throws XWikiCacheNeedsRefreshException;
+
+  int getNumberEntries();
+
+  void cancelUpdate(String key);
+
+  void flushAll();
 }

@@ -36,200 +36,188 @@ import com.xpn.xwiki.render.PreTagSubstitution;
 import com.xpn.xwiki.render.XWikiRenderer;
 import com.xpn.xwiki.render.XWikiRenderingEngine;
 
-public class RadeoxHelper
-{
-    // lazily initiated single CustomXWikiRenderingEngine instance
-    static private volatile XWikiRenderingEngine customEngine;
+public class RadeoxHelper {
 
-    private XWikiRenderer radeoxRenderer;
+  // lazily initiated single CustomXWikiRenderingEngine instance
+  static private volatile XWikiRenderingEngine customEngine;
 
-    private XWikiContext context;
+  private XWikiRenderer radeoxRenderer;
 
-    private XWikiDocument document;
+  private XWikiContext context;
 
-    private static final String TABLE = "{table}";
+  private XWikiDocument document;
 
-    public RadeoxHelper(XWikiDocument document, XWikiContext context) throws XWikiException
-    {
-        this.context = context;
-        this.radeoxRenderer = context.getWiki().getRenderingEngine().getRenderer("wiki");
-        this.document = document;
-    }
+  private static final String TABLE = "{table}";
 
-    public String getPreRadeoxContent()
-    {
-        try {
-            // double checking locking
-            if (customEngine == null) {
-                synchronized (RadeoxHelper.class) {
-                    if (customEngine == null) {
-                        customEngine = new CustomXWikiRenderingEngine(context.getWiki(), context);
-                    }
-                }
-            }
-            return customEngine.renderDocument(document, context);
-        } catch (XWikiException e) {
-            return document.getContent(); // this should not happen very often ... i hope
+  public RadeoxHelper(XWikiDocument document, XWikiContext context) throws XWikiException {
+    this.context = context;
+    this.radeoxRenderer = context.getWiki().getRenderingEngine().getRenderer("wiki");
+    this.document = document;
+  }
+
+  public String getPreRadeoxContent() {
+    try {
+      // double checking locking
+      if (customEngine == null) {
+        synchronized (RadeoxHelper.class) {
+          if (customEngine == null) {
+            customEngine = new CustomXWikiRenderingEngine(context.getWiki(), context);
+          }
         }
+      }
+      return customEngine.renderDocument(document, context);
+    } catch (XWikiException e) {
+      return document.getContent(); // this should not happen very often ... i hope
+    }
+  }
+
+  /**
+   * @return The string content of all the the tables in the document
+   */
+  public String[] getTableStrings() {
+    ArrayList tables = new ArrayList();
+    String content = getPreRadeoxContent();// document.getContent();
+
+    // Remove the content that is inside "{pre}"
+    content = (new PreTagSubstitution(context.getUtil(), true)).substitute(content);
+
+    int index = Integer.MIN_VALUE;
+    int lastIndex = Integer.MIN_VALUE;
+    boolean opened = false;
+    while (index < content.length()) {
+      lastIndex = index;
+      index = content.indexOf(TABLE, index + TABLE.length());
+      if (index == -1) {
+        break;
+      }
+      if (opened) {
+        tables.add(content.substring(lastIndex + TABLE.length(), index).trim());
+      }
+      opened = !opened;
+    }
+    return (String[]) tables.toArray(new String[tables.size()]);
+  }
+
+  /**
+   * @return All the radeox tables in the document
+   */
+  public Table[] getTables() {
+    String[] tableStrings = getTableStrings();
+    Table[] tables = new Table[tableStrings.length];
+    for (int i = 0; i < tableStrings.length; i++) {
+      tables[i] = buildTable(tableStrings[i]);
+    }
+    return tables;
+  }
+
+  /**
+   * @return The string content of the given table, or null, when no such table exists
+   */
+  public String getTableString(int idx) {
+    String content = getPreRadeoxContent(); // document.getContent();
+
+    // Remove the content that is inside "{pre}"
+    content = (new PreTagSubstitution(context.getUtil(), true)).substitute(content);
+
+    int index = Integer.MIN_VALUE;
+    int lastIndex = Integer.MIN_VALUE;
+    int i = -1;
+    boolean opened = false;
+    while ((index < content.length()) && (i < idx)) {
+      lastIndex = index;
+      index = content.indexOf(TABLE, index + TABLE.length());
+      if (index == -1) {
+        break;
+      }
+      if (opened) {
+        i++;
+      }
+      opened = !opened;
+    }
+    if (i == idx) {
+      return content.substring(lastIndex + TABLE.length(), index).trim();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * @return The radeox table coresponding to the given index, or null, when no such table exists
+   */
+  public Table getTable(int idx) {
+    String tableString = getTableString(idx);
+    if (tableString != null) {
+      return buildTable(tableString);
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * @return The HTML representation of the given table-content
+   */
+  public String getRenderedTable(int idx) {
+    String tableString = getTableString(idx);
+    if (tableString != null) {
+      return radeoxRenderer.render("{table}\n" + tableString + "\n{table}", null, null, context);
+    } else {
+      return null;
+    }
+  }
+
+  private Table buildTable(String content) {
+    content = content.trim() + "\n";
+    Table table = TableBuilder.build(content);
+    table.calc();
+    return table;
+  }
+
+  public int getTableColumnCount(Table t) {
+    try {
+      return TableDataSource.getTableColumnCount(t);
+    } catch (DataSourceException e) {
+      return 0;
     }
 
-    /**
-     * @return The string content of all the the tables in the document
-     */
-    public String[] getTableStrings()
-    {
-        ArrayList tables = new ArrayList();
-        String content = getPreRadeoxContent();// document.getContent();
+  }
 
-        // Remove the content that is inside "{pre}"
-        content = (new PreTagSubstitution(context.getUtil(), true)).substitute(content);
+  public int getTableRowCount(Table t) {
+    try {
+      return TableDataSource.getTableRowCount(t);
+    } catch (DataSourceException e) {
+      return 0;
+    }
+  }
 
-        int index = Integer.MIN_VALUE;
-        int lastIndex = Integer.MIN_VALUE;
-        boolean opened = false;
-        while (index < content.length()) {
-            lastIndex = index;
-            index = content.indexOf(TABLE, index + TABLE.length());
-            if (index == -1) {
-                break;
-            }
-            if (opened) {
-                tables.add(content.substring(lastIndex + TABLE.length(), index).trim());
-            }
-            opened = !opened;
+  public String getCell(Table table, int columnIndex, int rowIndex) {
+    try {
+      return table.getXY(columnIndex, rowIndex).toString().replaceAll("<", "&lt;").replaceAll(">",
+          "&gt;");
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  public static String buildMacro(String name, Map params) {
+    StringBuffer sb = new StringBuffer();
+    sb.append("{" + name);
+    if (!params.isEmpty()) {
+      sb.append(":");
+      Iterator it = params.keySet().iterator();
+      while (it.hasNext()) {
+        String paramName = (String) it.next();
+        String paramValue = (String) params.get(paramName);
+        sb.append(paramName + "=" + paramValue);
+        if (it.hasNext()) {
+          sb.append("|");
         }
-        return (String[]) tables.toArray(new String[tables.size()]);
+      }
     }
+    sb.append("}");
+    return sb.toString();
+  }
 
-    /**
-     * @return All the radeox tables in the document
-     */
-    public Table[] getTables()
-    {
-        String[] tableStrings = getTableStrings();
-        Table[] tables = new Table[tableStrings.length];
-        for (int i = 0; i < tableStrings.length; i++) {
-            tables[i] = buildTable(tableStrings[i]);
-        }
-        return tables;
-    }
-
-    /**
-     * @return The string content of the given table, or null, when no such table exists
-     */
-    public String getTableString(int idx)
-    {
-        String content = getPreRadeoxContent(); // document.getContent();
-
-        // Remove the content that is inside "{pre}"
-        content = (new PreTagSubstitution(context.getUtil(), true)).substitute(content);
-
-        int index = Integer.MIN_VALUE;
-        int lastIndex = Integer.MIN_VALUE;
-        int i = -1;
-        boolean opened = false;
-        while (index < content.length() && i < idx) {
-            lastIndex = index;
-            index = content.indexOf(TABLE, index + TABLE.length());
-            if (index == -1) {
-                break;
-            }
-            if (opened) {
-                i++;
-            }
-            opened = !opened;
-        }
-        if (i == idx) {
-            return content.substring(lastIndex + TABLE.length(), index).trim();
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @return The radeox table coresponding to the given index, or null, when no such table exists
-     */
-    public Table getTable(int idx)
-    {
-        String tableString = getTableString(idx);
-        if (tableString != null) {
-            return buildTable(tableString);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @return The HTML representation of the given table-content
-     */
-    public String getRenderedTable(int idx)
-    {
-        String tableString = getTableString(idx);
-        if (tableString != null) {
-            return radeoxRenderer.render("{table}\n" + tableString + "\n{table}", null, null, context);
-        } else {
-            return null;
-        }
-    }
-
-    private Table buildTable(String content)
-    {
-        content = content.trim() + "\n";
-        Table table = TableBuilder.build(content);
-        table.calc();
-        return table;
-    }
-
-    public int getTableColumnCount(Table t)
-    {
-        try {
-            return TableDataSource.getTableColumnCount(t);
-        } catch (DataSourceException e) {
-            return 0;
-        }
-
-    }
-
-    public int getTableRowCount(Table t)
-    {
-        try {
-            return TableDataSource.getTableRowCount(t);
-        } catch (DataSourceException e) {
-            return 0;
-        }
-    }
-
-    public String getCell(Table table, int columnIndex, int rowIndex)
-    {
-        try {
-            return table.getXY(columnIndex, rowIndex).toString().replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    public static String buildMacro(String name, Map params)
-    {
-        StringBuffer sb = new StringBuffer();
-        sb.append("{" + name);
-        if (!params.isEmpty()) {
-            sb.append(":");
-            Iterator it = params.keySet().iterator();
-            while (it.hasNext()) {
-                String paramName = (String) it.next();
-                String paramValue = (String) params.get(paramName);
-                sb.append(paramName + "=" + paramValue);
-                if (it.hasNext()) {
-                    sb.append("|");
-                }
-            }
-        }
-        sb.append("}");
-        return sb.toString();
-    }
-
-    public char getColumn(int columnIndex)
-    {
-        return (char) ('A' + columnIndex);
-    }
+  public char getColumn(int columnIndex) {
+    return (char) ('A' + columnIndex);
+  }
 }

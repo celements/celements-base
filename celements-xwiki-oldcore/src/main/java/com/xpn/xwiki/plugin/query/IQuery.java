@@ -21,16 +21,21 @@
 
 package com.xpn.xwiki.plugin.query;
 
-import com.xpn.xwiki.XWikiException;
-
 import java.util.List;
+
+import com.xpn.xwiki.XWikiException;
 
 /** XWiki Query interface */
 public interface IQuery {
-	public List list() throws XWikiException;
-	// TODO: setParameter ? how parameter names parse?
-	public IQuery setMaxResults(int fs);
-	public IQuery setFirstResult(int fr);
-	public IQuery setDistinct(boolean d);
-    public String getNativeQuery();
+
+  List list() throws XWikiException;
+
+  // TODO: setParameter ? how parameter names parse?
+  IQuery setMaxResults(int fs);
+
+  IQuery setFirstResult(int fr);
+
+  IQuery setDistinct(boolean d);
+
+  String getNativeQuery();
 }

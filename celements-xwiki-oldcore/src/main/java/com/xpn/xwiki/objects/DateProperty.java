@@ -27,76 +27,67 @@ import java.util.Date;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMElement;
 
-public class DateProperty extends BaseProperty implements Cloneable
-{
-    private Date value;
+public class DateProperty extends BaseProperty implements Cloneable {
 
-    public DateProperty()
-    {
+  private Date value;
+
+  public DateProperty() {}
+
+  @Override
+  public Object getValue() {
+    return this.value;
+  }
+
+  @Override
+  public Element toXML() {
+    Element el = new DOMElement(getName());
+    el.setText(toXMLString());
+    return el;
+  }
+
+  @Override
+  public String toXMLString() {
+    return toText();
+  }
+
+  @Override
+  public void setValue(Object value) {
+    this.value = (Date) value;
+  }
+
+  @Override
+  public String toText() {
+    if (getValue() == null) {
+      return "";
     }
 
-    @Override
-    public Object getValue()
-    {
-        return this.value;
+    return (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S")).format(getValue());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    // Same Java object, they sure are equal
+    if (this == obj) {
+      return true;
     }
 
-    @Override
-    public Element toXML()
-    {
-        Element el = new DOMElement(getName());
-        el.setText(toXMLString());
-        return el;
+    if (!super.equals(obj)) {
+      return false;
     }
 
-    @Override
-    public String toXMLString()
-    {
-        return toText();
+    if ((getValue() == null) && (((DateProperty) obj).getValue() == null)) {
+      return true;
     }
 
-    @Override
-    public void setValue(Object value)
-    {
-        this.value = (Date) value;
-    }
+    return getValue().equals(((DateProperty) obj).getValue());
+  }
 
-    @Override
-    public String toText()
-    {
-        if (getValue() == null) {
-            return "";
-        }
-        
-        return (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S")).format(getValue());        
-    }
+  @Override
+  public Object clone() {
+    DateProperty property = (DateProperty) super.clone();
+    property.setValue(getValue());
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        // Same Java object, they sure are equal
-        if (this == obj) {
-            return true;
-        }
-
-        if (!super.equals(obj)) {
-            return false;
-        }
-
-        if ((getValue() == null) && (((DateProperty) obj).getValue() == null)) {
-            return true;
-        }
-
-        return getValue().equals(((DateProperty) obj).getValue());
-    }
-
-    @Override
-    public Object clone()
-    {
-        DateProperty property = (DateProperty) super.clone();
-        property.setValue(getValue());
-
-        return property;
-    }
+    return property;
+  }
 
 }

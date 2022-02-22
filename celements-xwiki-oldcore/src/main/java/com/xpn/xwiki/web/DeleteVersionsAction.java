@@ -29,91 +29,92 @@ import com.xpn.xwiki.doc.XWikiDocumentArchive;
 
 /**
  * Struts action for deleting document versions.
- * 
+ *
  * @version $Id$
  */
-public class DeleteVersionsAction extends XWikiAction
-{
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        // CSRF prevention
-        if (!csrfTokenCheck(context)) {
-            return false;
-        }
+public class DeleteVersionsAction extends XWikiAction {
 
-        DeleteVersionsForm form = (DeleteVersionsForm) context.getForm();
-        if (!form.isConfirmed()) {
-            return true;
-        }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    // CSRF prevention
+    if (!csrfTokenCheck(context)) {
+      return false;
+    }
 
-        Version v1;
-        Version v2;
-        if (form.getRev() == null) {
-            v1 = form.getRev1();
-            v2 = form.getRev2();
+    DeleteVersionsForm form = (DeleteVersionsForm) context.getForm();
+    if (!form.isConfirmed()) {
+      return true;
+    }
+
+    Version v1;
+    Version v2;
+    if (form.getRev() == null) {
+      v1 = form.getRev1();
+      v2 = form.getRev2();
+    } else {
+      v1 = form.getRev();
+      v2 = form.getRev();
+    }
+
+    if ((v1 != null) && (v2 != null)) {
+      XWikiDocument doc = context.getDoc();
+      String language = form.getLanguage();
+      XWikiDocument tdoc = getTranslatedDocument(doc, language, context);
+
+      XWikiDocumentArchive archive = tdoc.getDocumentArchive(context);
+      archive.removeVersions(v1, v2, context);
+      context.getWiki().getVersioningStore().saveXWikiDocArchive(archive, true, context);
+      tdoc.setDocumentArchive(archive);
+      // Is this the last remaining version? If so, then recycle the document.
+      if (archive.getLatestVersion() == null) {
+        if (StringUtils.isEmpty(language) || language.equals(doc.getDefaultLanguage())) {
+          context.getWiki().deleteAllDocuments(doc, context);
         } else {
-            v1 = form.getRev();
-            v2 = form.getRev();
+          // Only delete the translation
+          context.getWiki().deleteDocument(tdoc, context);
         }
-
-        if (v1 != null && v2 != null) {
-            XWikiDocument doc = context.getDoc();
-            String language = form.getLanguage();
-            XWikiDocument tdoc = getTranslatedDocument(doc, language, context);
-
-            XWikiDocumentArchive archive = tdoc.getDocumentArchive(context);
-            archive.removeVersions(v1, v2, context);
-            context.getWiki().getVersioningStore().saveXWikiDocArchive(archive, true, context);
-            tdoc.setDocumentArchive(archive);
-            // Is this the last remaining version? If so, then recycle the document.
-            if (archive.getLatestVersion() == null) {
-                if (StringUtils.isEmpty(language) || language.equals(doc.getDefaultLanguage())) {
-                    context.getWiki().deleteAllDocuments(doc, context);
-                } else {
-                    // Only delete the translation
-                    context.getWiki().deleteDocument(tdoc, context);
-                }
-            } else {
-                // There are still some versions left.
-                // If we delete the most recent (current) version, then rollback to latest undeleted version.
-                if (!tdoc.getRCSVersion().equals(archive.getLatestVersion())) {
-                    XWikiDocument newdoc = archive.loadDocument(archive.getLatestVersion(), context);
-                    // Reset the document reference, since the one taken from the archive might be wrong (old name from
-                    // before a rename)
-                    newdoc.setDocumentReference(tdoc.getDocumentReference());
-                    newdoc.setMetaDataDirty(false);
-                    context.getWiki().getStore().saveXWikiDoc(newdoc, context);
-                    context.setDoc(newdoc);
-                }
-            }
+      } else {
+        // There are still some versions left.
+        // If we delete the most recent (current) version, then rollback to latest undeleted
+        // version.
+        if (!tdoc.getRCSVersion().equals(archive.getLatestVersion())) {
+          XWikiDocument newdoc = archive.loadDocument(archive.getLatestVersion(), context);
+          // Reset the document reference, since the one taken from the archive might be wrong (old
+          // name from
+          // before a rename)
+          newdoc.setDocumentReference(tdoc.getDocumentReference());
+          newdoc.setMetaDataDirty(false);
+          context.getWiki().getStore().saveXWikiDoc(newdoc, context);
+          context.setDoc(newdoc);
         }
-        sendRedirect(context);
-        return false;
+      }
     }
+    sendRedirect(context);
+    return false;
+  }
 
-    /**
-     * redirect back to view history.
-     * 
-     * @param context used in redirecting
-     * @throws XWikiException if any error
-     */
-    private void sendRedirect(XWikiContext context) throws XWikiException
-    {
-        // forward to view
-        String redirect = Utils.getRedirect("view", "viewer=history", context);
-        sendRedirect(context.getResponse(), redirect);
-    }
+  /**
+   * redirect back to view history.
+   *
+   * @param context
+   *          used in redirecting
+   * @throws XWikiException
+   *           if any error
+   */
+  private void sendRedirect(XWikiContext context) throws XWikiException {
+    // forward to view
+    String redirect = Utils.getRedirect("view", "viewer=history", context);
+    sendRedirect(context.getResponse(), redirect);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String render(XWikiContext context) throws XWikiException
-    {
-        return "deleteversionsconfirm";
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    return "deleteversionsconfirm";
+  }
 }

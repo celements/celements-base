@@ -22,10 +22,9 @@
 package com.xpn.xwiki.cache.api;
 
 @Deprecated
-public class XWikiCacheNeedsRefreshException extends Exception
-{
-    public XWikiCacheNeedsRefreshException()
-    {
-        
-    }
+public class XWikiCacheNeedsRefreshException extends Exception {
+
+  public XWikiCacheNeedsRefreshException() {
+
+  }
 }

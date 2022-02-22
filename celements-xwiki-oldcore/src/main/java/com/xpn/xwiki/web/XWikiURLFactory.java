@@ -21,63 +21,72 @@
 
 package com.xpn.xwiki.web;
 
-import com.xpn.xwiki.XWikiContext;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public interface XWikiURLFactory
-{
-    public void init(XWikiContext context);
+import com.xpn.xwiki.XWikiContext;
 
-    public URL createURL(String web, String name, XWikiContext context);
+public interface XWikiURLFactory {
 
-    public URL createURL(String web, String name, String action, XWikiContext context);
+  void init(XWikiContext context);
 
-    public URL createURL(String web, String name, String action, boolean redirect, XWikiContext context);
+  URL createURL(String web, String name, XWikiContext context);
 
-    public URL createURL(String web, String name, String action, String querystring, String anchor,
-        XWikiContext context);
+  URL createURL(String web, String name, String action, XWikiContext context);
 
-    public URL createExternalURL(String web, String name, String action, String querystring, String anchor,
-        XWikiContext context);
+  URL createURL(String web, String name, String action, boolean redirect,
+      XWikiContext context);
 
-    public URL createURL(String web, String name, String action, String querystring, String anchor, String xwikidb,
-        XWikiContext context);
+  URL createURL(String web, String name, String action, String querystring, String anchor,
+      XWikiContext context);
 
-    public URL createExternalURL(String web, String name, String action, String querystring, String anchor,
-        String xwikidb, XWikiContext context);       
+  URL createExternalURL(String web, String name, String action, String querystring,
+      String anchor,
+      XWikiContext context);
 
-    public URL createSkinURL(String filename, String skin, XWikiContext context);
+  URL createURL(String web, String name, String action, String querystring, String anchor,
+      String xwikidb,
+      XWikiContext context);
 
-    public URL createSkinURL(String filename, String web, String name, XWikiContext context);
+  URL createExternalURL(String web, String name, String action, String querystring,
+      String anchor,
+      String xwikidb, XWikiContext context);
 
-    public URL createSkinURL(String filename, String web, String name, String xwikidb, XWikiContext context);
-    
-    public URL createResourceURL(String filename, boolean forceSkinAction, XWikiContext context);
+  URL createSkinURL(String filename, String skin, XWikiContext context);
 
-    public URL createAttachmentURL(String filename, String web, String name, String action, String querystring,
-        XWikiContext context);
+  URL createSkinURL(String filename, String web, String name, XWikiContext context);
 
-    public URL createAttachmentURL(String filename, String web, String name, String action, String querystring,
-        String xwikidb, XWikiContext context);
+  URL createSkinURL(String filename, String web, String name, String xwikidb,
+      XWikiContext context);
 
-    public URL createAttachmentRevisionURL(String filename, String web, String name, String revision,
-        String querystring, XWikiContext context);
+  URL createResourceURL(String filename, boolean forceSkinAction, XWikiContext context);
 
-    public URL createAttachmentRevisionURL(String filename, String web, String name, String revision,
-        String querystring, String xwikidb, XWikiContext context);
+  URL createAttachmentURL(String filename, String web, String name, String action,
+      String querystring,
+      XWikiContext context);
 
-    public URL getRequestURL(XWikiContext context);
+  URL createAttachmentURL(String filename, String web, String name, String action,
+      String querystring,
+      String xwikidb, XWikiContext context);
 
-    public String getURL(URL url, XWikiContext context);
+  URL createAttachmentRevisionURL(String filename, String web, String name, String revision,
+      String querystring, XWikiContext context);
 
-    /**
-     * Generate the base external URL to access this server.
-     * 
-     * @param context the XWiki context.
-     * @return the URL of the server.
-     * @throws MalformedURLException error when creating the {@link URL}.
-     */
-    public URL getServerURL(XWikiContext context) throws MalformedURLException;
+  URL createAttachmentRevisionURL(String filename, String web, String name, String revision,
+      String querystring, String xwikidb, XWikiContext context);
+
+  URL getRequestURL(XWikiContext context);
+
+  String getURL(URL url, XWikiContext context);
+
+  /**
+   * Generate the base external URL to access this server.
+   *
+   * @param context
+   *          the XWiki context.
+   * @return the URL of the server.
+   * @throws MalformedURLException
+   *           error when creating the {@link URL}.
+   */
+  URL getServerURL(XWikiContext context) throws MalformedURLException;
 }

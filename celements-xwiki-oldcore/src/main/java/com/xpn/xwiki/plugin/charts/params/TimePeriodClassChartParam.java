@@ -30,35 +30,31 @@ import org.jfree.data.time.Second;
 import org.jfree.data.time.Week;
 import org.jfree.data.time.Year;
 
-public class TimePeriodClassChartParam extends ChoiceChartParam
-{
-    public TimePeriodClassChartParam(String name)
-    {
-        super(name);
-    }
+public class TimePeriodClassChartParam extends ChoiceChartParam {
 
-    public TimePeriodClassChartParam(String name, boolean isOptional)
-    {
-        super(name, isOptional);
-    }
+  public TimePeriodClassChartParam(String name) {
+    super(name);
+  }
 
-    @Override
-    protected void init()
-    {
-        addChoice("year", Year.class);
-        addChoice("quarter", Quarter.class);
-        addChoice("month", Month.class);
-        addChoice("week", Week.class);
-        addChoice("day", Day.class);
-        addChoice("hour", Hour.class);
-        addChoice("minute", Minute.class);
-        addChoice("second", Second.class);
-        addChoice("millisecond", Millisecond.class);
-    }
+  public TimePeriodClassChartParam(String name, boolean isOptional) {
+    super(name, isOptional);
+  }
 
-    @Override
-    public Class getType()
-    {
-        return Class.class;
-    }
+  @Override
+  protected void init() {
+    addChoice("year", Year.class);
+    addChoice("quarter", Quarter.class);
+    addChoice("month", Month.class);
+    addChoice("week", Week.class);
+    addChoice("day", Day.class);
+    addChoice("hour", Hour.class);
+    addChoice("minute", Minute.class);
+    addChoice("second", Second.class);
+    addChoice("millisecond", Millisecond.class);
+  }
+
+  @Override
+  public Class getType() {
+    return Class.class;
+  }
 }

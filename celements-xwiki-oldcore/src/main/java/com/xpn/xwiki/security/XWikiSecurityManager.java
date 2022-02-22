@@ -19,33 +19,33 @@
  *
  */
 
-
 package com.xpn.xwiki.security;
 
 import java.lang.reflect.ReflectPermission;
 import java.security.Permission;
 
 public class XWikiSecurityManager extends SecurityManager {
-    private boolean enabled = false;
 
-    public XWikiSecurityManager(boolean enabled) {
-        this.enabled = enabled;
-    }
+  private boolean enabled = false;
 
-    public void checkPermission(Permission perm) {
-        if (enabled) {
-        // Under this security manager we refuse reflect code
-        if (perm instanceof ReflectPermission)
-         throw new SecurityException();
-        }
-    }
+  public XWikiSecurityManager(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    public void checkPermission(Permission perm, Object context) {
-        if (enabled) {
-        // Under this security manager we refuse reflect code
-        if (perm instanceof ReflectPermission)
-         throw new SecurityException();
-        }
+  @Override
+  public void checkPermission(Permission perm) {
+    // Under this security manager we refuse reflect code
+    if (enabled && (perm instanceof ReflectPermission)) {
+      throw new SecurityException();
     }
+  }
+
+  @Override
+  public void checkPermission(Permission perm, Object context) {
+    // Under this security manager we refuse reflect code
+    if (enabled && (perm instanceof ReflectPermission)) {
+      throw new SecurityException();
+    }
+  }
 
 }

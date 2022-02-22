@@ -22,49 +22,51 @@
 package com.xpn.xwiki.doc;
 
 public class MetaDataDiff extends Object {
-    private String field;
-    private Object prevValue;
-    private Object newValue;
 
-    public MetaDataDiff(String field, Object prevValue, Object newValue) {
-        this.setField(field);
-        this.setPrevValue(prevValue);
-        this.setNewValue(newValue);
-    }
+  private String field;
+  private Object prevValue;
+  private Object newValue;
 
-    public String getField() {
-        return field;
-    }
+  public MetaDataDiff(String field, Object prevValue, Object newValue) {
+    this.setField(field);
+    this.setPrevValue(prevValue);
+    this.setNewValue(newValue);
+  }
 
-    public void setField(String field) {
-        this.field = field;
-    }
+  public String getField() {
+    return field;
+  }
 
-    public Object getPrevValue() {
-        return prevValue;
-    }
+  public void setField(String field) {
+    this.field = field;
+  }
 
-    public void setPrevValue(Object prevvalue) {
-        this.prevValue = prevvalue;
-    }
+  public Object getPrevValue() {
+    return prevValue;
+  }
 
-    public Object getNewValue() {
-        return newValue;
-    }
+  public void setPrevValue(Object prevvalue) {
+    this.prevValue = prevvalue;
+  }
 
-    public void setNewValue(Object newValue) {
-        this.newValue = newValue;
-    }
+  public Object getNewValue() {
+    return newValue;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public String toString() {
-        StringBuffer buf = new StringBuffer(field);
-        buf.append(": ");
-        buf.append(prevValue.toString());
-        buf.append(" &gt; ");
-        buf.append(newValue.toString());
-        return buf.toString();
-    }
+  public void setNewValue(Object newValue) {
+    this.newValue = newValue;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
+    StringBuffer buf = new StringBuffer(field);
+    buf.append(": ");
+    buf.append(prevValue.toString());
+    buf.append(" &gt; ");
+    buf.append(newValue.toString());
+    return buf.toString();
+  }
 }

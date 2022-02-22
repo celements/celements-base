@@ -21,38 +21,45 @@
 
 package com.xpn.xwiki.user.impl.exo;
 
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 
-import javax.servlet.*;
-import java.io.IOException;
-
-
 public class ExoFilter implements Filter {
 
-    public static final String EXO_CONTAINER = "portal";
-    public static String portalName_ = null;
+  public static final String EXO_CONTAINER = "portal";
+  public static String portalName_ = null;
 
-    public void init(FilterConfig filterConfig) throws ServletException {
-        portalName_ = filterConfig.getInitParameter("portalName");
-        if (portalName_ == null){
-          portalName_ = EXO_CONTAINER;
-        }
-        System.out.append("init done");
-        System.out.append("portal Name: " + portalName_);
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {
+    portalName_ = filterConfig.getInitParameter("portalName");
+    if (portalName_ == null) {
+      portalName_ = EXO_CONTAINER;
     }
+    System.out.append("init done");
+    System.out.append("portal Name: " + portalName_);
+  }
 
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-        PortalContainer pcontainer = RootContainer.getInstance().getPortalContainer(portalName_);
-        System.out.append("pcontainer: " + pcontainer);
+  @Override
+  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
+      FilterChain filterChain)
+      throws IOException, ServletException {
+    PortalContainer pcontainer = RootContainer.getInstance().getPortalContainer(portalName_);
+    System.out.append("pcontainer: " + pcontainer);
 
-        PortalContainer.setInstance(pcontainer);
-        filterChain.doFilter(servletRequest, servletResponse);
-    }
+    PortalContainer.setInstance(pcontainer);
+    filterChain.doFilter(servletRequest, servletResponse);
+  }
 
-    public void destroy() {
-    }
+  @Override
+  public void destroy() {}
 
 }
-

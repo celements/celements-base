@@ -21,7 +21,6 @@
 
 package com.xpn.xwiki.plugin.packaging;
 
-public class ExcludeDocumentException extends Exception
-{
+public class ExcludeDocumentException extends Exception {
 
 }

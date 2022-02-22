@@ -21,45 +21,52 @@
 
 package com.xpn.xwiki.web;
 
-import javax.servlet.ServletContext;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.servlet.ServletContext;
+
 public class XWikiServletContext implements XWikiEngineContext {
-    private ServletContext scontext;
 
-    public XWikiServletContext(ServletContext scontext) {
-        this.scontext = scontext;
-    }
+  private ServletContext scontext;
 
-    public ServletContext getServletContext() {
-        return scontext;
-    }
+  public XWikiServletContext(ServletContext scontext) {
+    this.scontext = scontext;
+  }
 
-    public Object getAttribute(String name) {
-        return scontext.getAttribute(name);
-    }
+  public ServletContext getServletContext() {
+    return scontext;
+  }
 
-    public void setAttribute(String name, Object value) {
-        scontext.setAttribute(name, value);
-    }
+  @Override
+  public Object getAttribute(String name) {
+    return scontext.getAttribute(name);
+  }
 
-    public String getRealPath(String path) {
-        return scontext.getRealPath(path);
-    }
+  @Override
+  public void setAttribute(String name, Object value) {
+    scontext.setAttribute(name, value);
+  }
 
-    public URL getResource(String name) throws MalformedURLException {
-        return scontext.getResource(name);
-    }
+  @Override
+  public String getRealPath(String path) {
+    return scontext.getRealPath(path);
+  }
 
-    public InputStream getResourceAsStream(String name) {
-        return scontext.getResourceAsStream(name);
-    }
+  @Override
+  public URL getResource(String name) throws MalformedURLException {
+    return scontext.getResource(name);
+  }
 
-    public String getMimeType(String filename) {
-        return scontext.getMimeType(filename);
-    }
+  @Override
+  public InputStream getResourceAsStream(String name) {
+    return scontext.getResourceAsStream(name);
+  }
 
+  @Override
+  public String getMimeType(String filename) {
+    return scontext.getMimeType(filename);
+  }
 
 }

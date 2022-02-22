@@ -30,67 +30,97 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Interface for RecycleBin feature (XWIKI-543) store system.
- * 
+ *
  * @version $Id$
  * @since 1.2M1
  */
 @ComponentRole
-public interface XWikiRecycleBinStoreInterface
-{
-    /**
-     * Save document to recycle bin.
-     * 
-     * @param doc - document to save
-     * @param deleter - the user which delete document
-     * @param date - date of delete action
-     * @param bTransaction - should use old transaction(false) or create new (true)
-     * @param context - used while saving
-     * @throws XWikiException if error in saving
-     */
-    void saveToRecycleBin(XWikiDocument doc, String deleter, Date date, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+public interface XWikiRecycleBinStoreInterface {
 
-    /**
-     * @return restored document from recycle bin
-     * @param doc - document to restore
-     * @param index - what deleted document to restore. see {@link XWikiDeletedDocument#getId()}
-     * @param context - used while loading
-     * @param bTransaction - should use old transaction(false) or create new (true)
-     * @throws XWikiException if error while loading
-     */
-    XWikiDocument restoreFromRecycleBin(XWikiDocument doc, long index, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+  /**
+   * Save document to recycle bin.
+   *
+   * @param doc
+   *          - document to save
+   * @param deleter
+   *          - the user which delete document
+   * @param date
+   *          - date of delete action
+   * @param bTransaction
+   *          - should use old transaction(false) or create new (true)
+   * @param context
+   *          - used while saving
+   * @throws XWikiException
+   *           if error in saving
+   */
+  void saveToRecycleBin(XWikiDocument doc, String deleter, Date date, XWikiContext context,
+      boolean bTransaction)
+      throws XWikiException;
 
-    /**
-     * @return specified deleted document from recycle bin. null if not found.
-     * @param doc - deleted document
-     * @param index - what deleted document to restore. see {@link XWikiDeletedDocument#getId()}
-     * @param context - used while loading
-     * @param bTransaction - should use old transaction(false) or create new (true)
-     * @throws XWikiException if error while loading
-     */
-    XWikiDeletedDocument getDeletedDocument(XWikiDocument doc, long index, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+  /**
+   * @return restored document from recycle bin
+   * @param doc
+   *          - document to restore
+   * @param index
+   *          - what deleted document to restore. see {@link XWikiDeletedDocument#getId()}
+   * @param context
+   *          - used while loading
+   * @param bTransaction
+   *          - should use old transaction(false) or create new (true)
+   * @throws XWikiException
+   *           if error while loading
+   */
+  XWikiDocument restoreFromRecycleBin(XWikiDocument doc, long index, XWikiContext context,
+      boolean bTransaction)
+      throws XWikiException;
 
-    /**
-     * @return infos about all delete actions of specific document. sorted by date.
-     * @param doc - the deleted document
-     * @param context - used to load
-     * @param bTransaction - should use old transaction(false) or create new (true)
-     * @throws XWikiException - if error in loading
-     */
-    XWikiDeletedDocument[] getAllDeletedDocuments(XWikiDocument doc, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+  /**
+   * @return specified deleted document from recycle bin. null if not found.
+   * @param doc
+   *          - deleted document
+   * @param index
+   *          - what deleted document to restore. see {@link XWikiDeletedDocument#getId()}
+   * @param context
+   *          - used while loading
+   * @param bTransaction
+   *          - should use old transaction(false) or create new (true)
+   * @throws XWikiException
+   *           if error while loading
+   */
+  XWikiDeletedDocument getDeletedDocument(XWikiDocument doc, long index, XWikiContext context,
+      boolean bTransaction)
+      throws XWikiException;
 
-    /**
-     * Permanently delete document from recycle bin.
-     * 
-     * @param doc - document to delete
-     * @param index - which instance document in recycle bin to delete
-     * @param context - used for environment
-     * @param bTransaction - should use old transaction(false) or create new (true)
-     * @throws XWikiException if eny error
-     */
-    void deleteFromRecycleBin(XWikiDocument doc, long index, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+  /**
+   * @return infos about all delete actions of specific document. sorted by date.
+   * @param doc
+   *          - the deleted document
+   * @param context
+   *          - used to load
+   * @param bTransaction
+   *          - should use old transaction(false) or create new (true)
+   * @throws XWikiException
+   *           - if error in loading
+   */
+  XWikiDeletedDocument[] getAllDeletedDocuments(XWikiDocument doc, XWikiContext context,
+      boolean bTransaction)
+      throws XWikiException;
+
+  /**
+   * Permanently delete document from recycle bin.
+   *
+   * @param doc
+   *          - document to delete
+   * @param index
+   *          - which instance document in recycle bin to delete
+   * @param context
+   *          - used for environment
+   * @param bTransaction
+   *          - should use old transaction(false) or create new (true)
+   * @throws XWikiException
+   *           if eny error
+   */
+  void deleteFromRecycleBin(XWikiDocument doc, long index, XWikiContext context,
+      boolean bTransaction)
+      throws XWikiException;
 }

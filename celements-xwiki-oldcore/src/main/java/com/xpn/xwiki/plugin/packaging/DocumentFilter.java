@@ -24,14 +24,16 @@ package com.xpn.xwiki.plugin.packaging;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
-public interface DocumentFilter
-{
-    /**
-     * Do actions at the import or export on a document. For example, remove comments or
-     * attachments, do some security check.
-     * 
-     * @param doc document you want to filter
-     * @param context xwiki context
-     */
-    public void filter(XWikiDocument doc, XWikiContext context) throws ExcludeDocumentException;
+public interface DocumentFilter {
+
+  /**
+   * Do actions at the import or export on a document. For example, remove comments or
+   * attachments, do some security check.
+   *
+   * @param doc
+   *          document you want to filter
+   * @param context
+   *          xwiki context
+   */
+  void filter(XWikiDocument doc, XWikiContext context) throws ExcludeDocumentException;
 }

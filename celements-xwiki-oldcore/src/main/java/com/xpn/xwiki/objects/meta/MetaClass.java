@@ -28,74 +28,71 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 
-public class MetaClass extends BaseClass
-{
-    private static MetaClass metaClass = new MetaClass();
+public class MetaClass extends BaseClass {
 
-    public MetaClass()
-    {
-        NumberMetaClass numberclass = new NumberMetaClass();
-        safeput(numberclass.getName(), numberclass);
-        StringMetaClass stringclass = new StringMetaClass();
-        safeput(stringclass.getName(), stringclass);
-        TextAreaMetaClass textareaclass = new TextAreaMetaClass();
-        safeput(textareaclass.getName(), textareaclass);
-        PasswordMetaClass passwdclass = new PasswordMetaClass();
-        safeput(passwdclass.getName(), passwdclass);
-        BooleanMetaClass booleanclass = new BooleanMetaClass();
-        safeput(booleanclass.getName(), booleanclass);
-        StaticListMetaClass listclass = new StaticListMetaClass();
-        safeput(listclass.getName(), listclass);
-        DBListMetaClass dblistclass = new DBListMetaClass();
-        safeput(dblistclass.getName(), dblistclass);
-        DBTreeListMetaClass dbtreelistclass = new DBTreeListMetaClass();
-        safeput(dbtreelistclass.getName(), dbtreelistclass);
-        DateMetaClass dateclass = new DateMetaClass();
-        safeput(dateclass.getName(), dateclass);
-        GroupsMetaClass groupsclass = new GroupsMetaClass();
-        safeput(groupsclass.getName(), groupsclass);
-        UsersMetaClass usersclass = new UsersMetaClass();
-        safeput(usersclass.getName(), usersclass);
-        LevelsMetaClass levelsclass = new LevelsMetaClass();
-        safeput(levelsclass.getName(), levelsclass);
-    }
+  private static MetaClass metaClass = new MetaClass();
 
-    public void safeput(String name, PropertyInterface property)
-    {
-        addField("meta" + name, property);
-        if (property instanceof PropertyClass) {
-            ((PropertyClass) property).setObject(this);
-            ((BaseProperty) property).setName(name);
-        }
-    }
+  public MetaClass() {
+    NumberMetaClass numberclass = new NumberMetaClass();
+    safeput(numberclass.getName(), numberclass);
+    StringMetaClass stringclass = new StringMetaClass();
+    safeput(stringclass.getName(), stringclass);
+    TextAreaMetaClass textareaclass = new TextAreaMetaClass();
+    safeput(textareaclass.getName(), textareaclass);
+    PasswordMetaClass passwdclass = new PasswordMetaClass();
+    safeput(passwdclass.getName(), passwdclass);
+    BooleanMetaClass booleanclass = new BooleanMetaClass();
+    safeput(booleanclass.getName(), booleanclass);
+    StaticListMetaClass listclass = new StaticListMetaClass();
+    safeput(listclass.getName(), listclass);
+    DBListMetaClass dblistclass = new DBListMetaClass();
+    safeput(dblistclass.getName(), dblistclass);
+    DBTreeListMetaClass dbtreelistclass = new DBTreeListMetaClass();
+    safeput(dbtreelistclass.getName(), dbtreelistclass);
+    DateMetaClass dateclass = new DateMetaClass();
+    safeput(dateclass.getName(), dateclass);
+    GroupsMetaClass groupsclass = new GroupsMetaClass();
+    safeput(groupsclass.getName(), groupsclass);
+    UsersMetaClass usersclass = new UsersMetaClass();
+    safeput(usersclass.getName(), usersclass);
+    LevelsMetaClass levelsclass = new LevelsMetaClass();
+    safeput(levelsclass.getName(), levelsclass);
+  }
 
-    public PropertyInterface safeget(String name)
-    {
-        return super.safeget("meta" + name);
+  @Override
+  public void safeput(String name, PropertyInterface property) {
+    addField("meta" + name, property);
+    if (property instanceof PropertyClass) {
+      ((PropertyClass) property).setObject(this);
+      ((BaseProperty) property).setName(name);
     }
+  }
 
-    public PropertyInterface get(String name)
-    {
-        return safeget(name);
-    }
+  @Override
+  public PropertyInterface safeget(String name) {
+    return super.safeget("meta" + name);
+  }
 
-    public void put(String name, PropertyInterface property)
-    {
-        safeput(name, property);
-    }
+  @Override
+  public PropertyInterface get(String name) {
+    return safeget(name);
+  }
 
-    public static MetaClass getMetaClass()
-    {
-        return metaClass;
-    }
+  @Override
+  public void put(String name, PropertyInterface property) {
+    safeput(name, property);
+  }
 
-    public static void setMetaClass(MetaClass metaClass)
-    {
-        MetaClass.metaClass = metaClass;
-    }
+  public static MetaClass getMetaClass() {
+    return metaClass;
+  }
 
-    public BaseCollection newObject(XWikiContext context)
-    {
-        return new BaseClass();
-    }
+  public static void setMetaClass(MetaClass metaClass) {
+    MetaClass.metaClass = metaClass;
+  }
+
+  @Override
+  public BaseCollection newObject(XWikiContext context) {
+    return new BaseClass();
+  }
 }

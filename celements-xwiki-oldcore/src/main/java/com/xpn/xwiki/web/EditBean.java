@@ -23,49 +23,42 @@ package com.xpn.xwiki.web;
 
 import com.xpn.xwiki.doc.XWikiDocument;
 
-public class EditBean extends Object
-{
-    // ---- Fields ------------------------------------------------------
-    private XWikiDocument xWikiDoc;
-    
+public class EditBean extends Object {
 
-    // ---- Accessor Methods --------------------------------------------
-    
-    public XWikiDocument getXWikiDoc()
-    {
-        return this.xWikiDoc;
-    }
-    
-    public void setXWikiDoc(XWikiDocument xWikiDoc)
-    {
-        this.xWikiDoc = xWikiDoc;
-    }
+  // ---- Fields ------------------------------------------------------
+  private XWikiDocument xWikiDoc;
 
-    /*
-    public String[] getLanguages()
-    {
-        return languages;
-    }
-    
-    public void setLanguages(String[] languages)
-    {
-        this.languages = languages;   
-    }
+  // ---- Accessor Methods --------------------------------------------
 
-    // Convenience method to simplify repopulation of select lists
-    public Properties getLanguagesAsMap()
-    {
-        Properties p = new Properties();
-        if (languages != null)
-        {
-            for (int i = 0; i < languages.length; i++)
-                p.setProperty((String)languages[i], "SELECTED");
-        }            
-        return p;
-    } 
-    */
+  public XWikiDocument getXWikiDoc() {
+    return this.xWikiDoc;
+  }
+
+  public void setXWikiDoc(XWikiDocument xWikiDoc) {
+    this.xWikiDoc = xWikiDoc;
+  }
+
+  /*
+   * public String[] getLanguages()
+   * {
+   * return languages;
+   * }
+   *
+   * public void setLanguages(String[] languages)
+   * {
+   * this.languages = languages;
+   * }
+   *
+   * // Convenience method to simplify repopulation of select lists
+   * public Properties getLanguagesAsMap()
+   * {
+   * Properties p = new Properties();
+   * if (languages != null)
+   * {
+   * for (int i = 0; i < languages.length; i++)
+   * p.setProperty((String)languages[i], "SELECTED");
+   * }
+   * return p;
+   * }
+   */
 }
-
-
-
-

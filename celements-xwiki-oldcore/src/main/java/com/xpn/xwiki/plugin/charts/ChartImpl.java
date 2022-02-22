@@ -25,60 +25,54 @@ import com.xpn.xwiki.plugin.charts.params.ChartParams;
 
 /**
  * Represents a SVG chart as returned by the ChartingPlugin.
- * 
+ *
  * @version $Id$
  */
-public class ChartImpl implements Chart
-{
+public class ChartImpl implements Chart {
 
-    public ChartImpl(ChartParams params, String imageURL, String pageURL)
-    {
-        this.params = params;
-        this.imageURL = imageURL;
-        this.pageURL = pageURL;
-    }
+  public ChartImpl(ChartParams params, String imageURL, String pageURL) {
+    this.params = params;
+    this.imageURL = imageURL;
+    this.pageURL = pageURL;
+  }
 
-    public String getTitle()
-    {
-        return params.getString("title");
-    }
+  @Override
+  public String getTitle() {
+    return params.getString("title");
+  }
 
-    public void setTitle(String title)
-    {
-        try {
-            params.set("title", title);
-        } catch (ParamException e) {
-        }
-    }
+  public void setTitle(String title) {
+    try {
+      params.set("title", title);
+    } catch (ParamException e) {}
+  }
 
-    public String getPageURL()
-    {
-        return pageURL;
-    }
+  @Override
+  public String getPageURL() {
+    return pageURL;
+  }
 
-    public void setPageURL(String pageURL)
-    {
-        this.pageURL = pageURL;
-    }
+  public void setPageURL(String pageURL) {
+    this.pageURL = pageURL;
+  }
 
-    public String getImageURL()
-    {
-        return imageURL;
-    }
+  @Override
+  public String getImageURL() {
+    return imageURL;
+  }
 
-    public void setImageURL(String imageURL)
-    {
-        this.imageURL = imageURL;
-    }
+  public void setImageURL(String imageURL) {
+    this.imageURL = imageURL;
+  }
 
-    public ChartParams getParameters()
-    {
-        return params;
-    }
+  @Override
+  public ChartParams getParameters() {
+    return params;
+  }
 
-    private String pageURL;
+  private String pageURL;
 
-    private String imageURL;
+  private String imageURL;
 
-    private ChartParams params;
+  private ChartParams params;
 }

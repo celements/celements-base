@@ -19,51 +19,51 @@
  */
 package com.xpn.xwiki.objects.classes;
 
-import junit.framework.Assert;
-
 import org.apache.commons.lang.math.RandomUtils;
 
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
+import junit.framework.Assert;
+
 /**
  * Unit tests for the base {@link PropertyClass} class.
- * 
+ *
  * @version $Id$
  * @since 2.4M2
  */
-public class PropertyClassTest extends AbstractBridgedXWikiComponentTestCase
-{
-    /** Test the {@link PropertyClass#compareTo(PropertyClass)} method. */
-    public void testCompareTo()
-    {
-        PropertyClass one = new PropertyClass();
-        PropertyClass two = new PropertyClass();
-        // Random numbers to be used as property indexes.
-        int n1, n2;
+public class PropertyClassTest extends AbstractBridgedXWikiComponentTestCase {
 
-        one.setName("first");
-        two.setName("second");
+  /** Test the {@link PropertyClass#compareTo(PropertyClass)} method. */
+  public void testCompareTo() {
+    PropertyClass one = new PropertyClass();
+    PropertyClass two = new PropertyClass();
+    // Random numbers to be used as property indexes.
+    int n1, n2;
 
-        // Since the test might randomly succeed, run it several times to be safer.
-        for (int i = 0; i < 20; ++i) {
-            n1 = RandomUtils.nextInt();
-            n2 = RandomUtils.nextInt();
-            one.setNumber(n1);
-            two.setNumber(n2);
+    one.setName("first");
+    two.setName("second");
 
-            if (n1 == n2) {
-                Assert.assertEquals(Math.signum(one.compareTo(two)), -1.0, 0);
-                Assert.assertEquals(Math.signum(two.compareTo(one)), 1.0, 0);
-            } else {
-                Assert.assertEquals(Math.signum(one.compareTo(two)), Math.signum(n1 - n2));
-                Assert.assertEquals(Math.signum(two.compareTo(one)), Math.signum(n2 - n1));
-            }
-        }
+    // Since the test might randomly succeed, run it several times to be safer.
+    for (int i = 0; i < 20; ++i) {
+      n1 = RandomUtils.nextInt();
+      n2 = RandomUtils.nextInt();
+      one.setNumber(n1);
+      two.setNumber(n2);
 
-        // Also test that the comparison takes into account the name in case the two numbers are identical
-        one.setNumber(42);
-        two.setNumber(42);
+      if (n1 == n2) {
         Assert.assertEquals(Math.signum(one.compareTo(two)), -1.0, 0);
         Assert.assertEquals(Math.signum(two.compareTo(one)), 1.0, 0);
+      } else {
+        Assert.assertEquals(Math.signum(one.compareTo(two)), Math.signum(n1 - n2));
+        Assert.assertEquals(Math.signum(two.compareTo(one)), Math.signum(n2 - n1));
+      }
     }
+
+    // Also test that the comparison takes into account the name in case the two numbers are
+    // identical
+    one.setNumber(42);
+    two.setNumber(42);
+    Assert.assertEquals(Math.signum(one.compareTo(two)), -1.0, 0);
+    Assert.assertEquals(Math.signum(two.compareTo(one)), 1.0, 0);
+  }
 }

@@ -22,29 +22,29 @@ package com.xpn.xwiki.plugin.charts.source;
 
 import com.xpn.xwiki.plugin.charts.exceptions.DataSourceException;
 
-public interface DataSource
-{
-    int getRowCount() throws DataSourceException;
+public interface DataSource {
 
-    int getColumnCount() throws DataSourceException;
+  int getRowCount() throws DataSourceException;
 
-    Number getCell(int rowIndex, int colIndex) throws DataSourceException;
+  int getColumnCount() throws DataSourceException;
 
-    Number[] getRow(int rowIndex) throws DataSourceException;
+  Number getCell(int rowIndex, int colIndex) throws DataSourceException;
 
-    Number[] getColumn(int colIndex) throws DataSourceException;
+  Number[] getRow(int rowIndex) throws DataSourceException;
 
-    Number[][] getAllCells() throws DataSourceException;
+  Number[] getColumn(int colIndex) throws DataSourceException;
 
-    boolean hasHeaderRow() throws DataSourceException;
+  Number[][] getAllCells() throws DataSourceException;
 
-    boolean hasHeaderColumn() throws DataSourceException;
+  boolean hasHeaderRow() throws DataSourceException;
 
-    String getHeaderRowValue(int columnIndex) throws DataSourceException;
+  boolean hasHeaderColumn() throws DataSourceException;
 
-    String[] getHeaderRow() throws DataSourceException;
+  String getHeaderRowValue(int columnIndex) throws DataSourceException;
 
-    String getHeaderColumnValue(int rowIndex) throws DataSourceException;
+  String[] getHeaderRow() throws DataSourceException;
 
-    String[] getHeaderColumn() throws DataSourceException;
+  String getHeaderColumnValue(int rowIndex) throws DataSourceException;
+
+  String[] getHeaderColumn() throws DataSourceException;
 }

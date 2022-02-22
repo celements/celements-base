@@ -11,7 +11,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details, published at 
+ * GNU Lesser General Public License for more details, published at
  * http://www.gnu.org/copyleft/lesser.html or in lesser.txt in the
  * root folder of this distribution.
 
@@ -23,6 +23,8 @@
 package com.xpn.xwiki.render.macro;
 
 public class DisplayMacro extends FieldMacro {
+
+  @Override
   public String getLocaleKey() {
     return "macro.display";
   }

@@ -20,185 +20,173 @@ import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.LargeStringProperty;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
 
-public class GroupsClass extends ListClass
-{
-    public GroupsClass(PropertyMetaClass wclass)
-    {
-        super("groupslist", "Groups List", wclass);
+public class GroupsClass extends ListClass {
 
-        setSize(6);
-        setUsesList(true);
+  public GroupsClass(PropertyMetaClass wclass) {
+    super("groupslist", "Groups List", wclass);
+
+    setSize(6);
+    setUsesList(true);
+  }
+
+  public GroupsClass() {
+    this(null);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<String> getList(XWikiContext context) {
+    List<String> list;
+    try {
+      list = (List<String>) context.getWiki().getGroupService(context).getAllMatchedGroups(null,
+          false, 0, 0,
+          null, context);
+    } catch (XWikiException e) {
+      // TODO add log exception
+      list = new ArrayList<>();
+
     }
 
-    public GroupsClass()
-    {
-        this(null);
+    return list;
+  }
+
+  @Override
+  public Map<String, ListItem> getMap(XWikiContext context) {
+    return new HashMap<>();
+  }
+
+  public boolean isUsesList() {
+    return (getIntValue("usesList") == 1);
+  }
+
+  public void setUsesList(boolean usesList) {
+    setIntValue("usesList", usesList ? 1 : 0);
+  }
+
+  @Override
+  public BaseProperty newProperty() {
+    return new LargeStringProperty();
+  }
+
+  @Override
+  public BaseProperty fromString(String value) {
+    BaseProperty prop = newProperty();
+    prop.setValue(value);
+    return prop;
+  }
+
+  @Override
+  public BaseProperty fromStringArray(String[] strings) {
+    List<String> list = new ArrayList<>();
+    for (String string : strings) {
+      list.add(string);
+    }
+    BaseProperty prop = newProperty();
+    prop.setValue(StringUtils.join(list.toArray(), ","));
+    return prop;
+  }
+
+  public String getText(String value, XWikiContext context) {
+    if (value.indexOf(":") != -1) {
+      return value;
+    }
+    return value.substring(value.lastIndexOf(".") + 1);
+  }
+
+  public static List<String> getListFromString(String value) {
+    return getListFromString(value, ",", false);
+  }
+
+  @Override
+  public void displayEdit(StringBuffer buffer, String name, String prefix, BaseCollection object,
+      XWikiContext context) {
+    select select = new select(prefix + name, 1);
+    select.setMultiple(isMultiSelect());
+    select.setSize(getSize());
+    select.setName(prefix + name);
+    select.setID(prefix + name);
+    select.setDisabled(isDisabled());
+
+    List<String> list;
+    if (isUsesList()) {
+      list = getList(context);
+    } else {
+      list = new ArrayList<>();
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<String> getList(XWikiContext context)
-    {
-        List<String> list;
-        try {
-            list =
-                (List<String>) context.getWiki().getGroupService(context).getAllMatchedGroups(null, false, 0, 0,
-                null, context);
-        } catch (XWikiException e) {
-            // TODO add log exception
-            list = new ArrayList<String>();
+    List<String> selectlist;
 
-        }
-
-        return list;
+    BaseProperty prop = (BaseProperty) object.safeget(name);
+    if (prop == null) {
+      selectlist = new ArrayList<>();
+    } else {
+      selectlist = getListFromString((String) prop.getValue());
     }
 
-    @Override
-    public Map<String, ListItem> getMap(XWikiContext context)
-    {
-        return new HashMap<String, ListItem>();
+    list.remove("XWiki.XWikiAllGroup");
+    list.add(0, "XWiki.XWikiAllGroup");
+    if (!context.isMainWiki()) {
+      list.remove("xwiki:XWiki.XWikiAllGroup");
+      list.add(1, "xwiki:XWiki.XWikiAllGroup");
     }
 
-    public boolean isUsesList()
-    {
-        return (getIntValue("usesList") == 1);
+    // Add options from Set
+
+    for (String value : selectlist) {
+      if (!list.contains(value)) {
+        list.add(value);
+      }
     }
 
-    public void setUsesList(boolean usesList)
-    {
-        setIntValue("usesList", usesList ? 1 : 0);
+    // Sort the group list
+    TreeMap<String, String> map = new TreeMap<>();
+    for (String value : list) {
+      map.put(getText(value, context), value);
     }
 
-    @Override
-    public BaseProperty newProperty()
-    {
-        return new LargeStringProperty();
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      String display = entry.getKey();
+      String value = entry.getValue();
+
+      option option = new option(display, value);
+      option.addElement(display);
+      if (selectlist.contains(value)) {
+        option.setSelected(true);
+      }
+      select.addElement(option);
     }
 
-    @Override
-    public BaseProperty fromString(String value)
-    {
-        BaseProperty prop = newProperty();
-        prop.setValue(value);
-        return prop;
+    buffer.append(select.toString());
+
+    if (!isUsesList()) {
+      input in = new input();
+      in.setName(prefix + "newgroup");
+      in.setID(prefix + "newgroup");
+      in.setSize(15);
+      in.setDisabled(isDisabled());
+      buffer.append("<br />");
+      buffer.append(in.toString());
+
+      if (!isDisabled()) {
+        button button = new button();
+        button.setTagText("Add");
+
+        button.setOnClick("addGroup(this.form,'" + prefix + "'); return false;");
+        buffer.append(button.toString());
+      }
     }
 
-    @Override
-    public BaseProperty fromStringArray(String[] strings)
-    {
-        List<String> list = new ArrayList<String>();
-        for (int i = 0; i < strings.length; i++) {
-            list.add(strings[i]);
-        }
-        BaseProperty prop = newProperty();
-        prop.setValue(StringUtils.join(list.toArray(), ","));
-        return prop;
-    }
+    input in = new input();
+    in.setType("hidden");
+    in.setName(prefix + name);
+    in.setDisabled(isDisabled());
+    buffer.append(in.toString());
+  }
 
-    public String getText(String value, XWikiContext context)
-    {
-        if (value.indexOf(":") != -1) {
-            return value;
-        }
-        return value.substring(value.lastIndexOf(".") + 1);
-    }
-
-    public static List<String> getListFromString(String value)
-    {
-        return getListFromString(value, ",", false);
-    }
-
-    @Override
-    public void displayEdit(StringBuffer buffer, String name, String prefix, BaseCollection object, XWikiContext context)
-    {
-        select select = new select(prefix + name, 1);
-        select.setMultiple(isMultiSelect());
-        select.setSize(getSize());
-        select.setName(prefix + name);
-        select.setID(prefix + name);
-        select.setDisabled(isDisabled());
-
-        List<String> list;
-        if (isUsesList()) {
-            list = getList(context);
-        } else {
-            list = new ArrayList<String>();
-        }
-
-        List<String> selectlist;
-
-        BaseProperty prop = (BaseProperty) object.safeget(name);
-        if (prop == null) {
-            selectlist = new ArrayList<String>();
-        } else {
-            selectlist = getListFromString((String) prop.getValue());
-        }
-
-        list.remove("XWiki.XWikiAllGroup");
-        list.add(0, "XWiki.XWikiAllGroup");
-        if (!context.isMainWiki()) {
-            list.remove("xwiki:XWiki.XWikiAllGroup");
-            list.add(1, "xwiki:XWiki.XWikiAllGroup");
-        }
-
-        // Add options from Set
-
-        for (String value : selectlist) {
-            if (!list.contains(value)) {
-                list.add(value);
-            }
-        }
-
-        // Sort the group list
-        TreeMap<String, String> map = new TreeMap<String, String>();
-        for (String value : list) {
-            map.put(getText(value, context), value);
-        }
-
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            String display = entry.getKey();
-            String value = entry.getValue();
-
-            option option = new option(display, value);
-            option.addElement(display);
-            if (selectlist.contains(value)) {
-                option.setSelected(true);
-            }
-            select.addElement(option);
-        }
-
-        buffer.append(select.toString());
-
-        if (!isUsesList()) {
-            input in = new input();
-            in.setName(prefix + "newgroup");
-            in.setID(prefix + "newgroup");
-            in.setSize(15);
-            in.setDisabled(isDisabled());
-            buffer.append("<br />");
-            buffer.append(in.toString());
-
-            if (!isDisabled()) {
-                button button = new button();
-                button.setTagText("Add");
-
-                button.setOnClick("addGroup(this.form,'" + prefix + "'); return false;");
-                buffer.append(button.toString());
-            }
-        }
-
-        input in = new input();
-        in.setType("hidden");
-        in.setName(prefix + name);
-        in.setDisabled(isDisabled());
-        buffer.append(in.toString());
-    }
-
-    @Override
-    public BaseProperty newPropertyfromXML(Element ppcel)
-    {
-        String value = ppcel.getText();
-        return fromString(value);
-    }
+  @Override
+  public BaseProperty newPropertyfromXML(Element ppcel) {
+    String value = ppcel.getText();
+    return fromString(value);
+  }
 
 }

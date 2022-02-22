@@ -26,11 +26,11 @@ import javax.portlet.RenderRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-public interface XWikiRequest extends HttpServletRequest, RenderRequest, ActionRequest
-{
-    public String get(String name);
+public interface XWikiRequest extends HttpServletRequest, RenderRequest, ActionRequest {
 
-    public HttpServletRequest getHttpServletRequest();
+  String get(String name);
 
-    public Cookie getCookie(String cookieName);
+  HttpServletRequest getHttpServletRequest();
+
+  Cookie getCookie(String cookieName);
 }

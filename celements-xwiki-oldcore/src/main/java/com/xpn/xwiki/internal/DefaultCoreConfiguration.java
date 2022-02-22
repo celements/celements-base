@@ -24,72 +24,75 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.logging.AbstractLogEnabled;
 import org.xwiki.configuration.ConfigurationSource;
-
-import com.xpn.xwiki.CoreConfiguration;
 import org.xwiki.rendering.parser.ParseException;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.syntax.SyntaxFactory;
 
+import com.xpn.xwiki.CoreConfiguration;
+
 /**
  * Configuration for the Core module.
- * 
+ *
  * @version $Id$
  * @since 1.8RC2
  */
 @Component
-public class DefaultCoreConfiguration extends AbstractLogEnabled implements CoreConfiguration
-{
-    /**
-     * Prefix for configuration keys for the Core module.
-     */
-    private static final String PREFIX = "core.";
+public class DefaultCoreConfiguration extends AbstractLogEnabled implements CoreConfiguration {
 
-    /**
-     * Defines from where to read the rendering configuration data. 
-     */
-    @Requirement("all")
-    private ConfigurationSource configuration;
+  /**
+   * Prefix for configuration keys for the Core module.
+   */
+  private static final String PREFIX = "core.";
 
-    /**
-     * Used to parse the syntax specified as a String in the configuration.
-     * @since 2.3M1
-     */
-    @Requirement
-    private SyntaxFactory syntaxFactory;
+  /**
+   * Defines from where to read the rendering configuration data.
+   */
+  @Requirement("all")
+  private ConfigurationSource configuration;
 
-    /**
-     * Main XWiki Properties configuration source, see {@link #getDefaultDocumentSyntax()}. 
-     */
-    @Requirement("xwikiproperties")
-    private ConfigurationSource xwikiPropertiesConfiguration;
+  /**
+   * Used to parse the syntax specified as a String in the configuration.
+   *
+   * @since 2.3M1
+   */
+  @Requirement
+  private SyntaxFactory syntaxFactory;
 
-    /**
-     * @see CoreConfiguration#getDefaultDocumentSyntax()
-     * @since 2.3M1
-     */
-    public Syntax getDefaultDocumentSyntax()
-    {
-        // If the found value is an empty string then default to the configuration value in the main configuration
-        // source.
-        // TODO: In the future we would need the notion of initialized/not-initialized property values in the wiki.
-        // When this is implemented modify the code below.
-        String key = PREFIX + "defaultDocumentSyntax";
-        String syntaxId = this.configuration.getProperty(key, String.class);
-        
-        if (StringUtils.isEmpty(syntaxId)) {
-            syntaxId = this.xwikiPropertiesConfiguration.getProperty(key, Syntax.XWIKI_2_0.toIdString());
-        }
+  /**
+   * Main XWiki Properties configuration source, see {@link #getDefaultDocumentSyntax()}.
+   */
+  @Requirement("xwikiproperties")
+  private ConfigurationSource xwikiPropertiesConfiguration;
 
-        // Try to parse the syntax and if it fails defaults to the XWiki Syntax 2.0
-        Syntax syntax;
-        try {
-            syntax = this.syntaxFactory.createSyntaxFromIdString(syntaxId);
-        } catch (ParseException e) {
-            getLogger().warn("Invalid default document Syntax [" + syntaxId + "], defaulting to ["
-                + Syntax.XWIKI_2_0.toIdString() + "] instead", e);
-            syntax = Syntax.XWIKI_2_0;
-        }
+  /**
+   * @see CoreConfiguration#getDefaultDocumentSyntax()
+   * @since 2.3M1
+   */
+  @Override
+  public Syntax getDefaultDocumentSyntax() {
+    // If the found value is an empty string then default to the configuration value in the main
+    // configuration
+    // source.
+    // TODO: In the future we would need the notion of initialized/not-initialized property values
+    // in the wiki.
+    // When this is implemented modify the code below.
+    String key = PREFIX + "defaultDocumentSyntax";
+    String syntaxId = this.configuration.getProperty(key, String.class);
 
-        return syntax; 
+    if (StringUtils.isEmpty(syntaxId)) {
+      syntaxId = this.xwikiPropertiesConfiguration.getProperty(key, Syntax.XWIKI_2_0.toIdString());
     }
+
+    // Try to parse the syntax and if it fails defaults to the XWiki Syntax 2.0
+    Syntax syntax;
+    try {
+      syntax = this.syntaxFactory.createSyntaxFromIdString(syntaxId);
+    } catch (ParseException e) {
+      getLogger().warn("Invalid default document Syntax [" + syntaxId + "], defaulting to ["
+          + Syntax.XWIKI_2_0.toIdString() + "] instead", e);
+      syntax = Syntax.XWIKI_2_0;
+    }
+
+    return syntax;
+  }
 }

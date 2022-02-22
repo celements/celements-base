@@ -36,91 +36,89 @@ import com.xpn.xwiki.plugin.charts.exceptions.GenerateException;
 import com.xpn.xwiki.plugin.charts.params.ChartParams;
 import com.xpn.xwiki.plugin.charts.source.DataSource;
 
-public class TimeSeriesCollectionFactory
-{
-    private static TimeSeriesCollectionFactory uniqueInstance = new TimeSeriesCollectionFactory();
+public class TimeSeriesCollectionFactory {
 
-    private TimeSeriesCollectionFactory()
-    {
-        // empty
+  private static TimeSeriesCollectionFactory uniqueInstance = new TimeSeriesCollectionFactory();
+
+  private TimeSeriesCollectionFactory() {
+    // empty
+  }
+
+  public static TimeSeriesCollectionFactory getInstance() {
+    return uniqueInstance;
+  }
+
+  public XYDataset create(DataSource dataSource, ChartParams params)
+      throws GenerateException, DataSourceException {
+    String dataSeries = params.getString(ChartParams.SERIES);
+
+    TimeSeriesCollection dataset = new TimeSeriesCollection();
+    Class timePeriodClass = params.getClass(ChartParams.TIME_PERIOD_CLASS);
+    if (timePeriodClass == null) {
+      timePeriodClass = Day.class;
+    }
+    DateFormat format = params.getDateFormat(ChartParams.DATE_FORMAT);
+    if (format == null) {
+      format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     }
 
-    public static TimeSeriesCollectionFactory getInstance()
-    {
-        return uniqueInstance;
-    }
-
-    public XYDataset create(DataSource dataSource, ChartParams params) throws GenerateException, DataSourceException
-    {
-        String dataSeries = params.getString(ChartParams.SERIES);
-
-        TimeSeriesCollection dataset = new TimeSeriesCollection();
-        Class timePeriodClass = params.getClass(ChartParams.TIME_PERIOD_CLASS);
-        if (timePeriodClass == null) {
-            timePeriodClass = Day.class;
-        }
-        DateFormat format = params.getDateFormat(ChartParams.DATE_FORMAT);
-        if (format == null) {
-            format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        }
-
-        if (dataSeries.equals("columns")) {
-            if (!dataSource.hasHeaderColumn()) {
-                throw new GenerateException("Header column required");
-            }
-            for (int column = 0; column < dataSource.getColumnCount(); column++) {
-                String seriesName;
-                if (dataSource.hasHeaderRow()) {
-                    seriesName = dataSource.getHeaderRowValue(column);
-                } else {
-                    seriesName = "Series " + (column + 1);
-                }
-
-                TimeSeries series = new TimeSeries(seriesName, timePeriodClass);
-
-                for (int row = 0; row < dataSource.getRowCount(); row++) {
-                    RegularTimePeriod period;
-                    try {
-                        Date date = format.parse(dataSource.getHeaderColumnValue(row));
-                        Constructor ctor = timePeriodClass.getConstructor(new Class[] {Date.class});
-                        period = (RegularTimePeriod) ctor.newInstance(new Object[] {date});
-                    } catch (Exception e) {
-                        throw new GenerateException(e);
-                    }
-                    series.add(period, dataSource.getCell(row, column));
-                }
-                dataset.addSeries(series);
-            }
-        } else if (dataSeries.equals("rows")) {
-            if (!dataSource.hasHeaderRow()) {
-                throw new GenerateException("Header row required");
-            }
-            for (int row = 0; row < dataSource.getRowCount(); row++) {
-                String seriesName;
-                if (dataSource.hasHeaderColumn()) {
-                    seriesName = dataSource.getHeaderColumnValue(row);
-                } else {
-                    seriesName = "Series " + (row + 1);
-                }
-
-                TimeSeries series = new TimeSeries(seriesName, timePeriodClass);
-
-                for (int column = 0; column < dataSource.getColumnCount(); column++) {
-                    RegularTimePeriod period;
-                    try {
-                        Date date = format.parse(dataSource.getHeaderRowValue(column));
-                        Constructor ctor = timePeriodClass.getConstructor(new Class[] {Date.class});
-                        period = (RegularTimePeriod) ctor.newInstance(new Object[] {date});
-                    } catch (Exception e) {
-                        throw new GenerateException(e);
-                    }
-                    series.add(period, dataSource.getCell(row, column));
-                }
-                dataset.addSeries(series);
-            }
+    if (dataSeries.equals("columns")) {
+      if (!dataSource.hasHeaderColumn()) {
+        throw new GenerateException("Header column required");
+      }
+      for (int column = 0; column < dataSource.getColumnCount(); column++) {
+        String seriesName;
+        if (dataSource.hasHeaderRow()) {
+          seriesName = dataSource.getHeaderRowValue(column);
         } else {
-            throw new GenerateException("Invalid series parameter:" + dataSeries);
+          seriesName = "Series " + (column + 1);
         }
-        return dataset;
+
+        TimeSeries series = new TimeSeries(seriesName, timePeriodClass);
+
+        for (int row = 0; row < dataSource.getRowCount(); row++) {
+          RegularTimePeriod period;
+          try {
+            Date date = format.parse(dataSource.getHeaderColumnValue(row));
+            Constructor ctor = timePeriodClass.getConstructor(Date.class);
+            period = (RegularTimePeriod) ctor.newInstance(date);
+          } catch (Exception e) {
+            throw new GenerateException(e);
+          }
+          series.add(period, dataSource.getCell(row, column));
+        }
+        dataset.addSeries(series);
+      }
+    } else if (dataSeries.equals("rows")) {
+      if (!dataSource.hasHeaderRow()) {
+        throw new GenerateException("Header row required");
+      }
+      for (int row = 0; row < dataSource.getRowCount(); row++) {
+        String seriesName;
+        if (dataSource.hasHeaderColumn()) {
+          seriesName = dataSource.getHeaderColumnValue(row);
+        } else {
+          seriesName = "Series " + (row + 1);
+        }
+
+        TimeSeries series = new TimeSeries(seriesName, timePeriodClass);
+
+        for (int column = 0; column < dataSource.getColumnCount(); column++) {
+          RegularTimePeriod period;
+          try {
+            Date date = format.parse(dataSource.getHeaderRowValue(column));
+            Constructor ctor = timePeriodClass.getConstructor(Date.class);
+            period = (RegularTimePeriod) ctor.newInstance(date);
+          } catch (Exception e) {
+            throw new GenerateException(e);
+          }
+          series.add(period, dataSource.getCell(row, column));
+        }
+        dataset.addSeries(series);
+      }
+    } else {
+      throw new GenerateException("Invalid series parameter:" + dataSeries);
     }
+    return dataset;
+  }
 }

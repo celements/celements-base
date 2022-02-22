@@ -24,10 +24,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
+import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.observation.remote.converter.AbstractEventConverter;
 
 import com.xpn.xwiki.XWikiContext;
@@ -36,150 +36,150 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 
 /**
- * Provide some serialization tools for old apis like {@link XWikiDocument} and {@link XWikiContext}.
- * 
+ * Provide some serialization tools for old apis like {@link XWikiDocument} and
+ * {@link XWikiContext}.
+ *
  * @version $Id$
  * @since 2.0M4
  */
-public abstract class AbstractXWikiEventConverter extends AbstractEventConverter
-{
-    private static final String CONTEXT_WIKI = "contextwiki";
+public abstract class AbstractXWikiEventConverter extends AbstractEventConverter {
 
-    private static final String CONTEXT_USER = "contextuser";
+  private static final String CONTEXT_WIKI = "contextwiki";
 
-    private static final String DOC_NAME = "docname";
+  private static final String CONTEXT_USER = "contextuser";
 
-    private static final String DOC_VERSION = "docversion";
+  private static final String DOC_NAME = "docname";
 
-    private static final String DOC_LANGUAGE = "doclanguage";
+  private static final String DOC_VERSION = "docversion";
 
-    private static final String ORIGDOC_VERSION = "origdocversion";
+  private static final String DOC_LANGUAGE = "doclanguage";
 
-    private static final String ORIGDOC_LANGUAGE = "origdoclanguage";
+  private static final String ORIGDOC_VERSION = "origdocversion";
 
-    /**
-     * Used to set some proper context informations.
-     */
-    @Requirement
-    private Execution execution;
+  private static final String ORIGDOC_LANGUAGE = "origdoclanguage";
 
-    /**
-     * Generate stub XWikiContext.
-     */
-    @Requirement
-    private XWikiStubContextProvider stubContextProvider;
+  /**
+   * Used to set some proper context informations.
+   */
+  @Requirement
+  private Execution execution;
 
-    /**
-     * @param context the XWiki context to serialize
-     * @return the serialized version of the context
-     */
-    protected Serializable serializeXWikiContext(XWikiContext context)
-    {
-        HashMap<String, Serializable> remoteDataMap = new HashMap<String, Serializable>();
+  /**
+   * Generate stub XWikiContext.
+   */
+  @Requirement
+  private XWikiStubContextProvider stubContextProvider;
 
-        remoteDataMap.put(CONTEXT_WIKI, context.getDatabase());
-        remoteDataMap.put(CONTEXT_USER, context.getUser());
+  /**
+   * @param context
+   *          the XWiki context to serialize
+   * @return the serialized version of the context
+   */
+  protected Serializable serializeXWikiContext(XWikiContext context) {
+    HashMap<String, Serializable> remoteDataMap = new HashMap<>();
 
-        return remoteDataMap;
+    remoteDataMap.put(CONTEXT_WIKI, context.getDatabase());
+    remoteDataMap.put(CONTEXT_USER, context.getUser());
+
+    return remoteDataMap;
+  }
+
+  /**
+   * @return a stub XWikiContext, null if none can be generated (XWiki has never been accessed yet)
+   */
+  private XWikiContext getXWikiStubContext() {
+    ExecutionContext context = this.execution.getContext();
+    XWikiContext xcontext = (XWikiContext) context.getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+
+    if (xcontext == null) {
+      xcontext = this.stubContextProvider.createStubContext();
+
+      if (xcontext != null) {
+        context.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, xcontext);
+      }
     }
 
-    /**
-     * @return a stub XWikiContext, null if none can be generated (XWiki has never been accessed yet)
-     */
-    private XWikiContext getXWikiStubContext()
-    {
-        ExecutionContext context = this.execution.getContext();
-        XWikiContext xcontext = (XWikiContext) context.getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    return xcontext;
+  }
 
-        if (xcontext == null) {
-            xcontext = this.stubContextProvider.createStubContext();
+  /**
+   * @param remoteData
+   *          the serialized version of the context
+   * @return the XWiki context
+   */
+  protected XWikiContext unserializeXWikiContext(Serializable remoteData) {
+    XWikiContext xcontext = getXWikiStubContext();
 
-            if (xcontext != null) {
-                context.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, xcontext);
-            }
-        }
+    Map<String, Serializable> remoteDataMap = (Map<String, Serializable>) remoteData;
 
-        return xcontext;
+    if (xcontext != null) {
+      xcontext.setDatabase((String) remoteDataMap.get(CONTEXT_WIKI));
+      xcontext.setUser((String) remoteDataMap.get(CONTEXT_USER));
+    } else {
+      getLogger().warn(
+          "Can't get a proper XWikiContext."
+              + " It generally mean that the wiki has never been fully initialized,"
+              + " i.e. has never been accesses at least once");
     }
 
-    /**
-     * @param remoteData the serialized version of the context
-     * @return the XWiki context
-     */
-    protected XWikiContext unserializeXWikiContext(Serializable remoteData)
-    {
-        XWikiContext xcontext = getXWikiStubContext();
+    return xcontext;
+  }
 
-        Map<String, Serializable> remoteDataMap = (Map<String, Serializable>) remoteData;
+  /**
+   * @param document
+   *          the document to serialize
+   * @return the serialized version of the document
+   */
+  protected Serializable serializeXWikiDocument(XWikiDocument document) {
+    HashMap<String, Serializable> remoteDataMap = new HashMap<>();
 
-        if (xcontext != null) {
-            xcontext.setDatabase((String) remoteDataMap.get(CONTEXT_WIKI));
-            xcontext.setUser((String) remoteDataMap.get(CONTEXT_USER));
-        } else {
-            getLogger().warn(
-                "Can't get a proper XWikiContext."
-                    + " It generally mean that the wiki has never been fully initialized,"
-                    + " i.e. has never been accesses at least once");
-        }
+    remoteDataMap.put(DOC_NAME, document.getDocumentReference());
 
-        return xcontext;
+    if (!document.isNew()) {
+      remoteDataMap.put(DOC_VERSION, document.getVersion());
+      remoteDataMap.put(DOC_LANGUAGE, document.getLanguage());
     }
 
-    /**
-     * @param document the document to serialize
-     * @return the serialized version of the document
-     */
-    protected Serializable serializeXWikiDocument(XWikiDocument document)
-    {
-        HashMap<String, Serializable> remoteDataMap = new HashMap<String, Serializable>();
+    XWikiDocument originalDocument = document.getOriginalDocument();
 
-        remoteDataMap.put(DOC_NAME, document.getDocumentReference());
-
-        if (!document.isNew()) {
-            remoteDataMap.put(DOC_VERSION, document.getVersion());
-            remoteDataMap.put(DOC_LANGUAGE, document.getLanguage());
-        }
-
-        XWikiDocument originalDocument = document.getOriginalDocument();
-
-        if (originalDocument != null && !originalDocument.isNew()) {
-            remoteDataMap.put(ORIGDOC_VERSION, originalDocument.getVersion());
-            remoteDataMap.put(ORIGDOC_LANGUAGE, originalDocument.getLanguage());
-        }
-
-        return remoteDataMap;
+    if ((originalDocument != null) && !originalDocument.isNew()) {
+      remoteDataMap.put(ORIGDOC_VERSION, originalDocument.getVersion());
+      remoteDataMap.put(ORIGDOC_LANGUAGE, originalDocument.getLanguage());
     }
 
-    /**
-     * @param remoteData the serialized version of the document
-     * @return the document
-     */
-    protected XWikiDocument unserializeDocument(Serializable remoteData)
-    {
-        Map<String, Serializable> remoteDataMap = (Map<String, Serializable>) remoteData;
+    return remoteDataMap;
+  }
 
-        DocumentReference docReference = (DocumentReference) remoteDataMap.get(DOC_NAME);
+  /**
+   * @param remoteData
+   *          the serialized version of the document
+   * @return the document
+   */
+  protected XWikiDocument unserializeDocument(Serializable remoteData) {
+    Map<String, Serializable> remoteDataMap = (Map<String, Serializable>) remoteData;
 
-        XWikiDocument doc;
-        if (remoteDataMap.get(DOC_VERSION) == null) {
-            doc = new XWikiDocument(docReference);
-        } else {
-            doc = new LazyXWikiDocument(docReference);
-            doc.setLanguage((String) remoteDataMap.get(DOC_LANGUAGE));
-            doc.setVersion((String) remoteDataMap.get(DOC_VERSION));
-        }
+    DocumentReference docReference = (DocumentReference) remoteDataMap.get(DOC_NAME);
 
-        XWikiDocument origDoc;
-        if (remoteDataMap.get(ORIGDOC_VERSION) == null) {
-            origDoc = new XWikiDocument(docReference);
-        } else {
-            origDoc = new LazyXWikiDocument(docReference);
-            origDoc.setLanguage((String) remoteDataMap.get(ORIGDOC_LANGUAGE));
-            origDoc.setVersion((String) remoteDataMap.get(ORIGDOC_VERSION));
-        }
-
-        doc.setOriginalDocument(origDoc);
-
-        return doc;
+    XWikiDocument doc;
+    if (remoteDataMap.get(DOC_VERSION) == null) {
+      doc = new XWikiDocument(docReference);
+    } else {
+      doc = new LazyXWikiDocument(docReference);
+      doc.setLanguage((String) remoteDataMap.get(DOC_LANGUAGE));
+      doc.setVersion((String) remoteDataMap.get(DOC_VERSION));
     }
+
+    XWikiDocument origDoc;
+    if (remoteDataMap.get(ORIGDOC_VERSION) == null) {
+      origDoc = new XWikiDocument(docReference);
+    } else {
+      origDoc = new LazyXWikiDocument(docReference);
+      origDoc.setLanguage((String) remoteDataMap.get(ORIGDOC_LANGUAGE));
+      origDoc.setVersion((String) remoteDataMap.get(ORIGDOC_VERSION));
+    }
+
+    doc.setOriginalDocument(origDoc);
+
+    return doc;
+  }
 }

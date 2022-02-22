@@ -26,28 +26,29 @@ import org.xwiki.model.internal.reference.AbstractReferenceEntityReferenceResolv
 import org.xwiki.model.reference.EntityReferenceValueProvider;
 
 /**
- * Resolve an {@link org.xwiki.model.reference.EntityReference} into a valid and absolute reference (with all required
+ * Resolve an {@link org.xwiki.model.reference.EntityReference} into a valid and absolute reference
+ * (with all required
  * parents filled in). The behavior is the one defined in
  * {@link com.xpn.xwiki.internal.model.reference.CurrentMixedEntityReferenceValueProvider}.
- * 
+ *
  * @version $Id$
  * @since 2.3M1
  */
 @Component("currentmixed/reference")
-public class CurrentMixedReferenceEntityReferenceResolver extends AbstractReferenceEntityReferenceResolver
-{
-    @Requirement("currentmixed")
-    private EntityReferenceValueProvider provider;
+public class CurrentMixedReferenceEntityReferenceResolver
+    extends AbstractReferenceEntityReferenceResolver {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.model.internal.reference.AbstractReferenceEntityReferenceResolver#getDefaultValue(org.xwiki.model.EntityType,
-     *      java.lang.Object[])
-     */
-    @Override
-    protected String getDefaultValue(EntityType type, Object... parameters)
-    {
-        return this.provider.getDefaultValue(type);
-    }
+  @Requirement("currentmixed")
+  private EntityReferenceValueProvider provider;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.model.internal.reference.AbstractReferenceEntityReferenceResolver#getDefaultValue(org.xwiki.model.EntityType,
+   *      java.lang.Object[])
+   */
+  @Override
+  protected String getDefaultValue(EntityType type, Object... parameters) {
+    return this.provider.getDefaultValue(type);
+  }
 }

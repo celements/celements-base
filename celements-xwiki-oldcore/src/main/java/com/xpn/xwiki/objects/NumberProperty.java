@@ -21,58 +21,51 @@
 
 package com.xpn.xwiki.objects;
 
-public abstract class NumberProperty extends BaseProperty
-{
-    private Number value;
+public abstract class NumberProperty extends BaseProperty {
 
-    public NumberProperty()
-    {
+  private Number value;
+
+  public NumberProperty() {}
+
+  @Override
+  public Object getValue() {
+    return this.value;
+  }
+
+  @Override
+  public void setValue(Object value) {
+    this.value = (Number) value;
+  }
+
+  @Override
+  public String toText() {
+    Number nb = (Number) getValue();
+    return (nb == null) ? "" : nb.toString();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    // Same Java object, they sure are equal
+    if (this == obj) {
+      return true;
     }
 
-    @Override
-    public Object getValue()
-    {
-        return this.value;
+    if (!super.equals(obj)) {
+      return false;
     }
 
-    @Override
-    public void setValue(Object value)
-    {
-        this.value = (Number) value;
+    if ((getValue() == null) && (((NumberProperty) obj).getValue() == null)) {
+      return true;
     }
 
-    @Override
-    public String toText()
-    {
-        Number nb = (Number) getValue();
-        return (nb == null) ? "" : nb.toString();
-    }
+    return getValue().equals(((NumberProperty) obj).getValue());
+  }
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        // Same Java object, they sure are equal
-        if (this == obj) {
-            return true;
-        }
-
-        if (!super.equals(obj)) {
-            return false;
-        }
-
-        if ((getValue() == null) && (((NumberProperty) obj).getValue() == null)) {
-            return true;
-        }
-
-        return getValue().equals(((NumberProperty) obj).getValue());
-    }
-
-    @Override
-    public Object clone()
-    {
-        NumberProperty property = (NumberProperty) super.clone();
-        property.setValue(getValue());
-        return property;
-    }
+  @Override
+  public Object clone() {
+    NumberProperty property = (NumberProperty) super.clone();
+    property.setValue(getValue());
+    return property;
+  }
 
 }

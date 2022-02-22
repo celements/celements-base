@@ -26,157 +26,120 @@ import org.apache.commons.collections.ComparatorUtils;
 
 /**
  * An entry in a List or in a Tree.
- * 
+ *
  * @version $Id$
  */
-public class ListItem
-{
-    /** Comparator that orders two strings in their natural order, keeping nulls at the end. */
-    @SuppressWarnings("unchecked")
-    private static final Comparator<String> BASE_COMPARATOR =
-        ComparatorUtils.nullHighComparator(new Comparator<String>()
-            {
-        /**
-         * Case insensitive comparison of two Strings.
-         * 
-         * @param o1 the first item to be compared.
-         * @param o2 the second item to be compared.
-         * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or
-         *         greater than the second.
-         */
-        public int compare(String o1, String o2)
-                {
-            return o1.compareToIgnoreCase(o2);
-        }
-    });
+public class ListItem {
 
-    /** Comparator that orders list items on their identifiers, keeping null items at the end. */
-    @SuppressWarnings("unchecked")
-    protected static final Comparator<ListItem> ID_COMPARATOR =
-        ComparatorUtils.nullHighComparator(new Comparator<ListItem>()
-            {
-        /**
-         * Sorts the items on their ID: the option with the lower ID (case insensitive String comparison) will be placed
-         * before the other one.
-         * 
-         * @param o1 the first item to be compared.
-         * @param o2 the second item to be compared.
-         * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or
-         *         greater than the second.
-         */
-        public int compare(ListItem o1, ListItem o2)
-                {
-            return BASE_COMPARATOR.compare(o1.getId(), o2.getId());
-        }
-    });
+  /** Comparator that orders two strings in their natural order, keeping nulls at the end. */
+  @SuppressWarnings("unchecked")
+  private static final Comparator<String> BASE_COMPARATOR = ComparatorUtils.nullHighComparator(
+      (Comparator<String>) (String o1, String o2) -> o1.compareToIgnoreCase(o2));
 
-    /** Comparator that orders list items on their values, keeping null items at the end. */
-    @SuppressWarnings("unchecked")
-    protected static final Comparator<ListItem> VALUE_COMPARATOR =
-        ComparatorUtils.nullHighComparator(new Comparator<ListItem>()
-            {
-        /**
-         * Sorts the items on their value: the option with the lower value (case insensitive String comparison) will be
-         * placed before the other one.
-         * 
-         * @param o1 the first item to be compared.
-         * @param o2 the second item to be compared.
-         * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or
-         *         greater than the second.
-         */
-        public int compare(ListItem o1, ListItem o2)
-                {
-            return BASE_COMPARATOR.compare(o1.getValue(), o2.getValue());
-        }
-    });
+  /** Comparator that orders list items on their identifiers, keeping null items at the end. */
+  @SuppressWarnings("unchecked")
+  protected static final Comparator<ListItem> ID_COMPARATOR = ComparatorUtils.nullHighComparator(
+      (Comparator<ListItem>) (ListItem o1, ListItem o2) -> BASE_COMPARATOR
+          .compare(o1.getId(), o2.getId()));
 
-    /** A unique identifier of this item, the actual value stored in the database when selecting items from a list. */
-    private String id = "";
+  /** Comparator that orders list items on their values, keeping null items at the end. */
+  @SuppressWarnings("unchecked")
+  protected static final Comparator<ListItem> VALUE_COMPARATOR = ComparatorUtils.nullHighComparator(
+      (Comparator<ListItem>) (ListItem o1, ListItem o2) -> BASE_COMPARATOR
+          .compare(o1.getValue(), o2.getValue()));
 
-    /** A user-friendly value that gets displayed in the user interface, representing this item. */
-    private String value = "";
+  /**
+   * A unique identifier of this item, the actual value stored in the database when selecting items
+   * from a list.
+   */
+  private String id = "";
 
-    /** An optional reference to another item that allows to build parent-child relations, forming a tree. */
-    private String parent = "";
+  /** A user-friendly value that gets displayed in the user interface, representing this item. */
+  private String value = "";
 
-    /**
-     * Constructor that initializes both the {@link #id internal ID} and the {@link #value displayed value} with the
-     * same value, leaving the {@link #parent} field empty.
-     * 
-     * @param id the value to use for the id and the displayed value
-     */
-    public ListItem(String id)
-    {
-        this.setId(id);
-        this.setValue(id);
-    }
+  /**
+   * An optional reference to another item that allows to build parent-child relations, forming a
+   * tree.
+   */
+  private String parent = "";
 
-    /**
-     * Constructor that initializes the {@link #id internal ID} and the {@link #value displayed value}, leaving the
-     * {@link #parent} field empty.
-     * 
-     * @param id the value to use for the internal id
-     * @param value the value to use for the displayed value
-     */
-    public ListItem(String id, String value)
-    {
-        this.setId(id);
-        this.setValue(value);
-    }
+  /**
+   * Constructor that initializes both the {@link #id internal ID} and the {@link #value displayed
+   * value} with the
+   * same value, leaving the {@link #parent} field empty.
+   *
+   * @param id
+   *          the value to use for the id and the displayed value
+   */
+  public ListItem(String id) {
+    this.setId(id);
+    this.setValue(id);
+  }
 
-    /**
-     * Constructor that initializes all of the {@link #id internal ID}, the {@link #value displayed value}, and the
-     * {@link #parent} fields.
-     * 
-     * @param id the value to use for the internal id
-     * @param value the value to use for the displayed value
-     * @param parent the value to use for the item's parent
-     */
-    public ListItem(String id, String value, String parent)
-    {
-        this.setId(id);
-        this.setValue(value);
-        this.setParent(parent);
-    }
+  /**
+   * Constructor that initializes the {@link #id internal ID} and the {@link #value displayed
+   * value}, leaving the
+   * {@link #parent} field empty.
+   *
+   * @param id
+   *          the value to use for the internal id
+   * @param value
+   *          the value to use for the displayed value
+   */
+  public ListItem(String id, String value) {
+    this.setId(id);
+    this.setValue(value);
+  }
 
-    public String getId()
-    {
-        return this.id;
-    }
+  /**
+   * Constructor that initializes all of the {@link #id internal ID}, the {@link #value displayed
+   * value}, and the
+   * {@link #parent} fields.
+   *
+   * @param id
+   *          the value to use for the internal id
+   * @param value
+   *          the value to use for the displayed value
+   * @param parent
+   *          the value to use for the item's parent
+   */
+  public ListItem(String id, String value, String parent) {
+    this.setId(id);
+    this.setValue(value);
+    this.setParent(parent);
+  }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+  public String getId() {
+    return this.id;
+  }
 
-    public String getValue()
-    {
-        return this.value;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public void setValue(String value)
-    {
-        this.value = value;
-    }
+  public String getValue() {
+    return this.value;
+  }
 
-    public String getParent()
-    {
-        return this.parent;
-    }
+  public void setValue(String value) {
+    this.value = value;
+  }
 
-    public void setParent(String parent)
-    {
-        this.parent = parent;
-    }
+  public String getParent() {
+    return this.parent;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Object#toString()
-     */
-    @Override
-    public String toString()
-    {
-        return "[" + getId() + ", " + getValue() + ", " + getParent() + "]";
-    }
+  public void setParent(String parent) {
+    this.parent = parent;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "[" + getId() + ", " + getValue() + ", " + getParent() + "]";
+  }
 }

@@ -23,141 +23,133 @@ import java.util.Date;
 
 /**
  * information about document versions used to retreive a set of document versions.
- * 
+ *
  * @version $Id$
  * @see com.xpn.xwiki.doc.XWikiDocument#getRevisions(RevisionCriteria, com.xpn.xwiki.XWikiContext)
  * @since 1.4M1
  */
-public class RevisionCriteria
-{
-    /**
-     * regexp matching the author of version set.
-     */
-    private String author = "";
+public class RevisionCriteria {
 
-    /**
-     * date range of the version set
-     */
-    private Period period = PeriodFactory.createMaximumPeriod();
+  /**
+   * regexp matching the author of version set.
+   */
+  private String author = "";
 
-    /**
-     * range allowing to limit the size of the set by getting only N first items or N last items
-     */
-    private Range range = RangeFactory.createAllRange();
+  /**
+   * date range of the version set
+   */
+  private Period period = PeriodFactory.createMaximumPeriod();
 
-    /**
-     * include minor edit versions in the set.
-     */
-    private boolean includeMinorVersions = false;
+  /**
+   * range allowing to limit the size of the set by getting only N first items or N last items
+   */
+  private Range range = RangeFactory.createAllRange();
 
-    /**
-     * Default constructor, the default query match the versions created by any author, from January 1, 1970, 00:00:00
-     * GMT (epoch) to the maximum possible date (Long.MAX_VALUE), minor versions aren't included
-     */
-    public RevisionCriteria()
-    {
-        // Nothing to do here.
+  /**
+   * include minor edit versions in the set.
+   */
+  private boolean includeMinorVersions = false;
+
+  /**
+   * Default constructor, the default query match the versions created by any author, from January
+   * 1, 1970, 00:00:00
+   * GMT (epoch) to the maximum possible date (Long.MAX_VALUE), minor versions aren't included
+   */
+  public RevisionCriteria() {
+    // Nothing to do here.
+  }
+
+  /**
+   * Fully featured constructor, allow to set all the query parameters, null arguments are ignored
+   */
+  public RevisionCriteria(String author, Period period, Range range,
+      boolean includeMinorVersions) {
+    if (author != null) {
+      setAuthor(author);
     }
-
-    /**
-     * Fully featured constructor, allow to set all the query parameters, null arguments are ignored
-     */
-    public RevisionCriteria(String author, Period period, Range range,
-        boolean includeMinorVersions)
-    {
-        if (author != null) {
-            setAuthor(author);
-        }
-        if (period != null) {
-            setPeriod(period);
-        }
-        if (range != null) {
-            setRange(range);
-        }
-        setIncludeMinorVersions(includeMinorVersions);
+    if (period != null) {
+      setPeriod(period);
     }
-
-    /**
-     * @return author the author of version set.
-     */
-    public String getAuthor()
-    {
-        return this.author;
+    if (range != null) {
+      setRange(range);
     }
+    setIncludeMinorVersions(includeMinorVersions);
+  }
 
-    /**
-     * @param author the author of version set.
-     */
-    public void setAuthor(String author)
-    {
-        this.author = author;
-    }
+  /**
+   * @return author the author of version set.
+   */
+  public String getAuthor() {
+    return this.author;
+  }
 
-    /**
-     * @return period the Period (time limits) desired for the results
-     */
-    public Period getPeriod()
-    {
-        return this.period;
-    }
+  /**
+   * @param author
+   *          the author of version set.
+   */
+  public void setAuthor(String author) {
+    this.author = author;
+  }
 
-    /**
-     * Set the Period (time limits) desired for the results
-     * 
-     * @param period
-     */
-    public void setPeriod(Period period)
-    {
-        this.period = period;
-    }
+  /**
+   * @return period the Period (time limits) desired for the results
+   */
+  public Period getPeriod() {
+    return this.period;
+  }
 
-    /**
-     * @return range the Range (size limits) desired for the results
-     */
-    public Range getRange()
-    {
-        return this.range;
-    }
+  /**
+   * Set the Period (time limits) desired for the results
+   *
+   * @param period
+   */
+  public void setPeriod(Period period) {
+    this.period = period;
+  }
 
-    /**
-     * Set the Range (size limits) desired for the results
-     * 
-     * @param range desired range @see Range
-     */
-    public void setRange(Range range)
-    {
-        this.range = range;
-    }
+  /**
+   * @return range the Range (size limits) desired for the results
+   */
+  public Range getRange() {
+    return this.range;
+  }
 
-    /**
-     * @return minimum date of version set.
-     */
-    public Date getMinDate()
-    {
-        return new Date(this.period.getStart());
-    }
+  /**
+   * Set the Range (size limits) desired for the results
+   *
+   * @param range
+   *          desired range @see Range
+   */
+  public void setRange(Range range) {
+    this.range = range;
+  }
 
-    /**
-     * @return maximum date of version set.
-     */
-    public Date getMaxDate()
-    {
-        return new Date(this.period.getEnd());
-    }
+  /**
+   * @return minimum date of version set.
+   */
+  public Date getMinDate() {
+    return new Date(this.period.getStart());
+  }
 
-    /**
-     * include minor versions in the set.
-     */
-    public boolean getIncludeMinorVersions()
-    {
-        return this.includeMinorVersions;
-    }
+  /**
+   * @return maximum date of version set.
+   */
+  public Date getMaxDate() {
+    return new Date(this.period.getEnd());
+  }
 
-    /**
-     * @param includeMinorVersions true to include minor versions in the set, false to ignore them.
-     */
-    public void setIncludeMinorVersions(boolean includeMinorVersions)
-    {
-        this.includeMinorVersions = includeMinorVersions;
-    }
+  /**
+   * include minor versions in the set.
+   */
+  public boolean getIncludeMinorVersions() {
+    return this.includeMinorVersions;
+  }
+
+  /**
+   * @param includeMinorVersions
+   *          true to include minor versions in the set, false to ignore them.
+   */
+  public void setIncludeMinorVersions(boolean includeMinorVersions) {
+    this.includeMinorVersions = includeMinorVersions;
+  }
 }

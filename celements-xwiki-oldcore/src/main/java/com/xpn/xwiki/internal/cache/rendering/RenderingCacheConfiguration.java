@@ -24,33 +24,34 @@ import org.xwiki.model.reference.DocumentReference;
 
 /**
  * Configuration of the rendering cache.
- * 
+ *
  * @version $Id$
  * @since 2.4M1
  */
 @ComponentRole
-public interface RenderingCacheConfiguration
-{
-    /**
-     * @return true if the rendering cache system is enabled in general
-     */
-    boolean isEnabled();
+public interface RenderingCacheConfiguration {
 
-    /**
-     * @return the time to live for each element in the cache
-     */
-    int getDuration();
+  /**
+   * @return true if the rendering cache system is enabled in general
+   */
+  boolean isEnabled();
 
-    /**
-     * @return the size of the cache
-     */
-    int getSize();
+  /**
+   * @return the time to live for each element in the cache
+   */
+  int getDuration();
 
-    /**
-     * Indicate if the provided document's rendering result should be cached.
-     * 
-     * @param documentReference the reference of the document
-     * @return true if the document should be cached, false otherwise
-     */
-    boolean isCached(DocumentReference documentReference);
+  /**
+   * @return the size of the cache
+   */
+  int getSize();
+
+  /**
+   * Indicate if the provided document's rendering result should be cached.
+   *
+   * @param documentReference
+   *          the reference of the document
+   * @return true if the document should be cached, false otherwise
+   */
+  boolean isCached(DocumentReference documentReference);
 }

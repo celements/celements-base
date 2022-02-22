@@ -21,101 +21,131 @@
 
 package com.xpn.xwiki.plugin.query;
 
-import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.api.Api;
-import com.xpn.xwiki.store.XWikiStoreInterface;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import javax.jcr.ValueFactory;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.api.Api;
+import com.xpn.xwiki.store.XWikiStoreInterface;
+
 /** Api for QueryPlugin */
 public class QueryPluginApi extends Api implements IQueryFactory {
-    private static final Log log = LogFactory.getLog(QueryPluginApi.class);
-    QueryPlugin qp;
 
-    /**
-     * @deprecated This version si buggy since it use the initial context of the plugin and
-     * not the current context
-     */
-    @Deprecated
-    public QueryPluginApi(QueryPlugin qp) {
-       this(qp, qp.getContext());
-    }
+  private static final Log log = LogFactory.getLog(QueryPluginApi.class);
+  QueryPlugin qp;
 
-    public QueryPluginApi(QueryPlugin qp, XWikiContext context) {
-        super(context);
-        this.qp = qp;
-    }
-    public IQuery getDocs(String docname, String prop, String order) throws XWikiException {
-        return qp.getDocs(docname, prop, order, this);
-    }
-    public IQuery getChildDocs(String docname, String prop, String order) throws XWikiException {
-        return qp.getChildDocs(docname, prop, order, this);
-    }
-    public IQuery getAttachment(String docname, String attachname, String order) throws XWikiException {
-        return qp.getAttachment(docname, attachname, order, this);
-    }
-    public IQuery getObjects(String docname, String oclass, String prop, String order) throws XWikiException {
-        return qp.getObjects(docname, oclass, prop, order, this);
-    }
-    public XWikiContext getContext() {
-        return context;
-    }
-    public XWikiStoreInterface getStore() {
-        return qp.getStore(this);
-    }
+  /**
+   * @deprecated This version si buggy since it use the initial context of the plugin and
+   *             not the current context
+   */
+  @Deprecated
+  public QueryPluginApi(QueryPlugin qp) {
+    this(qp, qp.getContext());
+  }
 
-    public IQuery xpath(String q) throws XWikiException {
-        return xpath( q, true );
-    }
+  public QueryPluginApi(QueryPlugin qp, XWikiContext context) {
+    super(context);
+    this.qp = qp;
+  }
 
-    public IQuery xpath(String q, boolean checkRights) throws XWikiException {
-        if( !checkRights && hasProgrammingRights())
-            return qp.xpath(q, this);
+  @Override
+  public IQuery getDocs(String docname, String prop, String order) throws XWikiException {
+    return qp.getDocs(docname, prop, order, this);
+  }
 
-        if (log.isDebugEnabled())
-            log.debug("create sec xpath query: "+q);
-        if (qp.isHibernate(this))
-            try {
-                return new SecHibernateQuery( qp.parse(q, Query.XPATH), this);
-            } catch (InvalidQueryException e) {
-                throw new XWikiException(XWikiException.MODULE_XWIKI_PLUGINS, XWikiException.ERROR_XWIKI_UNKNOWN, "Invalid xpath query: " + q);
-            }
-        if (qp.isJcr(this))
-            return new SecJcrQuery( q, Query.XPATH, this );
-        return null;
-    }
+  @Override
+  public IQuery getChildDocs(String docname, String prop, String order) throws XWikiException {
+    return qp.getChildDocs(docname, prop, order, this);
+  }
 
-    public IQuery ql(String q) throws XWikiException {
-        return ql( q, true );
-    }
+  @Override
+  public IQuery getAttachment(String docname, String attachname, String order)
+      throws XWikiException {
+    return qp.getAttachment(docname, attachname, order, this);
+  }
 
-    public IQuery ql(String q, boolean checkRights) throws XWikiException {
-        if( !checkRights && hasProgrammingRights())
-            return qp.ql(q, this);
+  @Override
+  public IQuery getObjects(String docname, String oclass, String prop, String order)
+      throws XWikiException {
+    return qp.getObjects(docname, oclass, prop, order, this);
+  }
 
-        if (log.isDebugEnabled())
-            log.debug("create sec JCRSQL query: "+q);
-        if (qp.isHibernate(this))
-            try {
-                return new SecHibernateQuery( qp.parse(q, Query.SQL), this);
-            } catch (InvalidQueryException e) {
-                throw new XWikiException(XWikiException.MODULE_XWIKI_PLUGINS, XWikiException.ERROR_XWIKI_UNKNOWN, "Invalid jcrsql query: " + q);
-            }
-        if (qp.isJcr(this))
-            return new SecJcrQuery( q, Query.SQL, this );
-        return null;
+  @Override
+  public XWikiContext getContext() {
+    return context;
+  }
+
+  @Override
+  public XWikiStoreInterface getStore() {
+    return qp.getStore(this);
+  }
+
+  @Override
+  public IQuery xpath(String q) throws XWikiException {
+    return xpath(q, true);
+  }
+
+  public IQuery xpath(String q, boolean checkRights) throws XWikiException {
+    if (!checkRights && hasProgrammingRights()) {
+      return qp.xpath(q, this);
     }
 
-    public ValueFactory getValueFactory() {
-        return qp.getValueFactory();
+    if (log.isDebugEnabled()) {
+      log.debug("create sec xpath query: " + q);
+    }
+    if (qp.isHibernate(this)) {
+      try {
+        return new SecHibernateQuery(qp.parse(q, Query.XPATH), this);
+      } catch (InvalidQueryException e) {
+        throw new XWikiException(XWikiException.MODULE_XWIKI_PLUGINS,
+            XWikiException.ERROR_XWIKI_UNKNOWN, "Invalid xpath query: " + q);
+      }
+    }
+    if (qp.isJcr(this)) {
+      return new SecJcrQuery(q, Query.XPATH, this);
+    }
+    return null;
+  }
+
+  @Override
+  public IQuery ql(String q) throws XWikiException {
+    return ql(q, true);
+  }
+
+  public IQuery ql(String q, boolean checkRights) throws XWikiException {
+    if (!checkRights && hasProgrammingRights()) {
+      return qp.ql(q, this);
     }
 
-    public String makeQuery(XWikiQuery query) throws XWikiException {
-        return qp.makeQuery(query);
+    if (log.isDebugEnabled()) {
+      log.debug("create sec JCRSQL query: " + q);
     }
+    if (qp.isHibernate(this)) {
+      try {
+        return new SecHibernateQuery(qp.parse(q, Query.SQL), this);
+      } catch (InvalidQueryException e) {
+        throw new XWikiException(XWikiException.MODULE_XWIKI_PLUGINS,
+            XWikiException.ERROR_XWIKI_UNKNOWN, "Invalid jcrsql query: " + q);
+      }
+    }
+    if (qp.isJcr(this)) {
+      return new SecJcrQuery(q, Query.SQL, this);
+    }
+    return null;
+  }
+
+  @Override
+  public ValueFactory getValueFactory() {
+    return qp.getValueFactory();
+  }
+
+  @Override
+  public String makeQuery(XWikiQuery query) throws XWikiException {
+    return qp.makeQuery(query);
+  }
 }

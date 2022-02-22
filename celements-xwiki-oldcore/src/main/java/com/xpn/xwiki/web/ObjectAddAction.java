@@ -31,53 +31,52 @@ import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 
-public class ObjectAddAction extends XWikiAction
-{
-    private static final String[] EMPTY_PROPERTY = new String[] {""};
+public class ObjectAddAction extends XWikiAction {
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        // CSRF prevention
-        if (!csrfTokenCheck(context)) {
-            return false;
-        }
+  private static final String[] EMPTY_PROPERTY = { "" };
 
-        XWiki xwiki = context.getWiki();
-        XWikiResponse response = context.getResponse();
-        String username = context.getUser();
-        XWikiDocument doc = context.getDoc();
-        ObjectAddForm oform = (ObjectAddForm) context.getForm();
-
-        String className = oform.getClassName();
-        BaseObject object = doc.newObject(className, context);
-
-        // We need to have a string in the map for each field for the object to be correctly created.
-        // Otherwise, queries using the missing properties will fail to return this object.
-        BaseClass baseclass = object.getxWikiClass(context);
-        Map<String, String[]> objmap = oform.getObject(className);
-        Iterator<PropertyClass> itfields = baseclass.getFieldList().iterator();
-        while (itfields.hasNext()) {
-            PropertyClass property = itfields.next();
-            String name = property.getName();
-            if (objmap.get(name) == null) {
-                objmap.put(name, EMPTY_PROPERTY);
-            }
-        }
-
-        // Load the object properties that are defined in the request.
-        baseclass.fromMap(objmap, object);
-
-        doc.setAuthor(username);
-        if (doc.isNew()) {
-            doc.setCreator(username);
-        }
-        xwiki.saveDocument(doc, context.getMessageTool().get("core.comment.addObject"), true, context);
-
-        // forward to edit
-        String redirect = Utils.getRedirect("edit", context);
-        sendRedirect(response, redirect);
-        return false;
+  @SuppressWarnings("unchecked")
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    // CSRF prevention
+    if (!csrfTokenCheck(context)) {
+      return false;
     }
+
+    XWiki xwiki = context.getWiki();
+    XWikiResponse response = context.getResponse();
+    String username = context.getUser();
+    XWikiDocument doc = context.getDoc();
+    ObjectAddForm oform = (ObjectAddForm) context.getForm();
+
+    String className = oform.getClassName();
+    BaseObject object = doc.newObject(className, context);
+
+    // We need to have a string in the map for each field for the object to be correctly created.
+    // Otherwise, queries using the missing properties will fail to return this object.
+    BaseClass baseclass = object.getxWikiClass(context);
+    Map<String, String[]> objmap = oform.getObject(className);
+    Iterator<PropertyClass> itfields = baseclass.getFieldList().iterator();
+    while (itfields.hasNext()) {
+      PropertyClass property = itfields.next();
+      String name = property.getName();
+      if (objmap.get(name) == null) {
+        objmap.put(name, EMPTY_PROPERTY);
+      }
+    }
+
+    // Load the object properties that are defined in the request.
+    baseclass.fromMap(objmap, object);
+
+    doc.setAuthor(username);
+    if (doc.isNew()) {
+      doc.setCreator(username);
+    }
+    xwiki.saveDocument(doc, context.getMessageTool().get("core.comment.addObject"), true, context);
+
+    // forward to edit
+    String redirect = Utils.getRedirect("edit", context);
+    sendRedirect(response, redirect);
+    return false;
+  }
 }

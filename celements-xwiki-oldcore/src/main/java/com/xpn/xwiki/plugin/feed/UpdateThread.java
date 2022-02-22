@@ -30,164 +30,151 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.util.AbstractXWikiRunnable;
 import com.xpn.xwiki.web.Utils;
 
-public class UpdateThread extends AbstractXWikiRunnable
-{
-    protected boolean fullContent;
+public class UpdateThread extends AbstractXWikiRunnable {
 
-    protected String space;
+  protected boolean fullContent;
 
-    protected FeedPlugin feedPlugin;
+  protected String space;
 
-    protected int scheduleTimer;
+  protected FeedPlugin feedPlugin;
 
-    protected boolean updateInProgress = false;
+  protected int scheduleTimer;
 
-    protected boolean forceUpdate = false;
+  protected boolean updateInProgress = false;
 
-    protected boolean stopUpdate = false;
+  protected boolean forceUpdate = false;
 
-    protected Date startDate;
+  protected boolean stopUpdate = false;
 
-    protected Date endDate;
+  protected Date startDate;
 
-    protected int nbLoadedArticles;
+  protected Date endDate;
 
-    protected int nbLoadedFeeds;
+  protected int nbLoadedArticles;
 
-    protected int nbLoadedFeedsErrors;
+  protected int nbLoadedFeeds;
 
-    protected Exception exception;
+  protected int nbLoadedFeedsErrors;
 
-    public UpdateThread(String space, boolean fullContent, int scheduleTimer, FeedPlugin feedPlugin,
-        XWikiContext context)
-    {
-        super(XWikiContext.EXECUTIONCONTEXT_KEY, context);
-        
-        this.fullContent = fullContent;
-        this.space = space;
-        this.feedPlugin = feedPlugin;
-        this.scheduleTimer = scheduleTimer;
-    }
+  protected Exception exception;
 
-    public void update()
-    {
-        if (!stopUpdate) {
-            if (updateInProgress == false) {
-                updateInProgress = true;
-                nbLoadedFeeds = 0;
-                nbLoadedFeedsErrors = 0;
-                exception = null;
-                nbLoadedArticles = 0;
-                endDate = null;
-                startDate = new Date();
-                XWikiContext context = getXWikiContext();
-                try {
-                    // Make sure store sessions are cleaned up
-                    context.getWiki().getStore().cleanUp(context);
-                    // update the feeds
-                    nbLoadedArticles = feedPlugin.updateFeedsInSpace(space, fullContent, true, false, context);
-                } catch (XWikiException e) {
-                    exception = e;
-                    e.printStackTrace();
-                } finally {
-                    updateInProgress = false;
-                    endDate = new Date();
-                    context.getWiki().getStore().cleanUp(context);
-                }
-                // an update has been schedule..
-                if ((forceUpdate == true) && (stopUpdate == false)) {
-                    forceUpdate = false;
-                    update();
-                }
-            } else {
-                // let's schedule an update at the end of the current update
-                forceUpdate = true;
-            }
+  public UpdateThread(String space, boolean fullContent, int scheduleTimer, FeedPlugin feedPlugin,
+      XWikiContext context) {
+    super(XWikiContext.EXECUTIONCONTEXT_KEY, context);
+
+    this.fullContent = fullContent;
+    this.space = space;
+    this.feedPlugin = feedPlugin;
+    this.scheduleTimer = scheduleTimer;
+  }
+
+  public void update() {
+    if (!stopUpdate) {
+      if (!updateInProgress) {
+        updateInProgress = true;
+        nbLoadedFeeds = 0;
+        nbLoadedFeedsErrors = 0;
+        exception = null;
+        nbLoadedArticles = 0;
+        endDate = null;
+        startDate = new Date();
+        XWikiContext context = getXWikiContext();
+        try {
+          // Make sure store sessions are cleaned up
+          context.getWiki().getStore().cleanUp(context);
+          // update the feeds
+          nbLoadedArticles = feedPlugin.updateFeedsInSpace(space, fullContent, true, false,
+              context);
+        } catch (XWikiException e) {
+          exception = e;
+          e.printStackTrace();
+        } finally {
+          updateInProgress = false;
+          endDate = new Date();
+          context.getWiki().getStore().cleanUp(context);
         }
-    }
-
-    private XWikiContext getXWikiContext()
-    {
-        return (XWikiContext) Utils.getComponent(Execution.class).getContext().getProperty("xwikicontext");
-    }
-    
-    public String getSpace()
-    {
-        return space;
-    }
-
-    public boolean isUpdateInProgress()
-    {
-        return updateInProgress;
-    }
-
-    public Date getStartDate()
-    {
-        return startDate;
-    }
-
-    public Date getEndDate()
-    {
-        return endDate;
-    }
-
-    public int getNbLoadedArticles()
-    {
-        return nbLoadedArticles;
-    }
-
-    public Exception getException()
-    {
-        return exception;
-    }
-
-    public void stopUpdate()
-    {
-        if (!updateInProgress) {
-            feedPlugin.removeUpdateThread(space, this, getXWikiContext());
+        // an update has been schedule..
+        if (forceUpdate && !stopUpdate) {
+          forceUpdate = false;
+          update();
         }
-        stopUpdate = true;
+      } else {
+        // let's schedule an update at the end of the current update
+        forceUpdate = true;
+      }
     }
+  }
 
-    public int getNbLoadedFeeds()
-    {
-        return nbLoadedFeeds;
-    }
+  private XWikiContext getXWikiContext() {
+    return (XWikiContext) Utils.getComponent(Execution.class).getContext()
+        .getProperty("xwikicontext");
+  }
 
-    public void setNbLoadedFeeds(int nbLoadedFeeds)
-    {
-        this.nbLoadedFeeds = nbLoadedFeeds;
-    }
+  public String getSpace() {
+    return space;
+  }
 
-    public int getNbLoadedFeedsErrors()
-    {
-        return nbLoadedFeedsErrors;
-    }
+  public boolean isUpdateInProgress() {
+    return updateInProgress;
+  }
 
-    public void setNbLoadedFeedsErrors(int nbLoadedFeedsErrors)
-    {
-        this.nbLoadedFeedsErrors = nbLoadedFeedsErrors;
-    }
+  public Date getStartDate() {
+    return startDate;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see {@link AbstractXWikiRunnable#runInternal()}
-     */
-    @Override
-    protected void runInternal()
-    {
-        while (true) {
-            update();
-            if (stopUpdate) {
-                feedPlugin.removeUpdateThread(space, this, getXWikiContext());
-                break;
-            }
-            try {
-                Thread.sleep(scheduleTimer);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
+  public Date getEndDate() {
+    return endDate;
+  }
+
+  public int getNbLoadedArticles() {
+    return nbLoadedArticles;
+  }
+
+  public Exception getException() {
+    return exception;
+  }
+
+  public void stopUpdate() {
+    if (!updateInProgress) {
+      feedPlugin.removeUpdateThread(space, this, getXWikiContext());
     }
+    stopUpdate = true;
+  }
+
+  public int getNbLoadedFeeds() {
+    return nbLoadedFeeds;
+  }
+
+  public void setNbLoadedFeeds(int nbLoadedFeeds) {
+    this.nbLoadedFeeds = nbLoadedFeeds;
+  }
+
+  public int getNbLoadedFeedsErrors() {
+    return nbLoadedFeedsErrors;
+  }
+
+  public void setNbLoadedFeedsErrors(int nbLoadedFeedsErrors) {
+    this.nbLoadedFeedsErrors = nbLoadedFeedsErrors;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see {@link AbstractXWikiRunnable#runInternal()}
+   */
+  @Override
+  protected void runInternal() {
+    while (true) {
+      update();
+      if (stopUpdate) {
+        feedPlugin.removeUpdateThread(space, this, getXWikiContext());
+        break;
+      }
+      try {
+        Thread.sleep(scheduleTimer);
+      } catch (InterruptedException e) {
+        break;
+      }
+    }
+  }
 }

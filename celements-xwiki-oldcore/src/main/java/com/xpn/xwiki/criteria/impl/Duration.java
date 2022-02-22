@@ -27,73 +27,74 @@ package com.xpn.xwiki.criteria.impl;
  * instance the period between November 1th 2007 and December 1th 2007 can be divided in samples
  * each having a duration of 3 days.
  */
-public class Duration
-{
-    private org.joda.time.Period span;
+public class Duration {
 
-    /**
-     * Creates a duration by specifying a value for each of its fields.
-     *
-     * @param years The number of years
-     * @param months The number of months
-     * @param weeks The number of weeks
-     * @param days The number of days
-     */
-    public Duration(int years, int months, int weeks, int days)
-    {
-        span = new org.joda.time.Period(years, months, weeks, days, 0, 0, 0, 0);
-    }
+  private org.joda.time.Period span;
 
-    /**
-     * Creates a duration by specifying a value for each of its fields.
-     *
-     * @param years The number of years
-     * @param months The number of months
-     * @param weeks The number of weeks
-     * @param days The number of days
-     */
-    public Duration(int years, int months, int weeks, int days, int hours)
-    {
-        span = new org.joda.time.Period(years, months, weeks, days, hours, 0, 0, 0);
-    }
+  /**
+   * Creates a duration by specifying a value for each of its fields.
+   *
+   * @param years
+   *          The number of years
+   * @param months
+   *          The number of months
+   * @param weeks
+   *          The number of weeks
+   * @param days
+   *          The number of days
+   */
+  public Duration(int years, int months, int weeks, int days) {
+    span = new org.joda.time.Period(years, months, weeks, days, 0, 0, 0, 0);
+  }
 
-    /**
-     * @return The number of years this duration has
-     */
-    public int getYears()
-    {
-        return span.getYears();
-    }
+  /**
+   * Creates a duration by specifying a value for each of its fields.
+   *
+   * @param years
+   *          The number of years
+   * @param months
+   *          The number of months
+   * @param weeks
+   *          The number of weeks
+   * @param days
+   *          The number of days
+   */
+  public Duration(int years, int months, int weeks, int days, int hours) {
+    span = new org.joda.time.Period(years, months, weeks, days, hours, 0, 0, 0);
+  }
 
-    /**
-     * @return The number of months this duration has
-     */
-    public int getMonths()
-    {
-        return span.getMonths();
-    }
+  /**
+   * @return The number of years this duration has
+   */
+  public int getYears() {
+    return span.getYears();
+  }
 
-    /**
-     * @return The number of weeks this duration has
-     */
-    public int getWeeks()
-    {
-        return span.getWeeks();
-    }
+  /**
+   * @return The number of months this duration has
+   */
+  public int getMonths() {
+    return span.getMonths();
+  }
 
-    /**
-     * @return The number of days this duration has
-     */
-    public int getDays()
-    {
-        return span.getDays();
-    }
+  /**
+   * @return The number of weeks this duration has
+   */
+  public int getWeeks() {
+    return span.getWeeks();
+  }
 
-    /**
-     * @return The number of hours this duration has
-     */
-    public int getHours()
-    {
-        return span.getHours();
-    }
+  /**
+   * @return The number of days this duration has
+   */
+  public int getDays() {
+    return span.getDays();
+  }
+
+  /**
+   * @return The number of hours this duration has
+   */
+  public int getHours() {
+    return span.getHours();
+  }
 }

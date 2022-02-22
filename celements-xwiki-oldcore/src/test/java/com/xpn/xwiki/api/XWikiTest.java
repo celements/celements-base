@@ -46,130 +46,128 @@ import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
 
 /**
  * Unit tests for {@link com.xpn.xwiki.api.XWiki}.
- * 
+ *
  * @version $Id$
  */
-public class XWikiTest extends AbstractBridgedXWikiComponentTestCase
-{
-    public static final Random rand = new Random(Calendar.getInstance().getTimeInMillis());
+public class XWikiTest extends AbstractBridgedXWikiComponentTestCase {
 
-    private com.xpn.xwiki.XWiki xwiki;
+  public static final Random rand = new Random(Calendar.getInstance().getTimeInMillis());
 
-    private Document apiDocument;
+  private com.xpn.xwiki.XWiki xwiki;
 
-    private XWiki apiXWiki;
+  private Document apiDocument;
 
-    private Mock mockXWikiStore;
+  private XWiki apiXWiki;
 
-    private Mock mockXWikiVersioningStore;
+  private Mock mockXWikiStore;
 
-    private Mock mockXWikiRightService;
+  private Mock mockXWikiVersioningStore;
 
-    private Map<String, XWikiDocument> docs = new HashMap<String, XWikiDocument>();
+  private Mock mockXWikiRightService;
 
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-        this.xwiki = new com.xpn.xwiki.XWiki();
-        getContext().setWiki(this.xwiki);
-        this.xwiki.setConfig(new XWikiConfig());
-        this.xwiki.setNotificationManager(new XWikiNotificationManager());
+  private Map<String, XWikiDocument> docs = new HashMap<>();
 
-        this.apiXWiki = new XWiki(this.xwiki, getContext());
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    this.xwiki = new com.xpn.xwiki.XWiki();
+    getContext().setWiki(this.xwiki);
+    this.xwiki.setConfig(new XWikiConfig());
+    this.xwiki.setNotificationManager(new XWikiNotificationManager());
 
-        this.mockXWikiStore =
-            mock(XWikiHibernateStore.class, new java.lang.Class[] {com.xpn.xwiki.XWiki.class, XWikiContext.class},
-                new java.lang.Object[] {this.xwiki, getContext()});
-        this.mockXWikiStore.stubs().method("loadXWikiDoc").will(
-            new CustomStub("Implements XWikiStoreInterface.loadXWikiDoc")
-            {
-                public java.lang.Object invoke(Invocation invocation) throws Throwable
-                {
-                    XWikiDocument shallowDoc = (XWikiDocument) invocation.parameterValues.get(0);
-                    if (XWikiTest.this.docs.containsKey(shallowDoc.getName())) {
-                        return XWikiTest.this.docs.get(shallowDoc.getName());
-                    } else {
-                        return shallowDoc;
-                    }
-                }
-            });
-        this.mockXWikiStore.stubs().method("saveXWikiDoc").will(
-            new CustomStub("Implements XWikiStoreInterface.saveXWikiDoc")
-            {
-                public java.lang.Object invoke(Invocation invocation) throws Throwable
-                {
-                    XWikiDocument document = (XWikiDocument) invocation.parameterValues.get(0);
-                    document.setNew(false);
-                    document.setStore((XWikiStoreInterface) XWikiTest.this.mockXWikiStore.proxy());
-                    document.setId(rand.nextLong());
-                    XWikiTest.this.docs.put(document.getName(), document);
-                    return null;
-                }
-            });
-        this.mockXWikiStore.stubs().method("getTranslationList").will(returnValue(Collections.EMPTY_LIST));
+    this.apiXWiki = new XWiki(this.xwiki, getContext());
 
-        this.mockXWikiVersioningStore =
-            mock(XWikiHibernateVersioningStore.class, new java.lang.Class[] {com.xpn.xwiki.XWiki.class,
-            XWikiContext.class}, new java.lang.Object[] {this.xwiki, getContext()});
-        this.mockXWikiVersioningStore.stubs().method("getXWikiDocumentArchive").will(
-            returnValue(new XWikiDocumentArchive()));
-        this.mockXWikiVersioningStore.stubs().method("saveXWikiDocArchive").will(returnValue(null));
+    this.mockXWikiStore = mock(XWikiHibernateStore.class,
+        new java.lang.Class[] { com.xpn.xwiki.XWiki.class, XWikiContext.class },
+        new java.lang.Object[] { this.xwiki, getContext() });
+    this.mockXWikiStore.stubs().method("loadXWikiDoc").will(
+        new CustomStub("Implements XWikiStoreInterface.loadXWikiDoc") {
 
-        this.mockXWikiRightService =
-            mock(XWikiRightServiceImpl.class, new java.lang.Class[] {}, new java.lang.Object[] {});
-        this.mockXWikiRightService.stubs().method("hasAccessLevel").will(returnValue(true));
-        this.mockXWikiRightService.stubs().method("hasProgrammingRights").will(returnValue(true));
+          @Override
+          public java.lang.Object invoke(Invocation invocation) throws Throwable {
+            XWikiDocument shallowDoc = (XWikiDocument) invocation.parameterValues.get(0);
+            if (XWikiTest.this.docs.containsKey(shallowDoc.getName())) {
+              return XWikiTest.this.docs.get(shallowDoc.getName());
+            } else {
+              return shallowDoc;
+            }
+          }
+        });
+    this.mockXWikiStore.stubs().method("saveXWikiDoc").will(
+        new CustomStub("Implements XWikiStoreInterface.saveXWikiDoc") {
 
-        this.xwiki.setStore((XWikiStoreInterface) this.mockXWikiStore.proxy());
-        this.xwiki.setVersioningStore((XWikiVersioningStoreInterface) this.mockXWikiVersioningStore.proxy());
-        this.xwiki.setRightService((XWikiRightService) this.mockXWikiRightService.proxy());
+          @Override
+          public java.lang.Object invoke(Invocation invocation) throws Throwable {
+            XWikiDocument document = (XWikiDocument) invocation.parameterValues.get(0);
+            document.setNew(false);
+            document.setStore((XWikiStoreInterface) XWikiTest.this.mockXWikiStore.proxy());
+            document.setId(rand.nextLong());
+            XWikiTest.this.docs.put(document.getName(), document);
+            return null;
+          }
+        });
+    this.mockXWikiStore.stubs().method("getTranslationList")
+        .will(returnValue(Collections.EMPTY_LIST));
 
-        getContext().setUser("Redtail");
-        this.apiDocument = new Document(new XWikiDocument("MilkyWay", "Fidis"), getContext());
-        this.apiDocument.getDocument().setCreator("c" + getContext().getUser());
-        this.apiDocument.getDocument().setAuthor("a" + getContext().getUser());
-        this.apiDocument.save();
-        getContext().setUser("Earth");
-    }
+    this.mockXWikiVersioningStore = mock(XWikiHibernateVersioningStore.class,
+        new java.lang.Class[] { com.xpn.xwiki.XWiki.class,
+            XWikiContext.class },
+        new java.lang.Object[] { this.xwiki, getContext() });
+    this.mockXWikiVersioningStore.stubs().method("getXWikiDocumentArchive").will(
+        returnValue(new XWikiDocumentArchive()));
+    this.mockXWikiVersioningStore.stubs().method("saveXWikiDocArchive").will(returnValue(null));
 
-    public void testAuthorAfterDocumentCopy() throws XWikiException
-    {
-        String copyName = "Lyre";
-        String currentUser = getContext().getUser();
-        this.apiXWiki.copyDocument(this.apiDocument.getName(), copyName);
-        Document copy = this.apiXWiki.getDocument(copyName);
+    this.mockXWikiRightService = mock(XWikiRightServiceImpl.class, new java.lang.Class[] {},
+        new java.lang.Object[] {});
+    this.mockXWikiRightService.stubs().method("hasAccessLevel").will(returnValue(true));
+    this.mockXWikiRightService.stubs().method("hasProgrammingRights").will(returnValue(true));
 
-        assertTrue(currentUser.equals(copy.getAuthor()));
-    }
+    this.xwiki.setStore((XWikiStoreInterface) this.mockXWikiStore.proxy());
+    this.xwiki
+        .setVersioningStore((XWikiVersioningStoreInterface) this.mockXWikiVersioningStore.proxy());
+    this.xwiki.setRightService((XWikiRightService) this.mockXWikiRightService.proxy());
 
-    public void testCreatorAfterDocumentCopy() throws XWikiException
-    {
-        String copyName = "Sirius";
-        String currentUser = getContext().getUser();
-        this.apiXWiki.copyDocument(this.apiDocument.getName(), copyName);
-        Document copy = this.apiXWiki.getDocument(copyName);
+    getContext().setUser("Redtail");
+    this.apiDocument = new Document(new XWikiDocument("MilkyWay", "Fidis"), getContext());
+    this.apiDocument.getDocument().setCreator("c" + getContext().getUser());
+    this.apiDocument.getDocument().setAuthor("a" + getContext().getUser());
+    this.apiDocument.save();
+    getContext().setUser("Earth");
+  }
 
-        assertTrue(currentUser.equals(copy.getCreator()));
-    }
+  public void testAuthorAfterDocumentCopy() throws XWikiException {
+    String copyName = "Lyre";
+    String currentUser = getContext().getUser();
+    this.apiXWiki.copyDocument(this.apiDocument.getName(), copyName);
+    Document copy = this.apiXWiki.getDocument(copyName);
 
-    public void testCreationDateAfterDocumentCopy() throws XWikiException, InterruptedException
-    {
-        String copyName = this.apiDocument.getName() + "Copy";
-        long startTime = (Calendar.getInstance().getTimeInMillis() / 1000) * 1000;
-        this.apiXWiki.copyDocument(this.apiDocument.getName(), copyName);
-        long endTime = (Calendar.getInstance().getTimeInMillis() / 1000) * 1000;
-        long copyCreationTime = this.apiXWiki.getDocument(copyName).getCreationDate().getTime();
+    assertTrue(currentUser.equals(copy.getAuthor()));
+  }
 
-        assertTrue(startTime <= copyCreationTime && copyCreationTime <= endTime);
-    }
+  public void testCreatorAfterDocumentCopy() throws XWikiException {
+    String copyName = "Sirius";
+    String currentUser = getContext().getUser();
+    this.apiXWiki.copyDocument(this.apiDocument.getName(), copyName);
+    Document copy = this.apiXWiki.getDocument(copyName);
 
-    public void testGetAvailableRendererSyntax()
-    {
-        assertEquals(Syntax.PLAIN_1_0, this.apiXWiki.getAvailableRendererSyntax("plain", "1.0"));
-        assertEquals(Syntax.PLAIN_1_0, this.apiXWiki.getAvailableRendererSyntax("Plain", "1.0"));
-        assertEquals(Syntax.PLAIN_1_0, this.apiXWiki.getAvailableRendererSyntax("plain", null));
-        assertNull(this.apiXWiki.getAvailableRendererSyntax("plai", "1.0"));
-        assertNull(this.apiXWiki.getAvailableRendererSyntax("plai", null));
-    }
+    assertTrue(currentUser.equals(copy.getCreator()));
+  }
+
+  public void testCreationDateAfterDocumentCopy() throws XWikiException, InterruptedException {
+    String copyName = this.apiDocument.getName() + "Copy";
+    long startTime = (Calendar.getInstance().getTimeInMillis() / 1000) * 1000;
+    this.apiXWiki.copyDocument(this.apiDocument.getName(), copyName);
+    long endTime = (Calendar.getInstance().getTimeInMillis() / 1000) * 1000;
+    long copyCreationTime = this.apiXWiki.getDocument(copyName).getCreationDate().getTime();
+
+    assertTrue((startTime <= copyCreationTime) && (copyCreationTime <= endTime));
+  }
+
+  public void testGetAvailableRendererSyntax() {
+    assertEquals(Syntax.PLAIN_1_0, this.apiXWiki.getAvailableRendererSyntax("plain", "1.0"));
+    assertEquals(Syntax.PLAIN_1_0, this.apiXWiki.getAvailableRendererSyntax("Plain", "1.0"));
+    assertEquals(Syntax.PLAIN_1_0, this.apiXWiki.getAvailableRendererSyntax("plain", null));
+    assertNull(this.apiXWiki.getAvailableRendererSyntax("plai", "1.0"));
+    assertNull(this.apiXWiki.getAvailableRendererSyntax("plai", null));
+  }
 }

@@ -28,16 +28,23 @@ import com.xpn.xwiki.XWikiException;
 /**
  * Abstracts a strategy for computing the field values of a feed entry from a generic source.
  */
-public interface SyndEntrySource
-{
-    /**
-     * Overwrites the current values of the given feed entry with new ones computed from the specified source object.
-     * 
-     * @param entry the feed entry whose fields are going to be overwritten
-     * @param obj the source for the new values to be set on the fields of the feed entry
-     * @param params parameters to adjust the computation. Each concrete strategy may define its own (key, value) pairs
-     * @param context the XWiki context
-     * @throws XWikiException
-     */
-    void source(SyndEntry entry, Object obj, Map<String, Object> params, XWikiContext context) throws XWikiException;
+public interface SyndEntrySource {
+
+  /**
+   * Overwrites the current values of the given feed entry with new ones computed from the specified
+   * source object.
+   *
+   * @param entry
+   *          the feed entry whose fields are going to be overwritten
+   * @param obj
+   *          the source for the new values to be set on the fields of the feed entry
+   * @param params
+   *          parameters to adjust the computation. Each concrete strategy may define its own (key,
+   *          value) pairs
+   * @param context
+   *          the XWiki context
+   * @throws XWikiException
+   */
+  void source(SyndEntry entry, Object obj, Map<String, Object> params, XWikiContext context)
+      throws XWikiException;
 }

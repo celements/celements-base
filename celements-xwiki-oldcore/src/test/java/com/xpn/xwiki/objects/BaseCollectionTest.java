@@ -20,33 +20,31 @@
  */
 package com.xpn.xwiki.objects;
 
-import junit.framework.Assert;
-
 import org.dom4j.Element;
 import org.junit.Test;
 
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
 
+import junit.framework.Assert;
+
 /**
  * Unit tests for the {@link BaseCollection} class.
- * 
+ *
  * @version $Id$
  */
-public class BaseCollectionTest extends AbstractBridgedComponentTestCase
-{
-    @Test
-    public void testGetXClassWithNullReference() throws Exception
-    {
-        BaseCollection collection = new BaseCollection()
-        {
-            @Override
-            public Element toXML(BaseClass bclass)
-            {
-                return null;
-            }
-        };
+public class BaseCollectionTest extends AbstractBridgedComponentTestCase {
 
-        Assert.assertNull(collection.getXClass(getContext()));
-    }
+  @Test
+  public void testGetXClassWithNullReference() throws Exception {
+    BaseCollection collection = new BaseCollection() {
+
+      @Override
+      public Element toXML(BaseClass bclass) {
+        return null;
+      }
+    };
+
+    Assert.assertNull(collection.getXClass(getContext()));
+  }
 }

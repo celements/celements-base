@@ -7,37 +7,36 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiLock;
 
-public class LockAction extends XWikiAction
-{
-    @Override
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        XWikiRequest request = context.getRequest();
-        XWikiResponse response = context.getResponse();
-        XWikiDocument doc = context.getDoc();
-        XWikiForm form = context.getForm();
+public class LockAction extends XWikiAction {
 
-        String language = ((EditForm) form).getLanguage();
-        XWikiDocument tdoc = getTranslatedDocument(doc, language, context);
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    XWikiRequest request = context.getRequest();
+    XWikiResponse response = context.getResponse();
+    XWikiDocument doc = context.getDoc();
+    XWikiForm form = context.getForm();
 
-        String username = context.getUser();
-        XWikiLock lock = tdoc.getLock(context);
-        if ((lock == null) || (username.equals(lock.getUserName()))) {
-            if ("inline".equals(request.get("action"))) {
-                doc.setLock(username, context);
-            } else {
-                tdoc.setLock(username, context);
-            }
-        }
+    String language = ((EditForm) form).getLanguage();
+    XWikiDocument tdoc = getTranslatedDocument(doc, language, context);
 
-        // forward to view
-        if (Utils.isAjaxRequest(context)) {
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-            response.setContentLength(0);
-        } else {
-            String redirect = Utils.getRedirect("view", context);
-            sendRedirect(response, redirect);
-        }
-        return false;
+    String username = context.getUser();
+    XWikiLock lock = tdoc.getLock(context);
+    if ((lock == null) || (username.equals(lock.getUserName()))) {
+      if ("inline".equals(request.get("action"))) {
+        doc.setLock(username, context);
+      } else {
+        tdoc.setLock(username, context);
+      }
     }
+
+    // forward to view
+    if (Utils.isAjaxRequest(context)) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      response.setContentLength(0);
+    } else {
+      String redirect = Utils.getRedirect("view", context);
+      sendRedirect(response, redirect);
+    }
+    return false;
+  }
 }

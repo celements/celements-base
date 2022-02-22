@@ -44,93 +44,97 @@ import com.xpn.xwiki.plugin.image.ImageProcessor;
 
 /**
  * Default {@link ImageProcessor} implementation.
- * 
+ *
  * @version $Id$
  * @since 2.5M2
  */
 @Component
-public class DefaultImageProcessor implements ImageProcessor
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see ImageProcessor#readImage(InputStream)
-     */
-    public Image readImage(InputStream inputStream) throws IOException
-    {
-        return ImageIO.read(inputStream);
+public class DefaultImageProcessor implements ImageProcessor {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see ImageProcessor#readImage(InputStream)
+   */
+  @Override
+  public Image readImage(InputStream inputStream) throws IOException {
+    return ImageIO.read(inputStream);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see ImageProcessor#writeImage(RenderedImage, String, float, OutputStream)
+   */
+  @Override
+  public void writeImage(RenderedImage image, String mimeType, float quality, OutputStream out)
+      throws IOException {
+    if ("image/jpeg".equals(mimeType)) {
+      // Find a JPEG writer.
+      ImageWriter writer = null;
+      Iterator<ImageWriter> iter = ImageIO.getImageWritersByMIMEType(mimeType);
+      if (iter.hasNext()) {
+        writer = iter.next();
+      }
+      JPEGImageWriteParam iwp = new JPEGImageWriteParam(null);
+      iwp.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+      iwp.setCompressionQuality(quality);
+
+      // Prepare output file.
+      ImageOutputStream ios = ImageIO.createImageOutputStream(out);
+      writer.setOutput(ios);
+
+      // Write the image.
+      writer.write(null, new IIOImage(image, null, null), iwp);
+
+      // Cleanup.
+      ios.flush();
+      writer.dispose();
+      ios.close();
+    } else {
+      ImageIO.write(image, "png", out);
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see ImageProcessor#writeImage(RenderedImage, String, float, OutputStream)
-     */
-    public void writeImage(RenderedImage image, String mimeType, float quality, OutputStream out) throws IOException
-    {
-        if ("image/jpeg".equals(mimeType)) {
-            // Find a JPEG writer.
-            ImageWriter writer = null;
-            Iterator<ImageWriter> iter = ImageIO.getImageWritersByMIMEType(mimeType);
-            if (iter.hasNext()) {
-                writer = iter.next();
-            }
-            JPEGImageWriteParam iwp = new JPEGImageWriteParam(null);
-            iwp.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            iwp.setCompressionQuality(quality);
-
-            // Prepare output file.
-            ImageOutputStream ios = ImageIO.createImageOutputStream(out);
-            writer.setOutput(ios);
-
-            // Write the image.
-            writer.write(null, new IIOImage(image, null, null), iwp);
-
-            // Cleanup.
-            ios.flush();
-            writer.dispose();
-            ios.close();
-        } else {
-            ImageIO.write(image, "png", out);
-        }
+  /**
+   * {@inheritDoc}
+   *
+   * @see ImageProcessor#scaleImage(Image, int, int)
+   */
+  @Override
+  public RenderedImage scaleImage(Image image, int width, int height) {
+    // Draw the given image to a buffered image object and scale it to the new size on-the-fly.
+    int imageType = BufferedImage.TYPE_4BYTE_ABGR;
+    if (image instanceof BufferedImage) {
+      imageType = ((BufferedImage) image).getType();
+      if ((imageType == BufferedImage.TYPE_BYTE_INDEXED)
+          || (imageType == BufferedImage.TYPE_BYTE_BINARY)
+          || (imageType == BufferedImage.TYPE_CUSTOM)) {
+        // INDEXED and BINARY: GIFs or indexed PNGs may lose their transparent bits, for safety
+        // revert to ABGR.
+        // CUSTOM: Unknown image type, fall back on ABGR.
+        imageType = BufferedImage.TYPE_4BYTE_ABGR;
+      }
     }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see ImageProcessor#scaleImage(Image, int, int)
-     */
-    public RenderedImage scaleImage(Image image, int width, int height)
-    {
-        // Draw the given image to a buffered image object and scale it to the new size on-the-fly.
-        int imageType = BufferedImage.TYPE_4BYTE_ABGR;
-        if (image instanceof BufferedImage) {
-            imageType = ((BufferedImage) image).getType();
-            if (imageType == BufferedImage.TYPE_BYTE_INDEXED || imageType == BufferedImage.TYPE_BYTE_BINARY
-                || imageType == BufferedImage.TYPE_CUSTOM) {
-                // INDEXED and BINARY: GIFs or indexed PNGs may lose their transparent bits, for safety revert to ABGR.
-                // CUSTOM: Unknown image type, fall back on ABGR.
-                imageType = BufferedImage.TYPE_4BYTE_ABGR;
-            }
-        }
-        BufferedImage bufferedImage = new BufferedImage(width, height, imageType);
-        Graphics2D graphics2D = bufferedImage.createGraphics();
-        graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        // We should test the return code here because an exception can be throw but caught.
-        if (!graphics2D.drawImage(image, 0, 0, width, height, null)) {
-            // Conversion failed.
-            throw new RuntimeException("Failed to resize image.");
-        }
-        return bufferedImage;
+    BufferedImage bufferedImage = new BufferedImage(width, height, imageType);
+    Graphics2D graphics2D = bufferedImage.createGraphics();
+    graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+    // We should test the return code here because an exception can be throw but caught.
+    if (!graphics2D.drawImage(image, 0, 0, width, height, null)) {
+      // Conversion failed.
+      throw new RuntimeException("Failed to resize image.");
     }
+    return bufferedImage;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see ImageProcessor#isMimeTypeSupported(String)
-     */
-    public boolean isMimeTypeSupported(String mimeType)
-    {
-        return Arrays.asList(ImageIO.getReaderMIMETypes()).contains(mimeType);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see ImageProcessor#isMimeTypeSupported(String)
+   */
+  @Override
+  public boolean isMimeTypeSupported(String mimeType) {
+    return Arrays.asList(ImageIO.getReaderMIMETypes()).contains(mimeType);
+  }
 }

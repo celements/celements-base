@@ -28,8 +28,10 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
 /**
- * Specialized version of {@link org.xwiki.model.reference.EntityReferenceResolver} which can be considered a helper
- * component to resolve {@link DocumentReference} objects from Entity Reference (when they miss some parent references
+ * Specialized version of {@link org.xwiki.model.reference.EntityReferenceResolver} which can be
+ * considered a helper
+ * component to resolve {@link DocumentReference} objects from Entity Reference (when they miss some
+ * parent references
  * or have NULL values). The behavior is the one defined in
  * {@link com.xpn.xwiki.internal.model.reference.CurrentEntityReferenceValueProvider}.
  *
@@ -37,19 +39,22 @@ import org.xwiki.model.reference.EntityReferenceResolver;
  * @since 2.2M1
  */
 @Component("current/reference")
-public class CurrentReferenceDocumentReferenceResolver implements DocumentReferenceResolver<EntityReference>
-{
-    @Requirement("current/reference")
-    private EntityReferenceResolver<EntityReference> entityReferenceResolver;
+public class CurrentReferenceDocumentReferenceResolver
+    implements DocumentReferenceResolver<EntityReference> {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.model.reference.DocumentReferenceResolver#resolve
-     */
-    public DocumentReference resolve(EntityReference documentReferenceRepresentation, Object... parameters)
-    {
-        return new DocumentReference(this.entityReferenceResolver.resolve(documentReferenceRepresentation,
+  @Requirement("current/reference")
+  private EntityReferenceResolver<EntityReference> entityReferenceResolver;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.model.reference.DocumentReferenceResolver#resolve
+   */
+  @Override
+  public DocumentReference resolve(EntityReference documentReferenceRepresentation,
+      Object... parameters) {
+    return new DocumentReference(
+        this.entityReferenceResolver.resolve(documentReferenceRepresentation,
             EntityType.DOCUMENT, parameters));
-    }
+  }
 }

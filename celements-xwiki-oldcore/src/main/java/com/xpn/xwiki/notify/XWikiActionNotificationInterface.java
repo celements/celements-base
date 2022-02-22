@@ -26,5 +26,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 @Deprecated
 public interface XWikiActionNotificationInterface {
-    public void notify(XWikiNotificationRule rule, XWikiDocument doc, String action, XWikiContext context);
+
+  void notify(XWikiNotificationRule rule, XWikiDocument doc, String action,
+      XWikiContext context);
 }

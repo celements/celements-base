@@ -31,32 +31,32 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit tests for the {@link com.xpn.xwiki.plugin.image.ImagePlugin} class.
- * 
+ *
  * @version $Id$
  */
-public class ImagePluginTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private ImagePlugin plugin;
+public class ImagePluginTest extends AbstractBridgedXWikiComponentTestCase {
 
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  private ImagePlugin plugin;
 
-        Mock mockXWiki = mock(XWiki.class);
-        mockXWiki.stubs().method("getTempDirectory").will(returnValue(new File(System.getProperty("java.io.tmpdir"))));
-        mockXWiki.stubs().method("Param").will(returnValue("10"));
-        Mock mockCacheFactory = mock(CacheFactory.class);
-        mockCacheFactory.expects(once()).method("newCache");
-        mockXWiki.stubs().method("getLocalCacheFactory").will(returnValue(mockCacheFactory.proxy()));
-        getContext().setWiki((XWiki) mockXWiki.proxy());
-        this.plugin = new ImagePlugin("image", ImagePlugin.class.getName(), getContext());
-    }
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-    public void testDownloadAttachmentWithUnsupportedFileType()
-    {
-        Mock attachmentMock = mock(XWikiAttachment.class);
-        attachmentMock.stubs().method("getMimeType").will(returnValue("image/notsupported"));
-        XWikiAttachment attachment = (XWikiAttachment) attachmentMock.proxy();
-        assertSame(attachment, plugin.downloadAttachment(attachment, new XWikiContext()));
-    }
+    Mock mockXWiki = mock(XWiki.class);
+    mockXWiki.stubs().method("getTempDirectory")
+        .will(returnValue(new File(System.getProperty("java.io.tmpdir"))));
+    mockXWiki.stubs().method("Param").will(returnValue("10"));
+    Mock mockCacheFactory = mock(CacheFactory.class);
+    mockCacheFactory.expects(once()).method("newCache");
+    mockXWiki.stubs().method("getLocalCacheFactory").will(returnValue(mockCacheFactory.proxy()));
+    getContext().setWiki((XWiki) mockXWiki.proxy());
+    this.plugin = new ImagePlugin("image", ImagePlugin.class.getName(), getContext());
+  }
+
+  public void testDownloadAttachmentWithUnsupportedFileType() {
+    Mock attachmentMock = mock(XWikiAttachment.class);
+    attachmentMock.stubs().method("getMimeType").will(returnValue("image/notsupported"));
+    XWikiAttachment attachment = (XWikiAttachment) attachmentMock.proxy();
+    assertSame(attachment, plugin.downloadAttachment(attachment, new XWikiContext()));
+  }
 }

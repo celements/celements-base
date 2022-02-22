@@ -29,27 +29,31 @@ import com.xpn.xwiki.content.Link;
  *
  * @version $Id$
  */
-public interface ReplaceLinkHandler
-{
-    /**
-     * Compare 2 links.
-     *
-     * @param linkToLookFor the link to look for
-     * @param linkToReplace the link to replace
-     * @return true if the 2 links are the same of false otherwise
-     */
-    boolean compare(Link linkToLookFor, Link linkToReplace);
+public interface ReplaceLinkHandler {
 
-    /**
-     * Compute the link that will be used to replace matching links in the parsed content. This is
-     * useful for example to implement a strategy where you only want to replace the space and page
-     * names but keep the existing alias, target, query string, etc. 
-     * 
-     * @param newLink the link to use to replace the matched link. It's possible that only some
-     *        fields are set and the replacement algorithm will compute what the others fields
-     *        should be
-     * @param linkToReplace the link to be replaced
-     * @return the link to use for replacing the linkToReplace link
-     */
-    Link getReplacementLink(Link newLink, Link linkToReplace);
+  /**
+   * Compare 2 links.
+   *
+   * @param linkToLookFor
+   *          the link to look for
+   * @param linkToReplace
+   *          the link to replace
+   * @return true if the 2 links are the same of false otherwise
+   */
+  boolean compare(Link linkToLookFor, Link linkToReplace);
+
+  /**
+   * Compute the link that will be used to replace matching links in the parsed content. This is
+   * useful for example to implement a strategy where you only want to replace the space and page
+   * names but keep the existing alias, target, query string, etc.
+   *
+   * @param newLink
+   *          the link to use to replace the matched link. It's possible that only some
+   *          fields are set and the replacement algorithm will compute what the others fields
+   *          should be
+   * @param linkToReplace
+   *          the link to be replaced
+   * @return the link to use for replacing the linkToReplace link
+   */
+  Link getReplacementLink(Link newLink, Link linkToReplace);
 }

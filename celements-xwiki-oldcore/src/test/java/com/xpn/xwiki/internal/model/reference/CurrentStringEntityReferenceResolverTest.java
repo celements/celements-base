@@ -31,54 +31,54 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit tests for {@link CurrentMixedStringDocumentReferenceResolver}.
- * 
+ *
  * @version $Id$
  * @since 2.2M1
  */
-public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private static final String CURRENT_WIKI = "currentwiki";
+public class CurrentStringEntityReferenceResolverTest
+    extends AbstractBridgedXWikiComponentTestCase {
 
-    private static final String CURRENT_SPACE = "currentspace";
+  private static final String CURRENT_WIKI = "currentwiki";
 
-    private static final String CURRENT_PAGE = "currentpage";
+  private static final String CURRENT_SPACE = "currentspace";
 
-    private EntityReferenceResolver<String> resolver;
+  private static final String CURRENT_PAGE = "currentpage";
 
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
+  private EntityReferenceResolver<String> resolver;
 
-        this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "current");
-    }
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
 
-    @org.junit.Test
-    public void testResolveAttachmentReferenceWhenMissingParentsAndNoContextDocument()
-    {
-        EntityReference reference = resolver.resolve("filename", EntityType.ATTACHMENT);
+    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "current");
+  }
 
-        Assert.assertEquals("WebHome", reference.getParent().getName());
-        Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
-        Assert.assertEquals("Main", reference.getParent().getParent().getName());
-        Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
-        Assert.assertEquals("xwiki", reference.getParent().getParent().getParent().getName());
-        Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
-    }
+  @org.junit.Test
+  public void testResolveAttachmentReferenceWhenMissingParentsAndNoContextDocument() {
+    EntityReference reference = resolver.resolve("filename", EntityType.ATTACHMENT);
 
-    @org.junit.Test
-    public void testResolveAttachmentReferenceWhenMissingParentsAndContextDocument()
-    {
-        getContext().setDatabase(CURRENT_WIKI);
-        getContext().setDoc(new XWikiDocument(new DocumentReference("docwiki", CURRENT_SPACE, CURRENT_PAGE)));
+    Assert.assertEquals("WebHome", reference.getParent().getName());
+    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
+    Assert.assertEquals("Main", reference.getParent().getParent().getName());
+    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
+    Assert.assertEquals("xwiki", reference.getParent().getParent().getParent().getName());
+    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
+  }
 
-        EntityReference reference = resolver.resolve("filename", EntityType.ATTACHMENT);
+  @org.junit.Test
+  public void testResolveAttachmentReferenceWhenMissingParentsAndContextDocument() {
+    getContext().setDatabase(CURRENT_WIKI);
+    getContext()
+        .setDoc(new XWikiDocument(new DocumentReference("docwiki", CURRENT_SPACE, CURRENT_PAGE)));
 
-        Assert.assertEquals(CURRENT_PAGE, reference.getParent().getName());
-        Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
-        Assert.assertEquals(CURRENT_SPACE, reference.getParent().getParent().getName());
-        Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
-        Assert.assertEquals(CURRENT_WIKI, reference.getParent().getParent().getParent().getName());
-        Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
-    }
+    EntityReference reference = resolver.resolve("filename", EntityType.ATTACHMENT);
+
+    Assert.assertEquals(CURRENT_PAGE, reference.getParent().getName());
+    Assert.assertEquals(EntityType.DOCUMENT, reference.getParent().getType());
+    Assert.assertEquals(CURRENT_SPACE, reference.getParent().getParent().getName());
+    Assert.assertEquals(EntityType.SPACE, reference.getParent().getParent().getType());
+    Assert.assertEquals(CURRENT_WIKI, reference.getParent().getParent().getParent().getName());
+    Assert.assertEquals(EntityType.WIKI, reference.getParent().getParent().getParent().getType());
+  }
 }

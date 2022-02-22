@@ -25,34 +25,36 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReferenceValueProvider;
 
 /**
- * The behavior is the same as for {@link CurrentEntityReferenceValueProvider} but with the following differences:
+ * The behavior is the same as for {@link CurrentEntityReferenceValueProvider} but with the
+ * following differences:
  * <ul>
- *   <li>if the passed reference doesn't have a page name specified (or if it's empty) the value used is the default
- *       page name (instead of the page name of the current document's reference).</li>
+ * <li>if the passed reference doesn't have a page name specified (or if it's empty) the value used
+ * is the default
+ * page name (instead of the page name of the current document's reference).</li>
  * </ul>
  *
  * @version $Id$
  * @since 2.3M1
  */
 @Component("currentmixed")
-public class CurrentMixedEntityReferenceValueProvider extends CurrentEntityReferenceValueProvider
-{
-    @Requirement
-    private EntityReferenceValueProvider defaultProvider;
+public class CurrentMixedEntityReferenceValueProvider extends CurrentEntityReferenceValueProvider {
 
-    /**
-     * {@inheritDoc}
-     * @see CurrentMixedEntityReferenceValueProvider#getDefaultValue(EntityType)
-     */
-    @Override
-    public String getDefaultValue(EntityType type)
-    {
-        String result;
-        if (type == EntityType.DOCUMENT) {
-            result = this.defaultProvider.getDefaultValue(EntityType.DOCUMENT);
-        } else {
-            result = super.getDefaultValue(type);
-        }
-        return result;
+  @Requirement
+  private EntityReferenceValueProvider defaultProvider;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see CurrentMixedEntityReferenceValueProvider#getDefaultValue(EntityType)
+   */
+  @Override
+  public String getDefaultValue(EntityType type) {
+    String result;
+    if (type == EntityType.DOCUMENT) {
+      result = this.defaultProvider.getDefaultValue(EntityType.DOCUMENT);
+    } else {
+      result = super.getDefaultValue(type);
     }
+    return result;
+  }
 }

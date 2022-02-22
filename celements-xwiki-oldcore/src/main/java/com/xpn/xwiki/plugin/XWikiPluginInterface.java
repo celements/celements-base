@@ -27,51 +27,68 @@ import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.doc.XWikiAttachment;
 
 public interface XWikiPluginInterface {
-    String getClassName();
-    String getName();
 
-    void setClassName(String name);
-    void setName(String name);
-    void init(XWikiContext context) throws XWikiException;
-    void virtualInit(XWikiContext context);
+  String getClassName();
 
-    /*
-    Called to flush cache
-    */
-    void flushCache(XWikiContext context);
+  String getName();
 
-    /**
-     * @deprecated use flushCache(XWikiContext context) instead
-     * @see #flushCache(XWikiContext)
-     */
-    @Deprecated
-    void flushCache();
-    void beginRendering(XWikiContext context);
-    void endRendering(XWikiContext context);
-    /*
-    Called at the begin of each request
-    */
-    void beginParsing(XWikiContext context);
-    /*
-    Called at the end of each request
-    */
-    String endParsing(String content, XWikiContext context);
+  void setClassName(String name);
 
-    String commonTagsHandler(String line, XWikiContext context);
-    String startRenderingHandler(String line, XWikiContext context);
-    String outsidePREHandler(String line, XWikiContext context);
-    String insidePREHandler(String line, XWikiContext context);
-    String endRenderingHandler(String line, XWikiContext context);
-    Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context);
+  void setName(String name);
 
-    /**
-     * Plugin extension point allowing the plugin to perform modifications to an attachment when the
-     * user clicks on an attachment in a document. The plugin is passed the original attachment and it has
-     * to return the new modified attachment.
-     *
-     * @param attachment the original attachment
-     * @param context the xwiki context object
-     * @return the modified attachment
-     */
-    XWikiAttachment downloadAttachment(XWikiAttachment attachment, XWikiContext context);
+  void init(XWikiContext context) throws XWikiException;
+
+  void virtualInit(XWikiContext context);
+
+  /*
+   * Called to flush cache
+   */
+  void flushCache(XWikiContext context);
+
+  /**
+   * @deprecated use flushCache(XWikiContext context) instead
+   * @see #flushCache(XWikiContext)
+   */
+  @Deprecated
+  void flushCache();
+
+  void beginRendering(XWikiContext context);
+
+  void endRendering(XWikiContext context);
+
+  /*
+   * Called at the begin of each request
+   */
+  void beginParsing(XWikiContext context);
+
+  /*
+   * Called at the end of each request
+   */
+  String endParsing(String content, XWikiContext context);
+
+  String commonTagsHandler(String line, XWikiContext context);
+
+  String startRenderingHandler(String line, XWikiContext context);
+
+  String outsidePREHandler(String line, XWikiContext context);
+
+  String insidePREHandler(String line, XWikiContext context);
+
+  String endRenderingHandler(String line, XWikiContext context);
+
+  Api getPluginApi(XWikiPluginInterface plugin, XWikiContext context);
+
+  /**
+   * Plugin extension point allowing the plugin to perform modifications to an attachment when the
+   * user clicks on an attachment in a document. The plugin is passed the original attachment and it
+   * has
+   * to return the new modified attachment.
+   *
+   * @param attachment
+   *          the original attachment
+   * @param context
+   *          the xwiki context object
+   * @return the modified attachment
+   */
+  XWikiAttachment downloadAttachment(XWikiAttachment attachment, XWikiContext context);
 }

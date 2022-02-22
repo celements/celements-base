@@ -23,5 +23,4 @@ package com.xpn.xwiki.pref.impl.xwiki;
 
 import com.xpn.xwiki.pref.api.XWikiPrefService;
 
-public class XWikiPrefServiceImpl implements XWikiPrefService {
-}
+public class XWikiPrefServiceImpl implements XWikiPrefService {}

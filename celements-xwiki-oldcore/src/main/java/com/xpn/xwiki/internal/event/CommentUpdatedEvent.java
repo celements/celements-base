@@ -24,48 +24,50 @@ import org.xwiki.observation.event.filter.EventFilter;
 
 /**
  * An event triggered when a comment is updated.
- * 
+ *
  * @version $Id$
  * @since 2.6RC2
  */
-public class CommentUpdatedEvent extends AbstractCommentEvent
-{
-    /**
-     * The version identifier for this Serializable class. Increment only if the <i>serialized</i> form of the class
-     * changes.
-     */
-    private static final long serialVersionUID = 1L;
+public class CommentUpdatedEvent extends AbstractCommentEvent {
 
-    /**
-     * Constructor initializing the event filter with an
-     * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event will match any
-     * other comment update event.
-     */
-    public CommentUpdatedEvent()
-    {
-        super();
-    }
+  /**
+   * The version identifier for this Serializable class. Increment only if the <i>serialized</i>
+   * form of the class
+   * changes.
+   */
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * Constructor initializing the event filter with a {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
-     * meaning that this event will match only comment update events affecting the document matching the passed document
-     * name.
-     * 
-     * @param documentName the name of the document to match
-     * @param identifier the identifier of the updated comment
-     */
-    public CommentUpdatedEvent(String documentName, String identifier)
-    {
-        super(documentName, identifier);
-    }
+  /**
+   * Constructor initializing the event filter with an
+   * {@link org.xwiki.observation.event.filter.AlwaysMatchingEventFilter}, meaning that this event
+   * will match any
+   * other comment update event.
+   */
+  public CommentUpdatedEvent() {}
 
-    /**
-     * Constructor using a custom {@link EventFilter}.
-     * 
-     * @param eventFilter the filter to use for matching events
-     */
-    public CommentUpdatedEvent(EventFilter eventFilter)
-    {
-        super(eventFilter);
-    }
+  /**
+   * Constructor initializing the event filter with a
+   * {@link org.xwiki.observation.event.filter.FixedNameEventFilter},
+   * meaning that this event will match only comment update events affecting the document matching
+   * the passed document
+   * name.
+   *
+   * @param documentName
+   *          the name of the document to match
+   * @param identifier
+   *          the identifier of the updated comment
+   */
+  public CommentUpdatedEvent(String documentName, String identifier) {
+    super(documentName, identifier);
+  }
+
+  /**
+   * Constructor using a custom {@link EventFilter}.
+   *
+   * @param eventFilter
+   *          the filter to use for matching events
+   */
+  public CommentUpdatedEvent(EventFilter eventFilter) {
+    super(eventFilter);
+  }
 }

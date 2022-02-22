@@ -20,306 +20,396 @@
  */
 package com.xpn.xwiki.web;
 
-import javax.portlet.*;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.portlet.ActionResponse;
+import javax.portlet.PortletMode;
+import javax.portlet.PortletModeException;
+import javax.portlet.PortletResponse;
+import javax.portlet.PortletURL;
+import javax.portlet.RenderResponse;
+import javax.portlet.WindowState;
+import javax.portlet.WindowStateException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 public class XWikiPortletResponse implements XWikiResponse {
-    private PortletResponse response;
 
-    public XWikiPortletResponse(PortletResponse response) {
-        this.response = response;
+  private PortletResponse response;
+
+  public XWikiPortletResponse(PortletResponse response) {
+    this.response = response;
+  }
+
+  public PortletResponse getPortletResponse() {
+    return response;
+  }
+
+  @Override
+  public String getContentType() {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).getContentType();
+    } else {
+      return "";
     }
+  }
 
-    public PortletResponse getPortletResponse() {
-        return response;
+  @Override
+  public PortletURL createRenderURL() {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).createRenderURL();
     }
+    return null;
+  }
 
-    public String getContentType() {
-        if (response instanceof RenderResponse)
-          return ((RenderResponse)response).getContentType();
-        else
-          return "";
+  @Override
+  public PortletURL createActionURL() {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).createActionURL();
     }
+    return null;
+  }
 
-    public PortletURL createRenderURL() {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).createRenderURL();
-        return null;
+  @Override
+  public String getNamespace() {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).getNamespace();
     }
+    return "";
+  }
 
-    public PortletURL createActionURL() {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).createActionURL();
-        return null;
+  @Override
+  public void setTitle(String s) {
+    if (response instanceof RenderResponse) {
+      ((RenderResponse) response).setTitle(s);
     }
+  }
 
-    public String getNamespace() {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).getNamespace();
-        return "";
+  @Override
+  public void setContentType(String type) {
+    if (response instanceof RenderResponse) {
+      ((RenderResponse) response).setContentType(type);
     }
+  }
 
-    public void setTitle(String s) {
-        if (response instanceof RenderResponse)
-        ((RenderResponse)response).setTitle(s);
+  @Override
+  public String getCharacterEncoding() {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).getCharacterEncoding();
     }
+    return "";
+  }
 
-    public void setContentType(String type) {
-        if (response instanceof RenderResponse)
-        ((RenderResponse)response).setContentType(type);
+  @Override
+  public PrintWriter getWriter() throws IOException {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).getWriter();
     }
+    return null;
+  }
 
-    public String getCharacterEncoding() {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).getCharacterEncoding();
-        return "";
+  @Override
+  public void setCharacterEncoding(String s) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().setCharacterEncoding(s);
     }
+  }
 
-
-    public PrintWriter getWriter() throws IOException {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).getWriter();
-        return null;
+  @Override
+  public Locale getLocale() {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).getLocale();
     }
+    return null;
+  }
 
-    public void setCharacterEncoding(String s) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().setCharacterEncoding(s);
+  @Override
+  public void setBufferSize(int i) {
+    if (response instanceof RenderResponse) {
+      ((RenderResponse) response).setBufferSize(i);
     }
+  }
 
-    public Locale getLocale() {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).getLocale();
-        return null;
+  @Override
+  public int getBufferSize() {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).getBufferSize();
     }
+    return 0;
+  }
 
-    public void setBufferSize(int i) {
-        if (response instanceof RenderResponse)
-        ((RenderResponse)response).setBufferSize(i);
+  @Override
+  public void flushBuffer() throws IOException {
+    if (response instanceof RenderResponse) {
+      ((RenderResponse) response).flushBuffer();
     }
+  }
 
-    public int getBufferSize() {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).getBufferSize();
-        return 0;
+  @Override
+  public void resetBuffer() {
+    if (response instanceof RenderResponse) {
+      ((RenderResponse) response).resetBuffer();
     }
+  }
 
-    public void flushBuffer() throws IOException {
-        if (response instanceof RenderResponse)
-        ((RenderResponse)response).flushBuffer();
+  @Override
+  public boolean isCommitted() {
+    if (response instanceof RenderResponse) {
+      ((RenderResponse) response).isCommitted();
     }
+    return false;
+  }
 
-    public void resetBuffer() {
-        if (response instanceof RenderResponse)
-        ((RenderResponse)response).resetBuffer();
+  @Override
+  public void reset() {
+    if (response instanceof RenderResponse) {
+      ((RenderResponse) response).reset();
     }
+  }
 
-    public boolean isCommitted() {
-        if (response instanceof RenderResponse)
-        ((RenderResponse)response).isCommitted();
-        return false;
+  @Override
+  public OutputStream getPortletOutputStream() throws IOException {
+    if (response instanceof RenderResponse) {
+      return ((RenderResponse) response).getPortletOutputStream();
     }
+    return null;
+  }
 
-    public void reset() {
-        if (response instanceof RenderResponse)
-          ((RenderResponse)response).reset();
+  @Override
+  public void addProperty(String s, String s1) {
+    response.addProperty(s, s1);
+  }
+
+  @Override
+  public void setProperty(String s, String s1) {
+    response.setProperty(s, s1);
+  }
+
+  @Override
+  public String encodeURL(String s) {
+    return response.encodeURL(s);
+  }
+
+  @Override
+  public void setWindowState(WindowState windowState) throws WindowStateException {
+    if (response instanceof ActionResponse) {
+      ((ActionResponse) response).setWindowState(windowState);
     }
+  }
 
-    public OutputStream getPortletOutputStream() throws IOException {
-        if (response instanceof RenderResponse)
-        return ((RenderResponse)response).getPortletOutputStream();
-        return null;
+  @Override
+  public void setPortletMode(PortletMode portletMode) throws PortletModeException {
+    if (response instanceof ActionResponse) {
+      ((ActionResponse) response).setPortletMode(portletMode);
     }
+  }
 
-    public void addProperty(String s, String s1) {
-        response.addProperty(s, s1);
+  @Override
+  public void setRenderParameters(Map map) {
+    if (response instanceof ActionResponse) {
+      ((ActionResponse) response).setRenderParameters(map);
     }
+  }
 
-    public void setProperty(String s, String s1) {
-        response.setProperty(s, s1);
+  @Override
+  public void setRenderParameter(String s, String s1) {
+    if (response instanceof ActionResponse) {
+      ((ActionResponse) response).setRenderParameter(s, s1);
     }
+  }
 
-    public String encodeURL(String s) {
-        return response.encodeURL(s);
+  @Override
+  public void setRenderParameter(String s, String[] strings) {
+    if (response instanceof ActionResponse) {
+      ((ActionResponse) response).setRenderParameter(s, strings);
     }
+  }
 
-
-    public void setWindowState(WindowState windowState) throws WindowStateException {
-        if (response instanceof ActionResponse)
-            ((ActionResponse)response).setWindowState(windowState);
+  /*
+   * Servlet functions
+   */
+  @Override
+  public HttpServletResponse getHttpServletResponse() {
+    try {
+      return (HttpServletResponse) getPortletResponse();
+    } catch (Exception e) {
+      return null;
     }
+  }
 
-    public void setPortletMode(PortletMode portletMode) throws PortletModeException {
-        if (response instanceof ActionResponse)
-            ((ActionResponse)response).setPortletMode(portletMode);
+  @Override
+  public ServletOutputStream getOutputStream() throws IOException {
+    if (response instanceof HttpServletResponse) {
+      return getHttpServletResponse().getOutputStream();
     }
+    return null;
+  }
 
-    public void setRenderParameters(Map map) {
-        if (response instanceof ActionResponse)
-            ((ActionResponse)response).setRenderParameters(map);
+  @Override
+  public String encodeRedirectURL(String s) {
+    if (response instanceof HttpServletResponse) {
+      return getHttpServletResponse().encodeRedirectURL(s);
     }
+    return null;
+  }
 
-    public void setRenderParameter(String s, String s1) {
-        if (response instanceof ActionResponse)
-            ((ActionResponse)response).setRenderParameter(s,s1);
+  /**
+   * @deprecated
+   */
+  @Override
+  @Deprecated
+  public String encodeUrl(String s) {
+    if (response instanceof HttpServletResponse) {
+      return getHttpServletResponse().encodeUrl(s);
     }
+    return null;
+  }
 
-    public void setRenderParameter(String s, String[] strings) {
-        if (response instanceof ActionResponse)
-            ((ActionResponse)response).setRenderParameter(s, strings);
+  /**
+   * @deprecated
+   */
+  @Override
+  @Deprecated
+  public String encodeRedirectUrl(String s) {
+    if (response instanceof HttpServletResponse) {
+      return getHttpServletResponse().encodeRedirectUrl(s);
     }
+    return null;
+  }
 
-    /*
-    *  Servlet functions
-    */
-    public HttpServletResponse getHttpServletResponse() {
-        try {
-            return (HttpServletResponse) getPortletResponse();
-        } catch (Exception e) {
-            return null;
-        }
+  @Override
+  public void sendError(int i, String s) throws IOException {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().sendError(i, s);
     }
+  }
 
-    public ServletOutputStream getOutputStream() throws IOException {
-        if (response instanceof HttpServletResponse)
-            return getHttpServletResponse().getOutputStream();
-        return null;
+  @Override
+  public void sendError(int i) throws IOException {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().sendError(i);
     }
+  }
 
-
-    public String encodeRedirectURL(String s) {
-        if (response instanceof HttpServletResponse)
-            return getHttpServletResponse().encodeRedirectURL(s);
-        return null;
+  @Override
+  public void sendRedirect(String redirect) throws IOException {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().sendRedirect(redirect);
     }
+  }
 
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public String encodeUrl(String s) {
-        if (response instanceof HttpServletResponse)
-            return getHttpServletResponse().encodeUrl(s);
-        return null;
+  @Override
+  public void addCookie(Cookie cookie) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().addCookie(cookie);
     }
+  }
 
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public String encodeRedirectUrl(String s) {
-        if (response instanceof HttpServletResponse)
-            return getHttpServletResponse().encodeRedirectUrl(s);
-        return null;
+  /**
+   * Remove a cookie.
+   *
+   * @param request
+   *          The servlet request needed to find the cookie to remove
+   * @param cookieName
+   *          The name of the cookie that must be removed.
+   */
+  @Override
+  public void removeCookie(String cookieName, XWikiRequest request) {
+    if (response instanceof HttpServletResponse) {
+      Cookie cookie = request.getCookie(cookieName);
+      if (cookie != null) {
+        cookie.setMaxAge(0);
+        cookie.setPath(cookie.getPath());
+        getHttpServletResponse().addCookie(cookie);
+      }
     }
+  }
 
-    public void sendError(int i, String s) throws IOException {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().sendError(i,s);
+  @Override
+  public void setContentLength(int length) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().setContentLength(length);
     }
+  }
 
-    public void sendError(int i) throws IOException {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().sendError(i);
+  @Override
+  public void setDateHeader(String name, long value) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().setDateHeader(name, value);
     }
+  }
 
-    public void sendRedirect(String redirect) throws IOException {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().sendRedirect(redirect);
+  @Override
+  public void setIntHeader(String name, int value) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().setIntHeader(name, value);
     }
+  }
 
-    public void addCookie(Cookie cookie) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().addCookie(cookie);
+  @Override
+  public void setHeader(String name, String value) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().addHeader(name, value);
     }
+  }
 
-    /**
-     * Remove a cookie.
-     *
-     * @param request The servlet request needed to find the cookie to remove
-     * @param cookieName The name of the cookie that must be removed.
-     */
-    public void removeCookie(String cookieName, XWikiRequest request)
-    {
-        if (response instanceof HttpServletResponse) {
-            Cookie cookie = request.getCookie(cookieName);
-            if (cookie != null) {
-                cookie.setMaxAge(0);
-                cookie.setPath(cookie.getPath());
-                getHttpServletResponse().addCookie(cookie);
-            }
-        }
+  @Override
+  public void addHeader(String name, String value) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().addHeader(name, value);
     }
+  }
 
-
-
-    public void setContentLength(int length) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().setContentLength(length);
+  @Override
+  public void addDateHeader(String name, long value) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().addDateHeader(name, value);
     }
+  }
 
-    public void setDateHeader(String name, long value) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().setDateHeader(name, value);
+  @Override
+  public void addIntHeader(String name, int value) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().addIntHeader(name, value);
     }
+  }
 
-    public void setIntHeader(String name, int value) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().setIntHeader(name, value);
+  @Override
+  public void setStatus(int i) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().setStatus(i);
     }
+  }
 
-    public void setHeader(String name, String value) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().addHeader(name, value);
+  /**
+   * @deprecated
+   */
+  @Override
+  @Deprecated
+  public void setStatus(int i, String s) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().setStatus(i, s);
     }
+  }
 
-    public void addHeader(String name, String value) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().addHeader(name, value);
+  @Override
+  public void setLocale(Locale locale) {
+    if (response instanceof HttpServletResponse) {
+      getHttpServletResponse().setLocale(locale);
     }
+  }
 
-    public void addDateHeader(String name, long value) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().addDateHeader(name, value);
+  @Override
+  public boolean containsHeader(String name) {
+    if (response instanceof HttpServletResponse) {
+      return getHttpServletResponse().containsHeader(name);
     }
-
-    public void addIntHeader(String name, int value) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().addIntHeader(name, value);
-    }
-
-    public void setStatus(int i) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().setStatus(i);
-    }
-
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public void setStatus(int i, String s) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().setStatus(i, s);
-    }
-
-    public void setLocale(Locale locale) {
-        if (response instanceof HttpServletResponse)
-            getHttpServletResponse().setLocale(locale);
-    }
-
-    public boolean containsHeader(String name) {
-        if (response instanceof HttpServletResponse)
-            return getHttpServletResponse().containsHeader(name);
-        return false;
-    }
-
+    return false;
+  }
 
 }
-

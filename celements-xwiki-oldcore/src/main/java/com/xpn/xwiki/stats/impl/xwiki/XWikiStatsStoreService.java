@@ -42,273 +42,284 @@ import com.xpn.xwiki.web.ViewAction;
 
 /**
  * Back-end statistics storing service.
- * 
+ *
  * @version $Id$
  * @since 1.4M2
  */
-public class XWikiStatsStoreService extends AbstractXWikiRunnable
-{
-    /**
-     * Logging tools.
-     */
-    private static final Log LOG = LogFactory.getLog(XWikiStatsStoreService.class);
+public class XWikiStatsStoreService extends AbstractXWikiRunnable {
 
-    /**
-     * The queue containing the statistics to store.
-     */
-    private ArrayBlockingQueue<XWikiStatsStoreItem> queue;
+  /**
+   * Logging tools.
+   */
+  private static final Log LOG = LogFactory.getLog(XWikiStatsStoreService.class);
 
-    /**
-     * The thread on which the storing service is running.
-     */
-    private Thread thread;
+  /**
+   * The queue containing the statistics to store.
+   */
+  private ArrayBlockingQueue<XWikiStatsStoreItem> queue;
 
-    /**
-     * Create new instance of XWikiStatsRegister and init statistics queue.
-     * 
-     * @param context the XWiki context.
-     */
-    public XWikiStatsStoreService(XWikiContext context)
-    {
-        super(XWikiContext.EXECUTIONCONTEXT_KEY, context);
+  /**
+   * The thread on which the storing service is running.
+   */
+  private Thread thread;
 
-        long queueSize = context.getWiki().ParamAsLong("stats.queue.size", 200);
-        this.queue = new ArrayBlockingQueue<XWikiStatsStoreItem>((int) queueSize);
+  /**
+   * Create new instance of XWikiStatsRegister and init statistics queue.
+   *
+   * @param context
+   *          the XWiki context.
+   */
+  public XWikiStatsStoreService(XWikiContext context) {
+    super(XWikiContext.EXECUTIONCONTEXT_KEY, context);
+
+    long queueSize = context.getWiki().ParamAsLong("stats.queue.size", 200);
+    this.queue = new ArrayBlockingQueue<>((int) queueSize);
+  }
+
+  /**
+   * Start storing thread.
+   */
+  public void start() {
+    if (this.thread == null) {
+      this.thread = new Thread(this, "Statistics storing daemon");
+      // The JVM should be allowed to shutdown while this thread is running
+      this.thread.setDaemon(true);
+      this.thread.start();
+    }
+  }
+
+  /**
+   * Stop storing thread.
+   */
+  public void stop() {
+    this.queue.clear();
+    try {
+      this.queue.put(new StopStatsRegisterObject());
+      this.thread.join();
+      this.thread = null;
+    } catch (InterruptedException e) {
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Thread join has been interrupted", e);
+      }
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.util.AbstractXWikiRunnable#runInternal()
+   */
+  @Override
+  public void runInternal() {
+    try {
+      while (true) {
+        register();
+      }
+    } catch (InterruptedException e) {
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Statistics storing thread has been interrupted.", e);
+      }
+    } catch (StopStatsStoreException e) {
+      if (LOG.isInfoEnabled()) {
+        LOG.warn("Statistics storing thread received stop order.", e);
+      }
+    }
+  }
+
+  /**
+   * Store the statistics in the queue.
+   *
+   * @throws InterruptedException
+   *           thread has been interrupted.
+   * @throws StopStatsStoreException
+   *           service received stop order.
+   */
+  private void register() throws InterruptedException, StopStatsStoreException {
+    XWikiStatsStoreItem stat = this.queue.take();
+
+    List<List<XWikiStatsStoreItem>> statsList = new ArrayList<>();
+    Map<String, List<XWikiStatsStoreItem>> statsMap = new HashMap<>();
+
+    do {
+      if (stat instanceof StopStatsRegisterObject) {
+        throw new StopStatsStoreException();
+      }
+
+      String statId = stat.getId();
+
+      List<XWikiStatsStoreItem> stats = statsMap.get(statId);
+
+      if (stats == null) {
+        stats = new ArrayList<>();
+
+        statsMap.put(statId, stats);
+        statsList.add(stats);
+      }
+
+      stats.add(stat);
+
+      stat = this.queue.poll();
+    } while (stat != null);
+
+    for (List<XWikiStatsStoreItem> stats : statsList) {
+      stats.get(0).store(stats);
+    }
+  }
+
+  // ////////////////////////////////////////////////////////////////////////////
+  // Add stats to queue
+  // ////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Add new statistic to store.
+   *
+   * @param statsRegisterItem
+   *          the statistic store item.
+   */
+  public void add(XWikiStatsStoreItem statsRegisterItem) {
+    try {
+      this.queue.put(statsRegisterItem);
+    } catch (InterruptedException e) {
+      LOG.error("Statistics storage thread has been interrupted", e);
+    }
+  }
+
+  /**
+   * Add all the statistics to the save queue.
+   *
+   * @param doc
+   *          the document.
+   * @param action
+   *          the user action.
+   * @param context
+   *          the XWiki context.
+   */
+  public void addStats(XWikiDocument doc, String action, XWikiContext context) {
+    VisitStats vobject = StatsUtil.findVisit(context);
+    synchronized (vobject) {
+      if (action.equals(ViewAction.VIEW_ACTION)) {
+        // We count page views in the sessions only for the "view" action
+        vobject.incPageViews();
+      } else if (action.equals(SaveAction.ACTION_NAME)) {
+        // We count "save" and "download" actions separately
+        vobject.incPageSaves();
+      } else if (action.equals(DownloadAction.ACTION_NAME)) {
+        // We count "save" and "download" actions separately
+        vobject.incDownloads();
+      }
+
+      addVisitStats(vobject, context);
+
+      boolean isVisit = (vobject.getPageViews() == 1) && (action.equals(ViewAction.VIEW_ACTION));
+
+      addDocumentStats(doc, action, isVisit, context);
     }
 
-    /**
-     * Start storing thread.
-     */
-    public void start()
-    {
-        if (this.thread == null) {
-            this.thread = new Thread(this, "Statistics storing daemon");
-            // The JVM should be allowed to shutdown while this thread is running
-            this.thread.setDaemon(true);
-            this.thread.start();
-        }
+    // In case of a "view" action we want to store referer info
+    if (action.equals(ViewAction.VIEW_ACTION)) {
+      addRefererStats(doc, context);
     }
+  }
 
-    /**
-     * Stop storing thread.
-     */
-    public void stop()
-    {
-        this.queue.clear();
-        try {
-            this.queue.put(new StopStatsRegisterObject());
-            this.thread.join();
-            this.thread = null;
-        } catch (InterruptedException e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Thread join has been interrupted", e);
-            }
-        }
+  /**
+   * Add visit statistics to the save queue.
+   *
+   * @param vobject
+   *          the visit statistics object.
+   * @param context
+   *          the XWiki context.
+   */
+  private void addVisitStats(VisitStats vobject, XWikiContext context) {
+    Date currentDate = new Date();
+
+    vobject.setEndDate(currentDate);
+    add(new VisitStatsStoreItem(vobject, context));
+    vobject.unrememberOldObject();
+  }
+
+  /**
+   * Add document statistics to the save queue.
+   *
+   * @param doc
+   *          the document.
+   * @param action
+   *          the user action.
+   * @param isVisit
+   *          indicate if it's included in a visit.
+   * @param context
+   *          the XWiki context.
+   */
+  private void addDocumentStats(XWikiDocument doc, String action, boolean isVisit,
+      XWikiContext context) {
+    Date currentDate = new Date();
+
+    add(new DocumentStatsStoreItem(doc.getFullName(), currentDate, StatsUtil.PeriodType.MONTH,
+        action, isVisit,
+        context));
+    add(new DocumentStatsStoreItem(doc.getSpace(), currentDate, StatsUtil.PeriodType.MONTH, action,
+        isVisit,
+        context));
+    add(new DocumentStatsStoreItem("", currentDate, StatsUtil.PeriodType.MONTH, action, false,
+        context));
+    add(new DocumentStatsStoreItem(doc.getFullName(), currentDate, StatsUtil.PeriodType.DAY, action,
+        isVisit,
+        context));
+    add(new DocumentStatsStoreItem(doc.getSpace(), currentDate, StatsUtil.PeriodType.DAY, action,
+        isVisit,
+        context));
+    add(new DocumentStatsStoreItem("", currentDate, StatsUtil.PeriodType.DAY, action, false,
+        context));
+  }
+
+  /**
+   * Add referer statistics to the save queue.
+   *
+   * @param doc
+   *          the document.
+   * @param context
+   *          the XWiki context.
+   */
+  private void addRefererStats(XWikiDocument doc, XWikiContext context) {
+    String referer = StatsUtil.getReferer(context);
+    if ((referer != null) && (!referer.equals(""))) {
+      add(new RefererStatsStoreItem(doc.getFullName(), new Date(), StatsUtil.PeriodType.MONTH,
+          referer,
+          context));
     }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.util.AbstractXWikiRunnable#runInternal()
-     */
-    @Override
-    public void runInternal()
-    {
-        try {
-            while (true) {
-                register();
-            }
-        } catch (InterruptedException e) {
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Statistics storing thread has been interrupted.", e);
-            }
-        } catch (StopStatsStoreException e) {
-            if (LOG.isInfoEnabled()) {
-                LOG.warn("Statistics storing thread received stop order.", e);
-            }
-        }
-    }
-
-    /**
-     * Store the statistics in the queue.
-     * 
-     * @throws InterruptedException thread has been interrupted.
-     * @throws StopStatsStoreException service received stop order.
-     */
-    private void register() throws InterruptedException, StopStatsStoreException
-    {
-        XWikiStatsStoreItem stat = this.queue.take();
-
-        List<List<XWikiStatsStoreItem>> statsList = new ArrayList<List<XWikiStatsStoreItem>>();
-        Map<String, List<XWikiStatsStoreItem>> statsMap = new HashMap<String, List<XWikiStatsStoreItem>>();
-
-        do {
-            if (stat instanceof StopStatsRegisterObject) {
-                throw new StopStatsStoreException();
-            }
-
-            String statId = stat.getId();
-
-            List<XWikiStatsStoreItem> stats = statsMap.get(statId);
-
-            if (stats == null) {
-                stats = new ArrayList<XWikiStatsStoreItem>();
-
-                statsMap.put(statId, stats);
-                statsList.add(stats);
-            }
-
-            stats.add(stat);
-
-            stat = this.queue.poll();
-        } while (stat != null);
-
-        for (List<XWikiStatsStoreItem> stats : statsList) {
-            stats.get(0).store(stats);
-        }
-    }
-
-    // ////////////////////////////////////////////////////////////////////////////
-    // Add stats to queue
-    // ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Add new statistic to store.
-     * 
-     * @param statsRegisterItem the statistic store item.
-     */
-    public void add(XWikiStatsStoreItem statsRegisterItem)
-    {
-        try {
-            this.queue.put(statsRegisterItem);
-        } catch (InterruptedException e) {
-            LOG.error("Statistics storage thread has been interrupted", e);
-        }
-    }
-
-    /**
-     * Add all the statistics to the save queue.
-     * 
-     * @param doc the document.
-     * @param action the user action.
-     * @param context the XWiki context.
-     */
-    public void addStats(XWikiDocument doc, String action, XWikiContext context)
-    {
-        VisitStats vobject = StatsUtil.findVisit(context);
-        synchronized (vobject) {
-            if (action.equals(ViewAction.VIEW_ACTION)) {
-                // We count page views in the sessions only for the "view" action
-                vobject.incPageViews();
-            } else if (action.equals(SaveAction.ACTION_NAME)) {
-                // We count "save" and "download" actions separately
-                vobject.incPageSaves();
-            } else if (action.equals(DownloadAction.ACTION_NAME)) {
-                // We count "save" and "download" actions separately
-                vobject.incDownloads();
-            }
-
-            addVisitStats(vobject, context);
-
-            boolean isVisit = (vobject.getPageViews() == 1) && (action.equals(ViewAction.VIEW_ACTION));
-
-            addDocumentStats(doc, action, isVisit, context);
-        }
-
-        // In case of a "view" action we want to store referer info
-        if (action.equals(ViewAction.VIEW_ACTION)) {
-            addRefererStats(doc, context);
-        }
-    }
-
-    /**
-     * Add visit statistics to the save queue.
-     * 
-     * @param vobject the visit statistics object.
-     * @param context the XWiki context.
-     */
-    private void addVisitStats(VisitStats vobject, XWikiContext context)
-    {
-        Date currentDate = new Date();
-
-        vobject.setEndDate(currentDate);
-        add(new VisitStatsStoreItem(vobject, context));
-        vobject.unrememberOldObject();
-    }
-
-    /**
-     * Add document statistics to the save queue.
-     * 
-     * @param doc the document.
-     * @param action the user action.
-     * @param isVisit indicate if it's included in a visit.
-     * @param context the XWiki context.
-     */
-    private void addDocumentStats(XWikiDocument doc, String action, boolean isVisit, XWikiContext context)
-    {
-        Date currentDate = new Date();
-
-        add(new DocumentStatsStoreItem(doc.getFullName(), currentDate, StatsUtil.PeriodType.MONTH, action, isVisit,
-            context));
-        add(new DocumentStatsStoreItem(doc.getSpace(), currentDate, StatsUtil.PeriodType.MONTH, action, isVisit,
-            context));
-        add(new DocumentStatsStoreItem("", currentDate, StatsUtil.PeriodType.MONTH, action, false, context));
-        add(new DocumentStatsStoreItem(doc.getFullName(), currentDate, StatsUtil.PeriodType.DAY, action, isVisit,
-            context));
-        add(new DocumentStatsStoreItem(doc.getSpace(), currentDate, StatsUtil.PeriodType.DAY, action, isVisit,
-            context));
-        add(new DocumentStatsStoreItem("", currentDate, StatsUtil.PeriodType.DAY, action, false, context));
-    }
-
-    /**
-     * Add referer statistics to the save queue.
-     * 
-     * @param doc the document.
-     * @param context the XWiki context.
-     */
-    private void addRefererStats(XWikiDocument doc, XWikiContext context)
-    {
-        String referer = StatsUtil.getReferer(context);
-        if ((referer != null) && (!referer.equals(""))) {
-            add(new RefererStatsStoreItem(doc.getFullName(), new Date(), StatsUtil.PeriodType.MONTH, referer,
-                context));
-        }
-    }
+  }
 }
 
 /**
  * Item used to stop the statistics storing.
- * 
+ *
  * @version $Id$
  */
-class StopStatsRegisterObject implements XWikiStatsStoreItem
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
-     */
-    public String getId()
-    {
-        return null;
-    }
+class StopStatsRegisterObject implements XWikiStatsStoreItem {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
-     */
-    public void store(List<XWikiStatsStoreItem> register)
-    {
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#getId()
+   */
+  @Override
+  public String getId() {
+    return null;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.impl.xwiki.XWikiStatsStoreItem#store(java.util.List)
+   */
+  @Override
+  public void store(List<XWikiStatsStoreItem> register) {}
 }
 
 /**
  * Used to order stopping storing thread.
- * 
+ *
  * @version $Id$
  */
-class StopStatsStoreException extends Exception
-{
+class StopStatsStoreException extends Exception {
 
 }

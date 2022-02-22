@@ -57,28 +57,27 @@ import org.radeox.util.Encoder;
 /*
  * Transforms multiple \ into single backspaces and escapes other characters.
  */
-public class EscapeFilter extends LocaleRegexTokenFilter implements CacheFilter
-{
-    protected String getLocaleKey()
-    {
-        return "filter.escape";
-    }
+public class EscapeFilter extends LocaleRegexTokenFilter implements CacheFilter {
 
-    public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context)
-    {
-        buffer.append(handleMatch(result, context));                    
-    }
+  @Override
+  protected String getLocaleKey() {
+    return "filter.escape";
+  }
 
-    public String handleMatch(MatchResult result, FilterContext context)
-    {
-        if (result.group(1) == null) {
-            String match = result.group(2);
-            if ("\\".equals(match)) {
-                return "\\\\";
-            }
-            return Encoder.toEntity(match.charAt(0));
-        } else {
-            return "&#92;";
-        }
+  @Override
+  public void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
+    buffer.append(handleMatch(result, context));
+  }
+
+  public String handleMatch(MatchResult result, FilterContext context) {
+    if (result.group(1) == null) {
+      String match = result.group(2);
+      if ("\\".equals(match)) {
+        return "\\\\";
+      }
+      return Encoder.toEntity(match.charAt(0));
+    } else {
+      return "&#92;";
     }
+  }
 }

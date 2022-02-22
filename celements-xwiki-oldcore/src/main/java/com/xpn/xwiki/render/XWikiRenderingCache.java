@@ -22,67 +22,57 @@ package com.xpn.xwiki.render;
 
 import java.util.Date;
 
-public class XWikiRenderingCache
-{
-    private String key;
+public class XWikiRenderingCache {
 
-    private String content;
+  private String key;
 
-    private int cacheDuration;
+  private String content;
 
-    private Date date;
+  private int cacheDuration;
 
-    public XWikiRenderingCache(String key, String content, int cacheDuration, Date date)
-    {
-        setKey(key);
-        setContent(content);
-        setCacheDuration(cacheDuration);
-        setDate(date);
-    }
+  private Date date;
 
-    public String getKey()
-    {
-        return this.key;
-    }
+  public XWikiRenderingCache(String key, String content, int cacheDuration, Date date) {
+    setKey(key);
+    setContent(content);
+    setCacheDuration(cacheDuration);
+    setDate(date);
+  }
 
-    public void setKey(String key)
-    {
-        this.key = key;
-    }
+  public String getKey() {
+    return this.key;
+  }
 
-    public String getContent()
-    {
-        return this.content;
-    }
+  public void setKey(String key) {
+    this.key = key;
+  }
 
-    public void setContent(String content)
-    {
-        this.content = content;
-    }
+  public String getContent() {
+    return this.content;
+  }
 
-    public int getCacheDuration()
-    {
-        return this.cacheDuration;
-    }
+  public void setContent(String content) {
+    this.content = content;
+  }
 
-    public void setCacheDuration(int cacheDuration)
-    {
-        this.cacheDuration = cacheDuration;
-    }
+  public int getCacheDuration() {
+    return this.cacheDuration;
+  }
 
-    public Date getDate()
-    {
-        return this.date;
-    }
+  public void setCacheDuration(int cacheDuration) {
+    this.cacheDuration = cacheDuration;
+  }
 
-    public void setDate(Date date)
-    {
-        this.date = date;
-    }
+  public Date getDate() {
+    return this.date;
+  }
 
-    public boolean isValid()
-    {
-        Date cdate = new Date();
-        return ((cdate.getTime() - getDate().getTime()) < this.cacheDuration * 1000);
-    }
+  public void setDate(Date date) {
+    this.date = date;
+  }
+
+  public boolean isValid() {
+    Date cdate = new Date();
+    return ((cdate.getTime() - getDate().getTime()) < (this.cacheDuration * 1000));
+  }
 }

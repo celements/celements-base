@@ -31,77 +31,77 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit tests for {@link com.xpn.xwiki.render.XWikiVelocityRenderer}.
- * 
+ *
  * @version $Id$
  */
-public class XWikiVelocityRendererTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private XWikiVelocityRenderer renderer;
+public class XWikiVelocityRendererTest extends AbstractBridgedXWikiComponentTestCase {
 
-    private Mock mockXWiki;
+  private XWikiVelocityRenderer renderer;
 
-    private Mock mockDocument;
+  private Mock mockXWiki;
 
-    private Mock mockContentDocument;
+  private Mock mockDocument;
 
-    private XWikiDocument document;
+  private Mock mockContentDocument;
 
-    private XWikiDocument contentDocument;
+  private XWikiDocument document;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase#setUp()
-     */
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  private XWikiDocument contentDocument;
 
-        this.renderer = new XWikiVelocityRenderer();
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase#setUp()
+   */
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-        this.mockXWiki = mock(XWiki.class);
-        this.mockXWiki.stubs().method("getSkin").will(returnValue("default"));
-        this.mockXWiki.stubs().method("getSkinFile").will(returnValue(null));
-        this.mockXWiki.stubs().method("getResourceContent").will(returnValue(null));
-        this.mockXWiki.stubs().method("prepareResources");
-        getContext().setWiki((XWiki) this.mockXWiki.proxy());
+    this.renderer = new XWikiVelocityRenderer();
 
-        this.mockContentDocument = mock(XWikiDocument.class);
-        this.contentDocument = (XWikiDocument) this.mockContentDocument.proxy();
+    this.mockXWiki = mock(XWiki.class);
+    this.mockXWiki.stubs().method("getSkin").will(returnValue("default"));
+    this.mockXWiki.stubs().method("getSkinFile").will(returnValue(null));
+    this.mockXWiki.stubs().method("getResourceContent").will(returnValue(null));
+    this.mockXWiki.stubs().method("prepareResources");
+    getContext().setWiki((XWiki) this.mockXWiki.proxy());
 
-        this.mockDocument = mock(XWikiDocument.class);
-        this.document = (XWikiDocument) this.mockDocument.proxy();
+    this.mockContentDocument = mock(XWikiDocument.class);
+    this.contentDocument = (XWikiDocument) this.mockContentDocument.proxy();
 
-        Mock mockApiDocument =
-            mock(Document.class, new Class[] {XWikiDocument.class, XWikiContext.class}, new Object[] {this.document,
-            getContext()});
-        this.mockDocument.stubs().method("newDocument").will(returnValue(mockApiDocument.proxy()));
-    }
+    this.mockDocument = mock(XWikiDocument.class);
+    this.document = (XWikiDocument) this.mockDocument.proxy();
 
-    public void testRenderWithSimpleText()
-    {
-        this.mockXWiki.stubs().method("Param").will(returnValue(""));
-        this.mockXWiki.stubs().method("getIncludedMacros").will(returnValue(Collections.EMPTY_LIST));
-        this.mockContentDocument.stubs().method("getSpace").will(returnValue("Space1"));
-        this.mockDocument.stubs().method("getPrefixedFullName").will(returnValue("xwiki:Space2.Document"));
+    Mock mockApiDocument = mock(Document.class,
+        new Class[] { XWikiDocument.class, XWikiContext.class }, new Object[] { this.document,
+            getContext() });
+    this.mockDocument.stubs().method("newDocument").will(returnValue(mockApiDocument.proxy()));
+  }
 
-        String result = this.renderer.render("Simple content", this.contentDocument, this.document, getContext());
+  public void testRenderWithSimpleText() {
+    this.mockXWiki.stubs().method("Param").will(returnValue(""));
+    this.mockXWiki.stubs().method("getIncludedMacros").will(returnValue(Collections.EMPTY_LIST));
+    this.mockContentDocument.stubs().method("getSpace").will(returnValue("Space1"));
+    this.mockDocument.stubs().method("getPrefixedFullName")
+        .will(returnValue("xwiki:Space2.Document"));
 
-        assertEquals("Simple content", result);
-    }
+    String result = this.renderer.render("Simple content", this.contentDocument, this.document,
+        getContext());
 
-    public void testRenderWithVelocityContent()
-    {
-        this.mockXWiki.stubs().method("Param").will(returnValue(""));
-        this.mockXWiki.stubs().method("getIncludedMacros").will(returnValue(Collections.EMPTY_LIST));
-        this.mockContentDocument.stubs().method("getSpace").will(returnValue("Space1"));
-        this.mockDocument.stubs().method("getPrefixedFullName").will(returnValue("xwiki:Space2.Document"));
+    assertEquals("Simple content", result);
+  }
 
-        String result =
-            this.renderer.render("#set ($test = \"hello\")\n$test world\n## comment", this.contentDocument,
-                this.document, getContext());
+  public void testRenderWithVelocityContent() {
+    this.mockXWiki.stubs().method("Param").will(returnValue(""));
+    this.mockXWiki.stubs().method("getIncludedMacros").will(returnValue(Collections.EMPTY_LIST));
+    this.mockContentDocument.stubs().method("getSpace").will(returnValue("Space1"));
+    this.mockDocument.stubs().method("getPrefixedFullName")
+        .will(returnValue("xwiki:Space2.Document"));
 
-        assertEquals("hello world\n", result);
-    }
+    String result = this.renderer.render("#set ($test = \"hello\")\n$test world\n## comment",
+        this.contentDocument,
+        this.document, getContext());
+
+    assertEquals("hello world\n", result);
+  }
 }

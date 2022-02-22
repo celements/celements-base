@@ -37,65 +37,65 @@ import com.xpn.xwiki.XWikiContext;
  * Convert all document event to remote events and back to local events.
  * <p>
  * It also make sure the context contains the proper information like the user or the wiki.
- * 
+ *
  * @version $Id: DocumentEventConverter.java 33349 2010-12-11 10:37:21Z jvelociter $
  * @since 2.7.1
  */
 @Component("wiki")
-public class WikiEventConverter extends AbstractXWikiEventConverter
-{
-    /**
-     * The events supported by this converter.
-     */
-    private Set<Class< ? extends Event>> events = new HashSet<Class< ? extends Event>>()
+public class WikiEventConverter extends AbstractXWikiEventConverter {
+
+  /**
+   * The events supported by this converter.
+   */
+  private Set<Class<? extends Event>> events = new HashSet<Class<? extends Event>>() {
+
     {
-        {
-            add(WikiDeletedEvent.class);
-            add(WikiCreatedEvent.class);
-        }
-    };
+      add(WikiDeletedEvent.class);
+      add(WikiCreatedEvent.class);
+    }
+  };
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.observation.remote.converter.LocalEventConverter#toRemote(org.xwiki.observation.remote.LocalEventData,
-     *      org.xwiki.observation.remote.RemoteEventData)
-     */
-    public boolean toRemote(LocalEventData localEvent, RemoteEventData remoteEvent)
-    {
-        if (this.events.contains(localEvent.getEvent().getClass())) {
-            // fill the remote event
-            remoteEvent.setEvent((Serializable) localEvent.getEvent());
-            remoteEvent.setSource((String) localEvent.getSource());
-            remoteEvent.setData(serializeXWikiContext((XWikiContext) localEvent.getData()));
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.observation.remote.converter.LocalEventConverter#toRemote(org.xwiki.observation.remote.LocalEventData,
+   *      org.xwiki.observation.remote.RemoteEventData)
+   */
+  @Override
+  public boolean toRemote(LocalEventData localEvent, RemoteEventData remoteEvent) {
+    if (this.events.contains(localEvent.getEvent().getClass())) {
+      // fill the remote event
+      remoteEvent.setEvent((Serializable) localEvent.getEvent());
+      remoteEvent.setSource((String) localEvent.getSource());
+      remoteEvent.setData(serializeXWikiContext((XWikiContext) localEvent.getData()));
 
-            return true;
-        }
-
-        return false;
+      return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.observation.remote.converter.RemoteEventConverter#fromRemote(org.xwiki.observation.remote.RemoteEventData,
-     *      org.xwiki.observation.remote.LocalEventData)
-     */
-    public boolean fromRemote(RemoteEventData remoteEvent, LocalEventData localEvent)
-    {
-        if (this.events.contains(remoteEvent.getEvent().getClass())) {
-            // fill the local event
-            XWikiContext context = unserializeXWikiContext(remoteEvent.getData());
+    return false;
+  }
 
-            if (context != null) {
-                localEvent.setEvent((Event) remoteEvent.getEvent());
-                localEvent.setSource(remoteEvent.getSource());
-                localEvent.setData(unserializeXWikiContext(remoteEvent.getData()));
-            }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.observation.remote.converter.RemoteEventConverter#fromRemote(org.xwiki.observation.remote.RemoteEventData,
+   *      org.xwiki.observation.remote.LocalEventData)
+   */
+  @Override
+  public boolean fromRemote(RemoteEventData remoteEvent, LocalEventData localEvent) {
+    if (this.events.contains(remoteEvent.getEvent().getClass())) {
+      // fill the local event
+      XWikiContext context = unserializeXWikiContext(remoteEvent.getData());
 
-            return true;
-        }
+      if (context != null) {
+        localEvent.setEvent((Event) remoteEvent.getEvent());
+        localEvent.setSource(remoteEvent.getSource());
+        localEvent.setData(unserializeXWikiContext(remoteEvent.getData()));
+      }
 
-        return false;
+      return true;
     }
+
+    return false;
+  }
 }

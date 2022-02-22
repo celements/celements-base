@@ -25,41 +25,39 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 
-public class RollbackAction extends XWikiAction
-{
-    @Override
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        // CSRF prevention
-        if (!csrfTokenCheck(context)) {
-            return false;
-        }
+public class RollbackAction extends XWikiAction {
 
-        XWiki xwiki = context.getWiki();
-        XWikiResponse response = context.getResponse();
-        XWikiDocument doc = context.getDoc();
-        RollbackForm form = (RollbackForm) context.getForm();
-
-        String confirm = form.getConfirm();
-        String rev = form.getRev();
-        String language = form.getLanguage();
-
-        if ((confirm == null) || (!confirm.equals("1"))) {
-            return true;
-        }
-
-        XWikiDocument tdoc = getTranslatedDocument(doc, language, context);
-        XWikiDocument newdoc = xwiki.rollback(tdoc, rev, context);
-        // forward to view
-        String redirect = Utils.getRedirect("view", context);
-        sendRedirect(response, redirect);
-        return false;
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    // CSRF prevention
+    if (!csrfTokenCheck(context)) {
+      return false;
     }
 
-    @Override
-    public String render(XWikiContext context) throws XWikiException
-    {
-        handleRevision(context);
-        return "rollback";
+    XWiki xwiki = context.getWiki();
+    XWikiResponse response = context.getResponse();
+    XWikiDocument doc = context.getDoc();
+    RollbackForm form = (RollbackForm) context.getForm();
+
+    String confirm = form.getConfirm();
+    String rev = form.getRev();
+    String language = form.getLanguage();
+
+    if ((confirm == null) || (!confirm.equals("1"))) {
+      return true;
     }
+
+    XWikiDocument tdoc = getTranslatedDocument(doc, language, context);
+    XWikiDocument newdoc = xwiki.rollback(tdoc, rev, context);
+    // forward to view
+    String redirect = Utils.getRedirect("view", context);
+    sendRedirect(response, redirect);
+    return false;
+  }
+
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    handleRevision(context);
+    return "rollback";
+  }
 }

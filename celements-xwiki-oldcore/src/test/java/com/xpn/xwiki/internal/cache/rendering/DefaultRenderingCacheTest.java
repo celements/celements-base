@@ -35,60 +35,63 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 
 /**
  * Unit test for {@link DefaultRenderingCache}.
- * 
+ *
  * @version $Id$
  * @since 2.4M1
  */
-public class DefaultRenderingCacheTest extends AbstractBridgedXWikiComponentTestCase
-{
-    private Mock mockXWiki;
+public class DefaultRenderingCacheTest extends AbstractBridgedXWikiComponentTestCase {
 
-    private XWikiDocument document;
+  private Mock mockXWiki;
 
-    private RenderingCache renderingCache;
+  private XWikiDocument document;
 
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
+  private RenderingCache renderingCache;
 
-        this.document = new XWikiDocument(new DocumentReference("wiki", "space", "page"));
+  @Override
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
 
-        this.mockXWiki = mock(XWiki.class);
-        getContext().setWiki((XWiki) this.mockXWiki.proxy());
+    this.document = new XWikiDocument(new DocumentReference("wiki", "space", "page"));
 
-        this.mockXWiki.stubs().method("getDocument").with(eq(this.document.getDocumentReference()), ANYTHING).will(
+    this.mockXWiki = mock(XWiki.class);
+    getContext().setWiki((XWiki) this.mockXWiki.proxy());
+
+    this.mockXWiki.stubs().method("getDocument")
+        .with(eq(this.document.getDocumentReference()), ANYTHING).will(
             returnValue(this.document));
 
-        this.renderingCache = getComponentManager().lookup(RenderingCache.class);
-    }
+    this.renderingCache = getComponentManager().lookup(RenderingCache.class);
+  }
 
-    @Override
-    protected void registerComponents() throws Exception
-    {
-        super.registerComponents();
+  @Override
+  protected void registerComponents() throws Exception {
+    super.registerComponents();
 
-        getConfigurationSource().setProperty("core.renderingcache.enabled", true);
-    }
+    getConfigurationSource().setProperty("core.renderingcache.enabled", true);
+  }
 
-    @Test
-    public void testGetSetRenderedContent() throws Exception
-    {
-        MockConfigurationSource source = getConfigurationSource();
+  @Test
+  public void testGetSetRenderedContent() throws Exception {
+    MockConfigurationSource source = getConfigurationSource();
 
-        source.setProperty("core.renderingcache.documents", Collections.singletonList(this.document
-            .getPrefixedFullName()));
+    source.setProperty("core.renderingcache.documents", Collections.singletonList(this.document
+        .getPrefixedFullName()));
 
-        this.renderingCache.setRenderedContent(this.document.getDocumentReference(), "source", "renderedContent",
-            getContext());
+    this.renderingCache.setRenderedContent(this.document.getDocumentReference(), "source",
+        "renderedContent",
+        getContext());
 
-        assertEquals("renderedContent", this.renderingCache.getRenderedContent(this.document.getDocumentReference(),
+    assertEquals("renderedContent",
+        this.renderingCache.getRenderedContent(this.document.getDocumentReference(),
             "source", getContext()));
 
-        getComponentManager().lookup(ObservationManager.class).notify(
-            new DocumentUpdatedEvent(this.document.getDocumentReference()), this.document, getContext());
+    getComponentManager().lookup(ObservationManager.class).notify(
+        new DocumentUpdatedEvent(this.document.getDocumentReference()), this.document,
+        getContext());
 
-        assertNull("renderedContent", this.renderingCache.getRenderedContent(this.document.getDocumentReference(),
+    assertNull("renderedContent",
+        this.renderingCache.getRenderedContent(this.document.getDocumentReference(),
             "source", getContext()));
-    }
+  }
 }

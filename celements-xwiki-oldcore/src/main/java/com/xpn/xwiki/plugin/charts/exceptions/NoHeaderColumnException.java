@@ -20,27 +20,21 @@
  */
 package com.xpn.xwiki.plugin.charts.exceptions;
 
-public class NoHeaderColumnException extends DataSourceException
-{
-    private static final long serialVersionUID = -1378530511395482668L;
+public class NoHeaderColumnException extends DataSourceException {
 
-    public NoHeaderColumnException()
-    {
-        super();
-    }
+  private static final long serialVersionUID = -1378530511395482668L;
 
-    public NoHeaderColumnException(String arg0)
-    {
-        super(arg0);
-    }
+  public NoHeaderColumnException() {}
 
-    public NoHeaderColumnException(String arg0, Throwable arg1)
-    {
-        super(arg0, arg1);
-    }
+  public NoHeaderColumnException(String arg0) {
+    super(arg0);
+  }
 
-    public NoHeaderColumnException(Throwable arg0)
-    {
-        super(arg0);
-    }
+  public NoHeaderColumnException(String arg0, Throwable arg1) {
+    super(arg0, arg1);
+  }
+
+  public NoHeaderColumnException(Throwable arg0) {
+    super(arg0);
+  }
 }

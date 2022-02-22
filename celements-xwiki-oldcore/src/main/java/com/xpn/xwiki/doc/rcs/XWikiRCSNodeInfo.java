@@ -32,174 +32,183 @@ import com.xpn.xwiki.util.AbstractSimpleClass;
 /**
  * Contains information about document version.
  * Mutable.
+ *
  * @version $Id$
  * @since 1.2M1
  */
-public class XWikiRCSNodeInfo extends AbstractSimpleClass implements Comparable<XWikiRCSNodeInfo>
-{
-    /**
-     * composite primary id of class. 
-     */
-    private XWikiRCSNodeId    id;
-    /**
-     * date of this modification.
-     */
-    private Date    date      = new Date();
-    /**
-     * author of modification.
-     */
-    private String  author    = XWikiRightService.GUEST_USER_FULLNAME;
-    /**
-     * modification's comment.
-     */
-    private String  comment   = "";
-    /**
-     * is this version diff or full version. read-only
-     */
-    private boolean isDiff     = true;
-    /**
-     * reference to its XWikiRCSNodeContent.
-     */
-    private SoftReference<XWikiRCSNodeContent> contentRef;
-    /**
-     * default constructor used in Hibernate to load this class.
-     */
-    public XWikiRCSNodeInfo() { }
-    /**
-     * @param id - primary key.
-     */
-    public XWikiRCSNodeInfo(XWikiRCSNodeId id)
-    {
-        setId((XWikiRCSNodeId) id.clone());
-    }
-    /**
-     * @return primary key.
-     */
-    public XWikiRCSNodeId getId()
-    {
-        return id;
-    }
-    /**
-     * @param id - primary key.
-     */
-    public void setId(XWikiRCSNodeId id)
-    {
-        this.id = id;
-    }
-    /**
-     * @return date of this modification.
-     */
-    public Date getDate()
-    {
-        return date;
-    }
-    /**
-     * @param updateDate - date of this modification.
-     */
-    public void setDate(Date updateDate)
-    {
-        this.date = updateDate;
-    }
-    /**
-     * @return get author of modification.
-     */
-    public String getAuthor()
-    {
-        // For Oracle and other databases, an empty string is equivalent to a NULL and thus
-        // we had to remove the NOT-NULL condition on this field. Hence we need to test if it's
-        // null here and return an empty string so that all code calling this will not be impacted.
-        return author != null ? author : "";
-    }
-    /**
-     * @param updateAuthor - author of modification.
-     */
-    public void setAuthor(String updateAuthor)
-    {
-        this.author = updateAuthor;
-    }
-    /**
-     * @return modification's comment.
-     */
-    public String getComment()
-    {
-        // For Oracle and other databases, an empty string is equivalent to a NULL and thus
-        // we had to remove the NOT-NULL condition on this field. Hence we need to test if it's
-        // null here and return an empty string so that all code calling this will not be impacted.
-        return comment != null ? comment : "";
-    }
-    /**
-     * @param comment - modification's comment.
-     */
-    public void setComment(String comment)
-    {
-        this.comment = comment;
-    }
-    /**
-     * @return is modification minor.
-     */
-    public boolean isMinorEdit()
-    {
-        return id.getVersion().at(1) != 1;
-    }
-    /**
-     * @return is patch or full version.
-     */
-    public boolean isDiff()
-    {
-        return isDiff;
-    }
-    /**
-     * @param diff - is patch (true) or full version (false).
-     * Should not be used directly.
-     * @see XWikiPatch#setDiff(boolean)
-     */
-    public void setDiff(boolean diff)
-    {
-        this.isDiff = diff;
-    }
+public class XWikiRCSNodeInfo extends AbstractSimpleClass implements Comparable<XWikiRCSNodeInfo> {
 
-    /**
-     * @return {@link XWikiRCSNodeContent} for this node.
-     * @param context - load with this context. If null then do not load.
-     * @throws XWikiException if can't load
-     */
-    public XWikiRCSNodeContent getContent(XWikiContext context) throws XWikiException
-    {
-        XWikiRCSNodeContent nodeContent = null;
-        if (contentRef != null) {
-            nodeContent = (XWikiRCSNodeContent) contentRef.get();
-        }
-        if (nodeContent != null || context == null) {
-            return nodeContent;
-        }
-        nodeContent = context.getWiki().getVersioningStore()
-            .loadRCSNodeContent(this.id, true, context);
-        contentRef = new SoftReference<XWikiRCSNodeContent>(nodeContent);
-        return nodeContent;
-    }
-    /**
-     * @param content - {@link XWikiRCSNodeContent} for this node.
-     */
-    public void setContent(XWikiRCSNodeContent content)
-    {
-        content.setId(getId());
-        contentRef = new SoftReference<XWikiRCSNodeContent>(content);
-        setDiff(content.getPatch().isDiff());
-    }
+  /**
+   * composite primary id of class.
+   */
+  private XWikiRCSNodeId id;
+  /**
+   * date of this modification.
+   */
+  private Date date = new Date();
+  /**
+   * author of modification.
+   */
+  private String author = XWikiRightService.GUEST_USER_FULLNAME;
+  /**
+   * modification's comment.
+   */
+  private String comment = "";
+  /**
+   * is this version diff or full version. read-only
+   */
+  private boolean isDiff = true;
+  /**
+   * reference to its XWikiRCSNodeContent.
+   */
+  private SoftReference<XWikiRCSNodeContent> contentRef;
 
-    /**
-     * @return version of this revision.
-     */
-    public Version getVersion()
-    {
-        return getId().getVersion();
-    }
+  /**
+   * default constructor used in Hibernate to load this class.
+   */
+  public XWikiRCSNodeInfo() {}
 
-    /**
-     * {@inheritDoc}
-     */
-    public int compareTo(XWikiRCSNodeInfo o)
-    {
-        return getId().getVersion().compareTo(o.getId().getVersion());
+  /**
+   * @param id
+   *          - primary key.
+   */
+  public XWikiRCSNodeInfo(XWikiRCSNodeId id) {
+    setId((XWikiRCSNodeId) id.clone());
+  }
+
+  /**
+   * @return primary key.
+   */
+  public XWikiRCSNodeId getId() {
+    return id;
+  }
+
+  /**
+   * @param id
+   *          - primary key.
+   */
+  public void setId(XWikiRCSNodeId id) {
+    this.id = id;
+  }
+
+  /**
+   * @return date of this modification.
+   */
+  public Date getDate() {
+    return date;
+  }
+
+  /**
+   * @param updateDate
+   *          - date of this modification.
+   */
+  public void setDate(Date updateDate) {
+    this.date = updateDate;
+  }
+
+  /**
+   * @return get author of modification.
+   */
+  public String getAuthor() {
+    // For Oracle and other databases, an empty string is equivalent to a NULL and thus
+    // we had to remove the NOT-NULL condition on this field. Hence we need to test if it's
+    // null here and return an empty string so that all code calling this will not be impacted.
+    return author != null ? author : "";
+  }
+
+  /**
+   * @param updateAuthor
+   *          - author of modification.
+   */
+  public void setAuthor(String updateAuthor) {
+    this.author = updateAuthor;
+  }
+
+  /**
+   * @return modification's comment.
+   */
+  public String getComment() {
+    // For Oracle and other databases, an empty string is equivalent to a NULL and thus
+    // we had to remove the NOT-NULL condition on this field. Hence we need to test if it's
+    // null here and return an empty string so that all code calling this will not be impacted.
+    return comment != null ? comment : "";
+  }
+
+  /**
+   * @param comment
+   *          - modification's comment.
+   */
+  public void setComment(String comment) {
+    this.comment = comment;
+  }
+
+  /**
+   * @return is modification minor.
+   */
+  public boolean isMinorEdit() {
+    return id.getVersion().at(1) != 1;
+  }
+
+  /**
+   * @return is patch or full version.
+   */
+  public boolean isDiff() {
+    return isDiff;
+  }
+
+  /**
+   * @param diff
+   *          - is patch (true) or full version (false).
+   *          Should not be used directly.
+   * @see XWikiPatch#setDiff(boolean)
+   */
+  public void setDiff(boolean diff) {
+    this.isDiff = diff;
+  }
+
+  /**
+   * @return {@link XWikiRCSNodeContent} for this node.
+   * @param context
+   *          - load with this context. If null then do not load.
+   * @throws XWikiException
+   *           if can't load
+   */
+  public XWikiRCSNodeContent getContent(XWikiContext context) throws XWikiException {
+    XWikiRCSNodeContent nodeContent = null;
+    if (contentRef != null) {
+      nodeContent = contentRef.get();
     }
+    if ((nodeContent != null) || (context == null)) {
+      return nodeContent;
+    }
+    nodeContent = context.getWiki().getVersioningStore()
+        .loadRCSNodeContent(this.id, true, context);
+    contentRef = new SoftReference<>(nodeContent);
+    return nodeContent;
+  }
+
+  /**
+   * @param content
+   *          - {@link XWikiRCSNodeContent} for this node.
+   */
+  public void setContent(XWikiRCSNodeContent content) {
+    content.setId(getId());
+    contentRef = new SoftReference<>(content);
+    setDiff(content.getPatch().isDiff());
+  }
+
+  /**
+   * @return version of this revision.
+   */
+  public Version getVersion() {
+    return getId().getVersion();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int compareTo(XWikiRCSNodeInfo o) {
+    return getId().getVersion().compareTo(o.getId().getVersion());
+  }
 }

@@ -32,83 +32,81 @@ import com.xpn.xwiki.stats.impl.StatsUtil.PeriodType;
 
 /**
  * The referer statistics database object.
- * 
+ *
  * @version $Id$
  */
-public class RefererStats extends XWikiStats
-{
-    /**
-     * Logging tools.
-     */
-    private static final Log LOG = LogFactory.getLog(RefererStats.class);
+public class RefererStats extends XWikiStats {
 
+  /**
+   * Logging tools.
+   */
+  private static final Log LOG = LogFactory.getLog(RefererStats.class);
+
+  /**
+   * The properties of document statistics object.
+   *
+   * @version $Id$
+   */
+  public enum Property {
     /**
-     * The properties of document statistics object.
-     * 
-     * @version $Id$
+     * The referer.
      */
-    public enum Property
-    {
-        /**
-         * The referer.
-         */
-        referer
+    referer
+  }
+
+  /**
+   * Default {@link RefererStats} constructor.
+   */
+  public RefererStats() {}
+
+  /**
+   * @param docName
+   *          the name of the wiki/space/document.
+   * @param referer
+   *          the referer.
+   * @param periodDate
+   *          the date of the period.
+   * @param periodType
+   *          the type of the period.
+   */
+  public RefererStats(String docName, String referer, Date periodDate, PeriodType periodType) {
+    super(periodDate, periodType);
+
+    setName(docName);
+    String nb = referer + getPeriod();
+    setNumber(nb.hashCode());
+    setReferer(referer);
+  }
+
+  /**
+   * @return the referer.
+   */
+  public String getReferer() {
+    return getStringValue(Property.referer.toString());
+  }
+
+  /**
+   * @param referer
+   *          the referer.
+   */
+  public void setReferer(String referer) {
+    setStringValue(Property.referer.toString(), referer);
+  }
+
+  /**
+   * @return the referer URL.
+   */
+  public URL getURL() {
+    URL url = null;
+
+    try {
+      url = new URL(getReferer());
+    } catch (MalformedURLException e) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Failed to construct URL from referer", e);
+      }
     }
 
-    /**
-     * Default {@link RefererStats} constructor.
-     */
-    public RefererStats()
-    {
-    }
-
-    /**
-     * @param docName the name of the wiki/space/document.
-     * @param referer the referer.
-     * @param periodDate the date of the period.
-     * @param periodType the type of the period.
-     */
-    public RefererStats(String docName, String referer, Date periodDate, PeriodType periodType)
-    {
-        super(periodDate, periodType);
-
-        setName(docName);
-        String nb = referer + getPeriod();
-        setNumber(nb.hashCode());
-        setReferer(referer);
-    }
-
-    /**
-     * @return the referer.
-     */
-    public String getReferer()
-    {
-        return getStringValue(Property.referer.toString());
-    }
-
-    /**
-     * @param referer the referer.
-     */
-    public void setReferer(String referer)
-    {
-        setStringValue(Property.referer.toString(), referer);
-    }
-
-    /**
-     * @return the referer URL.
-     */
-    public URL getURL()
-    {
-        URL url = null;
-
-        try {
-            url = new URL(getReferer());
-        } catch (MalformedURLException e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Failed to construct URL from referer", e);
-            }
-        }
-
-        return url;
-    }
+    return url;
+  }
 }

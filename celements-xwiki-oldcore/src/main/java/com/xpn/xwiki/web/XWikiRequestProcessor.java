@@ -30,48 +30,48 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * 
+ *
  * @version $Id$
  */
-public class XWikiRequestProcessor extends org.apache.struts.action.RequestProcessor
-{
-    protected static final Log LOG = LogFactory.getLog(XWikiRequestProcessor.class);
+public class XWikiRequestProcessor extends org.apache.struts.action.RequestProcessor {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.apache.struts.action.RequestProcessor#processPath(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
-    @Override
-    protected String processPath(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
-        throws IOException
-    {
-        String result = super.processPath(httpServletRequest, httpServletResponse);
+  protected static final Log LOG = LogFactory.getLog(XWikiRequestProcessor.class);
 
-        if ("1".equals(XWikiConfigurationService.getProperty("xwiki.virtual.usepath", "0", getServletContext()))) {
-            // Remove /wikiname part if the struts action is /wiki
-            if (httpServletRequest.getServletPath().equals(
-                "/"
-                    + XWikiConfigurationService.getProperty("xwiki.virtual.usepath.servletpath", "wiki",
-                        getServletContext()))) {
-                int wikiNameIndex = result.indexOf("/", 1);
-                if (wikiNameIndex == -1) {
-                    result = "";
-                } else {
-                    result = result.substring(wikiNameIndex);
-                }
-            }
-        }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.apache.struts.action.RequestProcessor#processPath(javax.servlet.http.HttpServletRequest,
+   *      javax.servlet.http.HttpServletResponse)
+   */
+  @Override
+  protected String processPath(HttpServletRequest httpServletRequest,
+      HttpServletResponse httpServletResponse)
+      throws IOException {
+    String result = super.processPath(httpServletRequest, httpServletResponse);
 
-        if (StringUtils.countMatches(result, "/") <= 2) {
-            if (result.startsWith("/xmlrpc/")) {
-                return "/xmlrpc/";
-            } else {
-                return "/view/";
-            }
-        } else {
-            return result.substring(0, result.indexOf("/", 1) + 1);
-        }
+    // Remove /wikiname part if the struts action is /wiki
+    if ("1".equals(
+        XWikiConfigurationService.getProperty("xwiki.virtual.usepath", "0", getServletContext()))
+        && httpServletRequest.getServletPath().equals(
+            "/"
+                + XWikiConfigurationService.getProperty("xwiki.virtual.usepath.servletpath", "wiki",
+                    getServletContext()))) {
+      int wikiNameIndex = result.indexOf("/", 1);
+      if (wikiNameIndex == -1) {
+        result = "";
+      } else {
+        result = result.substring(wikiNameIndex);
+      }
     }
+
+    if (StringUtils.countMatches(result, "/") <= 2) {
+      if (result.startsWith("/xmlrpc/")) {
+        return "/xmlrpc/";
+      } else {
+        return "/view/";
+      }
+    } else {
+      return result.substring(0, result.indexOf("/", 1) + 1);
+    }
+  }
 }

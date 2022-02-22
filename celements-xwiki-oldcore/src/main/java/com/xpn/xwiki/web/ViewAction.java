@@ -28,61 +28,61 @@ import com.xpn.xwiki.doc.XWikiDocument;
 /**
  * Action called when the request URL has the "/view/" string in its path (this is configured in
  * <code>struts-config.xml</code>. It means the request is to display a page in view mode.
- * 
+ *
  * @version $Id$
  */
-public class ViewAction extends XWikiAction
-{
-    /**
-     * The identifier of the view action.
-     * 
-     * @todo need an enumerated class for actions.
-     */
-    public static final String VIEW_ACTION = "view";
+public class ViewAction extends XWikiAction {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#action(com.xpn.xwiki.XWikiContext)
-     */
-    public boolean action(XWikiContext context) throws XWikiException
-    {
-        boolean shouldRender = true;
+  /**
+   * The identifier of the view action.
+   *
+   * @todo need an enumerated class for actions.
+   */
+  public static final String VIEW_ACTION = "view";
 
-        context.put("action", VIEW_ACTION);
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#action(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public boolean action(XWikiContext context) throws XWikiException {
+    boolean shouldRender = true;
 
-        // Redirect to the ViewrevAction is the URL has a rev parameter (when the user asks to
-        // view a specific revision of a document).
-        XWikiRequest request = context.getRequest();
-        String rev = request.getParameter("rev");
-        if (rev != null) {
-            String url = context.getDoc().getURL("viewrev", request.getQueryString(), context);
-            try {
-                context.getResponse().sendRedirect(url);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            shouldRender = false;
-        }
+    context.put("action", VIEW_ACTION);
 
-        return shouldRender;
+    // Redirect to the ViewrevAction is the URL has a rev parameter (when the user asks to
+    // view a specific revision of a document).
+    XWikiRequest request = context.getRequest();
+    String rev = request.getParameter("rev");
+    if (rev != null) {
+      String url = context.getDoc().getURL("viewrev", request.getQueryString(), context);
+      try {
+        context.getResponse().sendRedirect(url);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      shouldRender = false;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiAction#render(com.xpn.xwiki.XWikiContext)
-     */
-    public String render(XWikiContext context) throws XWikiException
-    {
-        handleRevision(context);
-        XWikiDocument doc = (XWikiDocument) context.get("doc");
+    return shouldRender;
+  }
 
-        String defaultTemplate = doc.getDefaultTemplate();
-        if ((defaultTemplate != null) && (!defaultTemplate.equals(""))) {
-            return defaultTemplate;
-        } else {
-            return VIEW_ACTION;
-        }
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiAction#render(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public String render(XWikiContext context) throws XWikiException {
+    handleRevision(context);
+    XWikiDocument doc = (XWikiDocument) context.get("doc");
+
+    String defaultTemplate = doc.getDefaultTemplate();
+    if ((defaultTemplate != null) && (!defaultTemplate.equals(""))) {
+      return defaultTemplate;
+    } else {
+      return VIEW_ACTION;
     }
+  }
 }

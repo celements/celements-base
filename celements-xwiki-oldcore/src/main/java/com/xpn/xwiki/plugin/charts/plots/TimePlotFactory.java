@@ -36,50 +36,49 @@ import com.xpn.xwiki.plugin.charts.exceptions.GenerateException;
 import com.xpn.xwiki.plugin.charts.params.ChartParams;
 import com.xpn.xwiki.plugin.charts.source.DataSource;
 
-public class TimePlotFactory implements PlotFactory
-{
-    private static TimePlotFactory uniqueInstance = new TimePlotFactory();
+public class TimePlotFactory implements PlotFactory {
 
-    private TimePlotFactory()
-    {
-        // empty
+  private static TimePlotFactory uniqueInstance = new TimePlotFactory();
+
+  private TimePlotFactory() {
+    // empty
+  }
+
+  public static TimePlotFactory getInstance() {
+    return uniqueInstance;
+  }
+
+  @Override
+  public Plot create(DataSource dataSource, ChartParams params)
+      throws GenerateException, DataSourceException {
+
+    Class rendererClass = params.getClass(ChartParams.RENDERER);
+    XYItemRenderer renderer;
+    if (rendererClass != null) {
+      try {
+        Constructor ctor = rendererClass.getConstructor();
+        renderer = (XYItemRenderer) ctor.newInstance();
+      } catch (Throwable e) {
+        throw new GenerateException(e);
+      }
+    } else {
+      renderer = new XYLineAndShapeRenderer();
     }
+    ChartCustomizer.customizeXYItemRenderer(renderer, params);
 
-    public static TimePlotFactory getInstance()
-    {
-        return uniqueInstance;
-    }
+    DateAxis domainAxis = new DateAxis();
+    ChartCustomizer.customizeDateAxis(domainAxis, params, ChartParams.AXIS_DOMAIN_PREFIX);
 
-    public Plot create(DataSource dataSource, ChartParams params) throws GenerateException, DataSourceException
-    {
+    NumberAxis rangeAxis = new NumberAxis();
+    rangeAxis.setAutoRangeIncludesZero(false); // override default
+    ChartCustomizer.customizeNumberAxis(rangeAxis, params, ChartParams.AXIS_RANGE_PREFIX);
 
-        Class rendererClass = params.getClass(ChartParams.RENDERER);
-        XYItemRenderer renderer;
-        if (rendererClass != null) {
-            try {
-                Constructor ctor = rendererClass.getConstructor(new Class[] {});
-                renderer = (XYItemRenderer) ctor.newInstance(new Object[] {});
-            } catch (Throwable e) {
-                throw new GenerateException(e);
-            }
-        } else {
-            renderer = new XYLineAndShapeRenderer();
-        }
-        ChartCustomizer.customizeXYItemRenderer(renderer, params);
+    XYDataset dataset = TimeSeriesCollectionFactory.getInstance().create(dataSource, params);
 
-        DateAxis domainAxis = new DateAxis();
-        ChartCustomizer.customizeDateAxis(domainAxis, params, ChartParams.AXIS_DOMAIN_PREFIX);
+    XYPlot plot = new XYPlot(dataset, domainAxis, rangeAxis, renderer);
 
-        NumberAxis rangeAxis = new NumberAxis();
-        rangeAxis.setAutoRangeIncludesZero(false); // override default
-        ChartCustomizer.customizeNumberAxis(rangeAxis, params, ChartParams.AXIS_RANGE_PREFIX);
+    ChartCustomizer.customizeXYPlot(plot, params);
 
-        XYDataset dataset = TimeSeriesCollectionFactory.getInstance().create(dataSource, params);
-
-        XYPlot plot = new XYPlot(dataset, domainAxis, rangeAxis, renderer);
-
-        ChartCustomizer.customizeXYPlot(plot, params);
-
-        return plot;
-    }
+    return plot;
+  }
 }

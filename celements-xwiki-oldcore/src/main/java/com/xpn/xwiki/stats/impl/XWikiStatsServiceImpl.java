@@ -54,262 +54,277 @@ import com.xpn.xwiki.web.ViewAction;
 
 /**
  * Store and retrieve statistics.
- * 
+ *
  * @version $Id$
  */
-public class XWikiStatsServiceImpl implements XWikiStatsService, EventListener
-{
-    /**
-     * Logging tools.
-     */
-    private static final Log LOG = LogFactory.getLog(XWikiStatsServiceImpl.class);
+public class XWikiStatsServiceImpl implements XWikiStatsService, EventListener {
 
-    /**
-     * The name of the listener.
-     */
-    private static final String NAME = "statistics";
+  /**
+   * Logging tools.
+   */
+  private static final Log LOG = LogFactory.getLog(XWikiStatsServiceImpl.class);
 
-    /**
-     * User actions statistics module saves.
-     */
-    private static final List<Event> EVENTS = new ArrayList<Event>()
+  /**
+   * The name of the listener.
+   */
+  private static final String NAME = "statistics";
+
+  /**
+   * User actions statistics module saves.
+   */
+  private static final List<Event> EVENTS = new ArrayList<Event>() {
+
     {
-        {
-            add(new ActionExecutionEvent(ViewAction.VIEW_ACTION));
-            add(new ActionExecutionEvent(SaveAction.ACTION_NAME));
-            add(new ActionExecutionEvent(DownloadAction.ACTION_NAME));
-        }
-    };
+      add(new ActionExecutionEvent(ViewAction.VIEW_ACTION));
+      add(new ActionExecutionEvent(SaveAction.ACTION_NAME));
+      add(new ActionExecutionEvent(DownloadAction.ACTION_NAME));
+    }
+  };
 
-    /**
-     * Used to resolve reference based on context.
-     */
-    private DocumentReferenceResolver<String> currentDocumentReferenceResolver = Utils.getComponent(
-        DocumentReferenceResolver.class, "current");
+  /**
+   * Used to resolve reference based on context.
+   */
+  private DocumentReferenceResolver<String> currentDocumentReferenceResolver = Utils.getComponent(
+      DocumentReferenceResolver.class, "current");
 
-    /**
-     * The statistics storing thread.
-     */
-    private XWikiStatsStoreService statsRegister;
+  /**
+   * The statistics storing thread.
+   */
+  private XWikiStatsStoreService statsRegister;
 
-    /**
-     * The statistics database reader.
-     */
-    private XWikiStatsReader statsReader = new XWikiStatsReader();
+  /**
+   * The statistics database reader.
+   */
+  private XWikiStatsReader statsReader = new XWikiStatsReader();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.observation.EventListener#getName()
-     */
-    public String getName()
-    {
-        return NAME;
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.observation.EventListener#getName()
+   */
+  @Override
+  public String getName() {
+    return NAME;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.observation.EventListener#getEvents()
+   */
+  @Override
+  public List<Event> getEvents() {
+    return EVENTS;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.api.XWikiStatsService#init(com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public void init(XWikiContext context) {
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Start statistics service initialization");
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.observation.EventListener#getEvents()
-     */
-    public List<Event> getEvents()
-    {
-        return EVENTS;
+    if (StatsUtil.isStatsEnabled(context)) {
+      // Start statistics store thread
+      this.statsRegister = new XWikiStatsStoreService(context);
+      this.statsRegister.start();
+
+      // Adding the rule which will allow this module to be called on each page view
+      Utils.getComponent(ObservationManager.class).addListener(this);
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.api.XWikiStatsService#getRecentActions(java.lang.String, int,
+   *      com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  public Collection<Object> getRecentActions(String action, int size, XWikiContext context) {
+    return this.statsReader.getRecentActions(action, size, context);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.observation.EventListener#onEvent(org.xwiki.observation.event.Event,
+   *      java.lang.Object,
+   *      java.lang.Object)
+   */
+  @Override
+  public void onEvent(Event event, Object source, Object data) {
+    if (Utils.getComponent(RemoteObservationManagerContext.class).isRemoteState()) {
+      // we do nothing when the event comes from remote instance since the remote instance is
+      // supposed to already
+      // take care of this
+      return;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.api.XWikiStatsService#init(com.xpn.xwiki.XWikiContext)
-     */
-    public void init(XWikiContext context)
-    {
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Start statistics service initialization");
-        }
+    ActionExecutionEvent actionEvent = (ActionExecutionEvent) event;
+    XWikiDocument document = (XWikiDocument) source;
+    XWikiContext context = (XWikiContext) data;
 
-        if (StatsUtil.isStatsEnabled(context)) {
-            // Start statistics store thread
-            this.statsRegister = new XWikiStatsStoreService(context);
-            this.statsRegister.start();
-
-            // Adding the rule which will allow this module to be called on each page view
-            Utils.getComponent(ObservationManager.class).addListener(this);
-        }
+    // If the server is in read-only mode, forget about the statistics (since it's in read only mode
+    // we don't write
+    // anything in the database)
+    if (context.getWiki().isReadOnly()) {
+      return;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.api.XWikiStatsService#getRecentActions(java.lang.String, int,
-     *      com.xpn.xwiki.XWikiContext)
-     */
-    public Collection<Object> getRecentActions(String action, int size, XWikiContext context)
-    {
-        return this.statsReader.getRecentActions(action, size, context);
-    }
+    // Initialize cookie used as unique identifier of a user visit and put it in the context
+    StatsUtil.findCookie(context);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.observation.EventListener#onEvent(org.xwiki.observation.event.Event, java.lang.Object,
-     *      java.lang.Object)
-     */
-    public void onEvent(Event event, Object source, Object data)
-    {
-        if (Utils.getComponent(RemoteObservationManagerContext.class).isRemoteState()) {
-            // we do nothing when the event comes from remote instance since the remote instance is supposed to already
-            // take care of this
-            return;
-        }
+    String action = actionEvent.getActionName();
 
-        ActionExecutionEvent actionEvent = (ActionExecutionEvent) event;
-        XWikiDocument document = (XWikiDocument) source;
-        XWikiContext context = (XWikiContext) data;
-
-        // If the server is in read-only mode, forget about the statistics (since it's in read only mode we don't write
-        // anything in the database)
-        if (context.getWiki().isReadOnly()) {
-            return;
-        }
-
-        // Initialize cookie used as unique identifier of a user visit and put it in the context
-        StatsUtil.findCookie(context);
-
-        String action = actionEvent.getActionName();
-
-        // Let's save in the session the last elements view, saved
-        synchronized (this) {
-            if (!action.equals(DownloadAction.ACTION_NAME)) {
-                Collection actions = StatsUtil.getRecentActionFromSessions(context, action);
-                if (actions == null) {
-                    actions = new CircularFifoBuffer(StatsUtil.getRecentVisitSize(context));
-                    StatsUtil.setRecentActionsFromSession(context, action, actions);
-                }
-
-                String element = document.getPrefixedFullName();
-                if (actions.contains(element)) {
-                    actions.remove(element);
-                }
-                actions.add(element);
-            }
+    // Let's save in the session the last elements view, saved
+    synchronized (this) {
+      if (!action.equals(DownloadAction.ACTION_NAME)) {
+        Collection actions = StatsUtil.getRecentActionFromSessions(context, action);
+        if (actions == null) {
+          actions = new CircularFifoBuffer(StatsUtil.getRecentVisitSize(context));
+          StatsUtil.setRecentActionsFromSession(context, action, actions);
         }
 
-        try {
-            if (StatsUtil.isWikiStatsEnabled(context)
-                && !StatsUtil.getStorageFilteredUsers(context).contains(
-                    this.currentDocumentReferenceResolver.resolve(context.getUser()))) {
-                this.statsRegister.addStats(document, action, context);
-            }
-        } catch (Exception e) {
-            LOG.error("Faild to get filter users list", e);
+        String element = document.getPrefixedFullName();
+        if (actions.contains(element)) {
+          actions.remove(element);
         }
+        actions.add(element);
+      }
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiStatsService#getActionStatistics(String, Scope, com.xpn.xwiki.criteria.impl.Period ,
-     *      com.xpn.xwiki.criteria.impl.Duration , XWikiContext)
-     */
-    public Map< ? , ? > getActionStatistics(String action, Scope scope, Period period, Duration step,
-        XWikiContext context)
-    {
-        return this.statsReader.getActionStatistics(action, scope, period, step, context);
+    try {
+      if (StatsUtil.isWikiStatsEnabled(context)
+          && !StatsUtil.getStorageFilteredUsers(context).contains(
+              this.currentDocumentReferenceResolver.resolve(context.getUser()))) {
+        this.statsRegister.addStats(document, action, context);
+      }
+    } catch (Exception e) {
+      LOG.error("Faild to get filter users list", e);
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiStatsService#getDocumentStatistics(String, Scope, Period, Range , XWikiContext)
-     */
-    public List<DocumentStats> getDocumentStatistics(String action, Scope scope, Period period, Range range,
-        XWikiContext context)
-    {
-        return this.statsReader.getDocumentStatistics(action, scope, period, range, context);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiStatsService#getActionStatistics(String, Scope, com.xpn.xwiki.criteria.impl.Period ,
+   *      com.xpn.xwiki.criteria.impl.Duration , XWikiContext)
+   */
+  @Override
+  public Map<?, ?> getActionStatistics(String action, Scope scope, Period period, Duration step,
+      XWikiContext context) {
+    return this.statsReader.getActionStatistics(action, scope, period, step, context);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiStatsService#getBackLinkStatistics(String, Scope, Period, Range , XWikiContext)
-     */
-    public List<DocumentStats> getBackLinkStatistics(String domain, Scope scope, Period period, Range range,
-        XWikiContext context)
-    {
-        return this.statsReader.getBackLinkStatistics(domain, scope, period, range, context);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiStatsService#getDocumentStatistics(String, Scope, Period, Range , XWikiContext)
+   */
+  @Override
+  public List<DocumentStats> getDocumentStatistics(String action, Scope scope, Period period,
+      Range range,
+      XWikiContext context) {
+    return this.statsReader.getDocumentStatistics(action, scope, period, range, context);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiStatsService#getRefererStatistics(String, Scope, Period, Range , XWikiContext)
-     */
-    public List<RefererStats> getRefererStatistics(String domain, Scope scope, Period period, Range range,
-        XWikiContext context)
-    {
-        return this.statsReader.getRefererStatistics(domain, scope, period, range, context);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiStatsService#getBackLinkStatistics(String, Scope, Period, Range , XWikiContext)
+   */
+  @Override
+  public List<DocumentStats> getBackLinkStatistics(String domain, Scope scope, Period period,
+      Range range,
+      XWikiContext context) {
+    return this.statsReader.getBackLinkStatistics(domain, scope, period, range, context);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XWikiStatsService#getVisitStatistics(String, com.xpn.xwiki.criteria.impl.Period , Range , XWikiContext)
-     */
-    public List<VisitStats> getVisitStatistics(String action, Period period, Range range, XWikiContext context)
-    {
-        return this.statsReader.getVisitStatistics(action, period, range, context);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiStatsService#getRefererStatistics(String, Scope, Period, Range , XWikiContext)
+   */
+  @Override
+  public List<RefererStats> getRefererStatistics(String domain, Scope scope, Period period,
+      Range range,
+      XWikiContext context) {
+    return this.statsReader.getRefererStatistics(domain, scope, period, range, context);
+  }
 
-    // ////////////////////////////////////////////////////////////////////////////////////////
-    // Deprecated methods
-    // ////////////////////////////////////////////////////////////////////////////////////////
+  /**
+   * {@inheritDoc}
+   *
+   * @see XWikiStatsService#getVisitStatistics(String, com.xpn.xwiki.criteria.impl.Period , Range ,
+   *      XWikiContext)
+   */
+  @Override
+  public List<VisitStats> getVisitStatistics(String action, Period period, Range range,
+      XWikiContext context) {
+    return this.statsReader.getVisitStatistics(action, period, range, context);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.api.XWikiStatsService#getDocTotalStats(java.lang.String, java.lang.String,
-     *      com.xpn.xwiki.XWikiContext)
-     */
-    @Deprecated
-    public DocumentStats getDocTotalStats(String docname, String action, XWikiContext context)
-    {
-        return new DocumentStats();
-    }
+  // ////////////////////////////////////////////////////////////////////////////////////////
+  // Deprecated methods
+  // ////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.api.XWikiStatsService#getDocMonthStats(java.lang.String, java.lang.String,
-     *      java.util.Date, com.xpn.xwiki.XWikiContext)
-     */
-    @Deprecated
-    public DocumentStats getDocMonthStats(String docname, String action, Date month, XWikiContext context)
-    {
-        return this.statsReader.getDocMonthStats(docname, action, month, context);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.api.XWikiStatsService#getDocTotalStats(java.lang.String,
+   *      java.lang.String,
+   *      com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  @Deprecated
+  public DocumentStats getDocTotalStats(String docname, String action, XWikiContext context) {
+    return new DocumentStats();
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.api.XWikiStatsService#getDocDayStats(java.lang.String, java.lang.String, java.util.Date,
-     *      com.xpn.xwiki.XWikiContext)
-     */
-    @Deprecated
-    public DocumentStats getDocDayStats(String docname, String action, Date day, XWikiContext context)
-    {
-        return new DocumentStats();
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.api.XWikiStatsService#getDocMonthStats(java.lang.String,
+   *      java.lang.String,
+   *      java.util.Date, com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  @Deprecated
+  public DocumentStats getDocMonthStats(String docname, String action, Date month,
+      XWikiContext context) {
+    return this.statsReader.getDocMonthStats(docname, action, month, context);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see com.xpn.xwiki.stats.api.XWikiStatsService#getRefMonthStats(java.lang.String, java.util.Date,
-     *      com.xpn.xwiki.XWikiContext)
-     */
-    @Deprecated
-    public List< ? > getRefMonthStats(String docName, Date month, XWikiContext context) throws XWikiException
-    {
-        return this.statsReader.getRefMonthStats(docName, month, context);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.api.XWikiStatsService#getDocDayStats(java.lang.String,
+   *      java.lang.String, java.util.Date,
+   *      com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  @Deprecated
+  public DocumentStats getDocDayStats(String docname, String action, Date day,
+      XWikiContext context) {
+    return new DocumentStats();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see com.xpn.xwiki.stats.api.XWikiStatsService#getRefMonthStats(java.lang.String,
+   *      java.util.Date,
+   *      com.xpn.xwiki.XWikiContext)
+   */
+  @Override
+  @Deprecated
+  public List<?> getRefMonthStats(String docName, Date month, XWikiContext context)
+      throws XWikiException {
+    return this.statsReader.getRefMonthStats(docName, month, context);
+  }
 }

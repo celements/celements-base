@@ -20,10 +20,9 @@
  */
 package com.xpn.xwiki.store;
 
-public class XWikiBatcherFactory
-{
-}
+public class XWikiBatcherFactory {}
 /*
- * public class XWikiBatcherFactory extends BatchingBatcherFactory { public Batcher createBatcher(ConnectionManager
+ * public class XWikiBatcherFactory extends BatchingBatcherFactory { public Batcher
+ * createBatcher(ConnectionManager
  * cmgr, Interceptor interceptor) { return new XWikiBatcher( cmgr, interceptor ); } }
  */

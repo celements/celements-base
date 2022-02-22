@@ -32,28 +32,28 @@ import org.apache.xmlrpc.webserver.XmlRpcServlet;
 
 /**
  * This is the XMLRPC Servlet that is used as a gateway for serving XMLRPC requests.
- * 
+ *
  * @version $Id$
  */
-public class XWikiXmlRpcServlet extends XmlRpcServlet
-{
-    private static final long serialVersionUID = 3745689092652029366L;
+public class XWikiXmlRpcServlet extends XmlRpcServlet {
 
-    @Override
-    protected PropertyHandlerMapping newPropertyHandlerMapping(URL url) throws IOException, XmlRpcException
-    {
-        PropertyHandlerMapping mapping = new PropertyHandlerMapping();
-        RequestProcessorFactoryFactory factory = new RequestSpecificProcessorFactoryFactory()
-        {
-            @Override
-            protected Object getRequestProcessor(Class class1, XmlRpcRequest request) throws XmlRpcException
-            {
-                return super.getRequestProcessor(class1, request);
-            }
-        };
+  private static final long serialVersionUID = 3745689092652029366L;
 
-        mapping.setRequestProcessorFactoryFactory(factory);
-        mapping.load(Thread.currentThread().getContextClassLoader(), url);
-        return mapping;
-    }
+  @Override
+  protected PropertyHandlerMapping newPropertyHandlerMapping(URL url)
+      throws IOException, XmlRpcException {
+    PropertyHandlerMapping mapping = new PropertyHandlerMapping();
+    RequestProcessorFactoryFactory factory = new RequestSpecificProcessorFactoryFactory() {
+
+      @Override
+      protected Object getRequestProcessor(Class class1, XmlRpcRequest request)
+          throws XmlRpcException {
+        return super.getRequestProcessor(class1, request);
+      }
+    };
+
+    mapping.setRequestProcessorFactoryFactory(factory);
+    mapping.load(Thread.currentThread().getContextClassLoader(), url);
+    return mapping;
+  }
 }

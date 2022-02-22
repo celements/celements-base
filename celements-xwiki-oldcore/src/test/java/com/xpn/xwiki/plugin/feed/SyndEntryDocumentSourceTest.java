@@ -51,287 +51,280 @@ import com.xpn.xwiki.web.XWikiServletURLFactory;
 /**
  * Unit tests for {@link SyndEntryDocumentSource}.
  */
-public class SyndEntryDocumentSourceTest extends AbstractBridgedXWikiComponentTestCase
-{
-    public static final String INCONSISTENCY = "Inconsistency!";
+public class SyndEntryDocumentSourceTest extends AbstractBridgedXWikiComponentTestCase {
 
-    public static final String POLYMORPHISM_INCONSISTENCY = "Polymorphism inconsistency!";
+  public static final String INCONSISTENCY = "Inconsistency!";
 
-    public static final String ACCESS_RIGHTS_VIOLATED = "Access rights are violated!";
+  public static final String POLYMORPHISM_INCONSISTENCY = "Polymorphism inconsistency!";
 
-    public static final String PARAMETERS_IGNORED = "Parameters are ignored!";
+  public static final String ACCESS_RIGHTS_VIOLATED = "Access rights are violated!";
 
-    public static final String SVG_MIME_TYPE = "image/svg+xml";
+  public static final String PARAMETERS_IGNORED = "Parameters are ignored!";
 
-    public static final String PNG_MIME_TYPE = "image/png";
+  public static final String SVG_MIME_TYPE = "image/svg+xml";
 
-    public static final String ARTICLE_CLASS_NAME = "XWiki.ArticleClass";
+  public static final String PNG_MIME_TYPE = "image/png";
 
-    protected SyndEntryDocumentSource source;
+  public static final String ARTICLE_CLASS_NAME = "XWiki.ArticleClass";
 
-    protected XWikiDocument doc;
+  protected SyndEntryDocumentSource source;
 
-    protected void setUp() throws Exception
-    {
-        super.setUp();
-        mockUp();
+  protected XWikiDocument doc;
 
-        getContext().setUser("Condor");
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    mockUp();
 
-        doc = new XWikiDocument("MilkyWay", "Fidis");
-        doc.setCreator("Condor");
-        doc.setAuthor("Albatross");
-        doc.setTitle("Fidis from MilkyWay");
-        doc.setContent("blah blah blah..");
-        doc.setSyntaxId("xwiki/1.0");
+    getContext().setUser("Condor");
 
-        initArticleClass();
+    doc = new XWikiDocument("MilkyWay", "Fidis");
+    doc.setCreator("Condor");
+    doc.setAuthor("Albatross");
+    doc.setTitle("Fidis from MilkyWay");
+    doc.setContent("blah blah blah..");
+    doc.setSyntaxId("xwiki/1.0");
 
-        doc.createNewObject(ARTICLE_CLASS_NAME, getContext());
-        doc.setStringValue(ARTICLE_CLASS_NAME, "title", "Old story");
-        doc.setStringValue(ARTICLE_CLASS_NAME, "content", "Once upon a <i>time</i> there was..");
-        List<String> categories = new ArrayList<String>();
-        categories.add("News");
-        categories.add("Information");
-        doc.setStringListValue(ARTICLE_CLASS_NAME, "category", categories);
+    initArticleClass();
 
-        getContext().getWiki().saveDocument(doc, getContext());
-        getContext().setDoc(doc);
+    doc.createNewObject(ARTICLE_CLASS_NAME, getContext());
+    doc.setStringValue(ARTICLE_CLASS_NAME, "title", "Old story");
+    doc.setStringValue(ARTICLE_CLASS_NAME, "content", "Once upon a <i>time</i> there was..");
+    List<String> categories = new ArrayList<>();
+    categories.add("News");
+    categories.add("Information");
+    doc.setStringListValue(ARTICLE_CLASS_NAME, "category", categories);
 
-        // Ensure that no Velocity Templates are going to be used when executing Velocity since otherwise
-        // the Velocity init would fail (since by default the macros.vm templates wouldn't be found as we're
-        // not providing it in our unit test resources).
-        getContext().getWiki().getConfig().setProperty("xwiki.render.velocity.macrolist", "");
+    getContext().getWiki().saveDocument(doc, getContext());
+    getContext().setDoc(doc);
 
-        source = new SyndEntryDocumentSource();
-    }
+    // Ensure that no Velocity Templates are going to be used when executing Velocity since
+    // otherwise
+    // the Velocity init would fail (since by default the macros.vm templates wouldn't be found as
+    // we're
+    // not providing it in our unit test resources).
+    getContext().getWiki().getConfig().setProperty("xwiki.render.velocity.macrolist", "");
 
-    private void mockUp() throws Exception
-    {
-        final Map<String, XWikiDocument> docs = new HashMap<String, XWikiDocument>();
-        final XWikiContext context = getContext();
-        final XWiki xwiki = new XWiki(new XWikiConfig(), context)
-        {
-            protected void registerWikiMacros()
-            {
+    source = new SyndEntryDocumentSource();
+  }
+
+  private void mockUp() throws Exception {
+    final Map<String, XWikiDocument> docs = new HashMap<>();
+    final XWikiContext context = getContext();
+    final XWiki xwiki = new XWiki(new XWikiConfig(), context) {
+
+      @Override
+      protected void registerWikiMacros() {}
+
+      @Override
+      public String getXWikiPreference(String prefname, String defaultValue, XWikiContext context) {
+        return defaultValue;
+      }
+    };
+    context.setURLFactory(
+        new XWikiServletURLFactory(new URL("http://www.xwiki.org/"), "xwiki/", "bin/"));
+
+    final Mock mockXWikiStore = mock(XWikiHibernateStore.class,
+        new Class[] { XWiki.class, XWikiContext.class },
+        new Object[] { xwiki, context });
+    mockXWikiStore.stubs().method("loadXWikiDoc").will(
+        new CustomStub("Implements XWikiStoreInterface.loadXWikiDoc") {
+
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            XWikiDocument shallowDoc = (XWikiDocument) invocation.parameterValues.get(0);
+            if (docs.containsKey(shallowDoc.getName())) {
+              return docs.get(shallowDoc.getName());
+            } else {
+              return shallowDoc;
             }
+          }
+        });
+    mockXWikiStore.stubs().method("saveXWikiDoc").will(
+        new CustomStub("Implements XWikiStoreInterface.saveXWikiDoc") {
 
-            public String getXWikiPreference(String prefname, String defaultValue, XWikiContext context)
-            {
-                return defaultValue;
-            }
-        };
-        context.setURLFactory(new XWikiServletURLFactory(new URL("http://www.xwiki.org/"), "xwiki/", "bin/"));
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            XWikiDocument document = (XWikiDocument) invocation.parameterValues.get(0);
+            document.setNew(false);
+            document.setStore((XWikiStoreInterface) mockXWikiStore.proxy());
+            docs.put(document.getName(), document);
+            return null;
+          }
+        });
+    mockXWikiStore.stubs().method("getTranslationList").will(returnValue(Collections.EMPTY_LIST));
 
-        final Mock mockXWikiStore =
-            mock(XWikiHibernateStore.class, new Class[] {XWiki.class, XWikiContext.class},
-                new Object[] {xwiki, context});
-        mockXWikiStore.stubs().method("loadXWikiDoc").will(
-            new CustomStub("Implements XWikiStoreInterface.loadXWikiDoc")
-            {
-                public Object invoke(Invocation invocation) throws Throwable
-                {
-                    XWikiDocument shallowDoc = (XWikiDocument) invocation.parameterValues.get(0);
-                    if (docs.containsKey(shallowDoc.getName())) {
-                        return docs.get(shallowDoc.getName());
-                    } else {
-                        return shallowDoc;
-                    }
-                }
-            });
-        mockXWikiStore.stubs().method("saveXWikiDoc").will(
-            new CustomStub("Implements XWikiStoreInterface.saveXWikiDoc")
-            {
-                public Object invoke(Invocation invocation) throws Throwable
-                {
-                    XWikiDocument document = (XWikiDocument) invocation.parameterValues.get(0);
-                    document.setNew(false);
-                    document.setStore((XWikiStoreInterface) mockXWikiStore.proxy());
-                    docs.put(document.getName(), document);
-                    return null;
-                }
-            });
-        mockXWikiStore.stubs().method("getTranslationList").will(returnValue(Collections.EMPTY_LIST));
+    final Mock mockXWikiVersioningStore = mock(XWikiHibernateVersioningStore.class,
+        new Class[] { XWiki.class, XWikiContext.class }, new Object[] {
+            xwiki, context });
+    mockXWikiVersioningStore.stubs().method("getXWikiDocumentArchive").will(returnValue(null));
+    mockXWikiVersioningStore.stubs().method("resetRCSArchive").will(returnValue(null));
 
-        final Mock mockXWikiVersioningStore =
-            mock(XWikiHibernateVersioningStore.class, new Class[] {XWiki.class, XWikiContext.class}, new Object[] {
-            xwiki, context});
-        mockXWikiVersioningStore.stubs().method("getXWikiDocumentArchive").will(returnValue(null));
-        mockXWikiVersioningStore.stubs().method("resetRCSArchive").will(returnValue(null));
+    xwiki.setStore((XWikiStoreInterface) mockXWikiStore.proxy());
+    xwiki.setVersioningStore((XWikiVersioningStoreInterface) mockXWikiVersioningStore.proxy());
 
-        xwiki.setStore((XWikiStoreInterface) mockXWikiStore.proxy());
-        xwiki.setVersioningStore((XWikiVersioningStoreInterface) mockXWikiVersioningStore.proxy());
+    final Mock mockXWikiRightsService = mock(XWikiRightServiceImpl.class, new Class[] {},
+        new Object[] {});
+    mockXWikiRightsService.stubs().method("hasAccessLevel").will(
+        new CustomStub("Implements XWikiRightService.hasAccessLevel") {
 
-        final Mock mockXWikiRightsService = mock(XWikiRightServiceImpl.class, new Class[] {}, new Object[] {});
-        mockXWikiRightsService.stubs().method("hasAccessLevel").will(
-            new CustomStub("Implements XWikiRightService.hasAccessLevel")
-            {
-                public Object invoke(Invocation invocation) throws Throwable
-                {
-                    // String right = (String) invocation.parameterValues.get(0);
-                    String user = (String) invocation.parameterValues.get(1);
-                    // String doc = (String) invocation.parameterValues.get(2);
-                    // we give access to all the users with an even name length
-                    return new Boolean(user.length() % 2 == 0);
-                }
-            });
-        xwiki.setRightService((XWikiRightService) mockXWikiRightsService.proxy());
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            // String right = (String) invocation.parameterValues.get(0);
+            String user = (String) invocation.parameterValues.get(1);
+            // String doc = (String) invocation.parameterValues.get(2);
+            // we give access to all the users with an even name length
+            return new Boolean((user.length() % 2) == 0);
+          }
+        });
+    xwiki.setRightService((XWikiRightService) mockXWikiRightsService.proxy());
+  }
+
+  protected BaseClass initArticleClass() throws XWikiException {
+    XWikiDocument doc = getContext().getWiki().getDocument(ARTICLE_CLASS_NAME, getContext());
+    boolean needsUpdate = doc.isNew();
+
+    BaseClass bclass = doc.getxWikiClass();
+    bclass.setName(ARTICLE_CLASS_NAME);
+
+    needsUpdate |= bclass.addTextField("title", "Title", 64);
+    needsUpdate |= bclass.addTextAreaField("content", "Content", 45, 4);
+    needsUpdate |= bclass.addTextField("category", "Category", 64);
+
+    if (needsUpdate) {
+      getContext().getWiki().saveDocument(doc, getContext());
     }
+    return bclass;
+  }
 
-    protected BaseClass initArticleClass() throws XWikiException
-    {
-        XWikiDocument doc = getContext().getWiki().getDocument(ARTICLE_CLASS_NAME, getContext());
-        boolean needsUpdate = doc.isNew();
+  protected SyndEntryImpl source(Object obj) {
+    return source(obj, Collections.EMPTY_MAP);
+  }
 
-        BaseClass bclass = doc.getxWikiClass();
-        bclass.setName(ARTICLE_CLASS_NAME);
+  protected SyndEntryImpl source(Object obj, Map params) {
+    SyndEntryImpl entry = new SyndEntryImpl();
+    try {
+      source.source(entry, obj, params, getContext());
+    } catch (Exception e) {}
+    return entry;
+  }
 
-        needsUpdate |= bclass.addTextField("title", "Title", 64);
-        needsUpdate |= bclass.addTextAreaField("content", "Content", 45, 4);
-        needsUpdate |= bclass.addTextField("category", "Category", 64);
+  /**
+   * Computes the sum of lengths of all the text nodes from the given XML fragment.
+   *
+   * @param xmlFragment
+   *          the XML fragment to be parsed
+   * @return the number of characters in all the text nodes within the given XML fragment
+   */
+  protected int getXMLContentLength(String xmlFragment) {
+    return SyndEntryDocumentSource.innerTextLength(SyndEntryDocumentSource.tidy(xmlFragment,
+        SyndEntryDocumentSource.TIDY_HTML_CONFIG));
+  }
 
-        if (needsUpdate) {
-            getContext().getWiki().saveDocument(doc, getContext());
-        }
-        return bclass;
+  /**
+   * Tests if two successive calls of the source method with the same argument have the same result.
+   */
+  public void testSourceConsistency() {
+    assertEquals(INCONSISTENCY, source(doc), source(doc));
+  }
+
+  /**
+   * Tests if different calls of the source method have the same result when the argument passed
+   * points to the same
+   * document, irrespective of its type: {@link XWikiDocument}, {@link Document}, and
+   * {@link String}.
+   */
+  public void testSourcePolymorphism() {
+    SyndEntryImpl fromXDoc = source(doc);
+    SyndEntryImpl fromDoc = source(doc.newDocument(getContext()));
+    SyndEntryImpl fromFullName = source(doc.getFullName());
+    assertEquals(POLYMORPHISM_INCONSISTENCY, fromXDoc, fromDoc);
+    assertEquals(POLYMORPHISM_INCONSISTENCY, fromXDoc, fromFullName);
+    assertEquals(POLYMORPHISM_INCONSISTENCY, fromDoc, fromFullName);
+  }
+
+  /**
+   * Tests if the source method obeys the access rights.
+   *
+   * @throws XWikiException
+   */
+  public void testSourceAccessRights() throws XWikiException {
+    // odd user name length implies no access rights
+    getContext().setUser("XWiki.Albatross");
+    try {
+      source.source(new SyndEntryImpl(), doc, Collections.EMPTY_MAP, getContext());
+      fail(ACCESS_RIGHTS_VIOLATED);
+    } catch (XWikiException expected) {
+      // we should get an exception
+      assertEquals(XWikiException.ERROR_XWIKI_ACCESS_DENIED, expected.getCode());
     }
+    // even user name length implies all access rights
+    getContext().setUser("Condor");
+    source.source(new SyndEntryImpl(), doc, Collections.EMPTY_MAP, getContext());
+    // we shouldn't get an exception
+  }
 
-    protected SyndEntryImpl source(Object obj)
-    {
-        return source(obj, Collections.EMPTY_MAP);
-    }
+  /**
+   * Tests if {@link SyndEntryDocumentSource#CONTENT_TYPE} parameter is used correctly.
+   */
+  public void testSourceContentType() {
+    Map instanceParams = new HashMap();
+    instanceParams.put(SyndEntryDocumentSource.CONTENT_TYPE, SVG_MIME_TYPE);
+    source.setParams(instanceParams);
+    assertEquals(PARAMETERS_IGNORED, SVG_MIME_TYPE, source(doc).getDescription().getType());
 
-    protected SyndEntryImpl source(Object obj, Map params)
-    {
-        SyndEntryImpl entry = new SyndEntryImpl();
-        try {
-            source.source(entry, obj, params, getContext());
-        } catch (Exception e) {
-        }
-        return entry;
-    }
+    Map methodParams = new HashMap();
+    methodParams.put(SyndEntryDocumentSource.CONTENT_TYPE, PNG_MIME_TYPE);
+    SyndEntry entry = source(doc, methodParams);
+    assertEquals(PARAMETERS_IGNORED, PNG_MIME_TYPE, entry.getDescription().getType());
+  }
 
-    /**
-     * Computes the sum of lengths of all the text nodes from the given XML fragment.
-     * 
-     * @param xmlFragment the XML fragment to be parsed
-     * @return the number of characters in all the text nodes within the given XML fragment
-     */
-    protected int getXMLContentLength(String xmlFragment)
-    {
-        return SyndEntryDocumentSource.innerTextLength(SyndEntryDocumentSource.tidy(xmlFragment,
-            SyndEntryDocumentSource.TIDY_HTML_CONFIG));
-    }
+  /**
+   * Tests if {@link SyndEntryDocumentSource#CONTENT_LENGTH} parameter is used correctly when the
+   * {@link SyndEntryDocumentSource#CONTENT_TYPE} is <i>text/plain</i>.
+   */
+  public void testArticleSourcePlainContentLength() {
+    int maxLength = 15;
+    Map params = new HashMap();
+    params.put(SyndEntryDocumentSource.CONTENT_TYPE, "text/plain");
+    params.put(SyndEntryDocumentSource.CONTENT_LENGTH, new Integer(maxLength));
+    params.put(SyndEntryDocumentSource.FIELD_DESCRIPTION, ARTICLE_CLASS_NAME + "_content");
+    source.setParams(params);
+    doc.setStringValue(ARTICLE_CLASS_NAME, "content", "Somewhere in la Mancha, in a place..");
+    assertTrue(doc.display("content", getContext()).length() > maxLength);
+    int descriptionLength = source(doc).getDescription().getValue().length();
+    assertTrue(PARAMETERS_IGNORED, descriptionLength <= maxLength);
+  }
 
-    /**
-     * Tests if two successive calls of the source method with the same argument have the same result.
-     */
-    public void testSourceConsistency()
-    {
-        assertEquals(INCONSISTENCY, source(doc), source(doc));
-    }
+  /**
+   * Tests if {@link SyndEntryDocumentSource#CONTENT_LENGTH} parameter is used correctly when the
+   * {@link SyndEntryDocumentSource#CONTENT_TYPE} is <i>text/html</i>.
+   */
+  public void testArticleSourceHTMLContentLength() {
+    int maxLength = 16;
+    Map params = new HashMap();
+    params.put(SyndEntryDocumentSource.CONTENT_TYPE, "text/html");
+    params.put(SyndEntryDocumentSource.CONTENT_LENGTH, new Integer(maxLength));
+    params.put(SyndEntryDocumentSource.FIELD_DESCRIPTION, ARTICLE_CLASS_NAME + "_content");
+    doc.setStringValue(ARTICLE_CLASS_NAME, "content",
+        "Somewhere \n\tin   <i>la</i> <a href=\"http://www.mancha.es\">  Mancha</a>, in a place..");
+    assertTrue(getXMLContentLength(doc.display("content", getContext())) > maxLength);
+    String description = source(doc, params).getDescription().getValue();
+    int descriptionLength = getXMLContentLength(description);
+    assertTrue(PARAMETERS_IGNORED, descriptionLength <= maxLength);
+  }
 
-    /**
-     * Tests if different calls of the source method have the same result when the argument passed points to the same
-     * document, irrespective of its type: {@link XWikiDocument}, {@link Document}, and {@link String}.
-     */
-    public void testSourcePolymorphism()
-    {
-        SyndEntryImpl fromXDoc = source(doc);
-        SyndEntryImpl fromDoc = source(doc.newDocument(getContext()));
-        SyndEntryImpl fromFullName = source(doc.getFullName());
-        assertEquals(POLYMORPHISM_INCONSISTENCY, fromXDoc, fromDoc);
-        assertEquals(POLYMORPHISM_INCONSISTENCY, fromXDoc, fromFullName);
-        assertEquals(POLYMORPHISM_INCONSISTENCY, fromDoc, fromFullName);
-    }
-
-    /**
-     * Tests if the source method obeys the access rights.
-     * 
-     * @throws XWikiException
-     */
-    public void testSourceAccessRights() throws XWikiException
-    {
-        // odd user name length implies no access rights
-        getContext().setUser("XWiki.Albatross");
-        try {
-            source.source(new SyndEntryImpl(), doc, Collections.EMPTY_MAP, getContext());
-            fail(ACCESS_RIGHTS_VIOLATED);
-        } catch (XWikiException expected) {
-            // we should get an exception
-            assertEquals(XWikiException.ERROR_XWIKI_ACCESS_DENIED, expected.getCode());
-        }
-        // even user name length implies all access rights
-        getContext().setUser("Condor");
-        source.source(new SyndEntryImpl(), doc, Collections.EMPTY_MAP, getContext());
-        // we shouldn't get an exception
-    }
-
-    /**
-     * Tests if {@link SyndEntryDocumentSource#CONTENT_TYPE} parameter is used correctly.
-     */
-    public void testSourceContentType()
-    {
-        Map instanceParams = new HashMap();
-        instanceParams.put(SyndEntryDocumentSource.CONTENT_TYPE, SVG_MIME_TYPE);
-        source.setParams(instanceParams);
-        assertEquals(PARAMETERS_IGNORED, SVG_MIME_TYPE, source(doc).getDescription().getType());
-
-        Map methodParams = new HashMap();
-        methodParams.put(SyndEntryDocumentSource.CONTENT_TYPE, PNG_MIME_TYPE);
-        SyndEntry entry = source(doc, methodParams);
-        assertEquals(PARAMETERS_IGNORED, PNG_MIME_TYPE, entry.getDescription().getType());
-    }
-
-    /**
-     * Tests if {@link SyndEntryDocumentSource#CONTENT_LENGTH} parameter is used correctly when the
-     * {@link SyndEntryDocumentSource#CONTENT_TYPE} is <i>text/plain</i>.
-     */
-    public void testArticleSourcePlainContentLength()
-    {
-        int maxLength = 15;
-        Map params = new HashMap();
-        params.put(SyndEntryDocumentSource.CONTENT_TYPE, "text/plain");
-        params.put(SyndEntryDocumentSource.CONTENT_LENGTH, new Integer(maxLength));
-        params.put(SyndEntryDocumentSource.FIELD_DESCRIPTION, ARTICLE_CLASS_NAME + "_content");
-        source.setParams(params);
-        doc.setStringValue(ARTICLE_CLASS_NAME, "content", "Somewhere in la Mancha, in a place..");
-        assertTrue(doc.display("content", getContext()).length() > maxLength);
-        int descriptionLength = source(doc).getDescription().getValue().length();
-        assertTrue(PARAMETERS_IGNORED, descriptionLength <= maxLength);
-    }
-
-    /**
-     * Tests if {@link SyndEntryDocumentSource#CONTENT_LENGTH} parameter is used correctly when the
-     * {@link SyndEntryDocumentSource#CONTENT_TYPE} is <i>text/html</i>.
-     */
-    public void testArticleSourceHTMLContentLength()
-    {
-        int maxLength = 16;
-        Map params = new HashMap();
-        params.put(SyndEntryDocumentSource.CONTENT_TYPE, "text/html");
-        params.put(SyndEntryDocumentSource.CONTENT_LENGTH, new Integer(maxLength));
-        params.put(SyndEntryDocumentSource.FIELD_DESCRIPTION, ARTICLE_CLASS_NAME + "_content");
-        doc.setStringValue(ARTICLE_CLASS_NAME, "content",
-            "Somewhere \n\tin   <i>la</i> <a href=\"http://www.mancha.es\">  Mancha</a>, in a place..");
-        assertTrue(getXMLContentLength(doc.display("content", getContext())) > maxLength);
-        String description = source(doc, params).getDescription().getValue();
-        int descriptionLength = getXMLContentLength(description);
-        assertTrue(PARAMETERS_IGNORED, descriptionLength <= maxLength);
-    }
-
-    public void testArticleSourceXMLContentLength()
-    {
-        int maxLength = 17;
-        Map params = new HashMap();
-        params.put(SyndEntryDocumentSource.CONTENT_TYPE, "text/xml");
-        params.put(SyndEntryDocumentSource.CONTENT_LENGTH, new Integer(maxLength));
-        params.put(SyndEntryDocumentSource.FIELD_DESCRIPTION, ARTICLE_CLASS_NAME + "_content");
-        doc.setStringValue(ARTICLE_CLASS_NAME, "content",
-            "<text>Somewhere \n\tin   la <region>  Mancha</region>, in a place..</text>");
-        assertTrue(getXMLContentLength(doc.display("content", getContext())) > maxLength);
-        String description = source(doc, params).getDescription().getValue();
-        int descriptionLength = getXMLContentLength(description);
-        assertTrue(PARAMETERS_IGNORED, descriptionLength <= maxLength);
-    }
+  public void testArticleSourceXMLContentLength() {
+    int maxLength = 17;
+    Map params = new HashMap();
+    params.put(SyndEntryDocumentSource.CONTENT_TYPE, "text/xml");
+    params.put(SyndEntryDocumentSource.CONTENT_LENGTH, new Integer(maxLength));
+    params.put(SyndEntryDocumentSource.FIELD_DESCRIPTION, ARTICLE_CLASS_NAME + "_content");
+    doc.setStringValue(ARTICLE_CLASS_NAME, "content",
+        "<text>Somewhere \n\tin   la <region>  Mancha</region>, in a place..</text>");
+    assertTrue(getXMLContentLength(doc.display("content", getContext())) > maxLength);
+    String description = source(doc, params).getDescription().getValue();
+    int descriptionLength = getXMLContentLength(description);
+    assertTrue(PARAMETERS_IGNORED, descriptionLength <= maxLength);
+  }
 }

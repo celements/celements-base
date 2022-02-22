@@ -21,43 +21,42 @@
 package com.xpn.xwiki.web;
 
 /**
- * Struts Form for the class {@link PropDeleteAction property delete}, {@link PropDisableAction property disable} and
+ * Struts Form for the class {@link PropDeleteAction property delete}, {@link PropDisableAction
+ * property disable} and
  * {@link PropEnableAction property enable} actions.
- * 
+ *
  * @version $Id$
  * @since 2.4M2
  */
-public class PropChangeForm extends XWikiForm
-{
-    /** The name of the class property to remove. */
-    private String propertyName;
+public class PropChangeForm extends XWikiForm {
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void readRequest()
-    {
-        setPropertyName(getRequest().getParameter("propname"));
-    }
+  /** The name of the class property to remove. */
+  private String propertyName;
 
-    /**
-     * Getter for the {@link #propertyName property name}.
-     * 
-     * @return the property name specified in the request
-     */
-    public String getPropertyName()
-    {
-        return this.propertyName;
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void readRequest() {
+    setPropertyName(getRequest().getParameter("propname"));
+  }
 
-    /**
-     * Setter for the {@link #propertyName property name}.
-     * 
-     * @param propertyName the property name specified in the request
-     */
-    public void setPropertyName(String propertyName)
-    {
-        this.propertyName = propertyName;
-    }
+  /**
+   * Getter for the {@link #propertyName property name}.
+   *
+   * @return the property name specified in the request
+   */
+  public String getPropertyName() {
+    return this.propertyName;
+  }
+
+  /**
+   * Setter for the {@link #propertyName property name}.
+   *
+   * @param propertyName
+   *          the property name specified in the request
+   */
+  public void setPropertyName(String propertyName) {
+    this.propertyName = propertyName;
+  }
 }

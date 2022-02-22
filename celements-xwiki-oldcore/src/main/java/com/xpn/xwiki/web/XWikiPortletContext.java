@@ -21,45 +21,52 @@
 
 package com.xpn.xwiki.web;
 
-import javax.portlet.PortletContext;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.portlet.PortletContext;
+
 public class XWikiPortletContext implements XWikiEngineContext {
-    private PortletContext pcontext;
 
-    public XWikiPortletContext(PortletContext pcontext) {
-        this.pcontext = pcontext;
-    }
+  private PortletContext pcontext;
 
-    public PortletContext getPortletContext() {
-        return pcontext;
-    }
-    
-    public Object getAttribute(String name) {
-        return pcontext.getAttribute(name);
-    }
+  public XWikiPortletContext(PortletContext pcontext) {
+    this.pcontext = pcontext;
+  }
 
-    public void setAttribute(String name, Object value) {
-        pcontext.setAttribute(name, value);
-    }
+  public PortletContext getPortletContext() {
+    return pcontext;
+  }
 
-    public String getRealPath(String path) {
-        return pcontext.getRealPath(path);
-    }
+  @Override
+  public Object getAttribute(String name) {
+    return pcontext.getAttribute(name);
+  }
 
-    public URL getResource(String name) throws MalformedURLException {
-        return pcontext.getResource(name);
-    }
+  @Override
+  public void setAttribute(String name, Object value) {
+    pcontext.setAttribute(name, value);
+  }
 
-    public InputStream getResourceAsStream(String name) {
-        return pcontext.getResourceAsStream(name);
-    }
+  @Override
+  public String getRealPath(String path) {
+    return pcontext.getRealPath(path);
+  }
 
-    public String getMimeType(String filename) {
-        return pcontext.getMimeType(filename);
-    }
+  @Override
+  public URL getResource(String name) throws MalformedURLException {
+    return pcontext.getResource(name);
+  }
 
+  @Override
+  public InputStream getResourceAsStream(String name) {
+    return pcontext.getResourceAsStream(name);
+  }
+
+  @Override
+  public String getMimeType(String filename) {
+    return pcontext.getMimeType(filename);
+  }
 
 }

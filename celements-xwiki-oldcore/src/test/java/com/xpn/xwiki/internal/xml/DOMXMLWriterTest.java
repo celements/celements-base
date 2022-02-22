@@ -29,35 +29,34 @@ import org.junit.Test;
 
 /**
  * Tests for {@link DOMXMLWriter}.
- * 
+ *
  * @version $Id$
  */
-public class DOMXMLWriterTest
-{
-    /**
-     * Before 3.0M2 there was a bug where write and writeOpen were reversed.
-     * 
-     * @throws IOException
-     * @see XWIKI-5937
-     */
-    @Test
-    public void writeVersusWriteOpen() throws IOException
-    {
-        Document doc = new DOMDocument();
-        DOMXMLWriter writer = new DOMXMLWriter(doc);
-        DOMElement e = new DOMElement("a");
-        writer.writeOpen(e);
-        writer.write(new DOMElement("b"));
-        writer.writeClose(e);
-        writer.close();
-        Assert.assertNotNull(doc.getRootElement().element("b"));
+public class DOMXMLWriterTest {
 
-        doc = new DOMDocument();
-        writer = new DOMXMLWriter(doc);
-        e = new DOMElement("c");
-        writer.write(e);
-        writer.write(new DOMElement("d"));
-        writer.close();
-        Assert.assertNull(doc.getRootElement().element("d"));
-    }
+  /**
+   * Before 3.0M2 there was a bug where write and writeOpen were reversed.
+   *
+   * @throws IOException
+   * @see XWIKI-5937
+   */
+  @Test
+  public void writeVersusWriteOpen() throws IOException {
+    Document doc = new DOMDocument();
+    DOMXMLWriter writer = new DOMXMLWriter(doc);
+    DOMElement e = new DOMElement("a");
+    writer.writeOpen(e);
+    writer.write(new DOMElement("b"));
+    writer.writeClose(e);
+    writer.close();
+    Assert.assertNotNull(doc.getRootElement().element("b"));
+
+    doc = new DOMDocument();
+    writer = new DOMXMLWriter(doc);
+    e = new DOMElement("c");
+    writer.write(e);
+    writer.write(new DOMElement("d"));
+    writer.close();
+    Assert.assertNull(doc.getRootElement().element("d"));
+  }
 }

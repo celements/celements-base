@@ -32,58 +32,58 @@ import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
 
 /**
- * Extension of {@link org.xwiki.test.AbstractXWikiComponentTestCase} that sets up a bridge between the new Execution
- * Context and the old XWikiContext. This allows code that uses XWikiContext to be tested using this Test Case class.
- * 
+ * Extension of {@link org.xwiki.test.AbstractXWikiComponentTestCase} that sets up a bridge between
+ * the new Execution
+ * Context and the old XWikiContext. This allows code that uses XWikiContext to be tested using this
+ * Test Case class.
+ *
  * @version $Id$
  * @since 1.6M1
  *
  * @deprecated use JUnit 4.x and {@link com.xpn.xwiki.test.AbstractBridgedComponentTestCase}
  */
 @Deprecated
-public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWikiComponentTestCase
-{
-    private XWikiContext context;
+public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWikiComponentTestCase {
 
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  private XWikiContext context;
 
-        // Statically store the component manager in {@link Utils} to be able to access it without
-        // the context.
-        Utils.setComponentManager(getComponentManager());
-        
-        this.context = new XWikiContext();
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-        this.context.setDatabase("xwiki");
-        this.context.setMainXWiki("xwiki");
+    // Statically store the component manager in {@link Utils} to be able to access it without
+    // the context.
+    Utils.setComponentManager(getComponentManager());
 
-        // We need to initialize the Component Manager so that the components can be looked up
-        getContext().put(ComponentManager.class.getName(), getComponentManager());
+    this.context = new XWikiContext();
 
-        // Bridge with old XWiki Context, required for old code.
-        Execution execution = getComponentManager().lookup(Execution.class);
-        execution.getContext().setProperty("xwikicontext", this.context);
-        getComponentManager().lookup(XWikiStubContextProvider.class).initialize(this.context);
+    this.context.setDatabase("xwiki");
+    this.context.setMainXWiki("xwiki");
 
-        // Set a simple application context, as some components fail to start without one.
-        Container c = getComponentManager().lookup(Container.class);
-        c.setApplicationContext(new TestApplicationContext());
+    // We need to initialize the Component Manager so that the components can be looked up
+    getContext().put(ComponentManager.class.getName(), getComponentManager());
 
-        Mock mockCoreConfiguration = registerMockComponent(CoreConfiguration.class);
-        mockCoreConfiguration.stubs().method("getDefaultDocumentSyntax").will(returnValue(Syntax.XWIKI_1_0));
-    }
+    // Bridge with old XWiki Context, required for old code.
+    Execution execution = getComponentManager().lookup(Execution.class);
+    execution.getContext().setProperty("xwikicontext", this.context);
+    getComponentManager().lookup(XWikiStubContextProvider.class).initialize(this.context);
 
-    @Override
-    protected void tearDown() throws Exception
-    {
-        Utils.setComponentManager(null);
-        super.tearDown();
-    }
+    // Set a simple application context, as some components fail to start without one.
+    Container c = getComponentManager().lookup(Container.class);
+    c.setApplicationContext(new TestApplicationContext());
 
-    public XWikiContext getContext()
-    {
-        return this.context;
-    }
+    Mock mockCoreConfiguration = registerMockComponent(CoreConfiguration.class);
+    mockCoreConfiguration.stubs().method("getDefaultDocumentSyntax")
+        .will(returnValue(Syntax.XWIKI_1_0));
+  }
+
+  @Override
+  protected void tearDown() throws Exception {
+    Utils.setComponentManager(null);
+    super.tearDown();
+  }
+
+  public XWikiContext getContext() {
+    return this.context;
+  }
 }

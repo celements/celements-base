@@ -31,184 +31,166 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 
-public class Attachment extends Api
-{
-    private Document doc;
+public class Attachment extends Api {
 
-    private XWikiAttachment attachment;
+  private Document doc;
 
-    public Attachment(Document doc, XWikiAttachment attachment, XWikiContext context)
-    {
-        super(context);
-        this.doc = doc;
-        this.attachment = attachment;
+  private XWikiAttachment attachment;
+
+  public Attachment(Document doc, XWikiAttachment attachment, XWikiContext context) {
+    super(context);
+    this.doc = doc;
+    this.attachment = attachment;
+  }
+
+  /**
+   * @return the document the file is attached to
+   */
+  public Document getDocument() {
+    return doc;
+  }
+
+  /**
+   * @return the document Id of the attachment
+   */
+  public long getId() {
+    return attachment.getId();
+  }
+
+  /**
+   * @return the id of the document the file is attached to
+   */
+  public long getDocId() {
+    return doc.getId();
+  }
+
+  /**
+   * @return the Attachment size
+   */
+  public int getFilesize() {
+    return attachment.getFilesize();
+  }
+
+  /**
+   * @return the attachment name
+   */
+  public String getFilename() {
+    return attachment.getFilename();
+  }
+
+  /**
+   * @return the login of the person who attach the file
+   */
+  public String getAuthor() {
+    return attachment.getAuthor();
+  }
+
+  /**
+   * @return the last version number of the document
+   */
+  public String getVersion() {
+    return attachment.getVersion();
+  }
+
+  /**
+   * @return the RCS object version of the document
+   */
+  public Version getRCSVersion() {
+    return attachment.getRCSVersion();
+  }
+
+  /**
+   * @return the list of comments
+   */
+  public String getComment() {
+    return attachment.getComment();
+  }
+
+  /**
+   * @return the date of the last uploaded version
+   */
+  public Date getDate() {
+    return attachment.getDate();
+  }
+
+  /**
+   * @return the content of the attachment
+   * @throws XWikiException
+   */
+  public byte[] getContent() throws XWikiException {
+    return getContentAsBytes();
+  }
+
+  public byte[] getContentAsBytes() throws XWikiException {
+    return attachment.getContent(getXWikiContext());
+  }
+
+  public String getContentAsString() throws XWikiException {
+    // TODO: detect correct encoding for XML files?
+    return new String(getContentAsBytes());
+  }
+
+  public String getContentAsString(String charset) throws XWikiException {
+    // TODO: detect correct encoding for XML files?
+    byte[] contentBytes = getContentAsBytes();
+    try {
+      return new String(contentBytes, charset);
+    } catch (UnsupportedEncodingException ex) {
+      return new String(contentBytes);
     }
+  }
 
-    /**
-     * @return the document the file is attached to
-     */
-    public Document getDocument()
-    {
-        return doc;
-    }
+  public Version[] getVersions() throws XWikiException {
+    attachment.loadArchive(getXWikiContext());
+    return attachment.getVersions();
+  }
 
-    /**
-     * @return the document Id of the attachment
-     */
-    public long getId()
-    {
-        return attachment.getId();
-    }
+  /**
+   * @return a list of string with all the versions number in String
+   * @throws XWikiException
+   */
+  public List<Version> getVersionList() throws XWikiException {
+    attachment.loadArchive(getXWikiContext());
+    return attachment.getVersionList();
+  }
 
-    /**
-     * @return the id of the document the file is attached to
-     */
-    public long getDocId()
-    {
-        return doc.getId();
+  /**
+   * @return the XWikiAttachment object (without the wrapping) if you have the programming right
+   * @see XWikiAttachment
+   */
+  public XWikiAttachment getAttachment() {
+    if (hasProgrammingRights()) {
+      return attachment;
+    } else {
+      return null;
     }
+  }
 
-    /**
-     * @return the Attachment size
-     */
-    public int getFilesize()
-    {
-        return attachment.getFilesize();
-    }
+  /**
+   * @return the mimetype of the attachment
+   */
+  public String getMimeType() {
+    return attachment.getMimeType(getXWikiContext());
+  }
 
-    /**
-     * @return the attachment name
-     */
-    public String getFilename()
-    {
-        return attachment.getFilename();
-    }
+  /**
+   * @return true if it's an image
+   */
+  public boolean isImage() {
+    return attachment.isImage(getXWikiContext());
+  }
 
-    /**
-     * @return the login of the person who attach the file
-     */
-    public String getAuthor()
-    {
-        return attachment.getAuthor();
-    }
-
-    /**
-     * @return the last version number of the document
-     */
-    public String getVersion()
-    {
-        return attachment.getVersion();
-    }
-
-    /**
-     * @return the RCS object version of the document
-     */
-    public Version getRCSVersion()
-    {
-        return attachment.getRCSVersion();
-    }
-
-    /**
-     * @return the list of comments
-     */
-    public String getComment()
-    {
-        return attachment.getComment();
-    }
-
-    /**
-     * @return the date of the last uploaded version
-     */
-    public Date getDate()
-    {
-        return attachment.getDate();
-    }
-
-    /**
-     * @return the content of the attachment
-     * @throws XWikiException
-     */
-    public byte[] getContent() throws XWikiException
-    {
-        return getContentAsBytes();
-    }
-
-    public byte[] getContentAsBytes() throws XWikiException
-    {
-        return attachment.getContent(getXWikiContext());
-    }
-
-    public String getContentAsString() throws XWikiException
-    {
-        // TODO: detect correct encoding for XML files?
-        return new String(getContentAsBytes());
-    }
-
-    public String getContentAsString(String charset) throws XWikiException
-    {
-        // TODO: detect correct encoding for XML files?
-        byte[] contentBytes = getContentAsBytes();
-        try {
-            return new String(contentBytes, charset);
-        } catch (UnsupportedEncodingException ex) {
-            return new String(contentBytes);
-        }
-    }
-
-    public Version[] getVersions() throws XWikiException
-    {
-        attachment.loadArchive(getXWikiContext());
-        return attachment.getVersions();
-    }
-
-    /**
-     * @return a list of string with all the versions number in String
-     * @throws XWikiException
-     */
-    public List<Version> getVersionList() throws XWikiException
-    {
-        attachment.loadArchive(getXWikiContext());
-        return attachment.getVersionList();
-    }
-
-    /**
-     * @return the XWikiAttachment object (without the wrapping) if you have the programming right
-     * @see XWikiAttachment
-     */
-    public XWikiAttachment getAttachment()
-    {
-        if (hasProgrammingRights())
-            return attachment;
-        else
-            return null;
-    }
-
-    /**
-     * @return the mimetype of the attachment
-     */
-    public String getMimeType()
-    {
-        return attachment.getMimeType(getXWikiContext());
-    }
-
-    /**
-     * @return true if it's an image
-     */
-    public boolean isImage()
-    {
-        return attachment.isImage(getXWikiContext());
-    }
-
-    /**
-     * Allow to easily access any revision of an attachment.
-     * 
-     * @param rev Version to access, in the "Major.minor" format.
-     * @return Attachment API object, or <tt>null</tt> if the requested version does not exist.
-     * @throws XWikiException In case of an error.
-     */
-    public Attachment getAttachmentRevision(String rev) throws XWikiException
-    {
-        XWikiAttachment att = attachment.getAttachmentRevision(rev, getXWikiContext());
-        return att == null ? null : new Attachment(getDocument(), att, context);
-    }
+  /**
+   * Allow to easily access any revision of an attachment.
+   *
+   * @param rev
+   *          Version to access, in the "Major.minor" format.
+   * @return Attachment API object, or <tt>null</tt> if the requested version does not exist.
+   * @throws XWikiException
+   *           In case of an error.
+   */
+  public Attachment getAttachmentRevision(String rev) throws XWikiException {
+    XWikiAttachment att = attachment.getAttachmentRevision(rev, getXWikiContext());
+    return att == null ? null : new Attachment(getDocument(), att, context);
+  }
 }

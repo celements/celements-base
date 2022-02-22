@@ -28,94 +28,87 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @Deprecated
-public class XWikiActionRule implements XWikiNotificationRule
-{
-    protected static final Log LOG = LogFactory.getLog(XWikiActionRule.class);
+public class XWikiActionRule implements XWikiNotificationRule {
 
-    private XWikiActionNotificationInterface target;
+  protected static final Log LOG = LogFactory.getLog(XWikiActionRule.class);
 
-    private boolean preverify = false;
+  private XWikiActionNotificationInterface target;
 
-    private boolean postverify = true;
+  private boolean preverify = false;
 
-    public XWikiActionRule()
-    {
+  private boolean postverify = true;
+
+  public XWikiActionRule() {}
+
+  public XWikiActionRule(XWikiActionNotificationInterface target) {
+    setTarget(target);
+  }
+
+  public XWikiActionRule(XWikiActionNotificationInterface target, boolean pre, boolean post) {
+    setTarget(target);
+    setPreverify(pre);
+    setPostverify(post);
+  }
+
+  public XWikiActionNotificationInterface getTarget() {
+    return this.target;
+  }
+
+  public void setTarget(XWikiActionNotificationInterface target) {
+    this.target = target;
+  }
+
+  @Override
+  public void verify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context) {}
+
+  @Override
+  public void preverify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context) {}
+
+  @Override
+  public void verify(XWikiDocument doc, String action, XWikiContext context) {
+    if (!isPostverify()) {
+      return;
     }
-
-    public XWikiActionRule(XWikiActionNotificationInterface target)
-    {
-        setTarget(target);
+    try {
+      getTarget().notify(this, doc, action, context);
+    } catch (Throwable e) {
+      // protect from bad listeners
+      LOG.error("Fail to notify target [" + getTarget() + "] for event [" + this + ", doc=" + doc
+          + ", action="
+          + action + "]", e);
     }
+  }
 
-    public XWikiActionRule(XWikiActionNotificationInterface target, boolean pre, boolean post)
-    {
-        setTarget(target);
-        setPreverify(pre);
-        setPostverify(post);
+  @Override
+  public void preverify(XWikiDocument doc, String action, XWikiContext context) {
+    if (!isPreverify()) {
+      return;
     }
+    try {
+      getTarget().notify(this, doc, action, context);
+    } catch (Throwable e) {
+      // protect from bad listeners
+      LOG.error(
+          "Fail to notify target [" + getTarget() + "] for pre event [" + this + ", doc=" + doc
+              + ", action=" + action + "]",
+          e);
+    }
+  }
 
-    public XWikiActionNotificationInterface getTarget()
-    {
-        return this.target;
-    }
+  public boolean isPostverify() {
+    return this.postverify;
+  }
 
-    public void setTarget(XWikiActionNotificationInterface target)
-    {
-        this.target = target;
-    }
+  public void setPostverify(boolean postnotify) {
+    this.postverify = postnotify;
+  }
 
-    public void verify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context)
-    {
-    }
+  public boolean isPreverify() {
+    return this.preverify;
+  }
 
-    public void preverify(XWikiDocument newdoc, XWikiDocument olddoc, XWikiContext context)
-    {
-    }
-
-    public void verify(XWikiDocument doc, String action, XWikiContext context)
-    {
-        if (!isPostverify())
-            return;
-        try {
-            getTarget().notify(this, doc, action, context);
-        } catch (Throwable e) {
-            // protect from bad listeners
-            LOG.error("Fail to notify target [" + getTarget() + "] for event [" + this + ", doc=" + doc + ", action="
-                + action + "]", e);
-        }
-    }
-
-    public void preverify(XWikiDocument doc, String action, XWikiContext context)
-    {
-        if (!isPreverify())
-            return;
-        try {
-            getTarget().notify(this, doc, action, context);
-        } catch (Throwable e) {
-            // protect from bad listeners
-            LOG.error("Fail to notify target [" + getTarget() + "] for pre event [" + this + ", doc=" + doc
-                + ", action=" + action + "]", e);
-        }
-    }
-
-    public boolean isPostverify()
-    {
-        return this.postverify;
-    }
-
-    public void setPostverify(boolean postnotify)
-    {
-        this.postverify = postnotify;
-    }
-
-    public boolean isPreverify()
-    {
-        return this.preverify;
-    }
-
-    public void setPreverify(boolean prenotify)
-    {
-        this.preverify = prenotify;
-    }
+  public void setPreverify(boolean prenotify) {
+    this.preverify = prenotify;
+  }
 
 }

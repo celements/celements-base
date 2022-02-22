@@ -20,101 +20,104 @@
  */
 package com.xpn.xwiki.validation;
 
-import com.xpn.xwiki.XWikiContext;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
 
 import org.apache.velocity.VelocityContext;
 
+import com.xpn.xwiki.XWikiContext;
+
 public class XWikiValidationStatus {
 
-    private List errorObjects = new ArrayList();
-    private List propertyErrors = new ArrayList();
-    private List errors = new ArrayList();
-    private List exceptions = new ArrayList();
+  private List errorObjects = new ArrayList();
+  private List propertyErrors = new ArrayList();
+  private List errors = new ArrayList();
+  private List exceptions = new ArrayList();
 
+  public XWikiValidationStatus() {}
 
-    public XWikiValidationStatus() {
+  public static void addErrorToContext(String className, String propName, String propPrettyName,
+      String validationMessage, XWikiContext context) {
+    XWikiValidationStatus errors = getValidationStatus(context);
+    errors.addError(className, propName, propPrettyName, validationMessage, context);
+
+  }
+
+  private static XWikiValidationStatus getValidationStatus(XWikiContext context) {
+    XWikiValidationStatus errors = context.getValidationStatus();
+    if (errors == null) {
+      errors = new XWikiValidationStatus();
+      context.setValidationStatus(errors);
     }
+    return errors;
+  }
 
-    public static void addErrorToContext(String className, String propName, String propPrettyName, String validationMessage, XWikiContext context) {
-        XWikiValidationStatus errors = getValidationStatus(context);
-        errors.addError(className, propName, propPrettyName, validationMessage, context);
+  public static void addExceptionToContext(String className, String propName, Throwable e,
+      XWikiContext context) {
+    XWikiValidationStatus errors = getValidationStatus(context);
+    errors.addException(className, propName, e, context);
+  }
 
+  public void addError(String className, String propName, String propPrettyName,
+      String validationMessage, XWikiContext context) {
+    getErrorObjects().add(className);
+    getPropertyErrors().add(propName);
+
+    if ((validationMessage != null) && (!validationMessage.trim().equals(""))) {
+      getErrors().add(validationMessage);
+    } else {
+      VelocityContext vcontext = (VelocityContext) context.get("vcontext");
+      if (vcontext == null) {
+        getErrors()
+            .add("Validation error for property " + propPrettyName + " in class " + className);
+      } else {
+        vcontext.put("className", className);
+        vcontext.put("propName", propPrettyName);
+        String message = context.getMessageTool().get("validationerror",
+            Collections.singletonList(propName));
+        getErrors().add(message);
+      }
     }
+  }
 
-    private static XWikiValidationStatus getValidationStatus(XWikiContext context) {
-        XWikiValidationStatus errors = (XWikiValidationStatus) context.getValidationStatus();
-        if (errors==null) {
-            errors = new XWikiValidationStatus();
-            context.setValidationStatus(errors);
-        }
-        return errors;
-    }
+  public void addException(String className, String propName, Throwable e, XWikiContext context) {
+    getExceptions().add(e);
+  }
 
-    public static void addExceptionToContext(String className, String propName, Throwable e, XWikiContext context) {
-        XWikiValidationStatus errors = getValidationStatus(context);
-        errors.addException(className, propName, e, context);
-    }
+  public boolean hasExceptions() {
+    return (getExceptions().size() > 0);
+  }
 
-    public void addError(String className, String propName, String propPrettyName, String validationMessage, XWikiContext context) {
-        getErrorObjects().add(className);
-        getPropertyErrors().add(propName);
+  public List getExceptions() {
+    return exceptions;
+  }
 
-        if ((validationMessage!=null)&&(!validationMessage.trim().equals("")))
-            getErrors().add(validationMessage);
-        else {
-            VelocityContext vcontext = (VelocityContext) context.get("vcontext");
-            if (vcontext==null)
-                getErrors().add("Validation error for property " + propPrettyName + " in class " + className);
-            else {
-                vcontext.put("className", className);
-                vcontext.put("propName", propPrettyName);
-                String message = context.getMessageTool().get("validationerror", Collections.singletonList(propName));
-                getErrors().add(message);
-            }
-        }
-    }
+  public List getErrorObjects() {
+    return errorObjects;
+  }
 
-    public void addException(String className, String propName, Throwable e, XWikiContext context) {
-        getExceptions().add(e);
-    }
+  public void setErrorObjects(List errorObjects) {
+    this.errorObjects = errorObjects;
+  }
 
-    public boolean hasExceptions() {
-        return (getExceptions().size()>0);
-    }
+  public List getPropertyErrors() {
+    return propertyErrors;
+  }
 
-    public List getExceptions() {
-        return exceptions;
-    }
+  public void setPropertyErrors(List propertyErrors) {
+    this.propertyErrors = propertyErrors;
+  }
 
-    public List getErrorObjects() {
-        return errorObjects;
-    }
+  public List getErrors() {
+    return errors;
+  }
 
-    public void setErrorObjects(List errorObjects) {
-        this.errorObjects = errorObjects;
-    }
+  public void setErrors(List errors) {
+    this.errors = errors;
+  }
 
-    public List getPropertyErrors() {
-        return propertyErrors;
-    }
-
-    public void setPropertyErrors(List propertyErrors) {
-        this.propertyErrors = propertyErrors;
-    }
-
-    public List getErrors() {
-        return errors;
-    }
-
-    public void setErrors(List errors) {
-        this.errors = errors;
-    }
-
-    public void setExceptions(List exceptions) {
-        this.exceptions = exceptions;
-    }
+  public void setExceptions(List exceptions) {
+    this.exceptions = exceptions;
+  }
 }

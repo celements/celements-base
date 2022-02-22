@@ -29,49 +29,55 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.test.AbstractComponentTestCase;
 
 /**
- * Unit tests for {@link com.xpn.xwiki.internal.model.reference.CompactWikiStringEntityReferenceSerializer}.
- * 
+ * Unit tests for
+ * {@link com.xpn.xwiki.internal.model.reference.CompactWikiStringEntityReferenceSerializer}.
+ *
  * @version $Id$
  * @since 2.2M1
  */
-public class CompactWikiEntityReferenceSerializerTest extends AbstractComponentTestCase
-{
-    private EntityReferenceSerializer<EntityReference> serializer;
+public class CompactWikiEntityReferenceSerializerTest extends AbstractComponentTestCase {
 
-    private ModelContext mockModelContext;
+  private EntityReferenceSerializer<EntityReference> serializer;
 
-    @Override
-    protected void registerComponents() throws Exception
-    {
-        super.registerComponents();
+  private ModelContext mockModelContext;
 
-        this.mockModelContext = registerMockComponent(ModelContext.class);
-        this.serializer = getComponentManager().lookup(EntityReferenceSerializer.class, "compactwiki");
-    }
+  @Override
+  protected void registerComponents() throws Exception {
+    super.registerComponents();
 
-    @org.junit.Test
-    public void testSerializeWhenInSameWiki() throws Exception
-    {
-        DocumentReference reference = new DocumentReference("wiki", "space", "page");
+    this.mockModelContext = registerMockComponent(ModelContext.class);
+    this.serializer = getComponentManager().lookup(EntityReferenceSerializer.class, "compactwiki");
+  }
 
-        getMockery().checking(new Expectations() {{
-            allowing(mockModelContext).getCurrentEntityReference(); will(returnValue(new WikiReference("wiki")));
-        }});
+  @org.junit.Test
+  public void testSerializeWhenInSameWiki() throws Exception {
+    DocumentReference reference = new DocumentReference("wiki", "space", "page");
 
-        Assert.assertEquals("space.page", this.serializer.serialize(reference));
-        Assert.assertEquals("space", this.serializer.serialize(reference.getParent()));
-    }
+    getMockery().checking(new Expectations() {
 
-    @org.junit.Test
-    public void testSerializeWhenNotInSameWiki() throws Exception
-    {
-        DocumentReference reference = new DocumentReference("wiki", "space", "page");
+      {
+        allowing(mockModelContext).getCurrentEntityReference();
+        will(returnValue(new WikiReference("wiki")));
+      }
+    });
 
-        getMockery().checking(new Expectations() {{
-            allowing(mockModelContext).getCurrentEntityReference(); will(returnValue(new WikiReference("otherwiki")));
-        }});
+    Assert.assertEquals("space.page", this.serializer.serialize(reference));
+    Assert.assertEquals("space", this.serializer.serialize(reference.getParent()));
+  }
 
-        Assert.assertEquals("wiki:space.page", this.serializer.serialize(reference));
-        Assert.assertEquals("wiki:space", this.serializer.serialize(reference.getParent()));
-    }
+  @org.junit.Test
+  public void testSerializeWhenNotInSameWiki() throws Exception {
+    DocumentReference reference = new DocumentReference("wiki", "space", "page");
+
+    getMockery().checking(new Expectations() {
+
+      {
+        allowing(mockModelContext).getCurrentEntityReference();
+        will(returnValue(new WikiReference("otherwiki")));
+      }
+    });
+
+    Assert.assertEquals("wiki:space.page", this.serializer.serialize(reference));
+    Assert.assertEquals("wiki:space", this.serializer.serialize(reference.getParent()));
+  }
 }

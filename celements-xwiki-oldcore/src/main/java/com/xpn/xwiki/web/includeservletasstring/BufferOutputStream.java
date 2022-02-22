@@ -21,60 +21,57 @@
 
 package com.xpn.xwiki.web.includeservletasstring;
 
-import javax.servlet.ServletOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.servlet.ServletOutputStream;
+
 public class BufferOutputStream
-extends ServletOutputStream {
-  
-    protected ByteArrayOutputStream buffer;
-  
-    /** Creates a new instance of BufferOutputStream */
-    public BufferOutputStream() {
-      
-        buffer = new ByteArrayOutputStream();
-      
-    }
-    
-    
-    public void write(int b)
-    throws IOException
-    {
-        buffer.write(b);
-    }
-    
-    public void write(byte b[])
-    throws IOException
-    {
-        buffer.write(b);
-    }
-    
-    public void write(byte[] b, int off, int len)
-    throws IOException
-    {
-        buffer.write(b, off, len);
-    }
-    
-    
-    public void flush()
-    throws IOException
-    {
-        buffer.flush();
-    }
-    
-    public void close()
-    throws IOException
-    {
-        buffer.close();
-    }
-    
-  
-    public byte[] getContentsAsByteArray()
-    throws IOException
-    {
-      flush();
-      return buffer.toByteArray();
-    }
-    
+    extends ServletOutputStream {
+
+  protected ByteArrayOutputStream buffer;
+
+  /** Creates a new instance of BufferOutputStream */
+  public BufferOutputStream() {
+
+    buffer = new ByteArrayOutputStream();
+
+  }
+
+  @Override
+  public void write(int b)
+      throws IOException {
+    buffer.write(b);
+  }
+
+  @Override
+  public void write(byte b[])
+      throws IOException {
+    buffer.write(b);
+  }
+
+  @Override
+  public void write(byte[] b, int off, int len)
+      throws IOException {
+    buffer.write(b, off, len);
+  }
+
+  @Override
+  public void flush()
+      throws IOException {
+    buffer.flush();
+  }
+
+  @Override
+  public void close()
+      throws IOException {
+    buffer.close();
+  }
+
+  public byte[] getContentsAsByteArray()
+      throws IOException {
+    flush();
+    return buffer.toByteArray();
+  }
+
 }

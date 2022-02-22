@@ -30,29 +30,31 @@ import com.xpn.xwiki.doc.XWikiDocument;
 
 /**
  * Interface for Attachment store system.
- * 
+ *
  * @version $Id$
  */
 @ComponentRole
-public interface XWikiAttachmentStoreInterface
-{
-    void saveAttachmentContent(XWikiAttachment attachment, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+public interface XWikiAttachmentStoreInterface {
 
-    void saveAttachmentContent(XWikiAttachment attachment, boolean bParentUpdate, XWikiContext context,
-        boolean bTransaction) throws XWikiException;
+  void saveAttachmentContent(XWikiAttachment attachment, XWikiContext context, boolean bTransaction)
+      throws XWikiException;
 
-    void saveAttachmentsContent(List<XWikiAttachment> attachments, XWikiDocument doc, boolean bParentUpdate,
-        XWikiContext context, boolean bTransaction) throws XWikiException;
+  void saveAttachmentContent(XWikiAttachment attachment, boolean bParentUpdate,
+      XWikiContext context,
+      boolean bTransaction) throws XWikiException;
 
-    void loadAttachmentContent(XWikiAttachment attachment, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+  void saveAttachmentsContent(List<XWikiAttachment> attachments, XWikiDocument doc,
+      boolean bParentUpdate,
+      XWikiContext context, boolean bTransaction) throws XWikiException;
 
-    void deleteXWikiAttachment(XWikiAttachment attachment, XWikiContext context, boolean bTransaction)
-        throws XWikiException;
+  void loadAttachmentContent(XWikiAttachment attachment, XWikiContext context, boolean bTransaction)
+      throws XWikiException;
 
-    void deleteXWikiAttachment(XWikiAttachment attachment, boolean parentUpdate, XWikiContext context,
-        boolean bTransaction) throws XWikiException;
+  void deleteXWikiAttachment(XWikiAttachment attachment, XWikiContext context, boolean bTransaction)
+      throws XWikiException;
 
-    void cleanUp(XWikiContext context);
+  void deleteXWikiAttachment(XWikiAttachment attachment, boolean parentUpdate, XWikiContext context,
+      boolean bTransaction) throws XWikiException;
+
+  void cleanUp(XWikiContext context);
 }

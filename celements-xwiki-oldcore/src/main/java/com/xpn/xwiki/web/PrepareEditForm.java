@@ -23,71 +23,71 @@ package com.xpn.xwiki.web;
 
 import com.xpn.xwiki.util.Util;
 
-
-
 public class PrepareEditForm extends XWikiForm {
-    private String template;
-    private String parent;
-    private String defaultLanguage;
-    private String defaultTemplate;
-    private String creator;
-    private boolean lockForce;
 
-    public void readRequest() {
-        XWikiRequest request = getRequest();
-        setTemplate(request.getParameter("template"));
-        setParent(request.getParameter("parent"));
-        setCreator(request.getParameter("creator"));
-        setDefaultLanguage(request.getParameter("defaultLanguage"));
-        setDefaultTemplate(request.getParameter("defaultTemplate"));
-        setLockForce("1".equals(request.getParameter("force")));
-    }
+  private String template;
+  private String parent;
+  private String defaultLanguage;
+  private String defaultTemplate;
+  private String creator;
+  private boolean lockForce;
 
-    public String getTemplate() {
-        return template;
-    }
+  @Override
+  public void readRequest() {
+    XWikiRequest request = getRequest();
+    setTemplate(request.getParameter("template"));
+    setParent(request.getParameter("parent"));
+    setCreator(request.getParameter("creator"));
+    setDefaultLanguage(request.getParameter("defaultLanguage"));
+    setDefaultTemplate(request.getParameter("defaultTemplate"));
+    setLockForce("1".equals(request.getParameter("force")));
+  }
 
-    public void setTemplate(String template) {
-        this.template = template;
-    }
+  public String getTemplate() {
+    return template;
+  }
 
-    public String getDefaultTemplate() {
-        return defaultTemplate;
-    }
+  public void setTemplate(String template) {
+    this.template = template;
+  }
 
-    public void setDefaultTemplate(String template) {
-        this.defaultTemplate = template;
-    }   
-    
-    public String getParent() {
-        return parent;
-    }
+  public String getDefaultTemplate() {
+    return defaultTemplate;
+  }
 
-    public void setParent(String parent) {
-        this.parent = parent;
-    }
+  public void setDefaultTemplate(String template) {
+    this.defaultTemplate = template;
+  }
 
-    public String getCreator() {
-        return creator;
-    }
+  public String getParent() {
+    return parent;
+  }
 
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
+  public void setParent(String parent) {
+    this.parent = parent;
+  }
 
-    public String getDefaultLanguage() {
-        return defaultLanguage;
-    }
+  public String getCreator() {
+    return creator;
+  }
 
-    public void setDefaultLanguage(String defaultLanguage) {
-        this.defaultLanguage = Util.normalizeLanguage(defaultLanguage);
-    }
+  public void setCreator(String creator) {
+    this.creator = creator;
+  }
 
-    public boolean isLockForce() {
-        return lockForce;
-    }
+  public String getDefaultLanguage() {
+    return defaultLanguage;
+  }
 
-    public void setLockForce(boolean lockForce) {
-        this.lockForce = lockForce;
-    }
+  public void setDefaultLanguage(String defaultLanguage) {
+    this.defaultLanguage = Util.normalizeLanguage(defaultLanguage);
+  }
+
+  public boolean isLockForce() {
+    return lockForce;
+  }
+
+  public void setLockForce(boolean lockForce) {
+    this.lockForce = lockForce;
+  }
 }

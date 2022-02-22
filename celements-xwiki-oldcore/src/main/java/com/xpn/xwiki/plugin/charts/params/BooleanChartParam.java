@@ -20,22 +20,19 @@
  */
 package com.xpn.xwiki.plugin.charts.params;
 
-public class BooleanChartParam extends AbstractChartParam
-{
-    public BooleanChartParam(String name)
-    {
-        super(name);
-    }
+public class BooleanChartParam extends AbstractChartParam {
 
-    @Override
-    public Class getType()
-    {
-        return Boolean.class;
-    }
+  public BooleanChartParam(String name) {
+    super(name);
+  }
 
-    @Override
-    public Object convert(String value)
-    {
-        return Boolean.valueOf(value);
-    }
+  @Override
+  public Class getType() {
+    return Boolean.class;
+  }
+
+  @Override
+  public Object convert(String value) {
+    return Boolean.valueOf(value);
+  }
 }
