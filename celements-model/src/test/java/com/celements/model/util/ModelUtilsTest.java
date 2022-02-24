@@ -10,12 +10,10 @@ import org.junit.Test;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.ImmutableReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
-import com.celements.common.test.ExceptionAsserter;
 import com.celements.model.context.ModelContext;
 import com.xpn.xwiki.web.Utils;
 
@@ -142,37 +140,10 @@ public class ModelUtilsTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_serialzeRef_immuRefWithChild() {
-    EntityReference immuRefWithChild = References.extractRef(attRef, DocumentReference.class).get();
-    assertTrue(immuRefWithChild instanceof ImmutableReference);
-    // only works correctly if child is stripped from immutable references
-    // see DefaultStringEntityReferenceSerializer#L29
-    assertEquals("wiki:space.doc", modelUtils.serializeRef(immuRefWithChild));
-  }
-
-  @Test
   public void test_serialzeRef_null() {
-    new ExceptionAsserter<NullPointerException>(NullPointerException.class) {
-
-      @Override
-      protected void execute() throws Exception {
-        modelUtils.serializeRef(null, GLOBAL);
-      }
-    }.evaluate();
-    new ExceptionAsserter<NullPointerException>(NullPointerException.class) {
-
-      @Override
-      protected void execute() throws Exception {
-        modelUtils.serializeRef(null);
-      }
-    }.evaluate();
-    new ExceptionAsserter<NullPointerException>(NullPointerException.class) {
-
-      @Override
-      protected void execute() throws Exception {
-        modelUtils.serializeRefLocal(null);
-      }
-    }.evaluate();
+    assertThrows(NullPointerException.class, () -> modelUtils.serializeRef(null, GLOBAL));
+    assertThrows(NullPointerException.class, () -> modelUtils.serializeRef(null));
+    assertThrows(NullPointerException.class, () -> modelUtils.serializeRefLocal(null));
   }
 
   @Test
@@ -183,13 +154,7 @@ public class ModelUtilsTest extends AbstractComponentTest {
     assertEquals("", modelUtils.normalizeLang("default"));
     assertEquals("de", modelUtils.normalizeLang("de"));
     assertEquals("de_CH", modelUtils.normalizeLang("de_CH"));
-    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class) {
-
-      @Override
-      protected void execute() throws IllegalArgumentException {
-        modelUtils.normalizeLang("invalid");
-      }
-    }.evaluate();
+    assertThrows(IllegalArgumentException.class, () -> modelUtils.normalizeLang("invalid"));
   }
 
 }
