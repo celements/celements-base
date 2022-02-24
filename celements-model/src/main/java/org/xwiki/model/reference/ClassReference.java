@@ -28,7 +28,6 @@ public class ClassReference extends EntityReference implements ImmutableReferenc
 
   public ClassReference(String spaceName, String className) {
     super(className, EntityType.DOCUMENT, new EntityReference(spaceName, EntityType.SPACE));
-
   }
 
   public ClassReference(String fullName) {
