@@ -4,6 +4,7 @@ import static com.celements.model.util.EntityTypeUtil.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -12,7 +13,6 @@ import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
 import com.celements.model.reference.RefBuilder;
-import com.google.common.base.Optional;
 
 import one.util.streamex.StreamEx;
 
@@ -116,6 +116,20 @@ public final class References {
   }
 
   /**
+   * Like {@link #asCompleteRef(EntityReference, Class)} but returns an optional instead of throwing
+   * an IllegalArgumentException if given an incomplete EntityReference for the token.
+   */
+  @NotNull
+  public static <T extends EntityReference> Optional<T> asCompleteRefOpt(
+      @NotNull EntityReference ref, @NotNull Class<T> token) {
+    try {
+      return Optional.of(asCompleteRef(ref, token));
+    } catch (IllegalArgumentException iae) {
+      return Optional.empty();
+    }
+  }
+
+  /**
    * @param fromRef
    *          the reference to extract from
    * @param token
@@ -124,24 +138,24 @@ public final class References {
    * @deprecated since 5.4, instead use {@link EntityReference#extractRef(Class)}
    */
   @Deprecated
-  public static <T extends EntityReference> Optional<T> extractRef(
+  public static <T extends EntityReference> com.google.common.base.Optional<T> extractRef(
       @Nullable EntityReference fromRef, @NotNull Class<T> token) {
     if (fromRef != null) {
-      return Optional.fromJavaUtil(fromRef.extractRef(token));
+      return com.google.common.base.Optional.fromJavaUtil(fromRef.extractRef(token));
     }
-    return Optional.absent();
+    return com.google.common.base.Optional.absent();
   }
 
   /**
    * @deprecated since 5.4, instead use {@link EntityReference#extractRef(EntityType)}
    */
   @Deprecated
-  public static Optional<EntityReference> extractRef(@Nullable EntityReference fromRef,
-      @NotNull EntityType type) {
+  public static com.google.common.base.Optional<EntityReference> extractRef(
+      @Nullable EntityReference fromRef, @NotNull EntityType type) {
     if (fromRef != null) {
-      return Optional.fromJavaUtil(fromRef.extractRef(type));
+      return com.google.common.base.Optional.fromJavaUtil(fromRef.extractRef(type));
     }
-    return Optional.absent();
+    return com.google.common.base.Optional.absent();
   }
 
   /**
@@ -178,11 +192,11 @@ public final class References {
    */
   @Deprecated
   @NotNull
-  public static <T extends EntityReference> Optional<T> completeRef(@NotNull Class<T> token,
-      EntityReference... refs) {
+  public static <T extends EntityReference> com.google.common.base.Optional<T> completeRef(
+      @NotNull Class<T> token, EntityReference... refs) {
     EntityReference combinedRef = combineRef(token, getEntityTypeForClassOrThrow(token),
         refs).orNull();
-    return castOrAbsent(combinedRef, token);
+    return com.google.common.base.Optional.fromJavaUtil(castOrAbsent(combinedRef, token));
   }
 
   /**
@@ -194,7 +208,8 @@ public final class References {
    */
   @Deprecated
   @NotNull
-  public static Optional<EntityReference> combineRef(EntityReference... refs) {
+  public static com.google.common.base.Optional<EntityReference> combineRef(
+      EntityReference... refs) {
     return combineRef(EntityReference.class, null, refs);
   }
 
@@ -209,20 +224,20 @@ public final class References {
    */
   @Deprecated
   @NotNull
-  public static Optional<EntityReference> combineRef(@Nullable EntityType type,
-      EntityReference... refs) {
+  public static com.google.common.base.Optional<EntityReference> combineRef(
+      @Nullable EntityType type, EntityReference... refs) {
     return combineRef(EntityReference.class, type, refs);
   }
 
   @Deprecated
   @NotNull
-  private static Optional<EntityReference> combineRef(@NotNull Class<?> token,
-      @Nullable EntityType type, EntityReference... refs) {
+  private static com.google.common.base.Optional<EntityReference> combineRef(
+      @NotNull Class<?> token, @Nullable EntityType type, EntityReference... refs) {
     RefBuilder builder = RefBuilder.create().nullable();
     if (refs != null) {
       StreamEx.ofReversed(refs).forEach(builder::with);
     }
-    return Optional.fromNullable(builder.build(type));
+    return com.google.common.base.Optional.fromNullable(builder.build(type));
   }
 
   /**
@@ -261,12 +276,12 @@ public final class References {
         token);
   }
 
-  private static <T extends EntityReference> Optional<T> castOrAbsent(EntityReference ref,
-      Class<T> token) {
+  private static <T extends EntityReference> Optional<T> castOrAbsent(
+      EntityReference ref, Class<T> token) {
     if ((ref != null) && (checkNotNull(token).isAssignableFrom(ref.getClass()))) {
       return Optional.of(token.cast(ref));
     } else {
-      return Optional.absent();
+      return Optional.empty();
     }
   }
 
