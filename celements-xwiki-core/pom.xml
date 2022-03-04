@@ -119,7 +119,6 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>1.1.1</version>
-      <scope>provided</scope>
     </dependency>
 
     <!--
@@ -228,31 +227,26 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-captcha</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-office-importer</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-formula-renderer</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-container-portlet</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-xmlrpc-model</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- XWiki syntax parsers -->
@@ -288,114 +282,95 @@
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-box</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-chart</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-code</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-container</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-dashboard</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-footnotes</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-formula</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-groovy</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-python</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-html</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-id</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-include</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-message</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-rss</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-toc</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-useravatar</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-velocity</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-wikibridge</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-cache</artifactId>
       <version>2.7.2</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- copy crap from xwiki-core pom.xml -->
@@ -582,38 +557,32 @@
       <groupId>exo-platform</groupId>
       <artifactId>exo-platform.container</artifactId>
       <version>2.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>exo-platform</groupId>
       <artifactId>exo-platform.commons</artifactId>
       <version>2.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>exo-platform</groupId>
       <artifactId>exo-platform.service.organization.api</artifactId>
       <version>2.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>exo-platform</groupId>
       <artifactId>exo-platform.service.security.api</artifactId>
       <version>2.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>exo-platform</groupId>
       <artifactId>exo-platform.service.database.api</artifactId>
       <version>2.0</version>
-      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>jfree</groupId>
       <artifactId>jfreechart</artifactId>
       <version>1.0.13</version>
-      <scope>provided</scope>
     </dependency>
     <!-- JFreeChart 1.0.13 has no POM file in the Maven Central Repository and thus we need to manually define
          its own Maven dependency on JFree Common. Remove this dependency when it's fixed. -->
@@ -621,7 +590,6 @@
       <groupId>jfree</groupId>
       <artifactId>jcommon</artifactId>
       <version>1.0.15</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- PDF export, image processing -->
@@ -629,13 +597,11 @@
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>fop</artifactId>
       <version>1.0</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.avalon.framework</groupId>
       <artifactId>avalon-framework-impl</artifactId>
       <version>4.3.1</version>
-      <scope>provided</scope>
     </dependency>
     <!-- fop depends on batik 1.7, but the batik folks did not release the rasterizer module
          for this version, which we need. Since the 1.6 and 1.7 releases are fairly compatible,
@@ -693,14 +659,12 @@
           <artifactId>batik-xml</artifactId>
         </exclusion>
       </exclusions>
-      <scope>provided</scope>
     </dependency>
     <!-- fop gets us batik but not batik-codec and we need this one for SVGPlugin -->
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-codec</artifactId>
       <version>1.7</version>
-      <scope>provided</scope>
     </dependency>
 
 
