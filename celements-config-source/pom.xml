@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-config-source</artifactId>
-  <version>5.0-SNAPSHOT</version>
+  <version>5.0</version>
   <description>Celements Configuration Source</description>
   <dependencies>
 
@@ -90,6 +90,6 @@
     <connection>scm:git:git@github.com:celements/celements-xwiki.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-xwiki.git</developerConnection>
     <url>https://github.com/celements/celements-xwiki</url>
-    <tag>HEAD</tag>
+    <tag>celements-config-source-5.0</tag>
   </scm>
 </project>
