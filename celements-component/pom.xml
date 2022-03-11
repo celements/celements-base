@@ -19,18 +19,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-config-source-api</artifactId>
-      <version>5.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-reference</artifactId>
-      <version>5.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-bridge</artifactId>
       <scope>provided</scope>
@@ -40,6 +28,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Testing -->
