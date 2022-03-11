@@ -218,15 +218,13 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
   @Deprecated
   public void setClassName(String name) {
     EntityReference xClassReference = null;
-    if (!StringUtils.isEmpty(name)) {
-      // Handle backward compatibility: In the past, for statistics objects we used to use a special
-      // class name
-      // of "internal". We now check for a null Class Reference instead wherever we were previously
-      // checking for
-      // "internal".
-      if (!"internal".equals(name)) {
-        xClassReference = this.relativeEntityReferenceResolver.resolve(name, EntityType.DOCUMENT);
-      }
+    // Handle backward compatibility: In the past, for statistics objects we used to use a special
+    // class name
+    // of "internal". We now check for a null Class Reference instead wherever we were previously
+    // checking for
+    // "internal".
+    if (!StringUtils.isEmpty(name) && !"internal".equals(name)) {
+      xClassReference = this.relativeEntityReferenceResolver.resolve(name, EntityType.DOCUMENT);
     }
     setXClassReference(xClassReference);
   }
@@ -644,15 +642,13 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
 
       if (oldProperty == null) {
         // The property exist in the new object, but not in the old one
-        if ((newProperty != null) && (!newProperty.toText().equals(""))) {
-          if (pclass != null) {
-            String newPropertyValue = (newProperty.getValue() instanceof String)
-                ? newProperty.toText()
-                : pclass.displayView(
-                    propertyName, this, context);
-            difflist.add(new ObjectDiff(getClassName(), getNumber(), "", "added", propertyName,
-                propertyType, "", newPropertyValue));
-          }
+        if (((newProperty != null) && (!newProperty.toText().equals(""))) && (pclass != null)) {
+          String newPropertyValue = (newProperty.getValue() instanceof String)
+              ? newProperty.toText()
+              : pclass.displayView(
+                  propertyName, this, context);
+          difflist.add(new ObjectDiff(getClassName(), getNumber(), "", "added", propertyName,
+              propertyType, "", newPropertyValue));
         }
       } else if (!oldProperty.toText()
           .equals(((newProperty == null) ? "" : newProperty.toText()))) {
@@ -690,22 +686,20 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
       String propertyType = (pclass == null) ? ""
           : StringUtils.substringAfterLast(pclass.getClassType(), ".");
 
-      if (newProperty == null) {
-        // The property exists in the old object, but not in the new one
-        if ((oldProperty != null) && (!oldProperty.toText().equals(""))) {
-          if (pclass != null) {
-            // Put the values as they would be displayed in the interface
-            String oldPropertyValue = (oldProperty.getValue() instanceof String)
-                ? oldProperty.toText()
-                : pclass.displayView(
-                    propertyName, oldCollection, context);
-            difflist.add(new ObjectDiff(oldCollection.getClassName(), oldCollection.getNumber(), "",
-                "removed", propertyName, propertyType, oldPropertyValue, ""));
-          } else {
-            // Cannot get property definition, so use the plain value
-            difflist.add(new ObjectDiff(oldCollection.getClassName(), oldCollection.getNumber(), "",
-                "removed", propertyName, propertyType, oldProperty.toText(), ""));
-          }
+      // The property exists in the old object, but not in the new one
+      if ((newProperty == null) && ((oldProperty != null) && (!oldProperty.toText().equals("")))) {
+        if (pclass != null) {
+          // Put the values as they would be displayed in the interface
+          String oldPropertyValue = (oldProperty.getValue() instanceof String)
+              ? oldProperty.toText()
+              : pclass.displayView(
+                  propertyName, oldCollection, context);
+          difflist.add(new ObjectDiff(oldCollection.getClassName(), oldCollection.getNumber(), "",
+              "removed", propertyName, propertyType, oldPropertyValue, ""));
+        } else {
+          // Cannot get property definition, so use the plain value
+          difflist.add(new ObjectDiff(oldCollection.getClassName(), oldCollection.getNumber(), "",
+              "removed", propertyName, propertyType, oldProperty.toText(), ""));
         }
       }
     }
