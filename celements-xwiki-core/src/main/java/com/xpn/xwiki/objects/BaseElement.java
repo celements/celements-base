@@ -22,6 +22,7 @@
 package com.xpn.xwiki.objects;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -249,14 +250,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
         return false;
       }
     } else {
-      if (this.reference != null) {
-        return false;
-      }
-      if (element.name == null) {
-        if (this.name != null) {
-          return false;
-        }
-      } else if (!element.name.equals(this.name)) {
+      if ((this.reference != null) || !Objects.equals(element.name, this.name)) {
         return false;
       }
     }

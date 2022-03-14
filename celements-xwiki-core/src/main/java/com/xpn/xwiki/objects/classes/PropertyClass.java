@@ -63,7 +63,6 @@ public class PropertyClass extends BaseCollection
   public PropertyClass() {}
 
   public PropertyClass(String name, String prettyname, PropertyMetaClass xWikiClass) {
-    super();
     setName(name);
     setPrettyName(prettyname);
     setxWikiClass(xWikiClass);

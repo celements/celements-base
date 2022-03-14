@@ -153,8 +153,7 @@ public class XWikiStats extends BaseCollection {
    */
   @Override
   public Object clone() {
-    BaseCollection object = (BaseCollection) super.clone();
-    return object;
+    return super.clone();
   }
 
   /**
@@ -169,11 +168,7 @@ public class XWikiStats extends BaseCollection {
       return true;
     }
 
-    if (!super.equals(obj)) {
-      return false;
-    }
-
-    if (getNumber() != ((BaseCollection) obj).getNumber()) {
+    if (!super.equals(obj) || (getNumber() != ((BaseCollection) obj).getNumber())) {
       return false;
     }
 
@@ -190,10 +185,8 @@ public class XWikiStats extends BaseCollection {
     Element oel = new DOMElement(XMLNODE_OBJECT);
 
     // Add Class
-    if (bclass != null) {
-      if (bclass.getFieldList().size() > 0) {
-        oel.add(bclass.toXML());
-      }
+    if ((bclass != null) && (bclass.getFieldList().size() > 0)) {
+      oel.add(bclass.toXML());
     }
 
     Element el = new DOMElement(XMLNODE_NAME);
