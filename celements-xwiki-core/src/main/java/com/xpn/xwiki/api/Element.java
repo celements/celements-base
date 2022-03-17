@@ -70,4 +70,15 @@ public class Element extends Api {
   public String getName() {
     return this.element.getName();
   }
+
+  // START ApiCompatibilityAspect
+  /**
+   * @return true if the current user has the Programming right or false otherwise
+   * @deprecated use {@link Api#hasProgrammingRights()} instead
+   */
+  @Deprecated
+  public boolean checkProgrammingRights() {
+    return this.hasProgrammingRights();
+  }
+  // END ApiCompatibilityAspect
 }

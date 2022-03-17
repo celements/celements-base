@@ -87,4 +87,25 @@ public class PluginApi<T extends XWikiPluginInterface> extends Api {
   public void setPlugin(T plugin) {
     this.plugin = plugin;
   }
+
+  // START ApiCompatibilityAspect
+  /**
+   * @return true if the current user has the Programming right or false otherwise
+   * @deprecated use {@link Api#hasProgrammingRights()} instead
+   */
+  @Deprecated
+  public boolean checkProgrammingRights() {
+    return this.hasProgrammingRights();
+  }
+  // END ApiCompatibilityAspect
+
+  // START PluginApiAspect
+  /**
+   * @deprecated Replaced by {@link PluginApi#getInternalPlugin()} since 1.3RC1.
+   */
+  @Deprecated
+  public XWikiPluginInterface getPlugin() {
+    return this.plugin;
+  }
+  // END PluginApiAspect
 }

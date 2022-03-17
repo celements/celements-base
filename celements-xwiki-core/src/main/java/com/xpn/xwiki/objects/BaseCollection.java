@@ -811,4 +811,19 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
     this.xClassDocRefCache = null;
   }
 
+  // START BaseCollectionCompatibiityAspect
+  /**
+   * @deprecated use setStringListValue or setDBStringListProperty
+   */
+  @Deprecated
+  public void setListValue(String name, List value) {
+    ListProperty property = (ListProperty) safeget(name);
+    if (property == null) {
+      property = new StringListProperty();
+    }
+    property.setValue(value);
+    safeput(name, property);
+  }
+  // END BaseCollectionCompatibiityAspect
+
 }
