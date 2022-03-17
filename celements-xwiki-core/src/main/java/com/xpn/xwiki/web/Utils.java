@@ -843,7 +843,10 @@ public class Utils {
    * @param hint
    *          a value to differentiate different component implementations for the same role
    * @return the component's instance
+   *
+   * @deprecated instead use {@link #getComponent(Class, String)}
    */
+  @Deprecated
   public static Object getComponent(String role, String hint) {
     try {
       return getComponent(Utils.class.getClassLoader().loadClass(role), hint);
@@ -859,7 +862,10 @@ public class Utils {
    * @param role
    *          the class (aka role) that the component implements
    * @return the component's instance
+   *
+   * @deprecated instead use {@link #getComponent(Class)}
    */
+  @Deprecated
   public static Object getComponent(String role) {
     return getComponent(role, "default");
   }
