@@ -193,4 +193,15 @@ public class Attachment extends Api {
     XWikiAttachment att = attachment.getAttachmentRevision(rev, getXWikiContext());
     return att == null ? null : new Attachment(getDocument(), att, context);
   }
+
+  // START ApiCompatibilityAspect
+  /**
+   * @return true if the current user has the Programming right or false otherwise
+   * @deprecated use {@link Api#hasProgrammingRights()} instead
+   */
+  @Deprecated
+  public boolean checkProgrammingRights() {
+    return this.hasProgrammingRights();
+  }
+  // END ApiCompatibilityAspect
 }

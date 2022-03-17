@@ -530,4 +530,28 @@ public class XWikiContext extends Hashtable<Object, Object> {
   public String getEditorWysiwyg() {
     return (String) get("editor_wysiwyg");
   }
+
+  // START XWikiContextCompatibilityAspect
+  /**
+   * @return true it's main wiki's context, false otherwise.
+   * @deprecated replaced by {@link XWikiContext#isMainWiki()} since 1.4M1.
+   */
+  @Deprecated
+  public boolean isVirtual() {
+    return !this.isMainWiki();
+  }
+
+  /**
+   * @param virtual
+   *          true it's main wiki's context, false otherwise.
+   * @deprecated this methods is now useless because the virtuality of a wiki is resolved with a
+   *             comparison between {@link XWikiContext#getDatabase()} and
+   *             {@link XWikiContext#getMainXWiki()} since 1.4M1.
+   */
+  @Deprecated
+  public void setVirtual(boolean virtual) {
+    // this.virtual = virtual;
+  }
+  // END XWikiContextCompatibilityAspect
+
 }
