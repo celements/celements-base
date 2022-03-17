@@ -7187,6 +7187,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return "xwiki-core";
   }
 
+  // START XWikiCompatibilityAspect
   /*
    * --------------------------------------------------------------------------------------------
    * following only deprecated methods copied from XWikiCompatibilityAspect, since 3.1 FIXME find
@@ -7402,4 +7403,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
     return parseMessage(message, context);
   }
+  // END XWikiCompatibilityAspect
+
 }

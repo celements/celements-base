@@ -624,4 +624,26 @@ public class Context extends Api {
   public void dropPermissions() {
     getXWikiContext().put("hasDroppedPermissions", "true");
   }
+
+  // START ApiCompatibilityAspect
+  /**
+   * @return true if the current user has the Programming right or false otherwise
+   * @deprecated use {@link Api#hasProgrammingRights()} instead
+   */
+  @Deprecated
+  public boolean checkProgrammingRights() {
+    return this.hasProgrammingRights();
+  }
+  // END ApiCompatibilityAspect
+
+  // START ContextCompatibilityAspect
+  /**
+   * @return true it's main wiki's context, false otherwise.
+   * @deprecated replaced by {@link Context#isMainWiki()} since 1.4M1.
+   */
+  @Deprecated
+  public boolean isVirtual() {
+    return !this.isMainWiki();
+  }
+  // END ContextCompatibilityAspect
 }
