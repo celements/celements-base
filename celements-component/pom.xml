@@ -3,23 +3,40 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>5.6-SNAPSHOT</version>
+    <version>5.7</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-component</artifactId>
-  <version>5.2-SNAPSHOT</version>
+  <version>5.3-SNAPSHOT</version>
   <description>Celements Component Manager</description>
   <dependencies>
 
-    <!-- Add here all your dependencies -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
       <version>5.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-config-source-api</artifactId>
+      <version>5.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-reference</artifactId>
+      <version>5.0</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-bridge</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-script</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -27,6 +44,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Testing -->
