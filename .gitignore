@@ -1,6 +1,5 @@
 *.class
 
-
 # Package Files #
 *.jar
 *.war
@@ -18,3 +17,4 @@ xwiki.log
 !**/reduced-xwiki-core-package/*.jar
 !**/reduced-xwiki-core-package/**/*.jar
 
+.vscode
