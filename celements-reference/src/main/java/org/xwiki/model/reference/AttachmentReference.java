@@ -19,7 +19,14 @@
  */
 package org.xwiki.model.reference;
 
+import java.util.Optional;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.model.EntityType;
+
+import com.celements.model.reference.FileReference;
 
 /**
  * Represents a reference to an Attachment (document reference and file name). Note that an
@@ -28,7 +35,7 @@ import org.xwiki.model.EntityType;
  *
  * @since XWiki 2.2M1
  */
-public class AttachmentReference extends EntityReference {
+public class AttachmentReference extends EntityReference implements FileReference {
 
   private static final long serialVersionUID = 2L;
 
@@ -77,7 +84,6 @@ public class AttachmentReference extends EntityReference {
 
   /**
    * {@inheritDoc}
-   *
    * Overridden in order to verify the validity of the passed parent.
    *
    * @exception IllegalArgumentException
@@ -100,7 +106,6 @@ public class AttachmentReference extends EntityReference {
 
   /**
    * {@inheritDoc}
-   *
    * Overridden in order to verify the validity of the passed type.
    *
    * @exception IllegalArgumentException
@@ -124,5 +129,33 @@ public class AttachmentReference extends EntityReference {
   @Override
   public AttachmentReference replaceParent(EntityReference oldParent, EntityReference newParent) {
     return new AttachmentReference(this, oldParent, newParent);
+  }
+
+  public int compareTo(FileReference arg0) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public @NotEmpty String getFileName() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public @NotNull Optional<DocumentReference> getBaseDocumentReference() {
+    return Optional.of(getDocumentReference());
+  }
+
+  @Override
+  public @NotNull Optional<String> getQueryString() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public @NotEmpty String getFullPath() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
