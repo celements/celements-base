@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.reference.DocumentReference;
 
-public interface FileReference extends Serializable, Comparable<FileReference> {
+public interface FileReference extends Serializable {
 
   @NotEmpty
   public String getFileName();
