@@ -131,15 +131,9 @@ public class AttachmentReference extends EntityReference implements FileReferenc
     return new AttachmentReference(this, oldParent, newParent);
   }
 
-  public int compareTo(FileReference arg0) {
-    // TODO Auto-generated method stub
-    return 0;
-  }
-
   @Override
   public @NotEmpty String getFileName() {
-    // TODO Auto-generated method stub
-    return null;
+    return getName();
   }
 
   @Override
