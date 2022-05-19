@@ -571,7 +571,8 @@
     <!-- Storage -->
     <dependency>
       <groupId>org.hibernate</groupId>
-      <artifactId>hibernate</artifactId>
+      <artifactId>hibernate-core</artifactId>
+      <version>4.3.11.Final</version>
     </dependency>
 
     <!-- Authentication -->
