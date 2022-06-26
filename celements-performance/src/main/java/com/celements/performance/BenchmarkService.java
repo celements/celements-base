@@ -73,6 +73,7 @@ public class BenchmarkService implements BenchmarkRole {
   public String println(boolean visible) {
     String outStr = getBenchOutStringArray().stream()
         .collect(Collectors.joining("\n"));
+    getBenchOutStringArray().clear();
     if (!visible) {
       outStr = "<!-- " + outStr + " -->\n";
     }
