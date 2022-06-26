@@ -74,7 +74,7 @@ public class BenchmarkService implements BenchmarkRole {
     String outStr = getBenchOutStringArray().stream()
         .collect(Collectors.joining("\n"));
     if (!visible) {
-      outStr = "<!-- " + outStr + " -->";
+      outStr = "<!-- " + outStr + " -->\n";
     }
     return outStr;
   }
