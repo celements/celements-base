@@ -52,11 +52,9 @@ public class BenchmarkService implements BenchmarkRole {
   public void bench(String label) {
     checkArgument(!Strings.isNullOrEmpty(label));
     long currTime = new Date().getTime();
-    long benchLastTime = getContextLongValue(BENCH_LAST_TIME);
-    long benchStartTime = getContextLongValue(BENCH_START_TIME);
-    double totalTime = (currTime - benchStartTime) / 1000.0;
-    double time = (currTime - benchLastTime) / 1000.0;
-    setContextLongValue(BENCH_LAST_TIME, benchLastTime);
+    double totalTime = (currTime - getContextLongValue(BENCH_START_TIME)) / 1000.0;
+    double time = (currTime - getContextLongValue(BENCH_LAST_TIME)) / 1000.0;
+    setContextLongValue(BENCH_LAST_TIME, currTime);
     getBenchOutStringArray()
         .add("bench '" + label + "' &mdash; in " + time + "s &mdash; total " + totalTime
             + "s");
