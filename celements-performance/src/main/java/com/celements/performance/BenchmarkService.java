@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
@@ -14,6 +16,8 @@ import com.google.common.base.Strings;
 
 @Component
 public class BenchmarkService implements BenchmarkRole {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BenchmarkService.class);
 
   private static final String BENCH_LAST_TIME = "bench_lastTime";
 
@@ -27,8 +31,12 @@ public class BenchmarkService implements BenchmarkRole {
   @Requirement
   Execution execution;
 
-  private long getContextLongValue(String name) {
-    return (long) execution.getContext().getProperty(CEL_BENCHMARK_VAL_PREFIX + name);
+  private boolean isBenchStarted() {
+    return getContextLongValue(BENCH_START_TIME) != null;
+  }
+
+  private Long getContextLongValue(String name) {
+    return (Long) execution.getContext().getProperty(CEL_BENCHMARK_VAL_PREFIX + name);
   }
 
   private void setContextLongValue(String name, long value) {
@@ -51,13 +59,17 @@ public class BenchmarkService implements BenchmarkRole {
   @Override
   public void bench(String label) {
     checkArgument(!Strings.isNullOrEmpty(label));
-    long currTime = new Date().getTime();
-    double totalTime = (currTime - getContextLongValue(BENCH_START_TIME)) / 1000.0;
-    double time = (currTime - getContextLongValue(BENCH_LAST_TIME)) / 1000.0;
-    setContextLongValue(BENCH_LAST_TIME, currTime);
-    getBenchOutStringArray()
-        .add("bench '" + label + "' &mdash; in " + time + "s &mdash; total " + totalTime
-            + "s");
+    if (isBenchStarted()) {
+      long currTime = new Date().getTime();
+      double totalTime = (currTime - getContextLongValue(BENCH_START_TIME)) / 1000.0;
+      double time = (currTime - getContextLongValue(BENCH_LAST_TIME)) / 1000.0;
+      setContextLongValue(BENCH_LAST_TIME, currTime);
+      getBenchOutStringArray()
+          .add("bench '" + label + "' &mdash; in " + time + "s &mdash; total " + totalTime
+              + "s");
+    } else {
+      LOGGER.info("bench called without startBench. Skipping.");
+    }
   }
 
   @Override
