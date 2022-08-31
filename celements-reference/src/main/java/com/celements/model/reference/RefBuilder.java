@@ -1,10 +1,10 @@
 package com.celements.model.reference;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.model.util.EntityTypeUtil.*;
-import static com.celements.model.util.References.*;
-import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 
@@ -27,6 +27,11 @@ public class RefBuilder implements Cloneable {
   public RefBuilder() {
     refs = new TreeMap<>();
     nullable = false;
+  }
+
+  public RefBuilder(RefBuilder other) {
+    refs = new TreeMap<>(other.refs);
+    nullable = other.nullable;
   }
 
   public int depth() {
@@ -64,11 +69,7 @@ public class RefBuilder implements Cloneable {
 
   public RefBuilder with(EntityType type, String name) {
     if (type != null) {
-      if (!isNullOrEmpty(name)) {
-        refs.put(type, new EntityReference(name, type));
-      } else {
-        refs.remove(type);
-      }
+      refs.put(type, !isNullOrEmpty(name) ? new EntityReference(name, type) : null);
     }
     return this;
   }
@@ -93,7 +94,7 @@ public class RefBuilder implements Cloneable {
     if (type != null) {
       token = getClassForEntityType(type);
     }
-    return build(token);
+    return build(token, type);
   }
 
   /**
@@ -103,18 +104,21 @@ public class RefBuilder implements Cloneable {
    *           if insufficient values and not {@link #nullable()}
    */
   public <T extends EntityReference> T build(Class<T> token) {
-    T ref = null;
+    return build(token, getEntityTypeForClass(token).orNull());
+  }
+
+  private <T extends EntityReference> T build(Class<T> token, EntityType type) {
     try {
-      EntityReference relativeRef = buildRelative(getEntityTypeForClass(token).orNull());
-      if (relativeRef != null) {
-        ref = asCompleteRef(relativeRef, token);
-      }
-    } catch (IllegalArgumentException iae) {
+      return unwrap(buildRelativeOpt(type)
+          .map(rethrowFunction(ref -> token.getConstructor(EntityReference.class)
+              .newInstance(ref))));
+    } catch (ReflectiveOperationException exc) {
       if (!nullable) {
-        throw iae;
+        throw new IllegalArgumentException("Unsupported entity class: " + token, exc);
+      } else {
+        return null;
       }
     }
-    return ref;
   }
 
   /**
@@ -148,33 +152,38 @@ public class RefBuilder implements Cloneable {
    *           if insufficient values and not {@link #nullable()}
    */
   public EntityReference buildRelative(EntityType type) {
-    EntityReference ret = null;
-    for (EntityReference ref : refs.values()) {
-      if ((type == null) || (type.compareTo(ref.getType()) >= 0)) {
-        if (ret == null) {
-          ret = ref;
-        } else {
-          ret = ref.appendParent(ret);
-        }
-      }
-    }
-    checkArgument(nullable || (ret != null), "missing information for building reference");
-    return ret;
+    return unwrap(buildRelativeOpt(type));
+  }
+
+  /**
+   * @param type
+   * @return relative reference from type, absent if insufficient values
+   */
+  public Optional<EntityReference> buildRelativeOpt(EntityType type) {
+    return refs.values().stream()
+        .filter(Objects::nonNull)
+        .filter(ref -> isAtLeastOfType(ref, type))
+        .reduce((parent, ref) -> (parent != null) ? ref.appendParent(parent) : ref);
+  }
+
+  private boolean isAtLeastOfType(EntityReference ref, EntityType minType) {
+    return (minType == null) || (minType.compareTo(ref.getType()) >= 0);
   }
 
   @Override
   public RefBuilder clone() {
-    RefBuilder clone = new RefBuilder();
-    if (depth() > 0) {
-      clone.with(this.buildRelative());
-    }
-    clone.nullable = this.nullable;
-    return clone;
+    return new RefBuilder(this);
   }
 
   @Override
   public String toString() {
     return "RefBuilder [" + (depth() > 0 ? buildRelative() : "") + "]";
+  }
+
+  private <T extends EntityReference> T unwrap(Optional<T> opt) {
+    return nullable
+        ? opt.orElse(null)
+        : opt.orElseThrow(() -> new IllegalArgumentException("missing data for building ref"));
   }
 
 }
