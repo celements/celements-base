@@ -21,7 +21,6 @@ package org.xwiki.model.reference;
 
 import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.model.util.EntityTypeUtil.*;
-import static com.celements.model.util.References.*;
 import static com.google.common.collect.ImmutableMap.*;
 
 import java.io.Serializable;
@@ -37,6 +36,7 @@ import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.EntityType;
 
+import com.celements.model.reference.RefBuilder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapDifference;
@@ -360,7 +360,7 @@ public class EntityReference implements Serializable, Comparable<EntityReference
         .flatMap(t -> getEntityTypeForClass(t).toJavaUtil())
         .flatMap(this::extractRef)
         .map(ref -> tryCast(ref, token)
-            .orElseGet(() -> asCompleteRefOpt(ref, token)
+            .orElseGet(() -> new RefBuilder().with(ref).buildOpt(token)
             .orElse(null)));
   }
 

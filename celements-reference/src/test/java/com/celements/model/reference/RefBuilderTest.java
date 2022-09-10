@@ -28,32 +28,33 @@ public class RefBuilderTest {
 
   @Test
   public void test_wikiRef() {
-    assertRefStrict(wikiRef, new RefBuilder().with(wikiRef).build());
-    assertRefStrict(wikiRef, new RefBuilder().wiki(wikiRef.getName()).build());
-    assertRefStrict(wikiRef, new RefBuilder().with(EntityType.WIKI, wikiRef.getName()).build());
+    assertSpecificRef(wikiRef, new RefBuilder().with(wikiRef).build());
+    assertSpecificRef(wikiRef, new RefBuilder().with(wikiRef).build());
+    assertSpecificRef(wikiRef, new RefBuilder().wiki(wikiRef.getName()).build());
+    assertSpecificRef(wikiRef, new RefBuilder().with(EntityType.WIKI, wikiRef.getName()).build());
   }
 
   @Test
   public void test_spaceRef() {
-    assertRefStrict(spaceRef, new RefBuilder().with(spaceRef).build());
-    assertRefStrict(spaceRef, new RefBuilder().with(wikiRef).space(spaceRef.getName()).build());
-    assertRefStrict(spaceRef, new RefBuilder().with(wikiRef).with(EntityType.SPACE,
+    assertSpecificRef(spaceRef, new RefBuilder().with(spaceRef).build());
+    assertSpecificRef(spaceRef, new RefBuilder().with(wikiRef).space(spaceRef.getName()).build());
+    assertSpecificRef(spaceRef, new RefBuilder().with(wikiRef).with(EntityType.SPACE,
         spaceRef.getName()).build());
   }
 
   @Test
   public void test_docRef() {
-    assertRefStrict(docRef, new RefBuilder().with(docRef).build());
-    assertRefStrict(docRef, new RefBuilder().with(spaceRef).doc(docRef.getName()).build());
-    assertRefStrict(docRef, new RefBuilder().with(spaceRef).with(EntityType.DOCUMENT,
+    assertSpecificRef(docRef, new RefBuilder().with(docRef).build());
+    assertSpecificRef(docRef, new RefBuilder().with(spaceRef).doc(docRef.getName()).build());
+    assertSpecificRef(docRef, new RefBuilder().with(spaceRef).with(EntityType.DOCUMENT,
         docRef.getName()).build());
   }
 
   @Test
   public void test_attRef() {
-    assertRefStrict(attRef, new RefBuilder().with(attRef).build());
-    assertRefStrict(attRef, new RefBuilder().with(docRef).att(attRef.getName()).build());
-    assertRefStrict(attRef, new RefBuilder().with(docRef).with(EntityType.ATTACHMENT,
+    assertSpecificRef(attRef, new RefBuilder().with(attRef).build());
+    assertSpecificRef(attRef, new RefBuilder().with(docRef).att(attRef.getName()).build());
+    assertSpecificRef(attRef, new RefBuilder().with(docRef).with(EntityType.ATTACHMENT,
         attRef.getName()).build());
   }
 
@@ -65,21 +66,36 @@ public class RefBuilderTest {
 
   @Test
   public void test_build_token() {
-    assertRefStrict(wikiRef, new RefBuilder().with(wikiRef).build(WikiReference.class));
-    assertRefStrict(spaceRef, new RefBuilder().with(spaceRef).build(SpaceReference.class));
-    assertRefStrict(docRef, new RefBuilder().with(docRef).build(DocumentReference.class));
-    assertRefStrict(attRef, new RefBuilder().with(attRef).build(AttachmentReference.class));
+    assertSpecificRef(wikiRef, new RefBuilder().with(wikiRef).build(WikiReference.class));
+    assertSpecificRef(spaceRef, new RefBuilder().with(spaceRef).build(SpaceReference.class));
+    assertSpecificRef(docRef, new RefBuilder().with(docRef).build(DocumentReference.class));
+    assertSpecificRef(attRef, new RefBuilder().with(attRef).build(AttachmentReference.class));
+    assertSpecificRef(docRef, new RefBuilder().with(attRef).build(DocumentReference.class));
+    assertSpecificRef(spaceRef, new RefBuilder().with(attRef).build(SpaceReference.class));
+    assertSpecificRef(wikiRef, new RefBuilder().with(attRef).build(WikiReference.class));
   }
 
   @Test
   public void test_build_EntityType() {
-    assertRefStrict(wikiRef, new RefBuilder().with(wikiRef).build(EntityType.WIKI));
-    assertRefStrict(spaceRef, new RefBuilder().with(spaceRef).build(EntityType.SPACE));
-    assertRefStrict(docRef, new RefBuilder().with(docRef).build(EntityType.DOCUMENT));
-    assertRefStrict(attRef, new RefBuilder().with(attRef).build(EntityType.ATTACHMENT));
+    assertSpecificRef(wikiRef, new RefBuilder().with(wikiRef).build(EntityType.WIKI));
+    assertSpecificRef(spaceRef, new RefBuilder().with(spaceRef).build(EntityType.SPACE));
+    assertSpecificRef(docRef, new RefBuilder().with(docRef).build(EntityType.DOCUMENT));
+    assertSpecificRef(attRef, new RefBuilder().with(attRef).build(EntityType.ATTACHMENT));
+    assertSpecificRef(docRef, new RefBuilder().with(attRef).build(EntityType.DOCUMENT));
+    assertSpecificRef(spaceRef, new RefBuilder().with(attRef).build(EntityType.SPACE));
+    assertSpecificRef(wikiRef, new RefBuilder().with(attRef).build(EntityType.WIKI));
   }
 
-  private void assertRefStrict(EntityReference expected, EntityReference actual) {
+  @Test
+  public void test_build_withnull() {
+    RefBuilder builder = new RefBuilder().with(docRef).doc(null);
+    assertThrows(IllegalArgumentException.class, () -> builder.build());
+    assertThrows(IllegalArgumentException.class, () -> builder.build(DocumentReference.class));
+    assertSpecificRef(spaceRef, builder.build(SpaceReference.class));
+    assertNull(builder.clone().nullable().build());
+  }
+
+  private void assertSpecificRef(EntityReference expected, EntityReference actual) {
     assertEquals(expected, actual);
     assertEquals("illegal class: " + actual.getClass(), expected.getClass(), actual.getClass());
   }
@@ -116,12 +132,15 @@ public class RefBuilderTest {
   }
 
   @Test
+  public void test_incomplete_empty() {
+    RefBuilder builder = new RefBuilder();
+    assertThrows(IllegalArgumentException.class, () -> builder.build());
+  }
 
-  public void test_incomplete() {
-    assertThrows(IllegalArgumentException.class,
-        () -> new RefBuilder().build());
-    assertThrows(IllegalArgumentException.class,
-        () -> new RefBuilder().with(spaceRef).build(DocumentReference.class));
+  @Test
+  public void test_incomplete_missing() {
+    RefBuilder builder = new RefBuilder().with(spaceRef);
+    assertThrows(IllegalArgumentException.class, () -> builder.build(DocumentReference.class));
   }
 
   @Test

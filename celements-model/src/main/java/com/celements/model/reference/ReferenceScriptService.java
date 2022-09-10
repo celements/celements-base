@@ -2,6 +2,7 @@ package com.celements.model.reference;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -92,6 +93,11 @@ public class ReferenceScriptService implements ScriptService {
     } catch (IllegalArgumentException iae) {
       return null;
     }
+  }
+
+  public EntityType getEntityType(String name) {
+    name = Strings.nullToEmpty(name).toUpperCase();
+    return Enums.getIfPresent(EntityType.class, name).toJavaUtil().orElse(null);
   }
 
 }

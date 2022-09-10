@@ -46,6 +46,7 @@ import com.google.common.base.Strings;
  */
 @Component("model")
 @Singleton
+@Deprecated
 public class ModelScriptService implements ScriptService {
 
   /**

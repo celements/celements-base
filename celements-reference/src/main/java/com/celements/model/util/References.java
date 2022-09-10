@@ -18,6 +18,8 @@ import one.util.streamex.StreamEx;
 
 public final class References {
 
+  private References() {}
+
   /**
    * @param ref
    * @return false if the given reference is relative
@@ -83,7 +85,9 @@ public final class References {
    * @return an absolute instance of the reference of type T
    * @throws IllegalArgumentException
    *           when calling with incomplete references for subtypes of {@link EntityReference}
+   * @deprecated since 5.7, instead use {@link RefBuilder#build(Class)}
    */
+  @Deprecated
   @NotNull
   public static <T extends EntityReference> T asCompleteRef(@NotNull EntityReference ref,
       @NotNull Class<T> token) {
@@ -93,13 +97,7 @@ public final class References {
     if (token == EntityReference.class) {
       token = determinedToken;
     }
-    T ret;
-    try {
-      ret = token.getConstructor(EntityReference.class).newInstance(ref);
-    } catch (ReflectiveOperationException | SecurityException exc) {
-      throw new IllegalArgumentException("Unsupported entity class: " + token, exc);
-    }
-    return ret;
+    return new RefBuilder().with(ref).build(token);
   }
 
   @SuppressWarnings("unchecked")
@@ -118,7 +116,10 @@ public final class References {
   /**
    * Like {@link #asCompleteRef(EntityReference, Class)} but returns an optional instead of throwing
    * an IllegalArgumentException if given an incomplete EntityReference for the token.
+   *
+   * @deprecated since 5.7, instead use {@link RefBuilder#buildOpt(Class)}
    */
+  @Deprecated
   @NotNull
   public static <T extends EntityReference> Optional<T> asCompleteRefOpt(
       @NotNull EntityReference ref, @NotNull Class<T> token) {
