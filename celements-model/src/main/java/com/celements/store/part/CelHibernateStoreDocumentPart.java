@@ -59,7 +59,8 @@ public class CelHibernateStoreDocumentPart {
 
   public void saveXWikiDoc(XWikiDocument doc, XWikiContext context, boolean bTransaction)
       throws XWikiException, HibernateException {
-    validateDocRef(doc.getDocumentReference(), context);
+    validateDocNaming(doc.getDocumentReference());
+    validateDatabase(doc.getDocumentReference(), context);
     boolean commit = false;
     try {
       DocumentSavePreparationCommand savePrepCmd = new DocumentSavePreparationCommand(
@@ -309,7 +310,7 @@ public class CelHibernateStoreDocumentPart {
 
   public void deleteXWikiDoc(XWikiDocument doc, XWikiContext context)
       throws XWikiException, HibernateException {
-    validateDocRef(doc.getDocumentReference(), context);
+    validateDatabase(doc.getDocumentReference(), context);
     boolean bTransaction = false;
     boolean commit = false;
     try {
@@ -359,10 +360,9 @@ public class CelHibernateStoreDocumentPart {
     return Utils.getComponent(ClassDefinition.class, XWikiGroupsClass.CLASS_DEF_HINT);
   }
 
-  private void validateDocRef(DocumentReference docRef, XWikiContext context) {
+  private void validateDocNaming(DocumentReference docRef) {
     checkArgument(isMatchingEntityType(store.serialize(docRef, LOCAL), EntityType.DOCUMENT),
         "illegal doc naming [%s]", docRef);
-    validateDatabase(docRef, context);
   }
 
   private void validateDatabase(DocumentReference docRef, XWikiContext context) {
