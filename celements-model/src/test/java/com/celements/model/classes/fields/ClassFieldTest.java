@@ -108,7 +108,7 @@ public class ClassFieldTest extends AbstractComponentTest {
         "thisIsCamelCase").build().getPrettyName());
     assertEquals("This Is Camel Case (yyyy.MM.dd)", new DateField.Builder(NAME,
         "thisIsCamelCase").dateFormat("yyyy.MM.dd").build().getPrettyName());
-    assertEquals("Classes.TestClass_name", getBuilder().validationRegExp(
+    assertEquals("validation_Classes.TestClass_name", getBuilder().validationRegExp(
         "r").build().getValidationMessage());
   }
 
