@@ -1,5 +1,7 @@
 package com.celements.model.reference;
 
+import static com.google.common.base.Strings.*;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -76,7 +78,7 @@ public class ReferenceScriptService implements ScriptService {
 
   public EntityReference resolve(String name, EntityReference baseRef) {
     try {
-      return utils.resolveRef(name, baseRef);
+      return utils.resolveRef(nullToEmpty(name), baseRef);
     } catch (IllegalArgumentException iae) {
       return null;
     }
@@ -88,6 +90,9 @@ public class ReferenceScriptService implements ScriptService {
 
   public String serialize(EntityReference ref, String mode) {
     try {
+      if (ref == null) {
+        return null;
+      }
       return utils.serializeRef(ref, Enums.getIfPresent(ReferenceSerializationMode.class,
           Strings.nullToEmpty(mode).toUpperCase()).or(ReferenceSerializationMode.COMPACT_WIKI));
     } catch (IllegalArgumentException iae) {

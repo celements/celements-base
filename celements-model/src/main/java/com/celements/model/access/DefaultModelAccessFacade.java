@@ -8,10 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -57,6 +60,8 @@ import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+
+import one.util.streamex.StreamEx;
 
 @Component
 public class DefaultModelAccessFacade implements IModelAccessFacade {
@@ -338,6 +343,30 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       doc.setFromCache(false);
     }
     return doc;
+  }
+
+  @Override
+  public Stream<XWikiDocument> streamParents(XWikiDocument doc) {
+    return StreamEx.of(new Iterator<XWikiDocument>() {
+
+      private XWikiDocument current = doc;
+
+      @Override
+      public boolean hasNext() {
+        return (current != null)
+            && (current.getParentReference() != null)
+            && exists(current.getParentReference());
+      }
+
+      @Override
+      public XWikiDocument next() {
+        try {
+          return current = getDocument(current.getParentReference());
+        } catch (DocumentNotExistsException | NullPointerException exc) {
+          throw new NoSuchElementException(exc.getClass().getSimpleName() + exc.getMessage());
+        }
+      }
+    });
   }
 
   @Override

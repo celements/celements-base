@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -96,6 +97,9 @@ public interface IModelAccessFacade {
   Map<String, XWikiDocument> getTranslations(@NotNull DocumentReference docRef);
 
   boolean isTranslation(@NotNull XWikiDocument doc);
+
+  @NotNull
+  Stream<XWikiDocument> streamParents(@NotNull XWikiDocument doc);
 
   /**
    * @deprecated instead use {@link XWikiObjectFetcher}

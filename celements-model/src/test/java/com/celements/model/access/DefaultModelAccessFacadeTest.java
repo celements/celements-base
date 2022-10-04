@@ -2,6 +2,7 @@ package com.celements.model.access;
 
 import static com.celements.common.test.CelementsTestUtils.*;
 import static com.celements.model.classes.TestClassDefinition.*;
+import static java.util.stream.Collectors.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -16,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.ImmutableDocumentReference;
+import org.xwiki.model.reference.EntityReference;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.common.test.AbstractComponentTest;
@@ -35,6 +36,7 @@ import com.celements.model.classes.fields.StringField;
 import com.celements.model.classes.fields.list.ListField;
 import com.celements.model.context.ModelContext;
 import com.celements.model.field.FieldAccessException;
+import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ClassFieldValue;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
 import com.google.common.base.Optional;
@@ -70,7 +72,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
         getConfigurationSource());
     getConfigurationSource().setProperty(ModelContext.CFG_KEY_DEFAULT_LANG, "en");
     modelAccess = (DefaultModelAccessFacade) Utils.getComponent(IModelAccessFacade.class);
-    doc = new XWikiDocument(new ImmutableDocumentReference("db", "space", "doc"));
+    doc = new XWikiDocument(new DocumentReference("db", "space", "doc"));
     doc.setDefaultLanguage(getConfigurationSource().getProperty(ModelContext.CFG_KEY_DEFAULT_LANG));
     doc.setSyntax(Syntax.XWIKI_1_0);
     doc.setMetaDataDirty(false);
@@ -78,8 +80,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     doc.setStore(storeMock);
     doc.setNew(false);
     expect(getWikiMock().getStore()).andReturn(storeMock).anyTimes();
-    classRef = new ImmutableDocumentReference("db", "class", "any");
-    classRef2 = new ImmutableDocumentReference("db", "class", "other");
+    classRef = new DocumentReference("db", "class", "any");
+    classRef2 = new DocumentReference("db", "class", "other");
     // important for unstable-2.0 set database because class references are checked for db
     getContext().setDatabase("db");
   }
@@ -146,7 +148,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     XWikiDocument theDoc = modelAccess.getDocument(doc.getDocumentReference(), lang);
     verifyDefault();
     assertNotSame(doc, theDoc);
-    assertSame("docRef clone is not required anymore due to ImmutableDocumentReference",
+    assertSame("docRef clone is not required anymore due to immutable DocumentReference",
         doc.getDocumentReference(), theDoc.getDocumentReference());
   }
 
@@ -598,6 +600,51 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_streamParents_none() {
+    replayDefault();
+    List<XWikiDocument> parents = modelAccess.streamParents(doc).collect(toList());
+    verifyDefault();
+    assertTrue(parents.isEmpty());
+  }
+
+  @Test
+  public void test_streamParents_one() {
+    XWikiDocument pDoc = expectParent(doc, true);
+    replayDefault();
+    List<XWikiDocument> parents = modelAccess.streamParents(doc).collect(toList());
+    verifyDefault();
+    assertEquals(1, parents.size());
+    assertSame(pDoc, parents.get(0));
+  }
+
+  @Test
+  public void test_streamParents_multiple() {
+    XWikiDocument pDoc = expectParent(doc, true);
+    XWikiDocument ppDoc = expectParent(pDoc, true);
+    expectParent(ppDoc, false);
+    replayDefault();
+    List<XWikiDocument> parents = modelAccess.streamParents(doc).collect(toList());
+    verifyDefault();
+    assertEquals(2, parents.size());
+    assertSame(pDoc, parents.get(0));
+    assertSame(ppDoc, parents.get(1));
+  }
+
+  private XWikiDocument expectParent(XWikiDocument doc, boolean exists) {
+    DocumentReference parentDocRef = RefBuilder.from(doc.getDocumentReference())
+        .doc(doc.getDocumentReference().getName() + "-parent")
+        .build(DocumentReference.class);
+    XWikiDocument parentDoc = new XWikiDocument(parentDocRef);
+    parentDoc.setNew(!exists);
+    doc.setParentReference((EntityReference) parentDocRef);
+    expect(strategyMock.exists(parentDocRef, "")).andReturn(exists);
+    if (exists) {
+      expect(strategyMock.getDocument(parentDocRef, "")).andReturn(parentDoc);
+    }
+    return parentDoc;
+  }
+
+  @Test
   public void test_getXObjects_nullDoc() {
     try {
       modelAccess.getXObjects((XWikiDocument) null, null);
@@ -646,7 +693,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   public void test_getXObjects_otherWikiRef() {
     BaseObject obj = addObj(classRef, null, null);
     // IMPORTANT do not use setWikiReference, because it is dropped in xwiki 4.5.4
-    classRef = new ImmutableDocumentReference("otherWiki",
+    classRef = new DocumentReference("otherWiki",
         classRef.getLastSpaceReference().getName(), classRef.getName());
     List<BaseObject> ret = modelAccess.getXObjects(doc, classRef);
     assertEquals(1, ret.size());
@@ -789,7 +836,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     expectDefaultLang(docMock);
     BaseObject obj = createObj(classRef);
     expect(docMock.newXObject(eq(classRef), same(getContext()))).andReturn(obj).once();
-    classRef = new ImmutableDocumentReference("otherWiki",
+    classRef = new DocumentReference("otherWiki",
         classRef.getLastSpaceReference().getName(), classRef.getName());
     replayDefault();
     BaseObject ret = modelAccess.newXObject(docMock, classRef);
@@ -1253,7 +1300,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Test
   public void test_setProperty_getProperty_customField() throws Exception {
     ClassField<DocumentReference> field = FIELD_MY_DOCREF;
-    DocumentReference toStoreRef = new ImmutableDocumentReference("myDB", "mySpace", "myDoc");
+    DocumentReference toStoreRef = new DocumentReference("myDB", "mySpace", "myDoc");
 
     BaseClass bClass = expectNewBaseObject(field.getClassDef().getClassRef());
     expectPropertyClass(bClass, field.getName(), new StringClass());
