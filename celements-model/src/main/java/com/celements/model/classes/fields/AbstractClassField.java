@@ -1,6 +1,5 @@
 package com.celements.model.classes.fields;
 
-import static com.google.common.base.MoreObjects.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Predicates.*;
 import static com.google.common.base.Strings.*;
@@ -81,8 +80,9 @@ public abstract class AbstractClassField<T> implements ClassField<T> {
     this.prettyName = Optional.ofNullable(builder.prettyName)
         .orElseGet(() -> generatePrettyName(builder));
     this.validationRegExp = builder.validationRegExp;
-    this.validationMessage = firstNonNull(builder.validationMessage,
-        builder.classRef.serialize() + "_" + builder.name);
+    this.validationMessage = Optional.ofNullable(builder.validationMessage)
+        .filter(not(String::isEmpty))
+        .orElseGet(() -> "validation_" + builder.classRef.serialize() + "_" + builder.name);
   }
 
   protected String generatePrettyName(Builder<?, T> builder) {
