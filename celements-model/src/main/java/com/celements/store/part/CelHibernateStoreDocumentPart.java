@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.ImmutableDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.classes.ClassDefinition;
@@ -251,8 +250,6 @@ public class CelHibernateStoreDocumentPart {
   }
 
   private void sanitizeDoc(XWikiDocument doc) {
-    // ensure document reference immutability
-    doc.setDocumentReference(new ImmutableDocumentReference(doc.getDocumentReference()));
     // convert java.sql.Timestamp to java.util.Date
     doc.setDate(new Date(doc.getDate().getTime()));
     doc.setCreationDate(new Date(doc.getCreationDate().getTime()));
