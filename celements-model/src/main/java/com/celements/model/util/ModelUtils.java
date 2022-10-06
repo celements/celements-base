@@ -173,7 +173,6 @@ public interface ModelUtils {
   @NotNull
   String normalizeLang(@Nullable String lang);
 
-  <T> @Nullable T computeExecPropIfAbsent(@NotEmpty String key,
-      @NotNull Supplier<@Nullable T> defaultSetter);
+  <T> @Nullable T computeExecPropIfAbsent(@NotEmpty String key, @NotNull Supplier<T> defaultSetter);
 
 }
