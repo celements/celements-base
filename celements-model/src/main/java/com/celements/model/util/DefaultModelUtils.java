@@ -6,12 +6,14 @@ import static com.google.common.base.MoreObjects.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -33,6 +35,9 @@ import com.xpn.xwiki.web.Utils;
 public class DefaultModelUtils implements ModelUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelUtils.class);
+
+  @Requirement
+  private Execution exec;
 
   @Requirement
   private ModelContext context;
@@ -230,6 +235,16 @@ public class DefaultModelUtils implements ModelUtils {
       if ("default".equals(ret)) {
         throw new IllegalArgumentException("Invalid language: " + lang);
       }
+    }
+    return ret;
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <T> T computeExecPropIfAbsent(String key, Supplier<T> defaultGetter) {
+    T ret = (T) exec.getContext().getProperty(key);
+    if (ret == null) {
+      exec.getContext().setProperty(key, ret = defaultGetter.get());
     }
     return ret;
   }

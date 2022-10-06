@@ -1,8 +1,10 @@
 package com.celements.model.util;
 
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
@@ -170,5 +172,8 @@ public interface ModelUtils {
    */
   @NotNull
   String normalizeLang(@Nullable String lang);
+
+  <T> @Nullable T computeExecPropIfAbsent(@NotEmpty String key,
+      @NotNull Supplier<@Nullable T> defaultSetter);
 
 }
