@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.easymock.Capture;
 import org.junit.Before;
@@ -630,6 +631,18 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     assertSame(ppDoc, parents.get(1));
   }
 
+  @Test
+  public void test_streamParents_cyclic() {
+    XWikiDocument pDoc = expectParent(doc, true);
+    pDoc.setParentReference((EntityReference) doc.getDocumentReference());
+    expect(strategyMock.exists(doc.getDocumentReference(), "")).andReturn(true);
+    expect(strategyMock.getDocument(doc.getDocumentReference(), "")).andReturn(doc);
+    replayDefault();
+    Stream<XWikiDocument> stream = modelAccess.streamParents(doc);
+    assertThrows(IllegalStateException.class, stream::count);
+    verifyDefault();
+  }
+
   private XWikiDocument expectParent(XWikiDocument doc, boolean exists) {
     DocumentReference parentDocRef = RefBuilder.from(doc.getDocumentReference())
         .doc(doc.getDocumentReference().getName() + "-parent")
@@ -637,7 +650,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     XWikiDocument parentDoc = new XWikiDocument(parentDocRef);
     parentDoc.setNew(!exists);
     doc.setParentReference((EntityReference) parentDocRef);
-    expect(strategyMock.exists(parentDocRef, "")).andReturn(exists);
+    expect(strategyMock.exists(parentDocRef, "")).andReturn(exists).atLeastOnce();
     if (exists) {
       expect(strategyMock.getDocument(parentDocRef, "")).andReturn(parentDoc);
     }

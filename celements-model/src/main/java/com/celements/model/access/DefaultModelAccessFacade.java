@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -348,6 +350,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     return StreamEx.of(new Iterator<XWikiDocument>() {
 
       private XWikiDocument current = doc;
+      private Set<DocumentReference> seen = new HashSet<>();
 
       @Override
       public boolean hasNext() {
@@ -359,9 +362,13 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       @Override
       public XWikiDocument next() {
         try {
-          return current = getDocument(current.getParentReference());
+          if (seen.add(current.getParentReference())) {
+            return current = getDocument(current.getParentReference());
+          } else {
+            throw new IllegalStateException("cyclic parent referencing: " + seen);
+          }
         } catch (DocumentNotExistsException | NullPointerException exc) {
-          throw new NoSuchElementException(exc.getClass().getSimpleName() + exc.getMessage());
+          throw new NoSuchElementException(exc.getClass().getSimpleName() + " " + exc.getMessage());
         }
       }
     });
