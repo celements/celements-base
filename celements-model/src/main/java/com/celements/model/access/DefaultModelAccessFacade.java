@@ -8,10 +8,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -57,6 +62,8 @@ import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+
+import one.util.streamex.StreamEx;
 
 @Component
 public class DefaultModelAccessFacade implements IModelAccessFacade {
@@ -333,11 +340,38 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   private XWikiDocument cloneDoc(XWikiDocument doc) {
     if (doc.isFromCache()) {
       doc = doc.clone();
-      // missing docRef clone in XWikiDocument.clone() doesn't matter since:
-      // [CELDEV-522] Use ImmutableDocumentReference in DocumentBuilder
       doc.setFromCache(false);
     }
     return doc;
+  }
+
+  @Override
+  public Stream<XWikiDocument> streamParents(XWikiDocument doc) {
+    return StreamEx.of(new Iterator<XWikiDocument>() {
+
+      private XWikiDocument current = doc;
+      private Set<DocumentReference> seen = new HashSet<>();
+
+      @Override
+      public boolean hasNext() {
+        return (current != null)
+            && (current.getParentReference() != null)
+            && exists(current.getParentReference());
+      }
+
+      @Override
+      public XWikiDocument next() {
+        try {
+          if (seen.add(current.getParentReference())) {
+            return current = getDocument(current.getParentReference());
+          } else {
+            throw new IllegalStateException("cyclic parent referencing: " + seen);
+          }
+        } catch (DocumentNotExistsException | NullPointerException exc) {
+          throw new NoSuchElementException(exc.getClass().getSimpleName() + " " + exc.getMessage());
+        }
+      }
+    });
   }
 
   @Override

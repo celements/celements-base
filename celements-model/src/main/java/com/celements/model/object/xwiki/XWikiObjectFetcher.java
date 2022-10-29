@@ -5,7 +5,7 @@ import static com.google.common.base.MoreObjects.*;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.validation.constraints.NotNull;
 
-import org.xwiki.model.reference.ImmutableDocumentReference;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.object.AbstractObjectFetcher;
 import com.celements.model.object.ObjectBridge;
@@ -30,7 +30,7 @@ public class XWikiObjectFetcher extends
   }
 
   public static XWikiObjectFetcher empty() {
-    XWikiDocument dummyDoc = new XWikiDocument(new ImmutableDocumentReference("$", "$", "$"));
+    XWikiDocument dummyDoc = new XWikiDocument(new DocumentReference("$", "$", "$"));
     return new XWikiObjectFetcher(dummyDoc, XWikiEmptyObjectBridge.NAME);
   }
 

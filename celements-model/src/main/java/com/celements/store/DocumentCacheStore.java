@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,7 +48,6 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.ImmutableDocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
@@ -60,9 +60,8 @@ import com.celements.model.access.exception.MetaDataLoadException;
 import com.celements.model.context.ModelContext;
 import com.celements.model.metadata.DocumentMetaData;
 import com.celements.model.metadata.ImmutableDocumentMetaData;
+import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
-import com.celements.model.util.References;
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -277,8 +276,9 @@ public class DocumentCacheStore implements XWikiCacheStoreInterface, MetaDataSto
   }
 
   String getKey(DocumentReference docRef) {
-    DocumentReference cacheDocRef = References.adjustRef(docRef, DocumentReference.class,
-        modelContext.getWikiRef());
+    DocumentReference cacheDocRef = RefBuilder.from(docRef)
+        .with(modelContext.getWikiRef())
+        .build(DocumentReference.class);
     return modelUtils.serializeRef(cacheDocRef);
   }
 
@@ -775,10 +775,6 @@ public class DocumentCacheStore implements XWikiCacheStoreInterface, MetaDataSto
     }
   }
 
-  private void setExistCache(DocumentReference docRef, String lang, Boolean exists) {
-    setExistCache(getKeyWithLang(docRef, lang), exists);
-  }
-
   private void setExistCache(XWikiDocument doc, Boolean exists) {
     setExistCache(getKeyWithLang(doc), exists);
   }
@@ -937,8 +933,9 @@ public class DocumentCacheStore implements XWikiCacheStoreInterface, MetaDataSto
   }
 
   private XWikiDocument createEmptyXWikiDoc(XWikiDocument doc) {
-    DocumentReference docRef = new ImmutableDocumentReference(References.adjustRef(
-        doc.getDocumentReference(), DocumentReference.class, modelContext.getWikiRef()));
+    DocumentReference docRef = RefBuilder.from(doc.getDocumentReference())
+        .with(modelContext.getWikiRef())
+        .build(DocumentReference.class);
     XWikiDocument newDoc = docCreator.createWithoutDefaults(docRef, doc.getLanguage());
     newDoc.setDefaultLanguage(doc.getDefaultLanguage());
     newDoc.setStore(getBackingStore());
@@ -974,20 +971,18 @@ public class DocumentCacheStore implements XWikiCacheStoreInterface, MetaDataSto
     sb.append("select distinct doc.space, doc.name, doc.language, doc.version "
         + "from XWikiDocument as doc");
     Map<String, String> bindValues = new HashMap<>();
-    Optional<SpaceReference> spaceRef = References.extractRef(filterRef, SpaceReference.class);
-    Optional<DocumentReference> docRef = References.extractRef(filterRef, DocumentReference.class);
-    if (spaceRef.isPresent()) {
+    filterRef.extractRef(SpaceReference.class).ifPresent(spaceRef -> {
       sb.append(" where doc.space = :spaceName");
-      bindValues.put("spaceName", spaceRef.get().getName());
-      if (docRef.isPresent()) {
+      bindValues.put("spaceName", spaceRef.getName());
+      filterRef.extractRef(DocumentReference.class).ifPresent(docRef -> {
         sb.append(" and doc.name = :docName");
-        bindValues.put("docName", docRef.get().getName());
-      }
-    }
+        bindValues.put("docName", docRef.getName());
+      });
+    });
     String hql = sb.toString();
     Query query = getQueryManager().createQuery(hql, Query.HQL);
-    query.setWiki(References.extractRef(filterRef, WikiReference.class).or(
-        modelContext.getWikiRef()).getName());
+    query.setWiki(filterRef.extractRef(WikiReference.class)
+        .orElse(modelContext.getWikiRef()).getName());
     for (Entry<String, String> bind : bindValues.entrySet()) {
       query.bindValue(bind.getKey(), bind.getValue());
     }
@@ -1007,7 +1002,7 @@ public class DocumentCacheStore implements XWikiCacheStoreInterface, MetaDataSto
     } catch (IllegalArgumentException iae) {
       LOGGER.warn("getMetaData: illegal docData '{}'", Arrays.asList(docData), iae);
     }
-    return Optional.fromNullable(metaData);
+    return Optional.ofNullable(metaData);
   }
 
 }
