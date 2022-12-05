@@ -112,7 +112,7 @@ public abstract class AbstractObjectEditor<R extends AbstractObjectEditor<R, D, 
 
   @Override
   public <T> FieldEditor<T> editField(final ClassField<T> field) {
-    final AbstractObjectFetcher<?, D, O> fetcher = fetch().filter(field.getClassDef());
+    final AbstractObjectFetcher<?, D, O> fetcher = fetch().filter(field.getClassReference());
     return new FieldEditor<T>() {
 
       @Override
@@ -133,7 +133,7 @@ public abstract class AbstractObjectEditor<R extends AbstractObjectEditor<R, D, 
       private boolean edit(Supplier<T> supplier, boolean onlyFirst) {
         checkNotNull(supplier);
         boolean changed = false;
-        if (field.getClassDef().isValidObjectClass()) {
+        if (field.getClassReference().isValidObjectClass()) {
           Iterator<O> iter = fetcher.stream().iterator();
           boolean stop = false;
           while (!stop && iter.hasNext()) {

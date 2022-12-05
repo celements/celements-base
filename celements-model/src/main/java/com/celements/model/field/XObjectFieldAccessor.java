@@ -13,7 +13,6 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.reference.ClassReference;
 
-import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.fields.ClassField;
 import com.celements.model.classes.fields.CustomClassField;
 import com.xpn.xwiki.objects.BaseObject;
@@ -28,9 +27,6 @@ public class XObjectFieldAccessor extends AbstractFieldAccessor<BaseObject> {
 
   public static final String NAME = "xobject";
 
-  @Requirement(CLASS_DEF_HINT)
-  private ClassDefinition xObjClassDef;
-
   @Requirement(XObjectStringFieldAccessor.NAME)
   protected StringFieldAccessor<BaseObject> strFieldAccessor;
 
@@ -42,7 +38,7 @@ public class XObjectFieldAccessor extends AbstractFieldAccessor<BaseObject> {
   @Override
   public <V> Optional<V> get(BaseObject obj, ClassField<V> field) {
     Optional<V> value;
-    if (field.getClassDef().equals(xObjClassDef)) {
+    if (field.getClassReference().equals(CLASS_REF)) {
       value = Optional.of(getXObjFieldValue(obj, field));
     } else {
       checkClassRef(obj, field);
@@ -110,7 +106,7 @@ public class XObjectFieldAccessor extends AbstractFieldAccessor<BaseObject> {
   private void checkClassRef(BaseObject obj, ClassField<?> field) {
     checkNotNull(obj);
     checkNotNull(field);
-    if (!field.getClassDef().isValidObjectClass()) {
+    if (!field.getClassReference().isValidObjectClass()) {
       throw new FieldAccessException(MessageFormat.format(
           "BaseObject uneligible for pseudo class field [{0}]", field));
     }

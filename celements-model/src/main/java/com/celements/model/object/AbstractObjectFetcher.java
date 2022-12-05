@@ -114,8 +114,7 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
       objects = objects.map(getBridge()::cloneObject);
     }
     LOGGER.info("{} fetching for {}", this, classId);
-    return objects
-        .peek(o -> LOGGER.trace("fetched: {}", o));
+    return objects.peek(o -> LOGGER.trace("fetched: {}", o));
   }
 
   /**
@@ -128,7 +127,7 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
 
   @Override
   public <T> FieldFetcher<T> fetchField(final ClassField<T> field) {
-    final AbstractObjectFetcher<?, D, O> fetcher = clone().filter(field.getClassDef());
+    final AbstractObjectFetcher<?, D, O> fetcher = clone().filter(field.getClassReference());
     return new FieldFetcher<T>() {
 
       @Override
@@ -167,7 +166,7 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
       @Override
       public @NotNull Stream<T> streamNullable() {
         Stream<T> stream;
-        if (field.getClassDef().isValidObjectClass()) {
+        if (field.getClassReference().isValidObjectClass()) {
           FieldAccessor<O> accessor = getBridge().getObjectFieldAccessor();
           stream = fetcher.stream().map(obj -> accessor.get(obj, field).orElse(null));
         } else {

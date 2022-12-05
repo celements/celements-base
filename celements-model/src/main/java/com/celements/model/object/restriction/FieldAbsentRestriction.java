@@ -16,7 +16,7 @@ public class FieldAbsentRestriction<O, T> extends ClassRestriction<O> {
   private final ClassField<T> field;
 
   public FieldAbsentRestriction(@NotNull ObjectBridge<?, O> bridge, @NotNull ClassField<T> field) {
-    super(bridge, field.getClassDef().getClassReference());
+    super(bridge, field.getClassReference());
     this.field = checkNotNull(field);
   }
 
