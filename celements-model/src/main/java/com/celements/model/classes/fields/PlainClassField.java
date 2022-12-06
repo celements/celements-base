@@ -7,8 +7,13 @@ import javax.annotation.concurrent.Immutable;
 import org.xwiki.model.reference.ClassReference;
 
 import com.celements.model.classes.ClassDefinition;
+import com.celements.model.object.ObjectFetcher;
 import com.xpn.xwiki.objects.PropertyInterface;
 
+/**
+ * A plain {@link ClassField} without the necessity of a backing {@link ClassDefinition}.
+ * Makes e.g. {@link ObjectFetcher#fetchField(ClassField)} usable for generic XClasses.
+ */
 @Immutable
 public class PlainClassField<T> implements ClassField<T> {
 
