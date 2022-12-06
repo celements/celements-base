@@ -2,18 +2,21 @@ package com.celements.model.classes.fields;
 
 import java.util.Objects;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.xwiki.model.reference.ClassReference;
 
 import com.celements.model.classes.ClassDefinition;
 import com.xpn.xwiki.objects.PropertyInterface;
 
-public class DefaultClassField<T> implements ClassField<T> {
+@Immutable
+public class PlainClassField<T> implements ClassField<T> {
 
   private final ClassReference classRef;
   private final String name;
   private final Class<T> type;
 
-  public DefaultClassField(ClassReference classRef, String name, Class<T> type) {
+  public PlainClassField(ClassReference classRef, String name, Class<T> type) {
     this.classRef = classRef;
     this.name = name;
     this.type = type;
@@ -42,7 +45,7 @@ public class DefaultClassField<T> implements ClassField<T> {
 
   @Override
   public PropertyInterface getXField() {
-    throw new UnsupportedOperationException("DefaultClassField not generateable");
+    throw new UnsupportedOperationException("PlainClassField not generateable");
   }
 
   @Override
