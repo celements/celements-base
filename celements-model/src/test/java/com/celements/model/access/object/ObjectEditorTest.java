@@ -183,7 +183,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws IllegalArgumentException {
-        newEditor().filter(XWikiDocumentClass.FIELD_CONTENT.getClassDef()).create();
+        newEditor().filter(XWikiDocumentClass.FIELD_CONTENT.getClassReference()).create();
       }
     }.evaluate();
   }

@@ -728,7 +728,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   @Override
   @Deprecated
   public <T> boolean setProperty(XWikiDocument doc, ClassField<T> field, T value) {
-    return setProperty(getOrCreateXObject(doc, field.getClassDef().getClassRef()), field, value);
+    DocumentReference classDocRef = field.getClassReference().getDocRef();
+    return setProperty(getOrCreateXObject(doc, classDocRef), field, value);
   }
 
   @Override

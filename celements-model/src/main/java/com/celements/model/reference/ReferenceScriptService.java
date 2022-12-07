@@ -9,6 +9,7 @@ import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.ImmutableObjectReference;
+import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.script.service.ScriptService;
 
 import com.celements.model.context.ModelContext;
@@ -79,6 +80,14 @@ public class ReferenceScriptService implements ScriptService {
   public EntityReference resolve(String name, EntityReference baseRef) {
     try {
       return utils.resolveRef(nullToEmpty(name), baseRef);
+    } catch (IllegalArgumentException iae) {
+      return null;
+    }
+  }
+
+  public SpaceReference resolveSpaceRef(String name) {
+    try {
+      return utils.resolveRef(nullToEmpty(name), SpaceReference.class);
     } catch (IllegalArgumentException iae) {
       return null;
     }

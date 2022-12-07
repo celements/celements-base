@@ -9,6 +9,10 @@ import com.xpn.xwiki.objects.PropertyInterface;
 
 public interface ClassField<T> {
 
+  /**
+   * @deprecated instead use {@link #getClassReference()}
+   */
+  @Deprecated
   @NotNull
   ClassDefinition getClassDef();
 
