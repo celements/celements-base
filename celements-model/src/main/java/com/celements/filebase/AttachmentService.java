@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 
@@ -52,6 +52,7 @@ import com.celements.model.access.exception.DocumentSaveException;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Attachment;
@@ -78,13 +79,13 @@ public class AttachmentService implements IAttachmentServiceRole {
   private static final String FILENAME_FIELD_NAME = "filename";
 
   @Requirement
-  IModelAccessFacade modelAccess;
+  private IModelAccessFacade modelAccess;
 
   @Requirement
-  Execution execution;
+  private Execution execution;
 
   @Requirement
-  IRightsAccessFacadeRole rightsAccess;
+  private IRightsAccessFacadeRole rightsAccess;
 
   private XWikiContext getContext() {
     return (XWikiContext) execution.getContext().getProperty("xwikicontext");
@@ -107,20 +108,17 @@ public class AttachmentService implements IAttachmentServiceRole {
   public XWikiAttachment addAttachment(XWikiDocument doc, InputStream in, String filename,
       String username, String comment) throws AttachmentToBigException,
       AddingAttachmentContentFailedException, DocumentSaveException {
-    // We do not want to change the document in xwiki cache in case an exception happens
-    // those not saved changes would be left in memory
-    XWikiDocument theDoc = doc.clone();
     // Read XWikiAttachment
     XWikiAttachment attachment = null;
     try {
-      attachment = getAttachmentNameEqual(theDoc, filename);
+      attachment = getAttachmentNameEqual(doc, filename);
     } catch (AttachmentNotExistsException e) {
       LOGGER.debug("adding new attachment with name [{}]", filename);
     }
 
     if (attachment == null) {
       attachment = new XWikiAttachment();
-      theDoc.getAttachmentList().add(attachment);
+      doc.getAttachmentList().add(attachment);
     }
 
     try {
@@ -133,16 +131,18 @@ public class AttachmentService implements IAttachmentServiceRole {
     attachment.setAuthor(username);
 
     // Add the attachment to the document
-    attachment.setDoc(theDoc);
+    attachment.setDoc(doc);
     doc.setMetaDataDirty(true);
     doc.setContentDirty(true);
-    theDoc.setAuthor(username);
+    doc.setAuthor(username);
 
     // Adding a comment with a link to the download URL
     String nextRev = attachment.getNextVersion();
     ArrayList<String> params = new ArrayList<>();
     params.add(filename);
-    params.add(theDoc.getAttachmentRevisionURL(filename, nextRev, getContext()));
+    if (getContext().getURLFactory() != null) {
+      params.add(doc.getAttachmentRevisionURL(filename, nextRev, getContext()));
+    }
     if (comment == null) {
       if (attachment.isImage(getContext())) {
         comment = getContext().getMessageTool().get("core.comment.uploadImageComment", params);
@@ -153,9 +153,9 @@ public class AttachmentService implements IAttachmentServiceRole {
 
     // Save the document.
     try {
-      LOGGER.debug("uploadAttachment: save document [" + theDoc.getDocumentReference()
-          + "] after adding filename [" + filename + "] in revision [" + nextRev + "].");
-      modelAccess.saveDocument(theDoc, comment);
+      LOGGER.debug("uploadAttachment: save doc [{}] after adding filename [{}] in revision [{}]",
+          doc.getDocumentReference(), filename, nextRev);
+      modelAccess.saveDocument(doc, comment);
     } catch (DocumentSaveException exp) {
       // check Exception is ERROR_XWIKI_APP_JAVA_HEAP_SPACE when saving
       // Attachment
@@ -242,9 +242,8 @@ public class AttachmentService implements IAttachmentServiceRole {
     }
 
     if (LOGGER.isTraceEnabled()) {
-      LOGGER.trace("uploadMultipleAttachments: found fileNames [ key: " + Arrays.deepToString(
-          fileNames.keySet().toArray()) + " values : " + Arrays.deepToString(
-              fileNames.values().toArray()) + "].");
+      LOGGER.trace("uploadMultipleAttachments: found fileNames [ key: {} values : {}].",
+          fileNames.keySet(), fileNames.values());
     }
     for (Entry<String, String> file : fileNames.entrySet()) {
       try {
@@ -322,9 +321,8 @@ public class AttachmentService implements IAttachmentServiceRole {
     String temp = fileName;
     temp = temp.replaceAll("[\u00c0\u00c1\u00c2\u00c3\u00c4\u00c5\u0100\u0102\u0104"
         + "\u01cd\u01de\u01e0\u01fa\u0200\u0202\u0226]", "A");
-    temp = temp.replaceAll(
-        "[\u00e0\u00e1\u00e2\u00e3\u00e4\u00e5\u0101\u0103\u0105\u01ce\u01df\u01e1"
-            + "\u01fb\u0201\u0203\u0227]", "a");
+    temp = temp.replaceAll("[\u00e0\u00e1\u00e2\u00e3\u00e4\u00e5\u0101\u0103\u0105\u01ce\u01df"
+        + "\u01e1\u01fb\u0201\u0203\u0227]", "a");
     temp = temp.replaceAll("[\u00c6\u01e2\u01fc]", "AE");
     temp = temp.replaceAll("[\u00e6\u01e3\u01fd]", "ae");
     temp = temp.replaceAll("[\u008c\u0152]", "OE");
@@ -487,16 +485,23 @@ public class AttachmentService implements IAttachmentServiceRole {
   }
 
   @Override
-  public XWikiAttachment getAttachmentNameEqual(XWikiDocument document, String filename)
+  public XWikiAttachment getAttachmentNameEqual(XWikiDocument doc, String filename)
       throws AttachmentNotExistsException {
-    return modelAccess.getAttachmentNameEqual(document, filename);
+    for (XWikiAttachment attach : doc.getAttachmentList()) {
+      if ((attach != null) && attach.getFilename().equals(filename)) {
+        return attach;
+      }
+    }
+    throw new AttachmentNotExistsException(new AttachmentReference(
+        Objects.requireNonNullElse(Strings.emptyToNull(filename), "null"),
+        doc.getDocumentReference()));
   }
 
   @Override
   public XWikiAttachment getAttachmentNameEqual(AttachmentReference attachmentRef)
       throws DocumentLoadException, AttachmentNotExistsException, DocumentNotExistsException {
-    DocumentReference docRef = new DocumentReference(attachmentRef.extractReference(
-        EntityType.DOCUMENT));
+    DocumentReference docRef = attachmentRef.extractRef(DocumentReference.class)
+        .orElseThrow(IllegalArgumentException::new);
     XWikiDocument doc = modelAccess.getDocument(docRef);
     return getAttachmentNameEqual(doc, attachmentRef.getName());
   }

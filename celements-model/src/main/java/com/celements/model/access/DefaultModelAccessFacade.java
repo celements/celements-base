@@ -1,12 +1,14 @@
 package com.celements.model.access;
 
 import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,23 +24,34 @@ import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xwiki.bridge.event.AbstractDocumentEvent;
+import org.xwiki.bridge.event.DocumentCreatedEvent;
+import org.xwiki.bridge.event.DocumentCreatingEvent;
+import org.xwiki.bridge.event.DocumentDeletedEvent;
+import org.xwiki.bridge.event.DocumentDeletingEvent;
+import org.xwiki.bridge.event.DocumentUpdatedEvent;
+import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.observation.ObservationManager;
 
+import com.celements.auth.user.User;
+import com.celements.filebase.IAttachmentServiceRole;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentAlreadyExistsException;
 import com.celements.model.access.exception.DocumentDeleteException;
+import com.celements.model.access.exception.DocumentLoadException;
 import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.access.exception.DocumentSaveException;
 import com.celements.model.access.exception.ModelAccessRuntimeException;
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.ClassIdentity;
 import com.celements.model.classes.fields.ClassField;
+import com.celements.model.context.Contextualiser;
 import com.celements.model.context.ModelContext;
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.field.StringFieldAccessor;
@@ -58,10 +71,14 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
+import com.xpn.xwiki.store.XWikiStoreInterface;
+import com.xpn.xwiki.web.Utils;
 
 import one.util.streamex.StreamEx;
 
@@ -71,7 +88,10 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelAccessFacade.class);
 
   @Requirement
-  protected ModelAccessStrategy strategy;
+  protected ObservationManager observationManager;
+
+  @Requirement
+  protected XWikiDocumentCreator docCreator;
 
   @Requirement
   protected IRightsAccessFacadeRole rightsAccess;
@@ -87,6 +107,14 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Requirement(XObjectStringFieldAccessor.NAME)
   protected StringFieldAccessor<BaseObject> xObjStrFieldAccessor;
+
+  private XWikiStoreInterface getStore() {
+    return context.getXWikiContext().getWiki().getStore();
+  }
+
+  private XWikiRecycleBinStoreInterface getRecycleBinStore() {
+    return Utils.getComponent(XWikiRecycleBinStoreInterface.class);
+  }
 
   @Override
   public XWikiDocument getDocument(DocumentReference docRef) throws DocumentNotExistsException {
@@ -104,8 +132,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     if (rightsAccess.hasAccessLevel(doc.getDocumentReference(), EAccessLevel.VIEW)) {
       return doc.newDocument(context.getXWikiContext());
     }
-    throw new NoAccessRightsException(doc.getDocumentReference(), context.getUser(),
-        EAccessLevel.VIEW);
+    throw new NoAccessRightsException(doc.getDocumentReference(), context.getCurrentUser()
+        .toJavaUtil().map(User::asXWikiUser).orElse(null), EAccessLevel.VIEW);
   }
 
   /**
@@ -136,11 +164,18 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   private XWikiDocument getDocumentInternal(DocumentReference docRef, String lang)
       throws DocumentNotExistsException {
-    XWikiDocument doc = strategy.getDocument(docRef, lang);
-    if (doc.isNew()) { // faster than exists check when doc exists
-      throw new DocumentNotExistsException(docRef, lang);
+    try {
+      XWikiDocument doc = new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> getStore().loadXWikiDoc(docCreator
+              .createWithoutDefaults(docRef, lang), context.getXWikiContext())));
+      if (doc.isNew()) { // faster than exists check when doc exists
+        throw new DocumentNotExistsException(docRef, lang);
+      }
+      return doc;
+    } catch (XWikiException xwe) {
+      throw new DocumentLoadException(docRef, xwe);
     }
-    return doc;
   }
 
   @Override
@@ -173,7 +208,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     checkNotNull(docRef);
     lang = modelUtils.normalizeLang(lang);
     if (!existsLang(docRef, lang)) {
-      return strategy.createDocument(docRef, lang);
+      return docCreator.create(docRef, lang);
     } else {
       throw new DocumentAlreadyExistsException(docRef, lang);
     }
@@ -190,15 +225,23 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       return getDocument(docRef, lang);
     } catch (DocumentNotExistsException exc) {
       lang = modelUtils.normalizeLang(lang);
-      return strategy.createDocument(docRef, lang);
+      return docCreator.create(docRef, lang);
     }
   }
 
   @Override
   public boolean exists(DocumentReference docRef) {
-    return Optional.ofNullable(docRef)
-        .map(ref -> strategy.exists(ref, DEFAULT_LANG))
-        .orElse(false);
+    if (docRef == null) {
+      return false;
+    }
+    try {
+      return new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> getStore().exists(docCreator
+              .createWithoutDefaults(docRef), context.getXWikiContext())));
+    } catch (XWikiException xwe) {
+      throw new DocumentLoadException(docRef, xwe);
+    }
   }
 
   @Override
@@ -235,6 +278,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     if (doc.isNew()) {
       doc.setCreator(username);
     }
+    doc.setComment(Strings.nullToEmpty(comment));
+    doc.setMinorEdit(isMinorEdit);
     sanitizeLangBeforeSave(doc);
     LOGGER.info("saveDocument: doc '{}, {}', comment '{}', isMinorEdit '{}'",
         serialize(doc.getDocumentReference()), doc.getLanguage(), comment, isMinorEdit);
@@ -242,7 +287,33 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       LOGGER.trace("saveDocument: context db '{}' and StackTrace:",
           serialize(context.getWikiRef()), new Throwable());
     }
-    strategy.saveDocument(doc, comment, isMinorEdit);
+    new Contextualiser()
+        .withWiki(doc.getDocumentReference().getWikiReference())
+        .execute(rethrow(() -> saveDocumentAndNotify(doc)));
+  }
+
+  private void saveDocumentAndNotify(XWikiDocument doc) throws DocumentSaveException {
+    XWikiDocument origDoc = doc.getOriginalDocument();
+    if (origDoc == null) {
+      origDoc = docCreator.create(doc.getDocumentReference(), doc.getLanguage());
+    }
+    notify(doc, origDoc.isNew() ? DocumentCreatingEvent.class : DocumentUpdatingEvent.class);
+    try {
+      getStore().saveXWikiDoc(doc, context.getXWikiContext());
+    } catch (XWikiException xwe) {
+      throw new DocumentSaveException(doc.getDocumentReference(), xwe);
+    }
+    XWikiDocument newOrigDoc = doc.getOriginalDocument();
+    try {
+      // store#saveXWikiDoc resets the origDoc thus we need to temporarily put it back
+      doc.setOriginalDocument(origDoc);
+      notify(doc, origDoc.isNew() ? DocumentCreatedEvent.class : DocumentUpdatedEvent.class);
+    } catch (Exception exc) {
+      LOGGER.error("Failed to notify save event for doc [{}] with lang [{}]",
+          serialize(doc.getDocumentReference()), doc.getLanguage(), exc);
+    } finally {
+      doc.setOriginalDocument(newOrigDoc);
+    }
   }
 
   private void sanitizeLangBeforeSave(XWikiDocument doc) throws DocumentSaveException {
@@ -303,12 +374,49 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       LOGGER.trace("deleteDocument: context db '{}' and StackTrace:",
           serialize(context.getWikiRef()), new Throwable());
     }
-    strategy.deleteDocument(doc, totrash);
+    new Contextualiser()
+        .withWiki(doc.getDocumentReference().getWikiReference())
+        .execute(rethrow(() -> deleteDocumentAndNotify(doc, totrash)));
+  }
+
+  public void deleteDocumentAndNotify(XWikiDocument doc, boolean totrash)
+      throws DocumentDeleteException {
+    notify(doc, DocumentDeletingEvent.class);
+    try {
+      if (hasRecycleBin() && totrash) {
+        getRecycleBinStore().saveToRecycleBin(doc, context.getUserName(), new Date(),
+            context.getXWikiContext(), true);
+      }
+      getStore().deleteXWikiDoc(doc, context.getXWikiContext());
+    } catch (XWikiException xwe) {
+      throw new DocumentDeleteException(doc.getDocumentReference(), xwe);
+    }
+    try {
+      // The source is a new empty XWikiDocument to follow DocumentUpdatedEvent policy:
+      // source doc in new document and the old version is available using doc.getOriginalDocument()
+      XWikiDocument deletedDoc = docCreator.create(doc.getDocumentReference(), doc.getLanguage());
+      deletedDoc.setOriginalDocument(doc);
+      notify(deletedDoc, DocumentDeletedEvent.class);
+    } catch (Exception exc) {
+      LOGGER.error("Failed to notify delete event for doc [{}] with lang [{}]",
+          serialize(doc.getDocumentReference()), doc.getLanguage(), exc);
+    }
+  }
+
+  public boolean hasRecycleBin() {
+    return "1".equals(context.getXWikiContext().getWiki().Param("xwiki.recyclebin", "1"));
   }
 
   @Override
   public List<String> getExistingLangs(DocumentReference docRef) {
-    return strategy.getTranslations(docRef);
+    try {
+      XWikiDocument doc = docCreator.createWithoutDefaults(docRef);
+      return new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> getStore().getTranslationList(doc, context.getXWikiContext())));
+    } catch (XWikiException xwe) {
+      throw new DocumentLoadException(docRef, xwe);
+    }
   }
 
   @Override
@@ -745,23 +853,22 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   }
 
   @Override
+  @Deprecated
   public XWikiAttachment getAttachmentNameEqual(XWikiDocument doc, String filename)
       throws AttachmentNotExistsException {
-    for (XWikiAttachment attach : doc.getAttachmentList()) {
-      if ((attach != null) && attach.getFilename().equals(filename)) {
-        return attach;
-      }
-    }
-    LOGGER.debug("getAttachmentNameEqual: not found! file: [{}], doc: [{}]", filename,
-        serialize(doc.getDocumentReference()));
-    // FIXME empty or null filename leads to exception:
-    // java.lang.IllegalArgumentException: An Entity Reference name cannot be null or
-    // empty
-    if (Strings.isNullOrEmpty(filename)) {
-      throw new AttachmentNotExistsException(null);
-    } else {
-      throw new AttachmentNotExistsException(new AttachmentReference(filename,
-          doc.getDocumentReference()));
+    return Utils.getComponent(IAttachmentServiceRole.class).getAttachmentNameEqual(doc, filename);
+  }
+
+  private void notify(XWikiDocument doc, Class<? extends AbstractDocumentEvent> eventType) {
+    try {
+      AbstractDocumentEvent event = eventType
+          .getConstructor(DocumentReference.class)
+          .newInstance(doc.getDocumentReference());
+      LOGGER.trace("notify event [{}] for doc [{}] with lang [{}]", eventType.getSimpleName(),
+          serialize(doc.getDocumentReference()), doc.getLanguage());
+      observationManager.notify(event, doc, context.getXWikiContext());
+    } catch (ReflectiveOperationException exc) {
+      throw new IllegalArgumentException(exc);
     }
   }
 

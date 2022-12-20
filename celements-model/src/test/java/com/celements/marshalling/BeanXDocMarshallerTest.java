@@ -14,7 +14,7 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.convert.bean.TestBean;
-import com.celements.model.access.ModelAccessStrategy;
+import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.ClassIdentity;
 import com.celements.model.classes.fields.ClassField;
@@ -32,7 +32,7 @@ public class BeanXDocMarshallerTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    registerComponentMock(ModelAccessStrategy.class);
+    registerComponentMock(IModelAccessFacade.class);
     classDef = Utils.getComponent(ClassDefinition.class, NAME);
     expectClass(classDef, new WikiReference("wiki"));
   }
@@ -97,8 +97,8 @@ public class BeanXDocMarshallerTest extends AbstractComponentTest {
   private XWikiDocument expectDoc(DocumentReference docRef) {
     XWikiDocument doc = new XWikiDocument(docRef);
     doc.setNew(false);
-    expect(getMock(ModelAccessStrategy.class).getDocument(doc.getDocumentReference(),
-        "")).andReturn(doc).anyTimes();
+    expect(getMock(IModelAccessFacade.class).getOrCreateDocument(doc.getDocumentReference()))
+        .andReturn(doc).anyTimes();
     return doc;
   }
 

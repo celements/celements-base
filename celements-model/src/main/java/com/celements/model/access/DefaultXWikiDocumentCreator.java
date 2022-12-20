@@ -1,7 +1,6 @@
 package com.celements.model.access;
 
 import static com.celements.model.access.IModelAccessFacade.*;
-import static com.celements.model.util.References.*;
 
 import java.util.Date;
 
@@ -14,7 +13,6 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
-import com.celements.model.util.References;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @Component
@@ -27,7 +25,7 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
 
   @Override
   public XWikiDocument createWithoutDefaults(DocumentReference docRef, String lang) {
-    XWikiDocument doc = new XWikiDocument(cloneRef(docRef, DocumentReference.class));
+    XWikiDocument doc = new XWikiDocument(docRef);
     doc.setNew(true);
     lang = modelUtils.normalizeLang(lang);
     doc.setLanguage(lang);
@@ -38,6 +36,7 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     doc.setDate(creationDate);
     doc.setCreator(context.getUserName());
     doc.setAuthor(context.getUserName());
+    doc.setContentAuthor(context.getUserName());
     doc.setContent("");
     doc.setContentDirty(true);
     doc.setMetaDataDirty(true);
@@ -74,7 +73,8 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     } else {
       toExtractClass = SpaceReference.class;
     }
-    return context.getDefaultLanguage(References.extractRef(docRef, toExtractClass).get());
+    return context.getDefaultLanguage(docRef.extractRef(toExtractClass)
+        .orElseThrow(IllegalStateException::new));
   }
 
   @Override

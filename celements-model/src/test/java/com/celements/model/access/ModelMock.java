@@ -3,37 +3,29 @@ package com.celements.model.access;
 import static com.celements.common.test.CelementsTestUtils.*;
 import static com.google.common.base.Preconditions.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentRepositoryException;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentSaveException;
-import com.celements.model.util.ModelUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.Utils;
 
 @Component(ModelMock.NAME)
-public class ModelMock implements ModelAccessStrategy {
+public class ModelMock extends DefaultModelAccessFacade {
 
   public static final String NAME = "modelMock";
 
-  @Requirement
-  private XWikiDocumentCreator docCreator;
-
-  @Requirement
-  private ModelUtils modelUtils;
-
   public static ModelMock get() {
-    ModelAccessStrategy modelAccess = Utils.getComponent(ModelAccessStrategy.class);
+    IModelAccessFacade modelAccess = Utils.getComponent(IModelAccessFacade.class);
     if (modelAccess instanceof ModelMock) {
       return (ModelMock) modelAccess;
     } else {
@@ -43,8 +35,8 @@ public class ModelMock implements ModelAccessStrategy {
 
   public static ModelMock init() {
     try {
-      ModelMock modelAccess = (ModelMock) Utils.getComponent(ModelAccessStrategy.class, NAME);
-      registerComponentMock(ModelAccessStrategy.class, "default", modelAccess);
+      ModelMock modelAccess = (ModelMock) Utils.getComponent(IModelAccessFacade.class, NAME);
+      registerComponentMock(IModelAccessFacade.class, "default", modelAccess);
       return modelAccess;
     } catch (ComponentRepositoryException exc) {
       throw new RuntimeException("failed to register ModelAccessStub");
@@ -65,7 +57,7 @@ public class ModelMock implements ModelAccessStrategy {
   }
 
   public boolean isRegistered(DocumentReference docRef) {
-    return isRegistered(docRef, IModelAccessFacade.DEFAULT_LANG);
+    return isRegistered(docRef, DEFAULT_LANG);
   }
 
   public DocRecord getDocRecord(DocumentReference docRef, String lang) {
@@ -74,7 +66,7 @@ public class ModelMock implements ModelAccessStrategy {
   }
 
   public DocRecord getDocRecord(DocumentReference docRef) {
-    return getDocRecord(docRef, IModelAccessFacade.DEFAULT_LANG);
+    return getDocRecord(docRef, DEFAULT_LANG);
   }
 
   public DocRecord registerDoc(DocumentReference docRef, String lang, XWikiDocument doc) {
@@ -85,7 +77,7 @@ public class ModelMock implements ModelAccessStrategy {
   }
 
   public DocRecord registerDoc(DocumentReference docRef, XWikiDocument doc) {
-    return registerDoc(docRef, IModelAccessFacade.DEFAULT_LANG, doc);
+    return registerDoc(docRef, DEFAULT_LANG, doc);
   }
 
   public DocRecord registerDoc(DocumentReference docRef, String lang) {
@@ -95,7 +87,7 @@ public class ModelMock implements ModelAccessStrategy {
   }
 
   public DocRecord registerDoc(DocumentReference docRef) {
-    return registerDoc(docRef, IModelAccessFacade.DEFAULT_LANG);
+    return registerDoc(docRef, DEFAULT_LANG);
   }
 
   public DocRecord removeRegisteredDoc(DocumentReference docRef, String lang) {
@@ -104,7 +96,7 @@ public class ModelMock implements ModelAccessStrategy {
   }
 
   public DocRecord removeRegisteredDoc(DocumentReference docRef) {
-    return removeRegisteredDoc(docRef, IModelAccessFacade.DEFAULT_LANG);
+    return removeRegisteredDoc(docRef, DEFAULT_LANG);
   }
 
   public void removeAllRegisteredDocs() {
@@ -130,8 +122,8 @@ public class ModelMock implements ModelAccessStrategy {
   }
 
   @Override
-  public boolean exists(DocumentReference docRef, String lang) {
-    return isRegistered(docRef, lang);
+  public boolean exists(DocumentReference docRef) {
+    return isRegistered(docRef);
   }
 
   @Override
@@ -161,11 +153,18 @@ public class ModelMock implements ModelAccessStrategy {
 
   @Override
   public void deleteDocument(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
-    expectDelete(doc.getDocumentReference(), doc.getLanguage());
+    for (DocRecord record : getDocs(doc.getDocumentReference()).values()) {
+      expectDelete(record);
+    }
   }
 
-  private void expectDelete(DocumentReference docRef, String lang) throws DocumentDeleteException {
-    DocRecord record = getDocRecord(docRef, lang);
+  @Override
+  public void deleteDocumentWithoutTranslations(XWikiDocument doc, boolean totrash)
+      throws DocumentDeleteException {
+    expectDelete(getDocRecord(doc.getDocumentReference(), doc.getLanguage()));
+  }
+
+  private void expectDelete(DocRecord record) throws DocumentDeleteException {
     if (!record.throwDeleteExc) {
       record.deleted++;
     } else {
@@ -174,8 +173,8 @@ public class ModelMock implements ModelAccessStrategy {
   }
 
   @Override
-  public List<String> getTranslations(DocumentReference docRef) {
-    return new ArrayList<>(getDocs(docRef).keySet());
+  public List<String> getExistingLangs(DocumentReference docRef) {
+    return ImmutableList.copyOf(getDocs(docRef).keySet());
   }
 
   public class DocRecord {
@@ -227,5 +226,4 @@ public class ModelMock implements ModelAccessStrategy {
     }
 
   }
-
 }

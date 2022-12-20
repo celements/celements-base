@@ -22,7 +22,6 @@ com.celements.store.DocumentCacheStoreListener
 com.celements.model.context.DefaultModelContext
 com.celements.model.util.DefaultModelUtils
 com.celements.model.access.DefaultXWikiDocumentCreator
-com.celements.model.access.StoreModelAccessStrategy
 com.celements.model.field.XObjectFieldAccessor
 com.celements.model.field.XObjectStringFieldAccessor
 com.celements.convert.bean.BeanFieldAccessor
@@ -51,3 +50,4 @@ com.celements.model.migration.InvalidXObjectsMigration
 com.celements.convert.bean.XDocBeanConversionLoader
 com.celements.model.reference.ReferenceScriptService
 com.celements.debug.DebugScriptService
+com.celements.model.access.XWikiModelAccessAdapter
