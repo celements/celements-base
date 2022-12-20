@@ -87,11 +87,8 @@ import org.securityfilter.filter.URLPatternMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
-import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletedEvent;
-import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
-import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.cache.Cache;
 import org.xwiki.cache.CacheException;
 import org.xwiki.cache.CacheFactory;
@@ -364,6 +361,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   private XWikiURLBuilder entityXWikiURLBuilder = Utils.getComponent(XWikiURLBuilder.class,
       "entity");
+
+  private static XWikiAdapter getXWikiAdapter() {
+    return Utils.getComponent(XWikiAdapter.class);
+  }
 
   public static String getConfigPath() throws NamingException {
     if (configPath == null) {
@@ -1364,111 +1365,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void saveDocument(XWikiDocument doc, String comment, boolean isMinorEdit,
       XWikiContext context) throws XWikiException {
-    String server = null, database = null;
-    try {
-      server = doc.getDocumentReference().getWikiReference().getName();
-
-      if (server != null) {
-        database = context.getDatabase();
-        context.setDatabase(server);
-      }
-
-      // Setting comment & minor edit before saving
-      doc.setComment(StringUtils.defaultString(comment));
-      doc.setMinorEdit(isMinorEdit);
-
-      // We need to save the original document since saveXWikiDoc() will reset it and we
-      // need that original document for the notification below.
-      XWikiDocument originalDocument = doc.getOriginalDocument();
-      // Always use an originalDocument, to provide a consistent behavior. The cases where
-      // originalDocument is null are rare (specifically when the XWikiDocument object is
-      // manually constructed, and not obtained using the API).
-      if (originalDocument == null) {
-        originalDocument = new XWikiDocument(doc.getDocumentReference());
-      }
-
-      ObservationManager om = Utils.getComponent(ObservationManager.class);
-
-      // Notify listeners about the document about to be created or updated
-
-      // First the legacy notification mechanism
-
-      // Then the new observation module
-      // Note that for the moment the event being send is a bridge event, as we are still passing
-      // around
-      // an XWikiDocument as source and an XWikiContext as data.
-
-      if (originalDocument.isNew()) {
-        getNotificationManager().preverify(doc, originalDocument,
-            XWikiDocChangeNotificationInterface.EVENT_NEW, context);
-        if (om != null) {
-          om.notify(new DocumentCreatingEvent(doc.getDocumentReference()), doc, context);
-        }
-      } else {
-        getNotificationManager().preverify(doc, originalDocument,
-            XWikiDocChangeNotificationInterface.EVENT_CHANGE, context);
-        if (om != null) {
-          om.notify(new DocumentUpdatingEvent(doc.getDocumentReference()), doc, context);
-        }
-      }
-
-      getStore().saveXWikiDoc(doc, context);
-
-      // Since the store#saveXWikiDoc resets originalDocument, we need to temporarily put it
-      // back to send notifications.
-      XWikiDocument newOriginal = doc.getOriginalDocument();
-
-      try {
-        doc.setOriginalDocument(originalDocument);
-
-        // Notify listeners about the document having been created or updated
-
-        // First the legacy notification mechanism
-
-        // Then the new observation module
-        // Note that for the moment the event being send is a bridge event, as we are still passing
-        // around
-        // an XWikiDocument as source and an XWikiContext as data.
-        // The old version is made available using doc.getOriginalDocument()
-
-        if (originalDocument.isNew()) {
-          getNotificationManager().verify(doc, originalDocument,
-              XWikiDocChangeNotificationInterface.EVENT_NEW, context);
-          if (om != null) {
-            om.notify(new DocumentCreatedEvent(doc.getDocumentReference()), doc, context);
-          }
-        } else {
-          getNotificationManager().verify(doc, originalDocument,
-              XWikiDocChangeNotificationInterface.EVENT_CHANGE, context);
-          if (om != null) {
-            om.notify(new DocumentUpdatedEvent(doc.getDocumentReference()), doc, context);
-          }
-        }
-      } catch (Exception ex) {
-        LOG.error("Failed to send document save notification for document ["
-            + this.defaultEntityReferenceSerializer.serialize(doc.getDocumentReference()) + "]",
-            ex);
-      } finally {
-        doc.setOriginalDocument(newOriginal);
-      }
-    } finally {
-      if ((server != null) && (database != null)) {
-        context.setDatabase(database);
-      }
-    }
+    getXWikiAdapter().saveDocument(doc, comment, isMinorEdit);
   }
 
   public XWikiDocument getDocument(XWikiDocument doc, XWikiContext context) throws XWikiException {
-    String database = context.getDatabase();
-    try {
-      if (doc.getDocumentReference().getWikiReference().getName() != null) {
-        context.setDatabase(doc.getDocumentReference().getWikiReference().getName());
-      }
-
-      return getStore().loadXWikiDoc(doc, context);
-    } finally {
-      context.setDatabase(database);
-    }
+    return getXWikiAdapter().getDocument(doc);
   }
 
   public XWikiDocument getDocument(XWikiDocument doc, String revision, XWikiContext context)
@@ -4063,56 +3964,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void deleteDocument(XWikiDocument doc, boolean totrash, XWikiContext context)
       throws XWikiException {
-    ObservationManager om = Utils.getComponent(ObservationManager.class);
-
-    // Inform notification mechanisms that a document is about to be deleted
-
-    // First the legacy notification mechanism
-    getNotificationManager().preverify(doc, new XWikiDocument(doc.getDocumentReference()),
-        XWikiDocChangeNotificationInterface.EVENT_DELETE, context);
-
-    // Then the new observation module
-    // Note that for the moment the event being send is a bridge event, as we are still passing
-    // around
-    // an XWikiDocument as source and an XWikiContext as data.
-    om.notify(new DocumentDeletingEvent(doc.getDocumentReference()), new XWikiDocument(
-        doc.getDocumentReference()), context);
-
-    if (hasRecycleBin(context) && totrash) {
-      getRecycleBinStore().saveToRecycleBin(doc, context.getUser(), new Date(), context, true);
-    }
-
-    getStore().deleteXWikiDoc(doc, context);
-
-    try {
-      // Inform notification mecanisms that a document has been deleted
-
-      // First the legacy notification mechanism
-      getNotificationManager().verify(new XWikiDocument(doc.getDocumentReference()), doc,
-          XWikiDocChangeNotificationInterface.EVENT_DELETE, context);
-
-      // Then the new observation module
-      // Note that for the moment the event being send is a bridge event, as we are still passing
-      // around
-      // an XWikiDocument as source and an XWikiContext as data.
-      // The source document is a new empty XWikiDocument to follow
-      // DocumentUpdatedEvent policy: source document in new document and the old version is
-      // available using
-      // doc.getOriginalDocument()
-      if (om != null) {
-        XWikiDocument blankDoc = new XWikiDocument(doc.getDocumentReference());
-        // Again to follow general event policy, new document author is the user who modified the
-        // document (here
-        // the modification is delete)
-        blankDoc.setOriginalDocument(doc);
-        blankDoc.setAuthor(context.getUser());
-        blankDoc.setContentAuthor(context.getUser());
-        om.notify(new DocumentDeletedEvent(doc.getDocumentReference()), blankDoc, context);
-      }
-    } catch (Exception ex) {
-      LOG.error("Failed to send document delete notifications for document ["
-          + doc.getPrefixedFullName() + "]", ex);
-    }
+    getXWikiAdapter().deleteDocument(doc, totrash);
   }
 
   public String getDatabase() {
@@ -5641,24 +5493,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public boolean exists(DocumentReference documentReference, XWikiContext context) {
-    String server = null, database = null;
-    try {
-      XWikiDocument doc = new XWikiDocument(documentReference);
-      server = doc.getDatabase();
-
-      if (server != null) {
-        database = context.getDatabase();
-        context.setDatabase(server);
-      }
-
-      return getStore().exists(doc, context);
-    } catch (XWikiException e) {
-      return false;
-    } finally {
-      if ((server != null) && (database != null)) {
-        context.setDatabase(database);
-      }
-    }
+    return getXWikiAdapter().exists(documentReference);
   }
 
   public String getAdType(XWikiContext context) {
