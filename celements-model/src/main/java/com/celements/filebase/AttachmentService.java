@@ -492,8 +492,9 @@ public class AttachmentService implements IAttachmentServiceRole {
         return attach;
       }
     }
+
     throw new AttachmentNotExistsException(new AttachmentReference(
-        Objects.requireNonNullElse(Strings.emptyToNull(filename), "null"),
+        Objects.toString(Strings.nullToEmpty(filename)),
         doc.getDocumentReference()));
   }
 
