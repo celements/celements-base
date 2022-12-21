@@ -2,15 +2,14 @@ package com.celements.model.context;
 
 import static java.util.stream.Collectors.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -20,6 +19,7 @@ import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.MoreOptional;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.Utils;
@@ -31,26 +31,78 @@ import com.xpn.xwiki.web.Utils;
 @NotThreadSafe
 public class Contextualiser {
 
-  private final Map<String, Optional<Object>> eValues = new HashMap<>();
-  private final Map<String, Optional<Object>> xValues = new HashMap<>();
-  private final Map<String, Optional<Object>> vValues = new HashMap<>();
+  private class ContextModifier {
+
+    private final Map<String, Optional<Object>> values = new HashMap<>();
+    private final Function<String, Object> getter;
+    private final BiConsumer<String, Object> setter;
+    private final Consumer<String> remover;
+
+    ContextModifier(Function<String, Object> getter,
+        BiConsumer<String, Object> setter,
+        Consumer<String> remover) {
+      this.getter = getter;
+      this.setter = setter;
+      this.remover = remover;
+    }
+
+    void with(String key, Object val) {
+      if (key != null) {
+        values.put(key, Optional.ofNullable(val));
+      }
+    }
+
+    boolean hasValues() {
+      return !values.isEmpty();
+    }
+
+    Optional<Object> get(String key) {
+      return Optional.ofNullable(getter.apply(key));
+    }
+
+    void setOrRemove(String key, Optional<Object> value) {
+      if (value.isPresent()) {
+        setter.accept(key, value.get());
+      } else {
+        remover.accept(key);
+      }
+    }
+
+    <T> T execute(Supplier<T> supplier) {
+      Map<String, Optional<Object>> prev = values.keySet().stream()
+          .collect(toMap(key -> key, this::get));
+      try {
+        values.forEach(this::setOrRemove);
+        return supplier.get();
+      } finally {
+        prev.forEach(this::setOrRemove);
+      }
+    }
+  }
+
+  private final Optional<ContextModifier> eCtxMod;
+  private final Optional<ContextModifier> xCtxMod;
+  private final Optional<ContextModifier> vCtxMod;
+
+  public Contextualiser() {
+    eCtxMod = getExecCtx().map(ctx -> new ContextModifier(ctx::getProperty, ctx::setProperty,
+        ctx::removeProperty));
+    xCtxMod = getXWikiCtx().map(ctx -> new ContextModifier(ctx::get, ctx::put, ctx::remove));
+    vCtxMod = getVeloCtx().map(ctx -> new ContextModifier(ctx::get, ctx::put, ctx::remove));
+  }
 
   public Contextualiser withExecContext(String key, Object val) {
-    return with(eValues, key, val);
+    eCtxMod.ifPresent(mod -> mod.with(key, val));
+    return this;
   }
 
   public Contextualiser withXWikiContext(String key, Object val) {
-    return with(xValues, key, val);
+    xCtxMod.ifPresent(mod -> mod.with(key, val));
+    return this;
   }
 
   public Contextualiser withVeloContext(String key, Object val) {
-    return with(vValues, key, val);
-  }
-
-  private Contextualiser with(Map<String, Optional<Object>> ctx, String key, Object val) {
-    if (key != null) {
-      ctx.put(key, Optional.ofNullable(val));
-    }
+    vCtxMod.ifPresent(mod -> mod.with(key, val));
     return this;
   }
 
@@ -70,43 +122,12 @@ public class Contextualiser {
   }
 
   public <T> T execute(Supplier<T> supplier) {
-    List<Function<Supplier<T>, T>> modifiers = new ArrayList<>();
-    getExecCtx().ifPresent(ctx -> modifiers.add(s -> executeWith(s, eValues,
-        ctx::getProperty, ctx::setProperty, ctx::removeProperty)));
-    getXWikiCtx().ifPresent(ctx -> modifiers.add(s -> executeWith(s, xValues,
-        ctx::get, ctx::put, ctx::remove)));
-    getVeloCtx().ifPresent(ctx -> modifiers.add(s -> executeWith(s, vValues,
-        ctx::get, ctx::put, ctx::remove)));
-    return modifiers.stream()
+    return Stream.of(eCtxMod, xCtxMod, vCtxMod)
+        .flatMap(MoreOptional::stream)
+        .filter(ContextModifier::hasValues)
+        .map(ctxMod -> (Function<Supplier<T>, T>) ctxMod::execute)
         .reduce(Supplier::get, (f1, f2) -> (s -> f1.apply(() -> f2.apply(s))))
         .apply(supplier);
-  }
-
-  private <T> T executeWith(Supplier<T> supplier, Map<String, Optional<Object>> values,
-      Function<String, Object> getter,
-      BiConsumer<String, Object> setter,
-      Consumer<String> remover) {
-    return executeWith(supplier, values, key -> Optional.ofNullable(getter.apply(key)),
-        (key, value) -> {
-          if (value.isPresent()) {
-            setter.accept(key, value.get());
-          } else {
-            remover.accept(key);
-          }
-        });
-  }
-
-  private <T> T executeWith(Supplier<T> supplier, Map<String, Optional<Object>> values,
-      Function<String, Optional<Object>> getter,
-      BiConsumer<String, Optional<Object>> setOrRemove) {
-    Map<String, Optional<Object>> prev = values.keySet().stream()
-        .collect(toMap(key -> key, getter));
-    try {
-      values.forEach(setOrRemove);
-      return supplier.get();
-    } finally {
-      prev.forEach(setOrRemove);
-    }
   }
 
   private static Optional<VelocityContext> getVeloCtx() {
