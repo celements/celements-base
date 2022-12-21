@@ -252,7 +252,7 @@ public class XWikiServletResponse implements XWikiResponse {
 
   @Override
   public String getContentType() {
-    return null;
+    return this.response.getContentType();
   }
 
   @Override
