@@ -88,9 +88,6 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelAccessFacade.class);
 
   @Requirement
-  protected ObservationManager observationManager;
-
-  @Requirement
   protected XWikiDocumentCreator docCreator;
 
   @Requirement
@@ -866,10 +863,17 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
           .newInstance(doc.getDocumentReference());
       LOGGER.trace("notify event [{}] for doc [{}] with lang [{}]", eventType.getSimpleName(),
           serialize(doc.getDocumentReference()), doc.getLanguage());
-      observationManager.notify(event, doc, context.getXWikiContext());
+      getObservationManager().notify(event, doc, context.getXWikiContext());
     } catch (ReflectiveOperationException exc) {
       throw new IllegalArgumentException(exc);
     }
+  }
+
+  /**
+   * beware of cyclic dependencies
+   */
+  private ObservationManager getObservationManager() {
+    return Utils.getComponent(ObservationManager.class);
   }
 
   private Supplier<String> serialize(EntityReference ref) {
