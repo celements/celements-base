@@ -46,7 +46,11 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
     return backingStore.get();
   }
 
-  protected abstract String getBackingStoreConfigName();
+  protected abstract String getName();
+
+  protected String getBackingStoreConfigName() {
+    return "celements.store." + getName() + ".backingStore";
+  }
 
   @Override
   public Set<DocumentMetaData> listDocumentMetaData(EntityReference filterRef) {

@@ -79,11 +79,10 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   private static final Logger LOGGER = LoggerFactory.getLogger(DocumentCacheStore.class);
   private static final Logger LOGGER_DL = LoggerFactory.getLogger(DocumentLoader.class);
 
-  public static final String COMPONENT_NAME = "DocumentCacheStore";
+  public static final String COMPONENT_NAME = "docCache";
 
   public static final String PARAM_DOC_CACHE_CAPACITY = "xwiki.store.cache.capacity";
   public static final String PARAM_EXIST_CACHE_CAPACITY = "xwiki.store.cache.pageexistcapacity";
-  public static final String BACKING_STORE_STRATEGY = "celements.store.cache.storeStrategy";
 
   @Requirement
   private CacheManager cacheManager;
@@ -110,8 +109,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   private final ConcurrentMap<String, DocumentLoader> documentLoaderMap = new ConcurrentHashMap<>();
 
   @Override
-  protected String getBackingStoreConfigName() {
-    return BACKING_STORE_STRATEGY;
+  protected String getName() {
+    return COMPONENT_NAME;
   }
 
   // SonarLint Rule squid:S3064 - Assignment of lazy-initialized members should be

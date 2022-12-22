@@ -24,8 +24,8 @@ public class ModelAccessStore extends DelegateStore {
   private IModelAccessFacade modelAccess;
 
   @Override
-  protected String getBackingStoreConfigName() {
-    return "celements.store.storeStrategy";
+  protected String getName() {
+    return NAME;
   }
 
   @Override

@@ -29,7 +29,7 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     mockStore = registerComponentMock(XWikiStoreInterface.class, MOCK_STORE_HINT);
-    getConfigurationSource().setProperty(DocumentCacheStore.BACKING_STORE_STRATEGY,
+    getConfigurationSource().setProperty("celements.store.docCache.backingStore",
         MOCK_STORE_HINT);
     expect(getWikiMock().Param(eq(DocumentCacheStore.PARAM_EXIST_CACHE_CAPACITY))).andReturn(
         "100").anyTimes();
