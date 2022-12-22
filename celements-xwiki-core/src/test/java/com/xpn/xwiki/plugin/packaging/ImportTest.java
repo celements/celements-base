@@ -38,7 +38,6 @@ import org.jmock.core.stub.CustomStub;
 import org.jmock.core.stub.VoidStub;
 
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiAdapter;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -65,8 +64,6 @@ public class ImportTest extends AbstractBridgedXWikiComponentTestCase {
 
   private Mock mockRightService;
 
-  private Mock mockXWikiAdapter;
-
   private Map<String, XWikiDocument> docs = new HashMap<>();
 
   /**
@@ -88,27 +85,24 @@ public class ImportTest extends AbstractBridgedXWikiComponentTestCase {
     this.mockXWikiStore = mock(XWikiHibernateStore.class,
         new Class[] { XWiki.class, XWikiContext.class }, new Object[] { this.xwiki,
             getContext() });
-    mockXWikiAdapter = registerMockComponent(XWikiAdapter.class);
-    CustomStub loadStub = new CustomStub("Implements XWikiStoreInterface.loadXWikiDoc") {
+    this.mockXWikiStore.stubs().method("loadXWikiDoc").will(
+        new CustomStub("Implements XWikiStoreInterface.loadXWikiDoc") {
 
-      @Override
-      public Object invoke(Invocation invocation) throws Throwable {
-        XWikiDocument shallowDoc = (XWikiDocument) invocation.parameterValues.get(0);
-        String documentKey = shallowDoc.getFullName();
-        if (!shallowDoc.getLanguage().equals("")) {
-          documentKey += "." + shallowDoc.getLanguage();
-        }
-        if (docs.containsKey(documentKey)) {
-          return docs.get(documentKey);
-        } else {
-          return shallowDoc;
-        }
-      }
-    };
-
-    this.mockXWikiStore.stubs().method("loadXWikiDoc").will(loadStub);
-    this.mockXWikiAdapter.stubs().method("getDocument").will(loadStub);
-    this.mockXWikiAdapter.stubs().method("saveDocument").will(
+          @Override
+          public Object invoke(Invocation invocation) throws Throwable {
+            XWikiDocument shallowDoc = (XWikiDocument) invocation.parameterValues.get(0);
+            String documentKey = shallowDoc.getFullName();
+            if (!shallowDoc.getLanguage().equals("")) {
+              documentKey += "." + shallowDoc.getLanguage();
+            }
+            if (docs.containsKey(documentKey)) {
+              return docs.get(documentKey);
+            } else {
+              return shallowDoc;
+            }
+          }
+        });
+    this.mockXWikiStore.stubs().method("saveXWikiDoc").will(
         new CustomStub("Implements XWikiStoreInterface.saveXWikiDoc") {
 
           @Override

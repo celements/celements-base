@@ -362,10 +362,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   private XWikiURLBuilder entityXWikiURLBuilder = Utils.getComponent(XWikiURLBuilder.class,
       "entity");
 
-  private static XWikiAdapter getXWikiAdapter() {
-    return Utils.getComponent(XWikiAdapter.class);
-  }
-
   public static String getConfigPath() throws NamingException {
     if (configPath == null) {
       try {
@@ -913,27 +909,15 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public XWikiStoreInterface getNotCacheStore() {
-    XWikiStoreInterface store = getStore();
-    if (store instanceof XWikiCacheStoreInterface) {
-      store = ((XWikiCacheStoreInterface) store).getStore();
-    }
-    return store;
+    return getHibernateStore();
   }
 
   public XWikiHibernateStore getHibernateStore() {
-    XWikiStoreInterface store = getStore();
-    if (store instanceof XWikiHibernateStore) {
-      return (XWikiHibernateStore) store;
-    } else if (store instanceof XWikiCacheStoreInterface) {
-      store = ((XWikiCacheStoreInterface) store).getStore();
-      if (store instanceof XWikiHibernateStore) {
-        return (XWikiHibernateStore) store;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
+    XWikiStoreInterface hibStore = this.store;
+    if (!(hibStore instanceof XWikiHibernateStore)) {
+      hibStore = Utils.getComponent(XWikiStoreInterface.class);
     }
+    return (XWikiHibernateStore) hibStore;
   }
 
   public void updateDatabase(String wikiName, XWikiContext context) throws HibernateException,
@@ -1365,11 +1349,41 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void saveDocument(XWikiDocument doc, String comment, boolean isMinorEdit,
       XWikiContext context) throws XWikiException {
-    getXWikiAdapter().saveDocument(doc, comment, isMinorEdit);
+    doc.setComment(StringUtils.defaultString(comment));
+    doc.setMinorEdit(isMinorEdit);
+    XWikiDocument originalDocument = doc.getOriginalDocument();
+    if (originalDocument == null) {
+      originalDocument = new XWikiDocument(doc.getDocumentReference());
+    }
+    // legacy notification mechanism
+    if (originalDocument.isNew()) {
+      getNotificationManager().preverify(doc, originalDocument,
+          XWikiDocChangeNotificationInterface.EVENT_NEW, context);
+    } else {
+      getNotificationManager().preverify(doc, originalDocument,
+          XWikiDocChangeNotificationInterface.EVENT_CHANGE, context);
+    }
+    getStore().saveXWikiDoc(doc, context);
+    try {
+      doc = doc.clone();
+      doc.setOriginalDocument(originalDocument);
+      // legacy notification mechanism
+      if (originalDocument.isNew()) {
+        getNotificationManager().verify(doc, originalDocument,
+            XWikiDocChangeNotificationInterface.EVENT_NEW, context);
+      } else {
+        getNotificationManager().verify(doc, originalDocument,
+            XWikiDocChangeNotificationInterface.EVENT_CHANGE, context);
+      }
+    } catch (Exception ex) {
+      LOG.error("Failed to send document save notification for document ["
+          + this.defaultEntityReferenceSerializer.serialize(doc.getDocumentReference()) + "]",
+          ex);
+    }
   }
 
   public XWikiDocument getDocument(XWikiDocument doc, XWikiContext context) throws XWikiException {
-    return getXWikiAdapter().getDocument(doc);
+    return getStore().loadXWikiDoc(doc, context);
   }
 
   public XWikiDocument getDocument(XWikiDocument doc, String revision, XWikiContext context)
@@ -3964,7 +3978,21 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void deleteDocument(XWikiDocument doc, boolean totrash, XWikiContext context)
       throws XWikiException {
-    getXWikiAdapter().deleteDocument(doc, totrash);
+    // legacy notification mechanism
+    getNotificationManager().preverify(doc, new XWikiDocument(doc.getDocumentReference()),
+        XWikiDocChangeNotificationInterface.EVENT_DELETE, context);
+    Object totrashPrev = context.get("delete_totrash");
+    context.put("delete_totrash", totrash);
+    getStore().deleteXWikiDoc(doc, context);
+    context.put("delete_totrash", totrashPrev);
+    try {
+      // legacy notification mechanism
+      getNotificationManager().verify(new XWikiDocument(doc.getDocumentReference()), doc,
+          XWikiDocChangeNotificationInterface.EVENT_DELETE, context);
+    } catch (Exception ex) {
+      LOG.error("Failed to send document delete notifications for document ["
+          + doc.getPrefixedFullName() + "]", ex);
+    }
   }
 
   public String getDatabase() {
@@ -5493,7 +5521,12 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public boolean exists(DocumentReference documentReference, XWikiContext context) {
-    return getXWikiAdapter().exists(documentReference);
+    try {
+      XWikiDocument doc = new XWikiDocument(documentReference);
+      return getStore().exists(doc, context);
+    } catch (XWikiException e) {
+      return false;
+    }
   }
 
   public String getAdType(XWikiContext context) {
