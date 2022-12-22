@@ -48,7 +48,7 @@ import com.celements.model.field.FieldAccessException;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ClassFieldValue;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
-import com.celements.store.DocumentCacheStore;
+import com.celements.store.ModelAccessStore;
 import com.google.common.base.Optional;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
@@ -86,12 +86,15 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     doc.setDefaultLanguage(getConfigurationSource().getProperty(ModelContext.CFG_KEY_DEFAULT_LANG));
     doc.setSyntax(Syntax.XWIKI_1_0);
     doc.setMetaDataDirty(false);
-    storeMock = registerComponentMock(XWikiStoreInterface.class, DocumentCacheStore.COMPONENT_NAME);
+    storeMock = createMockAndAddToDefault(XWikiStoreInterface.class);
     doc.setStore(storeMock);
     doc.setNew(false);
     doc.setOriginalDocument(new XWikiDocument(doc.getDocumentReference()));
     doc.getOriginalDocument().setNew(false);
     expect(getWikiMock().getStore()).andReturn(storeMock).anyTimes();
+    ModelAccessStore modelAccessStoreMock = createMockAndAddToDefault(ModelAccessStore.class);
+    registerComponentMock(XWikiStoreInterface.class, ModelAccessStore.NAME, modelAccessStoreMock);
+    expect(modelAccessStoreMock.getBackingStore()).andReturn(storeMock).anyTimes();
     classRef = new DocumentReference("db", "class", "any");
     classRef2 = new DocumentReference("db", "class", "other");
     // important for unstable-2.0 set database because class references are checked for db

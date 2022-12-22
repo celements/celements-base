@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -34,9 +35,14 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
 
   private final Supplier<XWikiStoreInterface> backingStore = Suppliers.memoize(() -> {
     String hint = cfgSrc.getProperty(getBackingStoreConfigName(), "default");
-    XWikiStoreInterface store = Utils.getComponent(XWikiStoreInterface.class, hint);
+    XWikiStoreInterface store;
+    try {
+      store = Utils.getComponentManager().lookup(XWikiStoreInterface.class, hint);
+    } catch (ComponentLookupException exc) {
+      throw new IllegalStateException("backing store doesn't exist: " + hint, exc);
+    }
     if (store == this) {
-      throw new IllegalArgumentException("circular backing store: " + hint);
+      throw new IllegalStateException("circular backing store: " + hint);
     }
     logger.info("backing store initialized '{}' for hint '{}'", store, hint);
     return store;

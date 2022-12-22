@@ -30,6 +30,7 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     doc.setNew(true);
     lang = modelUtils.normalizeLang(lang);
     doc.setLanguage(lang);
+    doc.setDefaultLanguage(DEFAULT_LANG);
     doc.setTranslation(DEFAULT_LANG.equals(lang) ? 0 : 1);
     Date creationDate = new Date();
     doc.setCreationDate(creationDate);

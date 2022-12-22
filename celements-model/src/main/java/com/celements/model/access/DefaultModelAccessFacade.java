@@ -66,7 +66,7 @@ import com.celements.model.util.ReferenceSerializationMode;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
-import com.celements.store.DocumentCacheStore;
+import com.celements.store.ModelAccessStore;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -107,7 +107,11 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   protected StringFieldAccessor<BaseObject> xObjStrFieldAccessor;
 
   private XWikiStoreInterface getStore() {
-    return Utils.getComponent(XWikiStoreInterface.class, DocumentCacheStore.COMPONENT_NAME);
+    XWikiStoreInterface store = context.getXWikiContext().getWiki().getStore();
+    if (store instanceof ModelAccessStore) {
+      store = ((ModelAccessStore) store).getBackingStore();
+    }
+    return store;
   }
 
   private XWikiRecycleBinStoreInterface getRecycleBinStore() {
