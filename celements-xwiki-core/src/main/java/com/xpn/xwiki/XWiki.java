@@ -21,7 +21,6 @@ package com.xpn.xwiki;
 
 import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
-import static com.google.common.base.MoreObjects.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -176,8 +175,8 @@ import com.xpn.xwiki.stats.impl.SearchEngineRule;
 import com.xpn.xwiki.stats.impl.XWikiStatsServiceImpl;
 import com.xpn.xwiki.store.AttachmentRecycleBinStore;
 import com.xpn.xwiki.store.AttachmentVersioningStore;
+import com.xpn.xwiki.store.StoreFactory;
 import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
-import com.xpn.xwiki.store.XWikiCacheStore;
 import com.xpn.xwiki.store.XWikiCacheStoreInterface;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
@@ -775,17 +774,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Prepare the store
     setConfig(config);
 
-    XWikiStoreInterface basestore = Utils.getComponent(XWikiStoreInterface.class,
-        firstNonNull(Param("xwiki.store.main.hint"), XWikiHibernateStore.NAME));
-
-    // Check if we need to use the cache store..
-    boolean nocache = "0".equals(Param("xwiki.store.cache", "1"));
-    if (!nocache) {
-      XWikiCacheStoreInterface cachestore = new XWikiCacheStore(basestore, context);
-      setStore(cachestore);
-    } else {
-      setStore(basestore);
-    }
+    setStore(StoreFactory.getMainStore());
 
     setCriteriaService((XWikiCriteriaService) createClassFromConfig("xwiki.criteria.class",
         "com.xpn.xwiki.criteria.impl.XWikiCriteriaServiceImpl", context));

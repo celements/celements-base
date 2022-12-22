@@ -77,6 +77,7 @@ import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.store.StoreFactory;
 import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
@@ -107,7 +108,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   protected StringFieldAccessor<BaseObject> xObjStrFieldAccessor;
 
   private XWikiStoreInterface getStore() {
-    XWikiStoreInterface store = context.getXWikiContext().getWiki().getStore();
+    XWikiStoreInterface store = StoreFactory.getMainStore();
     if (store instanceof ModelAccessStore) {
       store = ((ModelAccessStore) store).getBackingStore();
     }
