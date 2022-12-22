@@ -20,6 +20,7 @@
 package com.xpn.xwiki;
 
 import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.MoreObjects.*;
 
 import java.io.File;
@@ -3984,10 +3985,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // legacy notification mechanism
     getNotificationManager().preverify(doc, new XWikiDocument(doc.getDocumentReference()),
         XWikiDocChangeNotificationInterface.EVENT_DELETE, context);
-    Object totrashPrev = context.get("delete_totrash");
-    context.put("delete_totrash", totrash);
-    getStore().deleteXWikiDoc(doc, context);
-    context.put("delete_totrash", totrashPrev);
+    withContextValue(context, "delete_totrash", totrash,
+        rethrow(() -> getStore().deleteXWikiDoc(doc, context)));
     try {
       // legacy notification mechanism
       getNotificationManager().verify(new XWikiDocument(doc.getDocumentReference()), doc,
@@ -3995,6 +3994,20 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     } catch (Exception ex) {
       LOG.error("Failed to send document delete notifications for document ["
           + doc.getPrefixedFullName() + "]", ex);
+    }
+  }
+
+  private void withContextValue(XWikiContext context, String key, Object value, Runnable runnable) {
+    Object previous = context.get(key);
+    try {
+      context.put(key, value);
+      runnable.run();
+    } finally {
+      if (previous == null) {
+        context.remove(key);
+      } else {
+        context.put(key, previous);
+      }
     }
   }
 
