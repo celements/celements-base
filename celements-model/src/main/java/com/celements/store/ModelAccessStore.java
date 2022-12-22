@@ -40,11 +40,7 @@ public class ModelAccessStore extends DelegateStore {
   @Override
   public void saveXWikiDoc(XWikiDocument doc, XWikiContext context, boolean bTransaction)
       throws XWikiException {
-    try {
-      modelAccess.saveDocument(doc, doc.getComment(), doc.isMinorEdit());
-    } catch (DocumentSaveException exc) {
-      throw asXWikiException(exc);
-    }
+    saveXWikiDoc(doc, context);
   }
 
   @Override
@@ -55,7 +51,8 @@ public class ModelAccessStore extends DelegateStore {
   @Override
   public void deleteXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     try {
-      modelAccess.deleteDocument(doc, Boolean.TRUE.equals(context.get("delete_totrash")));
+      boolean totrash = Boolean.TRUE.equals(context.get("delete_totrash"));
+      modelAccess.deleteDocumentWithoutTranslations(doc, totrash);
     } catch (DocumentDeleteException exc) {
       throw asXWikiException(exc);
     }

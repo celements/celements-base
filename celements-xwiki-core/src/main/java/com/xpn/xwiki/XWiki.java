@@ -19,6 +19,7 @@
  */
 package com.xpn.xwiki;
 
+import static com.celements.common.MoreObjectsCel.*;
 import static com.google.common.base.MoreObjects.*;
 
 import java.io.File;
@@ -2723,11 +2724,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       this.groupService.flushCache();
     }
 
-    // If we use the Cache Store layer.. we need to flush it
-    XWikiStoreInterface store = getStore();
-    if ((store != null) && (store instanceof XWikiCacheStoreInterface)) {
-      ((XWikiCacheStoreInterface) getStore()).flushCache();
-    }
+    // Flush the Cache Stores
+    Utils.getComponentList(XWikiStoreInterface.class).stream()
+        .flatMap(tryCast(XWikiCacheStoreInterface.class))
+        .forEach(XWikiCacheStoreInterface::flushCache);
+
     // Flush renderers.. Groovy renderer has a cache
     XWikiRenderingEngine rengine = getRenderingEngine();
     if (rengine != null) {
