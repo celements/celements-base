@@ -10,6 +10,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
@@ -41,6 +42,7 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     doc.setContentDirty(true);
     doc.setMetaDataDirty(true);
     doc.setOriginalDocument(new XWikiDocument(doc.getDocumentReference()));
+    doc.setSyntax(Syntax.XWIKI_2_0);
     return doc;
   }
 
@@ -58,7 +60,6 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     }
     XWikiDocument doc = createWithoutDefaults(docRef, lang);
     doc.setDefaultLanguage(defaultLang);
-    doc.setSyntax(doc.getSyntax()); // assures that syntax is set, 'new' has to be true
     return doc;
   }
 
