@@ -48,6 +48,7 @@ import com.celements.model.field.FieldAccessException;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ClassFieldValue;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
+import com.celements.store.DocumentCacheStore;
 import com.google.common.base.Optional;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
@@ -85,7 +86,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     doc.setDefaultLanguage(getConfigurationSource().getProperty(ModelContext.CFG_KEY_DEFAULT_LANG));
     doc.setSyntax(Syntax.XWIKI_1_0);
     doc.setMetaDataDirty(false);
-    storeMock = createMockAndAddToDefault(XWikiStoreInterface.class);
+    storeMock = registerComponentMock(XWikiStoreInterface.class, DocumentCacheStore.COMPONENT_NAME);
     doc.setStore(storeMock);
     doc.setNew(false);
     doc.setOriginalDocument(new XWikiDocument(doc.getDocumentReference()));
