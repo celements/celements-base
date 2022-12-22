@@ -49,7 +49,7 @@ public class ModelAccessStore extends DelegateStore {
 
   @Override
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
-    return modelAccess.getOrCreateDocument(doc.getDocumentReference());
+    return modelAccess.getOrCreateDocument(doc.getDocumentReference(), doc.getLanguage());
   }
 
   @Override
@@ -63,7 +63,7 @@ public class ModelAccessStore extends DelegateStore {
 
   @Override
   public boolean exists(XWikiDocument doc, XWikiContext context) throws XWikiException {
-    return modelAccess.exists(doc.getDocumentReference());
+    return modelAccess.existsLang(doc.getDocumentReference(), doc.getLanguage());
   }
 
   private XWikiException asXWikiException(Exception exc) {
