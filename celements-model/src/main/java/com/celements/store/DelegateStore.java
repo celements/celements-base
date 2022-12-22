@@ -15,6 +15,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.query.QueryManager;
 
+import com.celements.configuration.CelementsAllPropertiesConfigurationSource;
 import com.celements.model.metadata.DocumentMetaData;
 import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
@@ -30,8 +31,8 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
 
   private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @Requirement("xwikiproperties")
-  private ConfigurationSource cfgSrc;
+  @Requirement(CelementsAllPropertiesConfigurationSource.NAME)
+  protected ConfigurationSource cfgSrc;
 
   private final Supplier<XWikiStoreInterface> backingStore = Suppliers.memoize(() -> {
     String hint = cfgSrc.getProperty(getBackingStoreConfigName(), "default");

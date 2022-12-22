@@ -81,8 +81,9 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
 
   public static final String COMPONENT_NAME = "docCache";
 
-  public static final String PARAM_DOC_CACHE_CAPACITY = "xwiki.store.cache.capacity";
-  public static final String PARAM_EXIST_CACHE_CAPACITY = "xwiki.store.cache.pageexistcapacity";
+  private static final String PARAM_PREFIX = "celements.store." + COMPONENT_NAME;
+  public static final String PARAM_DOC_CACHE_CAPACITY = PARAM_PREFIX + ".capacityDoc";
+  public static final String PARAM_EXIST_CACHE_CAPACITY = PARAM_PREFIX + ".capacityExists";
 
   @Requirement
   private CacheManager cacheManager;
@@ -146,17 +147,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   private int getExistCacheCapacity() {
-    int existCacheCapacity = 10000;
-    String existsCapacity = modelContext.getXWikiContext().getWiki().Param(
-        PARAM_EXIST_CACHE_CAPACITY);
-    if (existsCapacity != null) {
-      try {
-        existCacheCapacity = Integer.parseInt(existsCapacity);
-      } catch (NumberFormatException exp) {
-        LOGGER.warn("Failed to read '{}' using default '{}'", PARAM_EXIST_CACHE_CAPACITY,
-            existCacheCapacity, exp);
-      }
-    }
+    int existCacheCapacity = cfgSrc.getProperty(PARAM_DOC_CACHE_CAPACITY, 10000);
     int docCacheCapacity = getDocCacheCapacity();
     if (existCacheCapacity < docCacheCapacity) {
       LOGGER.warn("WARNING: document exists cache capacity is smaller configured than docCache "
@@ -177,17 +168,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   private int getDocCacheCapacity() {
-    int docCacheCapacity = 100;
-    String capacity = modelContext.getXWikiContext().getWiki().Param(PARAM_DOC_CACHE_CAPACITY);
-    if (capacity != null) {
-      try {
-        docCacheCapacity = Integer.parseInt(capacity);
-      } catch (NumberFormatException exp) {
-        LOGGER.warn("Failed to read xwiki.store.cache.capacity using default '{}'",
-            docCacheCapacity, exp);
-      }
-    }
-    return docCacheCapacity;
+    return Math.max(0, cfgSrc.getProperty(PARAM_DOC_CACHE_CAPACITY, 100));
   }
 
   @Override
