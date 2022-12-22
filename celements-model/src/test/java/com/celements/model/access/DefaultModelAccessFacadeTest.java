@@ -27,7 +27,6 @@ import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.observation.ObservationManager;
-import org.xwiki.observation.event.Event;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.common.test.AbstractComponentTest;
@@ -449,10 +448,11 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Test
   public void test_saveDocument_create() throws Exception {
     doc.setNew(true);
-    doc.getOriginalDocument().setNew(true);
-    expectNotify(doc, DocumentCreatingEvent.class);
+    getMock(ObservationManager.class).notify(isA(DocumentCreatingEvent.class), same(doc),
+        same(getContext()));
     storeMock.saveXWikiDoc(same(doc), same(getContext()));
-    expectNotify(doc, DocumentCreatedEvent.class);
+    getMock(ObservationManager.class).notify(isA(DocumentCreatedEvent.class), eqRefLang(doc),
+        same(getContext()));
     replayDefault();
     modelAccess.saveDocument(doc);
     verifyDefault();
@@ -461,7 +461,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Test
   public void test_saveDocument_saveException() throws Exception {
     Throwable cause = new XWikiException();
-    expectNotify(doc, DocumentUpdatingEvent.class);
+    getMock(ObservationManager.class).notify(isA(DocumentUpdatingEvent.class), same(doc),
+        same(getContext()));
     storeMock.saveXWikiDoc(same(doc), same(getContext()));
     expectLastCall().andThrow(cause);
     replayDefault();
@@ -482,9 +483,11 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String oldCreator = "XWiki.OldCreator";
     doc.setCreator(oldCreator);
     Capture<XWikiDocument> docCapture = newCapture();
-    expectNotify(doc, DocumentUpdatingEvent.class);
+    getMock(ObservationManager.class).notify(isA(DocumentUpdatingEvent.class), same(doc),
+        same(getContext()));
     storeMock.saveXWikiDoc(capture(docCapture), same(getContext()));
-    expectNotify(doc, DocumentUpdatedEvent.class);
+    getMock(ObservationManager.class).notify(isA(DocumentUpdatedEvent.class), eqRefLang(doc),
+        same(getContext()));
     doc.setMetaDataDirty(false);
     replayDefault();
     modelAccess.saveDocument(doc);
@@ -504,9 +507,11 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String oldCreator = "XWiki.OldCreator";
     doc.setCreator(oldCreator);
     Capture<XWikiDocument> docCapture = newCapture();
-    expectNotify(doc, DocumentUpdatingEvent.class);
+    getMock(ObservationManager.class).notify(isA(DocumentCreatingEvent.class), same(doc),
+        same(getContext()));
     storeMock.saveXWikiDoc(capture(docCapture), same(getContext()));
-    expectNotify(doc, DocumentUpdatedEvent.class);
+    getMock(ObservationManager.class).notify(isA(DocumentCreatedEvent.class), eqRefLang(doc),
+        same(getContext()));
     doc.setMetaDataDirty(false);
     replayDefault();
     modelAccess.saveDocument(doc);
@@ -622,14 +627,13 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     assertTrue(doc.isMinorEdit());
   }
 
-  private void expectSaveWithNotify(XWikiDocument doc) throws XWikiException {
-    expectNotify(doc, DocumentUpdatingEvent.class);
+  private void expectSaveWithNotify(XWikiDocument doc)
+      throws XWikiException {
+    getMock(ObservationManager.class).notify(isA(DocumentUpdatingEvent.class), same(doc),
+        same(getContext()));
     storeMock.saveXWikiDoc(same(doc), same(getContext()));
-    expectNotify(doc, DocumentUpdatedEvent.class);
-  }
-
-  private void expectNotify(XWikiDocument doc, Class<? extends Event> eventClass) {
-    getMock(ObservationManager.class).notify(isA(eventClass), same(doc), same(getContext()));
+    getMock(ObservationManager.class).notify(isA(DocumentUpdatedEvent.class), eqRefLang(doc),
+        same(getContext()));
   }
 
   @Test
@@ -1493,7 +1497,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
 
     @Override
     public int compare(XWikiDocument o1, XWikiDocument o2) {
-      return (Objects.equals(o1.getDocumentReference(), o2.getDocumentReference())
+      return ((o1 != o2)
+          && Objects.equals(o1.getDocumentReference(), o2.getDocumentReference())
           && Objects.equals(o1.getLanguage(), o1.getLanguage()))
               ? 0
               : 1;

@@ -270,13 +270,6 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   public void saveDocument(XWikiDocument doc, String comment, boolean isMinorEdit)
       throws DocumentSaveException {
     checkNotNull(doc);
-    String username = context.getUserName();
-    doc.setAuthor(username);
-    if (doc.isNew()) {
-      doc.setCreator(username);
-    }
-    doc.setComment(Strings.nullToEmpty(comment));
-    doc.setMinorEdit(isMinorEdit);
     sanitizeLangBeforeSave(doc);
     LOGGER.info("saveDocument: doc '{}, {}', comment '{}', isMinorEdit '{}'",
         serialize(doc.getDocumentReference()), doc.getLanguage(), comment, isMinorEdit);
@@ -284,32 +277,38 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       LOGGER.trace("saveDocument: context db '{}' and StackTrace:",
           serialize(context.getWikiRef()), new Throwable());
     }
+    prepareDocForSave(doc, comment, isMinorEdit);
     new Contextualiser()
         .withWiki(doc.getDocumentReference().getWikiReference())
         .execute(rethrow(() -> saveDocumentAndNotify(doc)));
   }
 
-  private void saveDocumentAndNotify(XWikiDocument doc) throws DocumentSaveException {
-    XWikiDocument origDoc = doc.getOriginalDocument();
-    if (origDoc == null) {
-      origDoc = docCreator.create(doc.getDocumentReference(), doc.getLanguage());
+  private void prepareDocForSave(XWikiDocument doc, String comment, boolean isMinorEdit) {
+    doc.setAuthor(context.getUserName());
+    if (doc.isNew()) {
+      doc.setCreator(context.getUserName());
     }
-    notify(doc, origDoc.isNew() ? DocumentCreatingEvent.class : DocumentUpdatingEvent.class);
+    doc.setComment(Strings.nullToEmpty(comment));
+    doc.setMinorEdit(isMinorEdit);
+  }
+
+  private void saveDocumentAndNotify(XWikiDocument doc) throws DocumentSaveException {
+    boolean isNewDoc = doc.isNew();
+    XWikiDocument origDocBeforeSave = Optional.ofNullable(doc.getOriginalDocument())
+        .orElseGet(() -> docCreator.create(doc.getDocumentReference(), doc.getLanguage()));
+    notifyEvent(doc, isNewDoc ? DocumentCreatingEvent.class : DocumentUpdatingEvent.class);
     try {
       getStore().saveXWikiDoc(doc, context.getXWikiContext());
     } catch (XWikiException xwe) {
       throw new DocumentSaveException(doc.getDocumentReference(), xwe);
     }
-    XWikiDocument newOrigDoc = doc.getOriginalDocument();
     try {
-      // store#saveXWikiDoc resets the origDoc thus we need to temporarily put it back
-      doc.setOriginalDocument(origDoc);
-      notify(doc, origDoc.isNew() ? DocumentCreatedEvent.class : DocumentUpdatedEvent.class);
+      XWikiDocument notifyDoc = doc.clone(); // avoid mutating doc in notify after save
+      notifyDoc.setOriginalDocument(origDocBeforeSave);
+      notifyEvent(notifyDoc, isNewDoc ? DocumentCreatedEvent.class : DocumentUpdatedEvent.class);
     } catch (Exception exc) {
       LOGGER.error("Failed to notify save event for doc [{}] with lang [{}]",
           serialize(doc.getDocumentReference()), doc.getLanguage(), exc);
-    } finally {
-      doc.setOriginalDocument(newOrigDoc);
     }
   }
 
@@ -378,7 +377,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   public void deleteDocumentAndNotify(XWikiDocument doc, boolean totrash)
       throws DocumentDeleteException {
-    notify(doc, DocumentDeletingEvent.class);
+    notifyEvent(doc, DocumentDeletingEvent.class);
     try {
       if (hasRecycleBin() && totrash) {
         getRecycleBinStore().saveToRecycleBin(doc, context.getUserName(), new Date(),
@@ -389,11 +388,11 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       throw new DocumentDeleteException(doc.getDocumentReference(), xwe);
     }
     try {
-      // The source is a new empty XWikiDocument to follow DocumentUpdatedEvent policy:
-      // source doc in new document and the old version is available using doc.getOriginalDocument()
-      XWikiDocument deletedDoc = docCreator.create(doc.getDocumentReference(), doc.getLanguage());
-      deletedDoc.setOriginalDocument(doc);
-      notify(deletedDoc, DocumentDeletedEvent.class);
+      // to follow DocumentUpdatedEvent policy source doc must be a new empty document with the
+      // old deleted version available using doc.getOriginalDocument()
+      XWikiDocument notifyDoc = docCreator.create(doc.getDocumentReference(), doc.getLanguage());
+      notifyDoc.setOriginalDocument(doc);
+      notifyEvent(notifyDoc, DocumentDeletedEvent.class);
     } catch (Exception exc) {
       LOGGER.error("Failed to notify delete event for doc [{}] with lang [{}]",
           serialize(doc.getDocumentReference()), doc.getLanguage(), exc);
@@ -856,7 +855,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     return Utils.getComponent(IAttachmentServiceRole.class).getAttachmentNameEqual(doc, filename);
   }
 
-  private void notify(XWikiDocument doc, Class<? extends AbstractDocumentEvent> eventType) {
+  private void notifyEvent(XWikiDocument doc, Class<? extends AbstractDocumentEvent> eventType) {
     try {
       AbstractDocumentEvent event = eventType
           .getConstructor(DocumentReference.class)
