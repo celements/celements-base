@@ -83,8 +83,10 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  */
-@Component
+@Component(XWikiHibernateStore.NAME)
 public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWikiStoreInterface {
+
+  public static final String NAME = "xwikiHibernate";
 
   private static final Log log = LogFactory.getLog(XWikiHibernateStore.class);
 

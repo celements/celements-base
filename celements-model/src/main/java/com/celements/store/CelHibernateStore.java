@@ -54,8 +54,10 @@ import one.util.streamex.EntryStream;
 import one.util.streamex.StreamEx;
 
 @Singleton
-@Component
+@Component(CelHibernateStore.NAME)
 public class CelHibernateStore extends XWikiHibernateStore {
+
+  public static final String NAME = "celHibernate";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CelHibernateStore.class);
 

@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki;
 
+import static com.google.common.base.MoreObjects.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -771,8 +773,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Prepare the store
     setConfig(config);
 
-    XWikiStoreInterface basestore = Utils.getComponent(XWikiStoreInterface.class, Param(
-        "xwiki.store.main.hint"));
+    XWikiStoreInterface basestore = Utils.getComponent(XWikiStoreInterface.class,
+        firstNonNull(Param("xwiki.store.main.hint"), XWikiHibernateStore.NAME));
 
     // Check if we need to use the cache store..
     boolean nocache = "0".equals(Param("xwiki.store.cache", "1"));
@@ -915,7 +917,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public XWikiHibernateStore getHibernateStore() {
     XWikiStoreInterface hibStore = this.store;
     if (!(hibStore instanceof XWikiHibernateStore)) {
-      hibStore = Utils.getComponent(XWikiStoreInterface.class);
+      hibStore = Utils.getComponent(XWikiStoreInterface.class, "hibernate");
     }
     return (XWikiHibernateStore) hibStore;
   }

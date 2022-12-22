@@ -50,4 +50,6 @@ com.celements.model.migration.InvalidXObjectsMigration
 com.celements.convert.bean.XDocBeanConversionLoader
 com.celements.model.reference.ReferenceScriptService
 com.celements.debug.DebugScriptService
+com.celements.store.DefaultHibernateStore
+com.celements.store.DefaultXWikiStore
 com.celements.store.ModelAccessStore
