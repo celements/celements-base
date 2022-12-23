@@ -7,11 +7,13 @@ import static org.junit.Assert.*;
 import org.easymock.Capture;
 import org.junit.Before;
 import org.junit.Test;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.ImmutableDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
+import com.celements.configuration.CelementsAllPropertiesConfigurationSource;
 import com.celements.model.util.ModelUtils;
 import com.celements.model.util.References;
 import com.xpn.xwiki.XWikiContext;
@@ -29,12 +31,12 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     mockStore = registerComponentMock(XWikiStoreInterface.class, MOCK_STORE_HINT);
+    registerComponentMock(ConfigurationSource.class, CelementsAllPropertiesConfigurationSource.NAME,
+        getConfigurationSource());
     getConfigurationSource().setProperty("celements.store.docCache.backingStore",
         MOCK_STORE_HINT);
-    expect(getWikiMock().Param(eq(DocumentCacheStore.PARAM_EXIST_CACHE_CAPACITY))).andReturn(
-        "100").anyTimes();
-    expect(getWikiMock().Param(eq(DocumentCacheStore.PARAM_DOC_CACHE_CAPACITY))).andReturn(
-        "100").anyTimes();
+    getConfigurationSource().setProperty(DocumentCacheStore.PARAM_EXIST_CACHE_CAPACITY, 10000);
+    getConfigurationSource().setProperty(DocumentCacheStore.PARAM_DOC_CACHE_CAPACITY, 100);
     docCacheStore = (DocumentCacheStore) Utils.getComponent(XWikiStoreInterface.class,
         DocumentCacheStore.COMPONENT_NAME);
   }

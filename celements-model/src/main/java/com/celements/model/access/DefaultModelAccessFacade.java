@@ -69,6 +69,7 @@ import com.celements.rights.access.exceptions.NoAccessRightsException;
 import com.celements.store.ModelAccessStore;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -107,12 +108,13 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   @Requirement(XObjectStringFieldAccessor.NAME)
   protected StringFieldAccessor<BaseObject> xObjStrFieldAccessor;
 
+  private final Supplier<XWikiStoreInterface> mainStore = Suppliers
+      .memoize(StoreFactory::getMainStore);
+
   private XWikiStoreInterface getStore() {
-    XWikiStoreInterface store = StoreFactory.getMainStore();
-    if (store instanceof ModelAccessStore) {
-      store = ((ModelAccessStore) store).getBackingStore();
-    }
-    return store;
+    return tryCast(mainStore.get(), ModelAccessStore.class)
+        .map(ModelAccessStore::getBackingStore)
+        .orElse(mainStore.get());
   }
 
   private XWikiRecycleBinStoreInterface getRecycleBinStore() {

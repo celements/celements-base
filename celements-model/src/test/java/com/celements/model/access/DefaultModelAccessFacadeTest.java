@@ -30,6 +30,7 @@ import org.xwiki.observation.ObservationManager;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.common.test.AbstractComponentTest;
+import com.celements.configuration.CelementsAllPropertiesConfigurationSource;
 import com.celements.configuration.CelementsFromWikiConfigurationSource;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.ClassDocumentLoadException;
@@ -80,8 +81,9 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     registerComponentMock(ConfigurationSource.class, "all", getConfigurationSource());
     registerComponentMock(ConfigurationSource.class, CelementsFromWikiConfigurationSource.NAME,
         getConfigurationSource());
+    registerComponentMock(ConfigurationSource.class, CelementsAllPropertiesConfigurationSource.NAME,
+        getConfigurationSource());
     getConfigurationSource().setProperty(ModelContext.CFG_KEY_DEFAULT_LANG, "en");
-    modelAccess = (DefaultModelAccessFacade) Utils.getComponent(IModelAccessFacade.class);
     doc = new XWikiDocument(new DocumentReference("db", "space", "doc"));
     doc.setDefaultLanguage(getConfigurationSource().getProperty(ModelContext.CFG_KEY_DEFAULT_LANG));
     doc.setSyntax(Syntax.XWIKI_1_0);
@@ -91,14 +93,15 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     doc.setNew(false);
     doc.setOriginalDocument(new XWikiDocument(doc.getDocumentReference()));
     doc.getOriginalDocument().setNew(false);
-    expect(getWikiMock().getStore()).andReturn(storeMock).anyTimes();
     ModelAccessStore modelAccessStoreMock = createMockAndAddToDefault(ModelAccessStore.class);
     registerComponentMock(XWikiStoreInterface.class, ModelAccessStore.NAME, modelAccessStoreMock);
+    getConfigurationSource().setProperty("celements.store.main", ModelAccessStore.NAME);
     expect(modelAccessStoreMock.getBackingStore()).andReturn(storeMock).anyTimes();
     classRef = new DocumentReference("db", "class", "any");
     classRef2 = new DocumentReference("db", "class", "other");
     // important for unstable-2.0 set database because class references are checked for db
     getContext().setDatabase("db");
+    modelAccess = (DefaultModelAccessFacade) Utils.getComponent(IModelAccessFacade.class);
   }
 
   @Test
