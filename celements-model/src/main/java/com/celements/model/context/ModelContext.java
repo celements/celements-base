@@ -1,6 +1,7 @@
 package com.celements.model.context;
 
 import java.net.URL;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -13,7 +14,6 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.auth.user.User;
 import com.celements.model.util.ModelUtils;
-import com.google.common.base.Optional;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.user.api.XWikiUser;
@@ -23,11 +23,11 @@ import com.xpn.xwiki.web.XWikiResponse;
 @ComponentRole
 public interface ModelContext {
 
-  public static final String XWIKI_SPACE = "XWiki";
-  public static final String WEB_PREF_DOC_NAME = "WebPreferences";
-  public static final String XWIKI_PREF_DOC_NAME = "XWikiPreferences";
-  public static final String CFG_KEY_DEFAULT_LANG = "default_language";
-  public static final String FALLBACK_DEFAULT_LANG = "en";
+  String XWIKI_SPACE = "XWiki";
+  String WEB_PREF_DOC_NAME = "WebPreferences";
+  String XWIKI_PREF_DOC_NAME = "XWikiPreferences";
+  String CFG_KEY_DEFAULT_LANG = "default_language";
+  String FALLBACK_DEFAULT_LANG = "en";
 
   /**
    * WARNING: This call is discouraged, use other methods of this service. It will be deprecated
@@ -58,36 +58,48 @@ public interface ModelContext {
   boolean isMainWiki();
 
   /**
-   * @deprecated instead use {@link ModelUtils#getMainWikiRef()}
+   * @deprecated since 3.0, instead use {@link ModelUtils#getMainWikiRef()}
    */
   @Deprecated
   @NotNull
   WikiReference getMainWikiRef();
 
   /**
-   * @deprecated instead use {@link #getCurrentDoc}
+   * @deprecated since 3.6, instead use {@link #getDocument}
    */
   @Deprecated
   @Nullable
   XWikiDocument getDoc();
 
   /**
-   * @return the current doc set in context
+   * @deprecated since 5.9, instead use {@link #getDocument}
    */
+  @Deprecated
   @NotNull
-  Optional<XWikiDocument> getCurrentDoc();
+  com.google.common.base.Optional<XWikiDocument> getCurrentDoc();
+
+  @NotNull
+  Optional<XWikiDocument> getDocument();
 
   /**
-   * @return the current doc reference set in context
+   * @deprecated since 5.9, instead use {@link #getDocRef}
    */
+  @Deprecated
   @NotNull
-  Optional<DocumentReference> getCurrentDocRef();
+  com.google.common.base.Optional<DocumentReference> getCurrentDocRef();
+
+  @NotNull
+  Optional<DocumentReference> getDocRef();
 
   /**
-   * @return the current space set in context
+   * @deprecated since 5.9, instead use {@link #getSpaceRef}
    */
+  @Deprecated
   @NotNull
-  Optional<SpaceReference> getCurrentSpaceRef();
+  com.google.common.base.Optional<SpaceReference> getCurrentSpaceRef();
+
+  @NotNull
+  Optional<SpaceReference> getSpaceRef();
 
   /**
    * Returns the SpaceReference for the current document, if present. Otherwise a spaceReference for
@@ -107,17 +119,24 @@ public interface ModelContext {
   XWikiDocument setDoc(@Nullable XWikiDocument doc);
 
   /**
-   * @deprecated instead use {@link #getCurrentUser()}
+   * @deprecated since 3.6, instead use {@link #getUserOpt}
    */
   @Deprecated
   @Nullable
   XWikiUser getUser();
 
+  /**
+   * @deprecated since 5.9, instead use {@link #user}
+   */
+  @Deprecated
   @NotNull
-  Optional<User> getCurrentUser();
+  com.google.common.base.Optional<User> getCurrentUser();
+
+  @NotNull
+  Optional<User> user();
 
   /**
-   * @deprecated instead use {@link #setCurrentUser(User)} or {@link #clearCurrentUser()}
+   * @deprecated since 3.6, instead use {@link #setCurrentUser(User)}
    */
   @Deprecated
   @Nullable
@@ -125,27 +144,47 @@ public interface ModelContext {
 
   void setCurrentUser(@Nullable User user);
 
-  /**
-   * @deprecated instead use {@link #getUserDocRef()}
-   */
   @NotNull
-  @Deprecated
+  Optional<DocumentReference> getUserDocRef();
+
+  @NotNull
   String getUserName();
 
+  /**
+   * @deprecated since 5.9, instead use {@link #request}
+   */
+  @Deprecated
   @NotNull
-  Optional<XWikiRequest> getRequest();
+  com.google.common.base.Optional<XWikiRequest> getRequest();
 
   @NotNull
-  Optional<String> getRequestParameter(String key);
-
-  @NotNull
-  Optional<XWikiResponse> getResponse();
+  Optional<XWikiRequest> request();
 
   /**
-   * @return the current language or null
+   * @deprecated since 5.9, instead use {@link #getRequestParam}
    */
-  @Nullable
-  java.util.Optional<String> getLanguage();
+  @Deprecated
+  @NotNull
+  com.google.common.base.Optional<String> getRequestParameter(String key);
+
+  @NotNull
+  Optional<String> getRequestParam(String key);
+
+  /**
+   * @deprecated since 5.9, instead use {@link #response}
+   */
+  @Deprecated
+  @NotNull
+  com.google.common.base.Optional<XWikiResponse> getResponse();
+
+  @NotNull
+  Optional<XWikiResponse> response();
+
+  /**
+   * @return the current language
+   */
+  @NotNull
+  Optional<String> getLanguage();
 
   /**
    * @return the default language for the current wiki
@@ -163,17 +202,27 @@ public interface ModelContext {
 
   /**
    * @return the current url set in context
+   * @deprecated since 5.9, instead use {@link #getURL}
    */
+  @Deprecated
   @NotNull
-  Optional<URL> getUrl();
+  com.google.common.base.Optional<URL> getUrl();
+
+  @NotNull
+  Optional<URL> getURL();
 
   /**
    * @param url
    *          to be set in context
    * @return the url which was set before
+   * @deprecated since 5.9, instead use {@link #setURL}
    */
+  @Deprecated
   @NotNull
-  Optional<URL> setUrl(@Nullable URL url);
+  com.google.common.base.Optional<URL> setUrl(@Nullable URL url);
+
+  @NotNull
+  Optional<URL> setURL(@Nullable URL url);
 
   /**
    * Returns the XWikiPreferences document. Creates it (in memory) if it does not exist.

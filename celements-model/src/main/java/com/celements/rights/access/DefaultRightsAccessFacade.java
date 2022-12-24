@@ -68,7 +68,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   @Override
   public boolean hasAccessLevel(EntityReference ref, EAccessLevel level) {
-    return hasAccessLevel(ref, level, context.getCurrentUser().orNull());
+    return hasAccessLevel(ref, level, context.user().orElse(null));
   }
 
   @Override

@@ -1580,12 +1580,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     expect(getMock(IRightsAccessFacadeRole.class).hasAccessLevel(doc.getDocumentReference(),
         EAccessLevel.VIEW)).andReturn(false);
     replayDefault();
-    try {
-      modelAccess.getApiDocument(doc);
-      fail("NoAccessRightsException expected");
-    } catch (NoAccessRightsException exp) {
-      // expected
-    }
+    assertThrows(NoAccessRightsException.class, () -> modelAccess.getApiDocument(doc));
     verifyDefault();
   }
 

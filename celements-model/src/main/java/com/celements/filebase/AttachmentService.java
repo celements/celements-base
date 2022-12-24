@@ -108,7 +108,6 @@ public class AttachmentService implements IAttachmentServiceRole {
   public XWikiAttachment addAttachment(XWikiDocument doc, InputStream in, String filename,
       String username, String comment) throws AttachmentToBigException,
       AddingAttachmentContentFailedException, DocumentSaveException {
-    // Read XWikiAttachment
     XWikiAttachment attachment = null;
     try {
       attachment = getAttachmentNameEqual(doc, filename);

@@ -28,12 +28,13 @@ import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentLoadException;
 import com.celements.model.access.exception.DocumentNotExistsException;
+import com.celements.rights.access.EAccessLevel;
+import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
 import com.xpn.xwiki.api.Attachment;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
-import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.web.Utils;
 
 public class AttachmentServiceTest extends AbstractComponentTest {
@@ -43,7 +44,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
 
   @Before
   public void setUp_AttachmentServiceTest() throws ComponentLookupException, Exception {
-    registerComponentMock(IModelAccessFacade.class);
+    registerComponentMocks(IModelAccessFacade.class, IRightsAccessFacadeRole.class);
     registerComponentMock(ConfigurationSource.class, "all", getConfigurationSource());
     registerComponentMock(ConfigurationSource.class, CelementsFromWikiConfigurationSource.NAME,
         getConfigurationSource());
@@ -555,11 +556,9 @@ public class AttachmentServiceTest extends AbstractComponentTest {
 
   @Test
   public void test_getApiAttachment_hasAccess() throws Exception {
-    XWikiRightService mockRightSrv = createMockAndAddToDefault(XWikiRightService.class);
-    expect(getWikiMock().getRightService()).andReturn(mockRightSrv).anyTimes();
     XWikiAttachment xwikiAtt = new XWikiAttachment(doc, "bli.gaga");
-    expect(mockRightSrv.hasAccessLevel(eq("view"), eq(getContext().getUser()), eq("db:space.doc"),
-        same(getContext()))).andReturn(true).atLeastOnce();
+    expect(getMock(IRightsAccessFacadeRole.class).hasAccessLevel(doc.getDocumentReference(),
+        EAccessLevel.VIEW)).andReturn(true);
     replayDefault();
     Attachment attachment = attService.getApiAttachment(xwikiAtt);
     assertNotNull("Expected Attachment api object - not null", attachment);
@@ -568,11 +567,9 @@ public class AttachmentServiceTest extends AbstractComponentTest {
 
   @Test
   public void test_getApiAttachment_noAccess() throws Exception {
-    XWikiRightService mockRightSrv = createMockAndAddToDefault(XWikiRightService.class);
-    expect(getWikiMock().getRightService()).andReturn(mockRightSrv).anyTimes();
     XWikiAttachment xwikiAtt = new XWikiAttachment(doc, "bli.gaga");
-    expect(mockRightSrv.hasAccessLevel(eq("view"), eq(getContext().getUser()), eq("db:space.doc"),
-        same(getContext()))).andReturn(false).atLeastOnce();
+    expect(getMock(IRightsAccessFacadeRole.class).hasAccessLevel(doc.getDocumentReference(),
+        EAccessLevel.VIEW)).andReturn(false);
     replayDefault();
     assertThrows(NoAccessRightsException.class, () -> attService.getApiAttachment(xwikiAtt));
     verifyDefault();
