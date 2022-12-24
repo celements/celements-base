@@ -33,13 +33,13 @@ import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.ObservationManager;
 
-import com.celements.auth.user.User;
 import com.celements.filebase.IAttachmentServiceRole;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentAlreadyExistsException;
@@ -90,6 +90,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelAccessFacade.class);
 
+  static final String CFG_RECYCLEBIN = "celements.modelAccess.recyclebin";
+
   @Requirement
   protected XWikiDocumentCreator docCreator;
 
@@ -107,6 +109,9 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Requirement(XObjectStringFieldAccessor.NAME)
   protected StringFieldAccessor<BaseObject> xObjStrFieldAccessor;
+
+  @Requirement
+  protected ConfigurationSource cfgSrc;
 
   private final Supplier<XWikiStoreInterface> mainStore = Suppliers
       .memoize(StoreFactory::getMainStore);
@@ -137,8 +142,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     if (rightsAccess.hasAccessLevel(doc.getDocumentReference(), EAccessLevel.VIEW)) {
       return doc.newDocument(context.getXWikiContext());
     }
-    throw new NoAccessRightsException(doc.getDocumentReference(), context.getCurrentUser()
-        .toJavaUtil().map(User::asXWikiUser).orElse(null), EAccessLevel.VIEW);
+    throw new NoAccessRightsException(doc.getDocumentReference(), context.getUser(),
+        EAccessLevel.VIEW);
   }
 
   /**
@@ -172,8 +177,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     try {
       XWikiDocument doc = new Contextualiser()
           .withWiki(docRef.getWikiReference())
-          .execute(rethrow(() -> getStore().loadXWikiDoc(docCreator
-              .createWithoutDefaults(docRef, lang), context.getXWikiContext())));
+          .execute(rethrow(() -> getStore().loadXWikiDoc(
+              docCreator.createWithoutDefaults(docRef, lang), context.getXWikiContext())));
       if (doc.isNew()) { // faster than exists check when doc exists
         throw new DocumentNotExistsException(docRef, lang);
       }
@@ -240,10 +245,10 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       return false;
     }
     try {
+      XWikiDocument doc = docCreator.createWithoutDefaults(docRef);
       return new Contextualiser()
           .withWiki(docRef.getWikiReference())
-          .execute(rethrow(() -> getStore().exists(docCreator
-              .createWithoutDefaults(docRef), context.getXWikiContext())));
+          .execute(rethrow(() -> getStore().exists(doc, context.getXWikiContext())));
     } catch (XWikiException xwe) {
       throw new DocumentLoadException(docRef, xwe);
     }
@@ -278,6 +283,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   public void saveDocument(XWikiDocument doc, String comment, boolean isMinorEdit)
       throws DocumentSaveException {
     checkNotNull(doc);
+    prepareDocForSave(doc, comment, isMinorEdit);
     sanitizeLangBeforeSave(doc);
     LOGGER.info("saveDocument: doc '{}, {}', comment '{}', isMinorEdit '{}'",
         serialize(doc.getDocumentReference()), doc.getLanguage(), comment, isMinorEdit);
@@ -285,31 +291,13 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       LOGGER.trace("saveDocument: context db '{}' and StackTrace:",
           serialize(context.getWikiRef()), new Throwable());
     }
-    prepareDocForSave(doc, comment, isMinorEdit);
-    new Contextualiser()
-        .withWiki(doc.getDocumentReference().getWikiReference())
-        .execute(rethrow(() -> saveDocumentAndNotify(doc)));
-  }
-
-  private void prepareDocForSave(XWikiDocument doc, String comment, boolean isMinorEdit) {
-    doc.setAuthor(context.getUserName());
-    if (doc.isNew()) {
-      doc.setCreator(context.getUserName());
-    }
-    doc.setComment(Strings.nullToEmpty(comment));
-    doc.setMinorEdit(isMinorEdit);
-  }
-
-  private void saveDocumentAndNotify(XWikiDocument doc) throws DocumentSaveException {
     boolean isNewDoc = doc.isNew();
     XWikiDocument origDocBeforeSave = Optional.ofNullable(doc.getOriginalDocument())
         .orElseGet(() -> docCreator.create(doc.getDocumentReference(), doc.getLanguage()));
     notifyEvent(doc, isNewDoc ? DocumentCreatingEvent.class : DocumentUpdatingEvent.class);
-    try {
-      getStore().saveXWikiDoc(doc, context.getXWikiContext());
-    } catch (XWikiException xwe) {
-      throw new DocumentSaveException(doc.getDocumentReference(), xwe);
-    }
+    new Contextualiser()
+        .withWiki(doc.getDocumentReference().getWikiReference())
+        .execute(rethrow(() -> saveDocumentInternal(doc)));
     try {
       XWikiDocument notifyDoc = doc.clone(); // avoid mutating doc in notify after save
       notifyDoc.setOriginalDocument(origDocBeforeSave);
@@ -342,6 +330,23 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     if ((doc.getTranslation() != 0) && !exists(doc.getDocumentReference())) {
       throw new DocumentSaveException(doc.getDocumentReference(), doc.getLanguage(),
           "cannot save translation for inexistent doc");
+    }
+  }
+
+  private void prepareDocForSave(XWikiDocument doc, String comment, boolean isMinorEdit) {
+    doc.setAuthor(context.getUserName());
+    if (doc.isNew()) {
+      doc.setCreator(context.getUserName());
+    }
+    doc.setComment(Strings.nullToEmpty(comment));
+    doc.setMinorEdit(isMinorEdit);
+  }
+
+  private void saveDocumentInternal(XWikiDocument doc) throws DocumentSaveException {
+    try {
+      getStore().saveXWikiDoc(doc, context.getXWikiContext());
+    } catch (XWikiException xwe) {
+      throw new DocumentSaveException(doc.getDocumentReference(), xwe);
     }
   }
 
@@ -378,23 +383,10 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       LOGGER.trace("deleteDocument: context db '{}' and StackTrace:",
           serialize(context.getWikiRef()), new Throwable());
     }
+    notifyEvent(doc, DocumentDeletingEvent.class);
     new Contextualiser()
         .withWiki(doc.getDocumentReference().getWikiReference())
-        .execute(rethrow(() -> deleteDocumentAndNotify(doc, totrash)));
-  }
-
-  public void deleteDocumentAndNotify(XWikiDocument doc, boolean totrash)
-      throws DocumentDeleteException {
-    notifyEvent(doc, DocumentDeletingEvent.class);
-    try {
-      if (hasRecycleBin() && totrash) {
-        getRecycleBinStore().saveToRecycleBin(doc, context.getUserName(), new Date(),
-            context.getXWikiContext(), true);
-      }
-      getStore().deleteXWikiDoc(doc, context.getXWikiContext());
-    } catch (XWikiException xwe) {
-      throw new DocumentDeleteException(doc.getDocumentReference(), xwe);
-    }
+        .execute(rethrow(() -> deleteDocumentInternal(doc, totrash)));
     try {
       // to follow DocumentUpdatedEvent policy source doc must be a new empty document with the
       // old deleted version available using doc.getOriginalDocument()
@@ -407,8 +399,22 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     }
   }
 
-  public boolean hasRecycleBin() {
-    return "1".equals(context.getXWikiContext().getWiki().Param("xwiki.recyclebin", "1"));
+  private void deleteDocumentInternal(XWikiDocument doc, boolean totrash)
+      throws DocumentDeleteException {
+    try {
+      if (totrash && hasRecycleBin()) {
+        getRecycleBinStore().saveToRecycleBin(doc, context.getUserName(), new Date(),
+            context.getXWikiContext(), true);
+      }
+      getStore().deleteXWikiDoc(doc, context.getXWikiContext());
+    } catch (XWikiException xwe) {
+      throw new DocumentDeleteException(doc.getDocumentReference(), xwe);
+    }
+  }
+
+  private boolean hasRecycleBin() {
+    return "true".equalsIgnoreCase(cfgSrc.getProperty(CFG_RECYCLEBIN, "false"))
+        || "1".equals(context.getXWikiContext().getWiki().Param("xwiki.recyclebin", "1"));
   }
 
   @Override
