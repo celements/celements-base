@@ -60,7 +60,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
 
   @Test
   @Deprecated
-  public void testHasAccessLevel_document_edit_true_deprecated() throws Exception {
+  public void test_hasAccessLevel_document_edit_true_deprecated() throws Exception {
     XWikiRightService xwikiRightsService = new XWikiRightServiceImpl();
     expect(xwiki.getRightService()).andReturn(xwikiRightsService).anyTimes();
     XWikiUser user = new XWikiUser("XWiki.TestUser");
@@ -82,7 +82,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
 
   @Test
   @Deprecated
-  public void testHasAccessLevel_document_edit_Guest_false_deprecated() throws Exception {
+  public void test_hasAccessLevel_document_edit_Guest_false_deprecated() throws Exception {
     XWikiRightService xwikiRightsService = new XWikiRightServiceImpl();
     expect(xwiki.getRightService()).andReturn(xwikiRightsService).anyTimes();
     XWikiUser user = new XWikiUser(XWikiRightService.GUEST_USER_FULLNAME);
@@ -104,7 +104,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
 
   @Test
   @Deprecated
-  public void testHasAccessLevel_wiki_edit_false_deprecated() throws Exception {
+  public void test_hasAccessLevel_wiki_edit_false_deprecated() throws Exception {
     XWikiUser user = new XWikiUser("XWiki.TestUser");
     WikiReference wikiRef = new WikiReference(context.getDatabase());
     replayDefault();
@@ -113,7 +113,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_wiki_edit_false() throws Exception {
+  public void test_hasAccessLevel_wiki_edit_false() throws Exception {
     XWikiUser user = new XWikiUser("XWiki.TestUser");
     WikiReference wikiRef = new WikiReference(context.getDatabase());
     replayDefault();
@@ -122,7 +122,10 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_docRef() throws Exception {
+  public void test_hasAccessLevel_docRef() throws Exception {
+    String accountName = "xwikidb:XWiki.XWikiTest";
+    getContext().setUser(accountName);
+    expectUser(accountName);
     DocumentReference docRef = new DocumentReference(context.getDatabase(), "MySpace",
         "MyDocument");
     EAccessLevel level = EAccessLevel.EDIT;
@@ -136,7 +139,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_document_edit_true() throws Exception {
+  public void test_hasAccessLevel_document_edit_true() throws Exception {
     XWikiRightService xwikiRightsService = new XWikiRightServiceImpl();
     expect(xwiki.getRightService()).andReturn(xwikiRightsService).anyTimes();
     XWikiUser user = new XWikiUser("XWiki.TestUser");
@@ -157,7 +160,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_document_edit_Guest_false() throws Exception {
+  public void test_hasAccessLevel_document_edit_Guest_false() throws Exception {
     XWikiRightService xwikiRightsService = new XWikiRightServiceImpl();
     expect(xwiki.getRightService()).andReturn(xwikiRightsService).anyTimes();
     XWikiUser user = new XWikiUser(XWikiRightService.GUEST_USER_FULLNAME);
@@ -174,7 +177,10 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_spaceRef() throws Exception {
+  public void test_hasAccessLevel_spaceRef() throws Exception {
+    String accountName = "xwikidb:XWiki.XWikiTest";
+    getContext().setUser(accountName);
+    expectUser(accountName);
     SpaceReference spaceRef = new SpaceReference("MySpace", modelContext.getWikiRef());
     DocumentReference docRef = new DocumentReference("untitled1", spaceRef);
     EAccessLevel level = EAccessLevel.EDIT;
@@ -192,7 +198,10 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_attRef() throws Exception {
+  public void test_hasAccessLevel_attRef() throws Exception {
+    String accountName = "xwikidb:XWiki.XWikiTest";
+    getContext().setUser(accountName);
+    expectUser(accountName);
     DocumentReference docRef = new DocumentReference(context.getDatabase(), "MySpace",
         "MyDocument");
     AttachmentReference attRef = new AttachmentReference("file", docRef);
@@ -207,7 +216,10 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_wikiRefRef() throws Exception {
+  public void test_hasAccessLevel_wikiRef() throws Exception {
+    String accountName = "XWiki.XWikiTest";
+    getContext().setUser(accountName);
+    expectUser(accountName);
     EAccessLevel level = EAccessLevel.EDIT;
 
     replayDefault();
@@ -216,7 +228,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void testHasAccessLevel_user() throws Exception {
+  public void test_hasAccessLevel_user() throws Exception {
     DocumentReference docRef = new DocumentReference(context.getDatabase(), "MySpace",
         "MyDocument");
     EAccessLevel level = EAccessLevel.VIEW;
@@ -275,6 +287,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   @Test
   public void test_isLoggedIn_false() throws Exception {
     context.setUser(null);
+    expectUser("XWiki.XWikiGuest");
     replayDefault();
     assertFalse(rightsAccess.isLoggedIn());
     verifyDefault();
