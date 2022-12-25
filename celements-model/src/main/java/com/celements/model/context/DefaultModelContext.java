@@ -1,6 +1,5 @@
 package com.celements.model.context;
 
-import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.net.URL;
@@ -32,7 +31,6 @@ import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.user.api.XWikiUser;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiRequest;
@@ -174,16 +172,11 @@ public class DefaultModelContext implements ModelContext {
   @Override
   public Optional<User> user() {
     try {
-      return getUserDocRef().map(rethrow(getUserService()::getUser))
-          .filter(this::isNotGuest);
+      return Optional.of(getUserService().getUser(getUserName()));
     } catch (UserInstantiationException exc) {
       LOGGER.warn("failed loading user '{}'", getUserDocRef(), exc);
     }
     return Optional.empty();
-  }
-
-  private boolean isNotGuest(User user) {
-    return !user.getDocRef().getName().equals(XWikiRightService.GUEST_USER);
   }
 
   @Override

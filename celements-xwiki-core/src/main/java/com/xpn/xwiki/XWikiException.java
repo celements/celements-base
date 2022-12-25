@@ -28,7 +28,6 @@ import java.text.MessageFormat;
 
 import javax.servlet.ServletException;
 
-// import com.xpn.xwiki.store.XWikiBatcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.exception.MethodInvocationException;
@@ -343,16 +342,6 @@ public class XWikiException extends Exception {
     buffer.append("\n");
     buffer.append(getStackTraceAsString());
     buffer.append("\n");
-    /*
-     * List list = XWikiBatcher.getSQLStats().getRecentSqlList();
-     * if (list.size() > 0) {
-     * buffer.append("Recent SQL:\n");
-     * for (int i = 0; i < list.size(); i++) {
-     * buffer.append(list.get(i));
-     * buffer.append("\n");
-     * }
-     * }
-     */
     return buffer.toString();
   }
 

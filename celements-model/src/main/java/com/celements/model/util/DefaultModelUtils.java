@@ -162,7 +162,7 @@ public class DefaultModelUtils implements ModelUtils {
     RefBuilder builder = RefBuilder.from(spaceRef);
     try {
       return getQueryManager().getNamedQuery("getSpaceDocsName")
-          .setWiki(spaceRef.extractReference(EntityType.WIKI).getName())
+          .setWiki(spaceRef.getParent().getName())
           .bindValue("space", spaceRef.getName())
           .<String>execute().stream()
           .map(name -> builder.doc(name).build(DocumentReference.class));
