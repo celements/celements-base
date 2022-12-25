@@ -465,10 +465,8 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
 
   private User expectUser(String accountName) throws UserInstantiationException {
     DocumentReference userDocRef = modelUtils.resolveRef(accountName, DocumentReference.class);
-    expect(getMock(UserService.class).resolveUserDocRef(accountName)).andReturn(
-        userDocRef).anyTimes();
     User user = createMockAndAddToDefault(User.class);
-    expect(getMock(UserService.class).getUser(userDocRef)).andReturn(user).anyTimes();
+    expect(getMock(UserService.class).getUser(accountName)).andReturn(user).anyTimes();
     expect(user.getDocRef()).andReturn(userDocRef).anyTimes();
     return user;
   }
