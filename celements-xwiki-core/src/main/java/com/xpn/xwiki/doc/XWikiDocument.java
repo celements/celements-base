@@ -519,13 +519,19 @@ public class XWikiDocument implements DocumentModelBridge {
     return context.getWiki().getVersioningStore();
   }
 
+  /**
+   * @deprecated since 5.9, instead use {@link XWiki#getStore()}
+   **/
+  @Deprecated
   public XWikiStoreInterface getStore() {
-    return this.store;
+    return getStore(getXWikiContext());
   }
 
-  public void setStore(XWikiStoreInterface store) {
-    this.store = store;
-  }
+  /**
+   * @deprecated since 5.9, doc doesn't need store set
+   **/
+  @Deprecated
+  public void setStore(XWikiStoreInterface store) {}
 
   public long getId() {
     return hasValidId() ? id
@@ -3277,7 +3283,6 @@ public class XWikiDocument implements DocumentModelBridge {
     setMeta(document.getMeta());
     setMostRecent(document.isMostRecent());
     setNew(document.isNew());
-    setStore(document.getStore());
     setTemplateDocumentReference(document.getTemplateDocumentReference());
     setParent(document.getParent());
     setCreator(document.getCreator());
@@ -3343,7 +3348,6 @@ public class XWikiDocument implements DocumentModelBridge {
       doc.setMeta(getMeta());
       doc.setMostRecent(isMostRecent());
       doc.setNew(!keepsIdentity || isNew());
-      doc.setStore(getStore());
       doc.setTemplateDocumentReference(getTemplateDocumentReference());
       doc.setParentReference(getRelativeParentReference());
       doc.setCreator(getCreator());
@@ -4637,10 +4641,9 @@ public class XWikiDocument implements DocumentModelBridge {
         this.defaultEntityReferenceSerializer.serialize(getDocumentReference()),
         this.localEntityReferenceSerializer.serialize(getDocumentReference()),
         getDocumentReference().getName(), getDocumentReference().getLastSpaceReference().getName());
-
     String whereStatement = "doc.parent=? or doc.parent=? or (doc.parent=? and doc.space=?)";
-    return context.getWiki().getStore().searchDocumentReferences(whereStatement, nb, start,
-        whereParams, context);
+    return getStore(context).searchDocumentReferences(whereStatement, nb, start, whereParams,
+        context);
   }
 
   /**
@@ -5238,30 +5241,14 @@ public class XWikiDocument implements DocumentModelBridge {
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
     XWikiDocument tdoc = this;
-
     if (((language != null) && !language.equals("") && !language.equals(getDefaultLanguage()))) {
       tdoc = new XWikiDocument(getDocumentReference());
       tdoc.setLanguage(language);
-      String database = context.getDatabase();
-      try {
-        // We might need to switch database to
-        // get the translated content
-        if (getDatabase() != null) {
-          context.setDatabase(getDatabase());
-        }
-
-        tdoc = getStore(context).loadXWikiDoc(tdoc, context);
-
-        if (tdoc.isNew()) {
-          tdoc = this;
-        }
-      } catch (Exception e) {
+      tdoc = getStore(context).loadXWikiDoc(tdoc, context);
+      if (tdoc.isNew()) {
         tdoc = this;
-      } finally {
-        context.setDatabase(database);
       }
     }
-
     return tdoc;
   }
 
@@ -5280,7 +5267,7 @@ public class XWikiDocument implements DocumentModelBridge {
   }
 
   public List<String> getTranslationList(XWikiContext context) throws XWikiException {
-    return getStore().getTranslationList(this, context);
+    return getStore(context).getTranslationList(this, context);
   }
 
   public List<Delta> getXMLDiff(XWikiDocument fromDoc, XWikiDocument toDoc, XWikiContext context)

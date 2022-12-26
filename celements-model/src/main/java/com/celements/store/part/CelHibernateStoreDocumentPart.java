@@ -155,7 +155,6 @@ public class CelHibernateStoreDocumentPart {
     validateDatabase(docRefToLoad, context);
     boolean bTransaction = true;
     try {
-      doc.setStore(store);
       store.checkHibernate(context);
       SessionFactory sfactory = store.injectCustomMappingsInSessionFactory(doc, context);
       bTransaction = bTransaction && store.beginTransaction(sfactory, false, context);
@@ -317,7 +316,7 @@ public class CelHibernateStoreDocumentPart {
       Session session = store.getSession(context);
       session.setFlushMode(FlushMode.COMMIT);
 
-      if (doc.getStore() == null) {
+      if (doc.isNew()) {
         throw new XWikiException(MODULE_XWIKI_STORE,
             ERROR_XWIKI_STORE_HIBERNATE_CANNOT_DELETE_UNLOADED_DOC,
             "Impossible to delete document if it is not loaded: " + doc.getDocumentReference());

@@ -50,7 +50,6 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 
-import com.celements.model.access.ContextExecutor;
 import com.celements.model.access.XWikiDocumentCreator;
 import com.celements.model.access.exception.MetaDataLoadException;
 import com.celements.model.context.ModelContext;
@@ -196,16 +195,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public void saveXWikiDoc(final XWikiDocument doc, final XWikiContext context,
       final boolean bTransaction) throws XWikiException {
-    new ContextExecutor<Void, XWikiException>() {
-
-      @Override
-      protected Void call() throws XWikiException {
-        getBackingStore().saveXWikiDoc(doc, context, bTransaction);
-        doc.setStore(DocumentCacheStore.this.getBackingStore());
-        removeDocFromCache(doc, true);
-        return null;
-      }
-    }.inWiki(new WikiReference(context.getDatabase())).execute();
+    getBackingStore().saveXWikiDoc(doc, context, bTransaction);
+    removeDocFromCache(doc, true);
   }
 
   @Override
@@ -326,13 +317,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public XWikiDocument loadXWikiDoc(final XWikiDocument doc, final XWikiContext context)
       throws XWikiException {
-    return new ContextExecutor<XWikiDocument, XWikiException>() {
-
-      @Override
-      protected XWikiDocument call() throws XWikiException {
-        return loadXWikiDocInternal(doc, context);
-      }
-    }.inWiki(new WikiReference(context.getDatabase())).execute();
+    return loadXWikiDocInternal(doc, context);
   }
 
   private XWikiDocument loadXWikiDocInternal(XWikiDocument doc, XWikiContext context)
@@ -379,16 +364,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public void deleteXWikiDoc(final XWikiDocument doc, final XWikiContext context)
       throws XWikiException {
-    new ContextExecutor<Void, XWikiException>() {
-
-      @Override
-      protected Void call() throws XWikiException {
-
-        getBackingStore().deleteXWikiDoc(doc, context);
-        removeDocFromCache(doc, false);
-        return null;
-      }
-    }.inWiki(new WikiReference(context.getDatabase())).execute();
+    getBackingStore().deleteXWikiDoc(doc, context);
+    removeDocFromCache(doc, false);
   }
 
   @Override
@@ -399,13 +376,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
 
   @Override
   public boolean exists(final XWikiDocument doc, final XWikiContext context) throws XWikiException {
-    return new ContextExecutor<Boolean, XWikiException>() {
-
-      @Override
-      protected Boolean call() throws XWikiException {
-        return existsInternal(doc, context);
-      }
-    }.inWiki(new WikiReference(context.getDatabase())).execute();
+    return existsInternal(doc, context);
   }
 
   // FIXME [CELDEV-924] Store add lang support for exists check and cache
@@ -572,7 +543,6 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
         XWikiDocument buildDoc = createEmptyXWikiDoc(doc);
         buildDoc.setLanguage(doc.getLanguage());
         buildDoc = getBackingStore().loadXWikiDoc(buildDoc, context);
-        buildDoc.setStore(getBackingStore());
         buildDoc.setFromCache(!buildDoc.isNew());
         return buildDoc;
       }
@@ -586,7 +556,6 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
         .build(DocumentReference.class);
     XWikiDocument newDoc = docCreator.createWithoutDefaults(docRef, doc.getLanguage());
     newDoc.setDefaultLanguage(doc.getDefaultLanguage());
-    newDoc.setStore(getBackingStore());
     return newDoc;
   }
 

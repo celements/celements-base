@@ -68,7 +68,6 @@ class DocumentSavePreparationCommand {
 
   public DocumentSavePreparationCommand execute(boolean bTransaction)
       throws HibernateException, XWikiException {
-    doc.setStore(store);
     ensureDatabaseConsistency();
     prepareSession(bTransaction);
     try {

@@ -4980,7 +4980,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       VelocityContext vcontext) {
     XWikiDocument doc = new XWikiDocument(reference);
     doc.setElements(XWikiDocument.HAS_ATTACHMENTS | XWikiDocument.HAS_OBJECTS);
-    doc.setStore(getStore());
     context.put("doc", doc);
     vcontext.put("doc", doc.newDocument(context));
     vcontext.put("cdoc", vcontext.get("doc"));
@@ -5882,7 +5881,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       List<String> docs = getStore().getQueryManager().getNamedQuery("getAllDocuments").execute();
       for (String doc : docs) {
         XWikiDocument myDoc = this.getDocument(doc, context);
-        myDoc.getStore().saveLinks(myDoc, context, true);
+        getStore().saveLinks(myDoc, context, true);
       }
     } catch (QueryException ex) {
       throw new XWikiException(0, 0, ex.getMessage(), ex);

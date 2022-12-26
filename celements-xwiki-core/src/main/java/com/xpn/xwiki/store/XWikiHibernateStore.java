@@ -364,7 +364,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
 
-      doc.setStore(this);
       checkHibernate(context);
 
       // Start monitoring timer
@@ -440,7 +439,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
       Session session = getSession(context);
       session.setFlushMode(FlushMode.COMMIT);
 
-      if (doc.getStore() == null) {
+      if (doc.isNew()) {
         Object[] args = { doc.getFullName() };
         throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
             XWikiException.ERROR_XWIKI_STORE_HIBERNATE_CANNOT_DELETE_UNLOADED_DOC,
