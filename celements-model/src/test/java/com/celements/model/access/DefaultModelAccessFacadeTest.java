@@ -1,7 +1,6 @@
 package com.celements.model.access;
 
 import static com.celements.common.test.CelementsTestUtils.*;
-import static com.celements.model.access.DefaultModelAccessFacade.*;
 import static com.celements.model.classes.TestClassDefinition.*;
 import static com.google.common.collect.ImmutableList.*;
 import static java.util.stream.Collectors.*;
@@ -661,7 +660,6 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
 
   @Test
   public void test_deleteDocumentWithoutTranslations_totrash() throws Exception {
-    getConfigurationSource().setProperty(CFG_RECYCLEBIN, "true");
     expectDeleteWithNotify(doc);
     getMock(XWikiRecycleBinStoreInterface.class).saveToRecycleBin(
         same(doc), eq("user"), geq(new Date()), same(getContext()), eq(true));

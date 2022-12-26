@@ -74,8 +74,7 @@ public class XWikiHibernateRecycleBinStore extends XWikiHibernateBaseStore
    */
   @Override
   public XWikiDocument restoreFromRecycleBin(final XWikiDocument doc, final long index,
-      final XWikiContext context,
-      boolean bTransaction) throws XWikiException {
+      final XWikiContext context, boolean bTransaction) throws XWikiException {
     return executeRead(context, bTransaction, session -> {
       XWikiDeletedDocument trashdoc = (XWikiDeletedDocument) session
           .load(XWikiDeletedDocument.class, Long.valueOf(index));
@@ -88,8 +87,7 @@ public class XWikiHibernateRecycleBinStore extends XWikiHibernateBaseStore
    */
   @Override
   public XWikiDeletedDocument getDeletedDocument(XWikiDocument doc, final long index,
-      XWikiContext context,
-      boolean bTransaction) throws XWikiException {
+      XWikiContext context, boolean bTransaction) throws XWikiException {
     return executeRead(context, bTransaction, session -> (XWikiDeletedDocument) session
         .get(XWikiDeletedDocument.class, Long.valueOf(index)));
   }
@@ -99,8 +97,7 @@ public class XWikiHibernateRecycleBinStore extends XWikiHibernateBaseStore
    */
   @Override
   public XWikiDeletedDocument[] getAllDeletedDocuments(final XWikiDocument doc,
-      XWikiContext context,
-      boolean bTransaction) throws XWikiException {
+      XWikiContext context, boolean bTransaction) throws XWikiException {
     return executeRead(context, bTransaction, session -> {
       Criteria c = session.createCriteria(XWikiDeletedDocument.class);
       c.add(Restrictions.eq("fullName", doc.getFullName()));
@@ -118,12 +115,10 @@ public class XWikiHibernateRecycleBinStore extends XWikiHibernateBaseStore
    */
   @Override
   public void deleteFromRecycleBin(XWikiDocument doc, final long index, XWikiContext context,
-      boolean bTransaction)
-      throws XWikiException {
+      boolean bTransaction) throws XWikiException {
     executeWrite(context, bTransaction, session -> {
       session.createQuery("delete from " + XWikiDeletedDocument.class.getName() + " where id=?")
-          .setLong(0,
-              index)
+          .setLong(0, index)
           .executeUpdate();
       return null;
     });

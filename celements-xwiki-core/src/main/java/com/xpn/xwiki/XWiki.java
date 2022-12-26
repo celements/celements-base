@@ -789,10 +789,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         hasAttachmentVersioning(context) ? Param("xwiki.store.attachment.versioning.hint")
             : "void"));
 
-    if (hasRecycleBin(context)) {
-      setRecycleBinStore(Utils.getComponent(XWikiRecycleBinStoreInterface.class, Param(
-          "xwiki.store.recyclebin.hint")));
-    }
+    StoreFactory.getRecycleBinStore().ifPresent(this::setRecycleBinStore);
 
     if (hasAttachmentRecycleBin(context)) {
       setAttachmentRecycleBinStore(Utils.getComponent(AttachmentRecycleBinStore.class, Param(
@@ -6035,7 +6032,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    *          maybe will be useful
    */
   public boolean hasRecycleBin(XWikiContext context) {
-    return "1".equals(Param("xwiki.recyclebin", "1"));
+    return (recycleBinStore != null);
   }
 
   /**
