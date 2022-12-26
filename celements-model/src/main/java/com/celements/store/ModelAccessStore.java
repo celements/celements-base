@@ -45,7 +45,9 @@ public class ModelAccessStore extends DelegateStore {
 
   @Override
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
-    return modelAccess.getOrCreateDocument(doc.getDocumentReference(), doc.getLanguage());
+    doc = modelAccess.getOrCreateDocument(doc.getDocumentReference(), doc.getLanguage());
+    doc.setStore(this);
+    return doc;
   }
 
   @Override
