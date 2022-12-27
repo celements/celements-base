@@ -53,6 +53,15 @@ public interface UserService {
   User getUser(@NotNull DocumentReference userDocRef) throws UserInstantiationException;
 
   /**
+   * @param accountName
+   * @return a {@link User} instance for the given accountName
+   * @throws UserInstantiationException
+   *           if the given accountName is invalid
+   */
+  @NotNull
+  User getUser(@NotNull String accountName) throws UserInstantiationException;
+
+  /**
    * @return list of user fields for which one can login, e.g. 'name', 'email' or 'validkey'
    */
   @NotNull

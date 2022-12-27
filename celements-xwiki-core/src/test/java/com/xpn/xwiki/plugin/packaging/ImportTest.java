@@ -27,7 +27,6 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -143,8 +142,8 @@ public class ImportTest extends AbstractBridgedXWikiComponentTestCase {
             XWikiDocument document = (XWikiDocument) invocation.parameterValues.get(0);
             // search for this document in the map and return it's translations
             List translationList = new ArrayList();
-            for (Iterator pairsIt = docs.entrySet().iterator(); pairsIt.hasNext();) {
-              Map.Entry currentEntry = (Map.Entry) pairsIt.next();
+            for (Object element : docs.entrySet()) {
+              Map.Entry currentEntry = (Map.Entry) element;
               if (((String) currentEntry.getKey()).startsWith(document.getFullName())
                   && !((XWikiDocument) currentEntry.getValue()).getLanguage().equals("")) {
                 // yeeey, it's a translation

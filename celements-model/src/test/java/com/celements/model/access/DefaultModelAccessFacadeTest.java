@@ -19,8 +19,10 @@ import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.observation.ObservationManager;
 import org.xwiki.rendering.syntax.Syntax;
 
+import com.celements.auth.user.UserService;
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.configuration.CelementsFromWikiConfigurationSource;
 import com.celements.model.access.exception.AttachmentNotExistsException;
@@ -39,6 +41,8 @@ import com.celements.model.context.ModelContext;
 import com.celements.model.field.FieldAccessException;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ClassFieldValue;
+import com.celements.rights.access.EAccessLevel;
+import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
 import com.google.common.base.Optional;
 import com.xpn.xwiki.XWikiException;
@@ -51,8 +55,8 @@ import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.DateClass;
 import com.xpn.xwiki.objects.classes.NumberClass;
 import com.xpn.xwiki.objects.classes.StringClass;
+import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
-import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.web.Utils;
 
 public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
@@ -67,6 +71,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     strategyMock = registerComponentMock(ModelAccessStrategy.class);
+    registerComponentMocks(XWikiRecycleBinStoreInterface.class, ObservationManager.class,
+        IRightsAccessFacadeRole.class, UserService.class);
     registerComponentMock(XWikiDocumentCreator.class, "default", new TestXWikiDocumentCreator());
     registerComponentMock(ConfigurationSource.class, "all", getConfigurationSource());
     registerComponentMock(ConfigurationSource.class, CelementsFromWikiConfigurationSource.NAME,
@@ -1363,10 +1369,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
 
   @Test
   public void test_getApiDocument_hasAccess() throws Exception {
-    XWikiRightService mockRightSrv = createMockAndAddToDefault(XWikiRightService.class);
-    expect(getWikiMock().getRightService()).andReturn(mockRightSrv).anyTimes();
-    expect(mockRightSrv.hasAccessLevel(eq("view"), eq(getContext().getUser()), eq("db:space.doc"),
-        same(getContext()))).andReturn(true).atLeastOnce();
+    expect(getMock(IRightsAccessFacadeRole.class).hasAccessLevel(doc.getDocumentReference(),
+        EAccessLevel.VIEW)).andReturn(true);
     replayDefault();
     Document apiDoc = modelAccess.getApiDocument(doc);
     assertNotNull("Expected Attachment api object - not null", apiDoc);
@@ -1375,17 +1379,10 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
 
   @Test
   public void test_getApiDocument_noAccess() throws Exception {
-    XWikiRightService mockRightSrv = createMockAndAddToDefault(XWikiRightService.class);
-    expect(getWikiMock().getRightService()).andReturn(mockRightSrv).anyTimes();
-    expect(mockRightSrv.hasAccessLevel(eq("view"), eq(getContext().getUser()), eq("db:space.doc"),
-        same(getContext()))).andReturn(false).atLeastOnce();
+    expect(getMock(IRightsAccessFacadeRole.class).hasAccessLevel(doc.getDocumentReference(),
+        EAccessLevel.VIEW)).andReturn(false);
     replayDefault();
-    try {
-      modelAccess.getApiDocument(doc);
-      fail("NoAccessRightsException expected");
-    } catch (NoAccessRightsException exp) {
-      // expected
-    }
+    assertThrows(NoAccessRightsException.class, () -> modelAccess.getApiDocument(doc));
     verifyDefault();
   }
 

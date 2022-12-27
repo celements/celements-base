@@ -2121,22 +2121,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
   }
 
   /**
-   * @deprecated This is internal to XWikiHibernateStore and may be removed in the future.
-   */
-  @Deprecated
-  public XWikiBatcherStats getBatcherStats() {
-    return null; // XWikiBatcher.getSQLStats();
-  }
-
-  /**
-   * @deprecated This is internal to XWikiHibernateStore and may be removed in the future.
-   */
-  @Deprecated
-  public void resetBatcherStats() {
-    // XWikiBatcher.getSQLStats().resetStats();
-  }
-
-  /**
    * {@inheritDoc}
    *
    * @see com.xpn.xwiki.store.XWikiStoreInterface#searchDocuments(java.lang.String,

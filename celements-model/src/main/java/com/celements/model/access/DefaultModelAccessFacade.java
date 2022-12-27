@@ -24,12 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.filebase.IAttachmentServiceRole;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentAlreadyExistsException;
 import com.celements.model.access.exception.DocumentDeleteException;
@@ -54,7 +54,6 @@ import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
 import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -62,6 +61,7 @@ import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.web.Utils;
 
 import one.util.streamex.StreamEx;
 
@@ -747,22 +747,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   @Override
   public XWikiAttachment getAttachmentNameEqual(XWikiDocument doc, String filename)
       throws AttachmentNotExistsException {
-    for (XWikiAttachment attach : doc.getAttachmentList()) {
-      if ((attach != null) && attach.getFilename().equals(filename)) {
-        return attach;
-      }
-    }
-    LOGGER.debug("getAttachmentNameEqual: not found! file: [{}], doc: [{}]", filename,
-        serialize(doc.getDocumentReference()));
-    // FIXME empty or null filename leads to exception:
-    // java.lang.IllegalArgumentException: An Entity Reference name cannot be null or
-    // empty
-    if (Strings.isNullOrEmpty(filename)) {
-      throw new AttachmentNotExistsException(null);
-    } else {
-      throw new AttachmentNotExistsException(new AttachmentReference(filename,
-          doc.getDocumentReference()));
-    }
+    return Utils.getComponent(IAttachmentServiceRole.class).getAttachmentNameEqual(doc, filename);
   }
 
   private Supplier<String> serialize(EntityReference ref) {

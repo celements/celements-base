@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
 
+import com.celements.filebase.IAttachmentServiceRole;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentAlreadyExistsException;
 import com.celements.model.access.exception.DocumentDeleteException;
@@ -520,11 +521,9 @@ public interface IModelAccessFacade {
    * CAUTION: document.getAttachment returns "startWith" matches. Instead use
    * getAttachmentNameEqual or methods on IAttachmentServiceRole
    *
-   * @param document
-   * @param filename
-   * @return
-   * @throws AttachmentNotExistsException
+   * @deprecated since 5.9, instead use {@link IAttachmentServiceRole}
    */
+  @Deprecated
   XWikiAttachment getAttachmentNameEqual(XWikiDocument document, String filename)
       throws AttachmentNotExistsException;
 
