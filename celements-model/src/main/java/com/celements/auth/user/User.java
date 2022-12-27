@@ -30,7 +30,7 @@ public interface User {
   XWikiUser asXWikiUser();
 
   /**
-   * @deprecated since 5.8 instead use {@link #email()}
+   * @deprecated since 5.9 instead use {@link #email()}
    */
   @Deprecated
   @NotNull
@@ -40,7 +40,7 @@ public interface User {
   Optional<String> email();
 
   /**
-   * @deprecated since 5.8 instead use {@link #firstName()}
+   * @deprecated since 5.9 instead use {@link #firstName()}
    */
   @Deprecated
   @NotNull
@@ -50,7 +50,7 @@ public interface User {
   Optional<String> firstName();
 
   /**
-   * @deprecated since 5.8 instead use {@link #lastName()}
+   * @deprecated since 5.9 instead use {@link #lastName()}
    */
   @Deprecated
   @NotNull
@@ -60,7 +60,7 @@ public interface User {
   Optional<String> lastName();
 
   /**
-   * @deprecated since 5.8 instead use {@link #prettyName()}
+   * @deprecated since 5.9 instead use {@link #prettyName()}
    */
   @Deprecated
   @NotNull
@@ -70,7 +70,7 @@ public interface User {
   Optional<String> prettyName();
 
   /**
-   * @deprecated since 5.8 instead use {@link #getAdminLang()}
+   * @deprecated since 5.9 instead use {@link #getAdminLang()}
    */
   @Deprecated
   @NotNull

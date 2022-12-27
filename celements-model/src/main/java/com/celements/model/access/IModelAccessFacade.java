@@ -521,7 +521,7 @@ public interface IModelAccessFacade {
    * CAUTION: document.getAttachment returns "startWith" matches. Instead use
    * getAttachmentNameEqual or methods on IAttachmentServiceRole
    *
-   * @deprecated since 5.7, instead use {@link IAttachmentServiceRole}
+   * @deprecated since 5.9, instead use {@link IAttachmentServiceRole}
    */
   @Deprecated
   XWikiAttachment getAttachmentNameEqual(XWikiDocument document, String filename)
