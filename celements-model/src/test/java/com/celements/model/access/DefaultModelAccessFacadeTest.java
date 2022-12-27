@@ -104,6 +104,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     registerComponentMock(XWikiStoreInterface.class, ModelAccessStore.NAME, modelAccessStoreMock);
     getConfigurationSource().setProperty("celements.store.main", ModelAccessStore.NAME);
     expect(modelAccessStoreMock.getBackingStore()).andReturn(storeMock).anyTimes();
+    getConfigurationSource().setProperty("celements.store.recyclebin.enabled", "1");
+    getConfigurationSource().setProperty("celements.store.recyclebin.hint", "default");
     classRef = new DocumentReference("db", "class", "any");
     classRef2 = new DocumentReference("db", "class", "other");
     // important for unstable-2.0 set database because class references are checked for db

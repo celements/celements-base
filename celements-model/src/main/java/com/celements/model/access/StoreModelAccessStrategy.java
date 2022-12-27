@@ -19,11 +19,11 @@ import com.celements.model.access.exception.DocumentSaveException;
 import com.celements.model.context.Contextualiser;
 import com.celements.model.context.ModelContext;
 import com.celements.store.ModelAccessStore;
+import com.celements.store.StoreFactory;
 import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.store.StoreFactory;
 import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 
