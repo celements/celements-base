@@ -3,17 +3,21 @@ package com.celements.model.access;
 import static com.celements.model.access.IModelAccessFacade.*;
 
 import java.util.Date;
+import java.util.Optional;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.rendering.parser.Parser;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
+import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @Component
@@ -21,8 +25,15 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
 
   @Requirement
   private ModelContext context;
+
   @Requirement
   private ModelUtils modelUtils;
+
+  @Requirement
+  private CoreConfiguration coreCfg;
+
+  @Requirement
+  private ComponentManager componentManager;
 
   @Override
   public XWikiDocument createWithoutDefaults(DocumentReference docRef, String lang) {
@@ -61,6 +72,7 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     }
     XWikiDocument doc = createWithoutDefaults(docRef, lang);
     doc.setDefaultLanguage(defaultLang);
+    doc.setSyntax(getDefaultSyntax());
     return doc;
   }
 
@@ -77,6 +89,12 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     }
     return context.getDefaultLanguage(docRef.extractRef(toExtractClass)
         .orElseThrow(IllegalStateException::new));
+  }
+
+  private Syntax getDefaultSyntax() {
+    return Optional.ofNullable(coreCfg.getDefaultDocumentSyntax())
+        .filter(syntax -> componentManager.hasComponent(Parser.class, syntax.toIdString()))
+        .orElseThrow(IllegalStateException::new);
   }
 
   @Override
