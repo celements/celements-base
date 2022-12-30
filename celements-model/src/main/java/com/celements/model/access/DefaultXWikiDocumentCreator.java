@@ -1,7 +1,6 @@
 package com.celements.model.access;
 
 import static com.celements.model.access.IModelAccessFacade.*;
-import static com.celements.model.util.References.*;
 
 import java.util.Date;
 
@@ -11,10 +10,10 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
-import com.celements.model.util.References;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @Component
@@ -22,15 +21,17 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
 
   @Requirement
   private ModelContext context;
+
   @Requirement
   private ModelUtils modelUtils;
 
   @Override
   public XWikiDocument createWithoutDefaults(DocumentReference docRef, String lang) {
-    XWikiDocument doc = new XWikiDocument(cloneRef(docRef, DocumentReference.class));
+    XWikiDocument doc = new XWikiDocument(docRef);
     doc.setNew(true);
     lang = modelUtils.normalizeLang(lang);
     doc.setLanguage(lang);
+    doc.setDefaultLanguage(DEFAULT_LANG);
     doc.setTranslation(DEFAULT_LANG.equals(lang) ? 0 : 1);
     Date creationDate = new Date();
     doc.setCreationDate(creationDate);
@@ -38,10 +39,12 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     doc.setDate(creationDate);
     doc.setCreator(context.getUserName());
     doc.setAuthor(context.getUserName());
+    doc.setContentAuthor(context.getUserName());
     doc.setContent("");
     doc.setContentDirty(true);
     doc.setMetaDataDirty(true);
     doc.setOriginalDocument(new XWikiDocument(doc.getDocumentReference()));
+    doc.setSyntax(Syntax.XWIKI_1_0);
     return doc;
   }
 
@@ -59,7 +62,6 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     }
     XWikiDocument doc = createWithoutDefaults(docRef, lang);
     doc.setDefaultLanguage(defaultLang);
-    doc.setSyntax(doc.getSyntax()); // assures that syntax is set, 'new' has to be true
     return doc;
   }
 
@@ -74,12 +76,12 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
     } else {
       toExtractClass = SpaceReference.class;
     }
-    return context.getDefaultLanguage(References.extractRef(docRef, toExtractClass).get());
+    return context.getDefaultLanguage(docRef.extractRef(toExtractClass)
+        .orElseThrow(IllegalStateException::new));
   }
 
   @Override
   public XWikiDocument create(DocumentReference docRef) {
     return create(docRef, IModelAccessFacade.DEFAULT_LANG);
   }
-
 }

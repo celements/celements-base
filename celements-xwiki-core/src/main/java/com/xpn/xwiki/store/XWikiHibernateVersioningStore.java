@@ -230,7 +230,6 @@ public class XWikiHibernateVersioningStore extends XWikiHibernateBaseStore
     doc.setSpace(basedoc.getSpace());
 
     doc.setDatabase(basedoc.getDatabase());
-    doc.setStore(basedoc.getStore());
     return doc;
   }
 

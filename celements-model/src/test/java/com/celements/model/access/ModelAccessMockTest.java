@@ -20,9 +20,9 @@ public class ModelAccessMockTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    assertFalse(Utils.getComponent(ModelAccessStrategy.class) instanceof ModelMock);
+    assertFalse(Utils.getComponent(IModelAccessFacade.class) instanceof ModelMock);
     modelAccess = ModelMock.init();
-    assertTrue(Utils.getComponent(ModelAccessStrategy.class) instanceof ModelMock);
+    assertTrue(Utils.getComponent(IModelAccessFacade.class) instanceof ModelMock);
   }
 
   @Test

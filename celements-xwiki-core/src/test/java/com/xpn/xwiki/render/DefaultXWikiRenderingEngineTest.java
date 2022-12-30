@@ -25,11 +25,14 @@ import java.io.ByteArrayInputStream;
 import javax.servlet.ServletContext;
 
 import org.jmock.Mock;
+import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.test.MockConfigurationSource;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
 import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
@@ -55,6 +58,11 @@ public class DefaultXWikiRenderingEngineTest extends AbstractBridgedXWikiCompone
   @Override
   protected void setUp() throws Exception {
     super.setUp();
+
+    getComponentManager().registerComponent(MockConfigurationSource.getDescriptor("allproperties"));
+    MockConfigurationSource cfgSrc = (MockConfigurationSource) getComponentManager()
+        .lookup(ConfigurationSource.class, "allproperties");
+    cfgSrc.setProperty("celements.store.main", XWikiHibernateStore.NAME);
 
     XWikiConfig config = new XWikiConfig();
 

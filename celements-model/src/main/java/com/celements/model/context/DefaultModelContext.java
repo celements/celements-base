@@ -174,7 +174,7 @@ public class DefaultModelContext implements ModelContext {
     try {
       return Optional.of(getUserService().getUser(getUserName()));
     } catch (UserInstantiationException exc) {
-      LOGGER.warn("failed loading user '{}'", getUserDocRef(), exc);
+      LOGGER.debug("failed loading user [{}]", getUserDocRef(), exc);
     }
     return Optional.empty();
   }

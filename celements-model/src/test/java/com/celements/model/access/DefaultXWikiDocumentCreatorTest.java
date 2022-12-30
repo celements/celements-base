@@ -14,8 +14,8 @@ import org.xwiki.model.reference.SpaceReference;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.configuration.CelementsFromWikiConfigurationSource;
+import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.context.ModelContext;
-import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.Utils;
 
@@ -26,7 +26,7 @@ public class DefaultXWikiDocumentCreatorTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    registerComponentMock(ModelAccessStrategy.class);
+    registerComponentMock(IModelAccessFacade.class);
     registerComponentMock(ConfigurationSource.class, "all", getConfigurationSource());
     registerComponentMock(ConfigurationSource.class, CelementsFromWikiConfigurationSource.NAME,
         getConfigurationSource());
@@ -94,10 +94,10 @@ public class DefaultXWikiDocumentCreatorTest extends AbstractComponentTest {
     assertEquals(0, ret.getTranslation());
   }
 
-  private void expectSpacePreferences(SpaceReference spaceRef) throws XWikiException {
+  private void expectSpacePreferences(SpaceReference spaceRef) throws DocumentNotExistsException {
     XWikiDocument webPrefDoc = new XWikiDocument(new DocumentReference(
         ModelContext.WEB_PREF_DOC_NAME, spaceRef));
-    expect(getMock(ModelAccessStrategy.class).getDocument(webPrefDoc.getDocumentReference(), ""))
+    expect(getMock(IModelAccessFacade.class).getDocument(webPrefDoc.getDocumentReference()))
         .andReturn(webPrefDoc).once();
   }
 
