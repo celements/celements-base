@@ -2,6 +2,7 @@ package com.celements.model.object;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -37,12 +38,18 @@ public interface ObjectFetcher<D, O> extends ObjectHandler<D, O> {
   int count();
 
   /**
-   * @deprecated instead use {@link #stream()} with {@link Stream#findFirst()}
+   * @deprecated instead use {@link #findFirst()}
    * @return the first fetched object
    */
   @NotNull
   @Deprecated
   com.google.common.base.Optional<O> first();
+
+  /**
+   * @return the first fetched object
+   */
+  @NotNull
+  Optional<O> findFirst();
 
   /**
    * @return the first fetched object
@@ -94,12 +101,18 @@ public interface ObjectFetcher<D, O> extends ObjectHandler<D, O> {
   interface FieldFetcher<T> {
 
     /**
-     * @deprecated instead use {@link #stream()} with {@link Stream#findFirst()}
+     * @deprecated instead use {@link #findFirst()}
      * @return the first field value
      */
     @Deprecated
     @NotNull
     com.google.common.base.Optional<T> first();
+
+    /**
+     * @return the first field value
+     */
+    @NotNull
+    Optional<T> findFirst();
 
     /**
      * @return a {@link List} of all field values

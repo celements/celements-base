@@ -24,6 +24,8 @@ import com.celements.model.field.FieldAccessor;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
+import one.util.streamex.StreamEx;
+
 @NotThreadSafe
 public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D, O>, D, O> extends
     AbstractObjectHandler<R, D, O> implements ObjectFetcher<D, O> {
@@ -55,7 +57,12 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
   @Override
   @Deprecated
   public com.google.common.base.Optional<O> first() {
-    return com.google.common.base.Optional.fromJavaUtil(stream().findFirst());
+    return com.google.common.base.Optional.fromJavaUtil(findFirst());
+  }
+
+  @Override
+  public Optional<O> findFirst() {
+    return stream().findFirst();
   }
 
   @Override
@@ -133,7 +140,12 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
       @Override
       @Deprecated
       public com.google.common.base.Optional<T> first() {
-        return com.google.common.base.Optional.fromJavaUtil(stream().findFirst());
+        return com.google.common.base.Optional.fromJavaUtil(findFirst());
+      }
+
+      @Override
+      public Optional<T> findFirst() {
+        return stream().findFirst();
       }
 
       @Override
@@ -171,8 +183,10 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
           stream = fetcher.stream().map(obj -> accessor.get(obj, field).orElse(null));
         } else {
           FieldAccessor<D> accessor = getBridge().getDocumentFieldAccessor();
-          stream = accessor.get(getTranslationDoc().orElse(getDocument()), field)
-              .map(Stream::of).orElseGet(Stream::empty);
+          return StreamEx.of(getTranslationDoc())
+              .append(getDocument())
+              .mapPartial(doc -> accessor.get(doc, field))
+              .limit(1);
         }
         return stream;
       }
