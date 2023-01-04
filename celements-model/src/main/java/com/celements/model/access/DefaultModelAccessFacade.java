@@ -1,6 +1,7 @@
 package com.celements.model.access;
 
 import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -304,7 +305,10 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   public void deleteDocument(DocumentReference docRef, boolean totrash)
       throws DocumentDeleteException {
     try {
-      deleteDocument(getDocument(docRef), totrash);
+      XWikiDocument mainDoc = getDocument(docRef);
+      getTranslations(docRef).values().forEach(rethrowConsumer(
+          transDoc -> deleteDocumentInternal(transDoc, totrash)));
+      deleteDocumentInternal(mainDoc, totrash);
     } catch (DocumentNotExistsException exc) {
       LOGGER.debug("doc trying to delete does not exist '{}'", serialize(docRef), exc);
     } catch (ModelAccessRuntimeException exc) {
@@ -313,19 +317,37 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   }
 
   @Override
-  public void deleteDocument(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
-    checkNotNull(doc);
-    List<XWikiDocument> toDelDocs = new ArrayList<>();
-    toDelDocs.addAll(getTranslations(doc.getDocumentReference()).values());
-    toDelDocs.add(doc);
-    for (XWikiDocument toDel : toDelDocs) {
-      deleteDocumentWithoutTranslations(toDel, totrash);
+  public void deleteTranslation(DocumentReference docRef, String lang, boolean totrash)
+      throws DocumentDeleteException {
+    try {
+      XWikiDocument doc = getDocument(docRef, lang);
+      if (doc.isTrans()) {
+        deleteDocumentInternal(doc, totrash);
+      } else {
+        throw new DocumentDeleteException(docRef);
+      }
+    } catch (DocumentNotExistsException exc) {
+      LOGGER.debug("doc trying to delete does not exist '{}'", serialize(docRef), exc);
+    } catch (ModelAccessRuntimeException exc) {
+      throw new DocumentDeleteException(docRef, exc);
     }
   }
 
+  @Deprecated
+  @Override
+  public void deleteDocument(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
+    checkNotNull(doc);
+    deleteDocument(doc.getDocumentReference(), totrash);
+  }
+
+  @Deprecated
   @Override
   public void deleteDocumentWithoutTranslations(XWikiDocument doc, boolean totrash)
       throws DocumentDeleteException {
+    deleteDocumentInternal(doc, totrash);
+  }
+
+  void deleteDocumentInternal(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
     checkNotNull(doc);
     LOGGER.debug("deleteDocument: doc '{}, {}', totrash '{}'",
         serialize(doc.getDocumentReference()), doc.getLanguage(), totrash);
@@ -347,15 +369,24 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     }
   }
 
+  @Deprecated
   @Override
   public List<String> getExistingLangs(DocumentReference docRef) {
-    return strategy.getTranslations(docRef);
+    return getTranslationLangs(docRef);
+  }
+
+  @Override
+  public List<String> getTranslationLangs(DocumentReference docRef) {
+    if (docRef != null) {
+      return strategy.getTranslations(docRef);
+    }
+    return new ArrayList<>();
   }
 
   @Override
   public Map<String, XWikiDocument> getTranslations(DocumentReference docRef) {
     Map<String, XWikiDocument> transMap = new HashMap<>();
-    for (String lang : getExistingLangs(docRef)) {
+    for (String lang : getTranslationLangs(docRef)) {
       lang = modelUtils.normalizeLang(lang);
       try {
         transMap.put(lang, getDocument(docRef, lang));
@@ -367,9 +398,10 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     return transMap;
   }
 
+  @Deprecated
   @Override
   public boolean isTranslation(XWikiDocument doc) {
-    return checkNotNull(doc).getTranslation() == 1;
+    return checkNotNull(doc).isTrans();
   }
 
   /**

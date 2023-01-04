@@ -9,6 +9,7 @@ import org.xwiki.component.annotation.Requirement;
 
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.DocumentDeleteException;
+import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.access.exception.DocumentSaveException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -45,7 +46,11 @@ public class ModelAccessStore extends DelegateStore {
 
   @Override
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
-    return modelAccess.getOrCreateDocument(doc.getDocumentReference(), doc.getLanguage());
+    try {
+      return modelAccess.getDocument(doc.getDocumentReference(), doc.getLanguage());
+    } catch (DocumentNotExistsException exc) {
+      return modelAccess.getOrCreateDocument(doc.getDocumentReference());
+    }
   }
 
   @Override

@@ -39,6 +39,7 @@ import com.celements.configuration.CelementsFromWikiConfigurationSource;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.ClassDocumentLoadException;
 import com.celements.model.access.exception.DocumentAlreadyExistsException;
+import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentLoadException;
 import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.access.exception.DocumentSaveException;
@@ -653,34 +654,59 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_deleteDocumentWithoutTranslations() throws Exception {
+  public void test_deleteDocumentInternal() throws Exception {
     expectDeleteWithNotify(doc);
     replayDefault();
-    modelAccess.deleteDocumentWithoutTranslations(doc, false);
+    modelAccess.deleteDocumentInternal(doc, false);
     verifyDefault();
   }
 
   @Test
-  public void test_deleteDocumentWithoutTranslations_totrash() throws Exception {
+  public void test_deleteDocumentInternal_totrash() throws Exception {
     expectDeleteWithNotify(doc);
     getMock(XWikiRecycleBinStoreInterface.class).saveToRecycleBin(
         same(doc), eq("user"), geq(new Date()), same(getContext()), eq(true));
     replayDefault();
-    modelAccess.deleteDocumentWithoutTranslations(doc, true);
+    modelAccess.deleteDocumentInternal(doc, true);
     verifyDefault();
   }
 
   @Test
-  public void test_deleteDocumentWithoutTranslations_XWE() throws Exception {
+  public void test_deleteDocumentInternal_XWE() throws Exception {
     expectDeleteWithNotify(doc);
     replayDefault();
-    modelAccess.deleteDocumentWithoutTranslations(doc, false);
+    modelAccess.deleteDocumentInternal(doc, false);
+    verifyDefault();
+  }
+
+  @Test
+  public void test_deleteDocument_notExists() throws Exception {
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getContext()))).andReturn(doc);
+    doc.setNew(true);
+    doc.setDefaultLanguage("de");
+    replayDefault();
+    modelAccess.deleteDocument(doc.getDocumentReference(), false);
     verifyDefault();
   }
 
   @Test
   public void test_deleteDocument() throws Exception {
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getContext()))).andReturn(doc);
+    expect(storeMock.getTranslationList(eqRefLang(doc), same(getContext())))
+        .andReturn(ImmutableList.of());
+    doc.setNew(false);
+    doc.setNew(false);
+    doc.setDefaultLanguage("de");
+    expectDeleteWithNotify(doc);
+    replayDefault();
+    modelAccess.deleteDocument(doc.getDocumentReference(), false);
+    verifyDefault();
+  }
+
+  @Test
+  public void test_deleteDocument_withTrans() throws Exception {
     List<String> transLangs = ImmutableList.of("en", "fr", "it");
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getContext()))).andReturn(doc);
     expect(storeMock.getTranslationList(eqRefLang(doc), same(getContext()))).andReturn(transLangs);
     doc.setNew(false);
     doc.setDefaultLanguage("de");
@@ -696,7 +722,39 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     }
     expectDeleteWithNotify(doc);
     replayDefault();
-    modelAccess.deleteDocument(doc, false);
+    modelAccess.deleteDocument(doc.getDocumentReference(), false);
+    verifyDefault();
+  }
+
+  @Test
+  public void test_deleteTranslation() throws Exception {
+    doc.setNew(false);
+    doc.setDefaultLanguage("de");
+    XWikiDocument transDoc = doc.clone();
+    transDoc.setNew(false);
+    transDoc.setLanguage("fr");
+    transDoc.setTranslation(1);
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getContext()))).andReturn(doc);
+    expect(storeMock.loadXWikiDoc(eqRefLang(transDoc), same(getContext()))).andReturn(transDoc);
+    expectDeleteWithNotify(transDoc);
+    replayDefault();
+    modelAccess.deleteTranslation(doc.getDocumentReference(), "fr", false);
+    verifyDefault();
+  }
+
+  @Test
+  public void test_deleteTranslation_notTrans() throws Exception {
+    doc.setNew(false);
+    doc.setDefaultLanguage("de");
+    XWikiDocument transDoc = doc.clone();
+    transDoc.setNew(false);
+    transDoc.setLanguage("fr");
+    transDoc.setTranslation(0);
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getContext()))).andReturn(doc);
+    expect(storeMock.loadXWikiDoc(eqRefLang(transDoc), same(getContext()))).andReturn(transDoc);
+    replayDefault();
+    assertThrows(DocumentDeleteException.class,
+        () -> modelAccess.deleteTranslation(doc.getDocumentReference(), "fr", false));
     verifyDefault();
   }
 
@@ -709,32 +767,32 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_getExistingLangs() throws Exception {
+  public void test_getTranslationLangs() throws Exception {
     List<String> langs = ImmutableList.of("de", "en");
     expect(storeMock.getTranslationList(eqRefLang(doc), same(getContext()))).andReturn(langs);
     replayDefault();
-    List<String> ret = modelAccess.getExistingLangs(doc.getDocumentReference());
+    List<String> ret = modelAccess.getTranslationLangs(doc.getDocumentReference());
     verifyDefault();
     assertEquals(langs, ret);
   }
 
   @Test
-  public void test_getExistingLangs_none() throws Exception {
+  public void test_getTranslationLangs_none() throws Exception {
     List<String> langs = ImmutableList.of();
     expect(storeMock.getTranslationList(eqRefLang(doc), same(getContext()))).andReturn(langs);
     replayDefault();
-    List<String> ret = modelAccess.getExistingLangs(doc.getDocumentReference());
+    List<String> ret = modelAccess.getTranslationLangs(doc.getDocumentReference());
     verifyDefault();
     assertEquals(langs, ret);
   }
 
   @Test
-  public void test_getExistingLangs_DLE() throws Exception {
+  public void test_getTranslationLangs_DLE() throws Exception {
     DocumentReference docRef = doc.getDocumentReference();
     expect(storeMock.getTranslationList(eqRefLang(doc), same(getContext())))
         .andThrow(new XWikiException());
     replayDefault();
-    assertThrows(DocumentLoadException.class, () -> modelAccess.getExistingLangs(docRef));
+    assertThrows(DocumentLoadException.class, () -> modelAccess.getTranslationLangs(docRef));
     verifyDefault();
   }
 

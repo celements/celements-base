@@ -208,6 +208,7 @@ public class ImportTest extends AbstractBridgedXWikiComponentTestCase {
     assertSame(foundDocument, foundTranslationDocument);
 
     XWikiDocument doc1Translation = new XWikiDocument("Test", "DocImport");
+    doc1Translation.setTranslation(1);
     doc1Translation.setLanguage("fr");
     doc1Translation.setDefaultLanguage("en");
     this.xwiki.saveDocument(doc1Translation, getContext());

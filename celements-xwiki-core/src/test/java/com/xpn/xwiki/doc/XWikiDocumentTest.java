@@ -922,6 +922,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     this.translatedDocument.setContent("~italic~");
     this.translatedDocument.setSyntaxId("xwiki/2.0");
     this.translatedDocument.setNew(false);
+    this.translatedDocument.setTranslation(1);
 
     this.mockXWiki.stubs().method("getLanguagePreference").will(returnValue("fr"));
     this.mockXWikiStoreInterface.stubs().method("loadXWikiDoc")
@@ -942,6 +943,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     this.translatedDocument.setContent("//italic//");
     this.translatedDocument.setSyntaxId("xwiki/1.0");
     this.translatedDocument.setNew(false);
+    this.translatedDocument.setTranslation(1);
 
     this.mockXWiki.stubs().method("getLanguagePreference").will(returnValue("fr"));
     this.mockXWikiStoreInterface.stubs().method("loadXWikiDoc")

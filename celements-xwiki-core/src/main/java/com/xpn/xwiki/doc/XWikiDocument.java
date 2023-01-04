@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.doc;
 
+import static com.google.common.base.Strings.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -5216,40 +5218,60 @@ public class XWikiDocument implements DocumentModelBridge {
     return this.translation;
   }
 
+  // don't name it "isTranslation" to not break hibernate mapping
+  public boolean isTrans() {
+    return this.translation != 0;
+  }
+
   public void setTranslation(int translation) {
     this.translation = translation;
-
     setMetaDataDirty(true);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public String getTranslatedContent(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
-
     return getTranslatedContent(language, context);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public String getTranslatedContent(String language, XWikiContext context) throws XWikiException {
     XWikiDocument tdoc = getTranslatedDocument(language, context);
     return tdoc.getContent();
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public XWikiDocument getTranslatedDocument(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
     return getTranslatedDocument(language, context);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
-    XWikiDocument tdoc = this;
-    if (((language != null) && !language.equals("") && !language.equals(getDefaultLanguage()))) {
-      tdoc = new XWikiDocument(getDocumentReference());
-      tdoc.setLanguage(language);
-      tdoc = getStore(context).loadXWikiDoc(tdoc, context);
-      if (tdoc.isNew()) {
-        tdoc = this;
+    if (isTrans()) {
+      throw new IllegalStateException("shouldn't be called on a translation");
+    } else if ((!isNullOrEmpty(language) && !language.equals(getDefaultLanguage()))) {
+      XWikiDocument dummyDoc = new XWikiDocument(getDocumentReference());
+      dummyDoc.setLanguage(language);
+      XWikiDocument loadedDoc = getStore(context).loadXWikiDoc(dummyDoc, context);
+      if (!loadedDoc.isNew() && loadedDoc.isTrans()) {
+        return loadedDoc;
       }
     }
-    return tdoc;
+    return this;
   }
 
   public String getRealLanguage(XWikiContext context) throws XWikiException {
@@ -5266,6 +5288,7 @@ public class XWikiDocument implements DocumentModelBridge {
     }
   }
 
+  @Deprecated
   public List<String> getTranslationList(XWikiContext context) throws XWikiException {
     return getStore(context).getTranslationList(this, context);
   }
@@ -7248,6 +7271,10 @@ public class XWikiDocument implements DocumentModelBridge {
       }
     }
     return null;
+  }
+
+  public String serialize() {
+    return this.defaultEntityReferenceSerializer.serialize(getDocumentReference());
   }
 
   @Override

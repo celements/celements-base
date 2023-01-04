@@ -68,13 +68,6 @@ public class SaveAction extends PreviewAction {
       sectionNumber = Integer.parseInt(request.getParameter("section"));
     }
 
-    // We need to clone this document first, since a cached storage would return the same object for
-    // the
-    // following requests, so concurrent request might get a partially modified object, or worse, if
-    // an error
-    // occurs during the save, the cached object will not reflect the actual document at all.
-    doc = doc.clone();
-
     String language = ((EditForm) form).getLanguage();
     // FIXME Which one should be used: doc.getDefaultLanguage or
     // form.getDefaultLanguage()?
@@ -86,16 +79,13 @@ public class SaveAction extends PreviewAction {
       // Need to save parent and defaultLanguage if they have changed
       tdoc = doc;
     } else {
-      tdoc = doc.getTranslatedDocument(language, context);
-      if ((tdoc == doc) && xwiki.isMultiLingual(context)) {
-        tdoc = new XWikiDocument(doc.getSpace(), doc.getName());
-        tdoc.setLanguage(language);
-        tdoc.setStore(doc.getStore());
-      } else if (tdoc != doc) {
-        // Same as above, clone the object retrieved from the store cache.
-        tdoc = tdoc.clone();
+      XWikiDocument newDoc = new XWikiDocument(doc.getDocumentReference());
+      newDoc.setLanguage(language);
+      tdoc = xwiki.getStore().loadXWikiDoc(newDoc, context);
+      if (!tdoc.isTrans() && xwiki.isMultiLingual(context)) {
+        tdoc = newDoc;
+        tdoc.setTranslation(1);
       }
-      tdoc.setTranslation(1);
     }
 
     if (doc.isNew()) {
