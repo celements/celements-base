@@ -5218,7 +5218,7 @@ public class XWikiDocument implements DocumentModelBridge {
     return this.translation;
   }
 
-  // don't call isTranslation to not break hibernate mapping
+  // don't name it "isTranslation" to not break hibernate mapping
   public boolean isTrans() {
     return this.translation != 0;
   }
@@ -5228,24 +5228,36 @@ public class XWikiDocument implements DocumentModelBridge {
     setMetaDataDirty(true);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
   @Deprecated
   public String getTranslatedContent(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
     return getTranslatedContent(language, context);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
   @Deprecated
   public String getTranslatedContent(String language, XWikiContext context) throws XWikiException {
     XWikiDocument tdoc = getTranslatedDocument(language, context);
     return tdoc.getContent();
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
   @Deprecated
   public XWikiDocument getTranslatedDocument(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
     return getTranslatedDocument(language, context);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
   @Deprecated
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {

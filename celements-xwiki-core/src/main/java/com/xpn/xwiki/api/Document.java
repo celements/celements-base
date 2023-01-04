@@ -487,7 +487,6 @@ public class Document extends Api {
   /**
    * @return the list of existing translations for this document.
    */
-  @Deprecated
   public List<String> getTranslationList() throws XWikiException {
     return this.doc.getTranslationList(getXWikiContext());
   }
@@ -499,7 +498,6 @@ public class Document extends Api {
    *         language is the one
    *         on the wiki configuration.
    */
-  @Deprecated
   public String getTranslatedContent() throws XWikiException {
     return this.doc.getTranslatedContent(getXWikiContext());
   }
@@ -507,7 +505,6 @@ public class Document extends Api {
   /**
    * @return the translated content in the given language
    */
-  @Deprecated
   public String getTranslatedContent(String language) throws XWikiException {
     return this.doc.getTranslatedContent(language, getXWikiContext());
   }
@@ -515,7 +512,6 @@ public class Document extends Api {
   /**
    * @return the translated document in the given document
    */
-  @Deprecated
   public Document getTranslatedDocument(String language) throws XWikiException {
     return this.doc.getTranslatedDocument(language, getXWikiContext())
         .newDocument(getXWikiContext());
@@ -528,7 +524,6 @@ public class Document extends Api {
    *         one on the
    *         wiki configuration.
    */
-  @Deprecated
   public Document getTranslatedDocument() throws XWikiException {
     return this.doc.getTranslatedDocument(getXWikiContext()).newDocument(getXWikiContext());
   }
