@@ -5214,12 +5214,13 @@ public class XWikiDocument implements DocumentModelBridge {
     setMetaDataDirty(true);
   }
 
-  public boolean isTranslation() {
-    return this.translation != 0;
-  }
-
   public int getTranslation() {
     return this.translation;
+  }
+
+  // don't call isTranslation to not break hibernate mapping
+  public boolean isTrans() {
+    return this.translation != 0;
   }
 
   public void setTranslation(int translation) {
@@ -5244,13 +5245,13 @@ public class XWikiDocument implements DocumentModelBridge {
 
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
-    if (isTranslation()) {
+    if (isTrans()) {
       throw new IllegalStateException("shouldn't be called on a translation");
     } else if ((!isNullOrEmpty(language) && !language.equals(getDefaultLanguage()))) {
       XWikiDocument dummyDoc = new XWikiDocument(getDocumentReference());
       dummyDoc.setLanguage(language);
       XWikiDocument loadedDoc = getStore(context).loadXWikiDoc(dummyDoc, context);
-      if (!loadedDoc.isNew() && loadedDoc.isTranslation()) {
+      if (!loadedDoc.isNew() && loadedDoc.isTrans()) {
         return loadedDoc;
       }
     }

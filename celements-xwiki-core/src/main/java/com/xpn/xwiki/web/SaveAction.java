@@ -80,7 +80,7 @@ public class SaveAction extends PreviewAction {
       tdoc = doc;
     } else {
       tdoc = doc.getTranslatedDocument(language, context);
-      if ((tdoc.isNew() || !tdoc.isTranslation()) && xwiki.isMultiLingual(context)) {
+      if ((tdoc.isNew() || !tdoc.isTrans()) && xwiki.isMultiLingual(context)) {
         tdoc = new XWikiDocument(doc.getSpace(), doc.getName());
         tdoc.setLanguage(language);
       }
