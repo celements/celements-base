@@ -5214,19 +5214,21 @@ public class XWikiDocument implements DocumentModelBridge {
     setMetaDataDirty(true);
   }
 
+  public boolean isTranslation() {
+    return this.translation != 0;
+  }
+
   public int getTranslation() {
     return this.translation;
   }
 
   public void setTranslation(int translation) {
     this.translation = translation;
-
     setMetaDataDirty(true);
   }
 
   public String getTranslatedContent(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
-
     return getTranslatedContent(language, context);
   }
 
@@ -5242,13 +5244,13 @@ public class XWikiDocument implements DocumentModelBridge {
 
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
-    if (getTranslation() != 0) {
+    if (isTranslation()) {
       throw new IllegalStateException("shouldn't be called on a translation");
     } else if ((!isNullOrEmpty(language) && !language.equals(getDefaultLanguage()))) {
       XWikiDocument dummyDoc = new XWikiDocument(getDocumentReference());
       dummyDoc.setLanguage(language);
       XWikiDocument loadedDoc = getStore(context).loadXWikiDoc(dummyDoc, context);
-      if (!loadedDoc.isNew() && (loadedDoc.getTranslation() != 0)) {
+      if (!loadedDoc.isNew() && loadedDoc.isTranslation()) {
         return loadedDoc;
       }
     }
@@ -7251,6 +7253,10 @@ public class XWikiDocument implements DocumentModelBridge {
       }
     }
     return null;
+  }
+
+  public String serialize() {
+    return this.defaultEntityReferenceSerializer.serialize(getDocumentReference());
   }
 
   @Override
