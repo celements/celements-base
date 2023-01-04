@@ -79,12 +79,13 @@ public class SaveAction extends PreviewAction {
       // Need to save parent and defaultLanguage if they have changed
       tdoc = doc;
     } else {
-      tdoc = doc.getTranslatedDocument(language, context);
-      if ((tdoc.isNew() || !tdoc.isTrans()) && xwiki.isMultiLingual(context)) {
-        tdoc = new XWikiDocument(doc.getSpace(), doc.getName());
-        tdoc.setLanguage(language);
+      XWikiDocument newDoc = new XWikiDocument(doc.getDocumentReference());
+      newDoc.setLanguage(language);
+      tdoc = xwiki.getStore().loadXWikiDoc(newDoc, context);
+      if (!tdoc.isTrans() && xwiki.isMultiLingual(context)) {
+        tdoc = newDoc;
+        tdoc.setTranslation(1);
       }
-      tdoc.setTranslation(1);
     }
 
     if (doc.isNew()) {

@@ -5228,21 +5228,25 @@ public class XWikiDocument implements DocumentModelBridge {
     setMetaDataDirty(true);
   }
 
+  @Deprecated
   public String getTranslatedContent(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
     return getTranslatedContent(language, context);
   }
 
+  @Deprecated
   public String getTranslatedContent(String language, XWikiContext context) throws XWikiException {
     XWikiDocument tdoc = getTranslatedDocument(language, context);
     return tdoc.getContent();
   }
 
+  @Deprecated
   public XWikiDocument getTranslatedDocument(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
     return getTranslatedDocument(language, context);
   }
 
+  @Deprecated
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
     if (isTrans()) {
@@ -5272,6 +5276,7 @@ public class XWikiDocument implements DocumentModelBridge {
     }
   }
 
+  @Deprecated
   public List<String> getTranslationList(XWikiContext context) throws XWikiException {
     return getStore(context).getTranslationList(this, context);
   }
