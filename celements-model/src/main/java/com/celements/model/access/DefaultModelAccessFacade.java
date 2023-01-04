@@ -1,6 +1,7 @@
 package com.celements.model.access;
 
 import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -305,7 +306,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       throws DocumentDeleteException {
     try {
       XWikiDocument mainDoc = getDocument(docRef);
-      deleteAllTranslations(docRef, totrash);
+      getTranslations(docRef).values().forEach(rethrowConsumer(
+          transDoc -> deleteDocumentInternal(transDoc, totrash)));
       deleteDocumentInternal(mainDoc, totrash);
     } catch (DocumentNotExistsException exc) {
       LOGGER.debug("doc trying to delete does not exist '{}'", serialize(docRef), exc);
@@ -336,13 +338,6 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   public void deleteDocument(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
     checkNotNull(doc);
     deleteDocument(doc.getDocumentReference(), totrash);
-  }
-
-  public void deleteAllTranslations(DocumentReference docRef, boolean totrash)
-      throws DocumentDeleteException {
-    for (XWikiDocument toDel : getTranslations(docRef).values()) {
-      deleteDocumentInternal(toDel, totrash);
-    }
   }
 
   @Deprecated
