@@ -62,10 +62,8 @@ public class ModelAccessScriptService implements ScriptService {
   public Document getOrCreateDocument(DocumentReference docRef, String lang) {
     Document ret = null;
     try {
-      boolean exists = modelAccess.existsLang(docRef, lang);
-      if ((exists && rightsAccess.hasAccessLevel(docRef, VIEW))
-          || (!exists && rightsAccess.hasAccessLevel(docRef, EAccessLevel.EDIT))) {
-        XWikiDocument doc = modelAccess.getOrCreateDocument(docRef);
+      if (rightsAccess.hasAccessLevel(docRef, VIEW)) {
+        XWikiDocument doc = modelAccess.getOrCreateDocument(docRef, lang);
         ret = modelAccess.getApiDocument(doc);
       }
     } catch (Exception exc) {
@@ -80,6 +78,30 @@ public class ModelAccessScriptService implements ScriptService {
 
   public boolean existsLang(DocumentReference docRef, String lang) {
     return modelAccess.existsLang(docRef, lang);
+  }
+
+  public List<String> getTranslationLangs(DocumentReference docRef) {
+    return modelAccess.getTranslationLangs(docRef);
+  }
+
+  public void deleteDocument(DocumentReference docRef) {
+    try {
+      if (rightsAccess.hasAccessLevel(docRef, EDIT)) {
+        modelAccess.deleteDocument(docRef, true);
+      }
+    } catch (Exception exc) {
+      LOGGER.info("failed to delete doc [{}]", docRef, exc);
+    }
+  }
+
+  public void deleteTranslation(DocumentReference docRef, String lang) {
+    try {
+      if (rightsAccess.hasAccessLevel(docRef, EDIT)) {
+        modelAccess.deleteTranslation(docRef, lang, true);
+      }
+    } catch (Exception exc) {
+      LOGGER.info("failed to delete doc [{}], lang [{}]", docRef, lang, exc);
+    }
   }
 
   public com.xpn.xwiki.api.Object getObject(DocumentReference docRef, DocumentReference classRef) {

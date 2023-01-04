@@ -66,13 +66,13 @@ public interface IModelAccessFacade {
   /**
    * @return true if the default document denoted by {@code docRef} exists.
    */
-  boolean exists(@NotNull DocumentReference docRef);
+  boolean exists(@Nullable DocumentReference docRef);
 
   /**
    * @return true if the document denoted by {@code docRef} exists for the given {@code lang}.
    *         This may be a translation or the default document with the inquired {@code lang}.
    */
-  boolean existsLang(@NotNull DocumentReference docRef, @Nullable String lang);
+  boolean existsLang(@Nullable DocumentReference docRef, @Nullable String lang);
 
   void saveDocument(@NotNull XWikiDocument doc) throws DocumentSaveException;
 
@@ -85,18 +85,41 @@ public interface IModelAccessFacade {
   void deleteDocument(@NotNull DocumentReference docRef, boolean totrash)
       throws DocumentDeleteException;
 
-  void deleteDocument(@NotNull XWikiDocument doc, boolean totrash)
+  void deleteTranslation(@NotNull DocumentReference docRef, @NotNull String lang, boolean totrash)
       throws DocumentDeleteException;
 
+  /**
+   * @deprecated since 5.9, instead use {@link #deleteDocument(DocumentReference, boolean)}
+   */
+  @Deprecated
+  void deleteDocument(@NotNull XWikiDocument doc, boolean totrash) throws DocumentDeleteException;
+
+  /**
+   * @deprecated since 5.9, instead use
+   *             {@link #deleteTranslation(DocumentReference, String, boolean)}
+   */
+  @Deprecated
   void deleteDocumentWithoutTranslations(@NotNull XWikiDocument doc, boolean totrash)
       throws DocumentDeleteException;
 
+  /**
+   * @deprecated since 5.9, misnomer, instead use
+   *             {@link #getTranslationLangs(DocumentReference, String, boolean)}
+   */
+  @Deprecated
   @NotNull
-  List<String> getExistingLangs(@NotNull DocumentReference docRef);
+  List<String> getExistingLangs(@Nullable DocumentReference docRef);
 
   @NotNull
-  Map<String, XWikiDocument> getTranslations(@NotNull DocumentReference docRef);
+  List<String> getTranslationLangs(@Nullable DocumentReference docRef);
 
+  @NotNull
+  Map<String, XWikiDocument> getTranslations(@Nullable DocumentReference docRef);
+
+  /**
+   * @deprecated since 5.9, instead use {@link XWikiDocument#isTrans()}
+   */
+  @Deprecated
   boolean isTranslation(@NotNull XWikiDocument doc);
 
   @NotNull
