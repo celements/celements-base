@@ -1,6 +1,5 @@
 package com.celements.store;
 
-import static com.celements.model.access.IModelAccessFacade.*;
 import static com.xpn.xwiki.XWikiException.*;
 
 import javax.inject.Singleton;
@@ -12,7 +11,6 @@ import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.access.exception.DocumentSaveException;
-import com.celements.model.util.ModelUtils;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -25,9 +23,6 @@ public class ModelAccessStore extends DelegateStore {
 
   @Requirement
   private IModelAccessFacade modelAccess;
-
-  @Requirement
-  private ModelUtils modelUtils;
 
   @Override
   protected String getName() {
@@ -54,14 +49,7 @@ public class ModelAccessStore extends DelegateStore {
     try {
       return modelAccess.getDocument(doc.getDocumentReference(), doc.getLanguage());
     } catch (DocumentNotExistsException exc) {
-      XWikiDocument mainDoc = modelAccess.getOrCreateDocument(doc.getDocumentReference());
-      String lang = modelUtils.normalizeLang(doc.getLanguage());
-      if (mainDoc.getDefaultLanguage().equals(lang)) {
-        lang = DEFAULT_LANG;
-      }
-      mainDoc.setLanguage(lang);
-      mainDoc.setTranslation(DEFAULT_LANG.equals(lang) ? 0 : 1);
-      return mainDoc;
+      return modelAccess.getOrCreateDocument(doc.getDocumentReference());
     }
   }
 
