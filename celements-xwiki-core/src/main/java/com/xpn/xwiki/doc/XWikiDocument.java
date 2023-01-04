@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.doc;
 
+import static com.google.common.base.Strings.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -5240,16 +5242,17 @@ public class XWikiDocument implements DocumentModelBridge {
 
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
-    XWikiDocument tdoc = this;
-    if (((language != null) && !language.equals("") && !language.equals(getDefaultLanguage()))) {
-      tdoc = new XWikiDocument(getDocumentReference());
-      tdoc.setLanguage(language);
-      tdoc = getStore(context).loadXWikiDoc(tdoc, context);
-      if (tdoc.isNew()) {
-        tdoc = this;
+    if (getTranslation() != 0) {
+      throw new IllegalStateException("shouldn't be called on a translation");
+    } else if ((!isNullOrEmpty(language) && !language.equals(getDefaultLanguage()))) {
+      XWikiDocument dummyDoc = new XWikiDocument(getDocumentReference());
+      dummyDoc.setLanguage(language);
+      XWikiDocument loadedDoc = getStore(context).loadXWikiDoc(dummyDoc, context);
+      if (!loadedDoc.isNew() && (loadedDoc.getTranslation() != 0)) {
+        return loadedDoc;
       }
     }
-    return tdoc;
+    return this;
   }
 
   public String getRealLanguage(XWikiContext context) throws XWikiException {
