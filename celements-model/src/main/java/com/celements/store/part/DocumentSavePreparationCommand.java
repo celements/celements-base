@@ -191,24 +191,16 @@ class DocumentSavePreparationCommand {
               .filter(new ClassReference(obj.getXClassReference()))
               .filter(obj.getNumber())
               .stream().findFirst();
-          if (existingObj.isPresent() && existingObj.get().hasValidId()) {
+          if (existingObj.isPresent()) {
             obj.setId(existingObj.get().getId(), existingObj.get().getIdVersion());
             LOGGER.debug("saveXWikiDoc - obj [{}] already existed, keeping id", obj);
           } else {
             long nextId = store.getIdComputer().computeNextObjectId(doc);
             obj.setId(nextId, store.getIdComputer().getIdVersion());
             LOGGER.debug("saveXWikiDoc - obj [{}] is new, computed new id", obj);
-            existingObj.ifPresent(this::logExistingObject);
           }
         }
       }
-    }
-
-    private void logExistingObject(BaseObject existingObj) {
-      // observed in com.xpn.xwiki.web.ObjectAddAction, see [CELDEV-693]
-      LOGGER.warn("saveXWikiDoc - overwriting existing object [{}] because of invalid id, "
-          + "possibly due to cache poisoning before save through 'XWiki#getDocument': {}",
-          existingObj, existingObj.toXMLString(), new Throwable());
     }
   }
 

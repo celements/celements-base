@@ -234,9 +234,8 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
         same(getContext()))).andReturn(doc);
 
     replayDefault();
-    newCommand(doc).execute(false);
+    assertThrows(IllegalStateException.class, () -> newCommand(doc).execute(false));
     verifyDefault();
-    assertEquals(-974136870929809407L, obj.getId());
   }
 
   @Test
