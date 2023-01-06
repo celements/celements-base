@@ -68,6 +68,8 @@ public class SaveAction extends PreviewAction {
       sectionNumber = Integer.parseInt(request.getParameter("section"));
     }
 
+    doc = doc.clone();
+
     String language = ((EditForm) form).getLanguage();
     // FIXME Which one should be used: doc.getDefaultLanguage or
     // form.getDefaultLanguage()?
@@ -85,6 +87,8 @@ public class SaveAction extends PreviewAction {
       if (!tdoc.isTrans() && xwiki.isMultiLingual(context)) {
         tdoc = newDoc;
         tdoc.setTranslation(1);
+      } else {
+        tdoc = tdoc.clone();
       }
     }
 
