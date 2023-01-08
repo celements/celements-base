@@ -1,13 +1,10 @@
 package com.celements.store;
 
-import static com.celements.common.MoreOptional.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.model.access.IModelAccessFacade.*;
 import static com.xpn.xwiki.XWikiException.*;
 
 import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 
@@ -24,6 +21,8 @@ import com.google.common.primitives.Ints;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+
+import one.util.streamex.StreamEx;
 
 @Singleton
 @Component(ModelAccessStore.NAME)
@@ -57,12 +56,11 @@ public class ModelAccessStore extends DelegateStore {
   @Override
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     DocumentReference docRef = doc.getDocumentReference();
-    String lang = doc.getLanguage();
     try {
-      return findFirstPresent(Stream.<Supplier<Optional<XWikiDocument>>>of(
-          () -> getDocument(docRef, lang),
-          () -> getDocument(docRef, DEFAULT_LANG)))
-              .orElseGet(rethrow(() -> modelAccess.createDocument(docRef, lang)));
+      return StreamEx.of(doc.getLanguage(), DEFAULT_LANG)
+          .mapPartial(lang -> getDocument(docRef, lang))
+          .findFirst()
+          .orElseGet(rethrow(() -> modelAccess.createDocument(docRef, doc.getLanguage())));
     } catch (DocumentAlreadyExistsException exc) {
       throw new IllegalStateException("should not happen", exc);
     }
