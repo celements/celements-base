@@ -13,7 +13,6 @@ import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.access.IModelAccessFacade;
@@ -34,9 +33,6 @@ public class ModelAccessStore extends DelegateStore {
 
   @Requirement
   private IModelAccessFacade modelAccess;
-
-  @Requirement
-  private ConfigurationSource cfgSrc;
 
   @Override
   protected String getName() {
@@ -92,7 +88,11 @@ public class ModelAccessStore extends DelegateStore {
   public void deleteXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     try {
       boolean totrash = Boolean.TRUE.equals(context.get("delete_totrash"));
-      modelAccess.deleteDocumentWithoutTranslations(doc, totrash);
+      if (doc.isTrans()) {
+        modelAccess.deleteTranslation(doc.getDocumentReference(), doc.getLanguage(), totrash);
+      } else {
+        modelAccess.deleteDocument(doc.getDocumentReference(), totrash);
+      }
     } catch (DocumentDeleteException exc) {
       throw asXWikiException(exc);
     }
