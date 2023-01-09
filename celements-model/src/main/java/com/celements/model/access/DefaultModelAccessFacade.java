@@ -133,7 +133,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
    * @return an xwiki document for readonly usage
    * @throws DocumentNotExistsException
    */
-  private XWikiDocument getDocumentReadOnly(DocumentReference docRef, String lang)
+  @Override
+  public XWikiDocument getDocumentReadOnly(DocumentReference docRef, String lang)
       throws DocumentNotExistsException {
     checkNotNull(docRef);
     XWikiDocument mainDoc = getDocumentInternal(docRef, DEFAULT_LANG);

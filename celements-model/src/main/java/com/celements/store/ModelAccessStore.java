@@ -1,19 +1,28 @@
 package com.celements.store;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static com.celements.model.access.IModelAccessFacade.*;
 import static com.xpn.xwiki.XWikiException.*;
+
+import java.util.Optional;
 
 import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.access.IModelAccessFacade;
+import com.celements.model.access.exception.DocumentAlreadyExistsException;
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.access.exception.DocumentSaveException;
+import com.google.common.primitives.Ints;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+
+import one.util.streamex.StreamEx;
 
 @Singleton
 @Component(ModelAccessStore.NAME)
@@ -46,18 +55,42 @@ public class ModelAccessStore extends DelegateStore {
 
   @Override
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
+    DocumentReference docRef = doc.getDocumentReference();
     try {
-      return modelAccess.getDocument(doc.getDocumentReference(), doc.getLanguage());
-    } catch (DocumentNotExistsException exc) {
-      return modelAccess.getOrCreateDocument(doc.getDocumentReference());
+      return StreamEx.of(doc.getLanguage(), DEFAULT_LANG)
+          .mapPartial(lang -> getDocument(docRef, lang))
+          .findFirst()
+          .orElseGet(rethrow(() -> modelAccess.createDocument(docRef, doc.getLanguage())));
+    } catch (DocumentAlreadyExistsException exc) {
+      throw new IllegalStateException("should not happen", exc);
     }
+  }
+
+  private Optional<XWikiDocument> getDocument(DocumentReference docRef, String lang) {
+    try {
+      return Optional.of(disableClone()
+          ? modelAccess.getDocumentReadOnly(docRef, lang)
+          : modelAccess.getDocument(docRef, lang));
+    } catch (DocumentNotExistsException dne1) {
+      return Optional.empty();
+    }
+  }
+
+  private boolean disableClone() {
+    String key = "celements.store." + getName() + ".disableClone";
+    String disable = cfgSrc.getProperty(key, "false").toLowerCase();
+    return "true".equals(disable) || (0 != Optional.ofNullable(Ints.tryParse(disable)).orElse(0));
   }
 
   @Override
   public void deleteXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     try {
       boolean totrash = Boolean.TRUE.equals(context.get("delete_totrash"));
-      modelAccess.deleteDocumentWithoutTranslations(doc, totrash);
+      if (doc.isTrans()) {
+        modelAccess.deleteTranslation(doc.getDocumentReference(), doc.getLanguage(), totrash);
+      } else {
+        modelAccess.deleteDocument(doc.getDocumentReference(), totrash);
+      }
     } catch (DocumentDeleteException exc) {
       throw asXWikiException(exc);
     }
