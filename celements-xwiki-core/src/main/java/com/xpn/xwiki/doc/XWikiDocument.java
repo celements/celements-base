@@ -5262,8 +5262,12 @@ public class XWikiDocument implements DocumentModelBridge {
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
     if (isTrans()) {
-      throw new IllegalStateException("shouldn't be called on a translation");
-    } else if ((!isNullOrEmpty(language) && !language.equals(getDefaultLanguage()))) {
+      LOG.warn("shouldn't be called on a translation");
+    }
+    if (getLanguage().equals(language)) {
+      return this;
+    }
+    if ((!isNullOrEmpty(language) && !language.equals(getDefaultLanguage()))) {
       XWikiDocument dummyDoc = new XWikiDocument(getDocumentReference());
       dummyDoc.setLanguage(language);
       XWikiDocument loadedDoc = getStore(context).loadXWikiDoc(dummyDoc, context);
