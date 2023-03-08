@@ -19,13 +19,14 @@
  */
 package com.xpn.xwiki.doc;
 
+import static com.google.common.base.Strings.*;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -84,7 +85,6 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
-import org.xwiki.model.reference.WikiReference;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.HeaderBlock;
 import org.xwiki.rendering.block.LinkBlock;
@@ -109,6 +109,8 @@ import org.xwiki.rendering.util.ParserUtils;
 import org.xwiki.velocity.VelocityManager;
 import org.xwiki.velocity.XWikiVelocityException;
 
+import com.celements.model.reference.RefBuilder;
+import com.celements.store.id.DocumentIdComputer;
 import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWiki;
@@ -230,8 +232,7 @@ public class XWikiDocument implements DocumentModelBridge {
 
   private long id = 0;
 
-  // TODO remove idVersion init in [CELDEV-602] - XWikiDocument get/setId
-  private IdVersion idVersion = IdVersion.XWIKI_2;
+  private IdVersion idVersion;
 
   private boolean mostRecent = true;
 
@@ -490,34 +491,21 @@ public class XWikiDocument implements DocumentModelBridge {
   @Deprecated
   public XWikiDocument(String wiki, String space, String name) {
     // We allow to specify the space in the name (eg name = "space.page"). In this case the passed
-    // space is
-    // ignored.
-
+    // space is ignored.
     // Build an entity reference that will serve as a current context reference against which to
-    // resolve if the
-    // passed name doesn't contain a space.
-    EntityReference contextReference = null;
-    if (!StringUtils.isEmpty(space)) {
-      contextReference = new EntityReference(space, EntityType.SPACE);
-      if (!StringUtils.isEmpty(wiki)) {
-        contextReference.setParent(new WikiReference(wiki));
-      }
-    } else if (!StringUtils.isEmpty(wiki)) {
-      contextReference = new WikiReference(wiki);
-    }
-
+    // resolve if the passed name doesn't contain a space.
+    EntityReference contextReference = RefBuilder.create().space(space).wiki(wiki).buildRelative();
     DocumentReference reference;
     if (contextReference != null) {
       reference = this.currentDocumentReferenceResolver.resolve(name, contextReference);
       // Replace the resolved wiki by the passed wiki if not empty/null
       if (!StringUtils.isEmpty(wiki)) {
-        reference.setWikiReference(new WikiReference(wiki));
+        reference = RefBuilder.from(reference).wiki(wiki).build(DocumentReference.class);
       }
     } else {
       // Both the wiki and space params are empty/null, thus don't use a context reference.
       reference = this.currentDocumentReferenceResolver.resolve(name);
     }
-
     init(reference);
   }
 
@@ -533,53 +521,48 @@ public class XWikiDocument implements DocumentModelBridge {
     return context.getWiki().getVersioningStore();
   }
 
+  /**
+   * @deprecated since 5.9, instead use {@link XWiki#getStore()}
+   **/
+  @Deprecated
   public XWikiStoreInterface getStore() {
-    return this.store;
-  }
-
-  public void setStore(XWikiStoreInterface store) {
-    this.store = store;
+    return getStore(getXWikiContext());
   }
 
   /**
-   * @return the unique id used to represent the document, as a number. This id is technical and is
-   *         equivalent to the Document Reference + the language of the Document. This technical id
-   *         should only be used for the storage layer and all user APIs should instead use Document
-   *         Reference and language as they are model-related while the id isn't (it's purely
-   *         technical).
-   */
+   * @deprecated since 5.9, doc doesn't need store set
+   **/
+  @Deprecated
+  public void setStore(XWikiStoreInterface store) {}
+
   public long getId() {
-    // TODO: The implemented below doesn't guarantee a unique id since it uses the hashCode() method
-    // which doesn't
-    // guarantee unicity. From the JDK's javadoc: "It is not required that if two objects are
-    // unequal according to
-    // the equals(java.lang.Object) method, then calling the hashCode method on each of the two
-    // objects must
-    // produce distinct integer results.". This needs to be fixed to produce a real unique id since
-    // otherwise we
-    // can have clashes in the database.
+    return hasValidId() ? id
+        : Utils.getComponent(DocumentIdComputer.class)
+            .compute(getDocumentReference(), getLanguage());
+  }
 
-    // Note: We don't use the wiki name in the document id's computation. The main historical reason
-    // is so
-    // that all things saved in a given wiki's database are always stored relative to that wiki so
-    // that
-    // changing that wiki's name is simpler.
-    if ((this.language == null) || this.language.trim().equals("")) {
-      this.id = this.localEntityReferenceSerializer.serialize(getDocumentReference()).hashCode();
-    } else {
-      this.id = (this.localEntityReferenceSerializer.serialize(getDocumentReference()) + ":"
-          + this.language)
-              .hashCode();
-    }
-
-    return this.id;
+  @Deprecated
+  public int calculateXWikiId() {
+    return (int) Utils.getComponent(DocumentIdComputer.class, "xwiki")
+        .compute(getDocumentReference(), getLanguage());
   }
 
   /**
-   * @see #getId()
+   * IMPORTANT: must never be called outside of store logic
    */
-  public void setId(long id) {
+  public void setId(long id, IdVersion idVersion) {
+    if (hasValidId()) {
+      throw new IllegalStateException("id override not permitted");
+    } else if (idVersion != null) {
+      setIdInternal(id, idVersion);
+    } else {
+      verifyIdVersion();
+    }
+  }
+
+  private void setIdInternal(long id, IdVersion idVersion) {
     this.id = id;
+    this.idVersion = idVersion;
   }
 
   public boolean hasValidId() {
@@ -1089,10 +1072,7 @@ public class XWikiDocument implements DocumentModelBridge {
    */
   @Override
   public DocumentReference getDocumentReference() {
-    if (documentReference != null) {
-      return (DocumentReference) documentReference.clone();
-    }
-    return null;
+    return documentReference;
   }
 
   /**
@@ -1123,7 +1103,7 @@ public class XWikiDocument implements DocumentModelBridge {
   public void setDocumentReference(DocumentReference reference) {
     if (reference != null) {
       boolean changed = !reference.equals(documentReference);
-      documentReference = (DocumentReference) reference.clone();
+      documentReference = reference;
       if (changed) {
         setMetaDataDirty(true);
         this.parentReferenceCache = null;
@@ -1749,7 +1729,7 @@ public class XWikiDocument implements DocumentModelBridge {
     if (customClass != null) {
       try {
         Class<?>[] classes = new Class[] { XWikiDocument.class, XWikiContext.class };
-        Object[] args = new Object[] { this, context };
+        Object[] args = { this, context };
 
         return (com.xpn.xwiki.api.Document) customClass.getConstructor(classes).newInstance(args);
       } catch (Exception e) {
@@ -1885,27 +1865,26 @@ public class XWikiDocument implements DocumentModelBridge {
       }
 
       // Minor/Major version matching
-      if (criteria.getIncludeMinorVersions() || !nextNodeinfo.isMinorEdit()) {
-        // Author matching
-        if (criteria.getAuthor().equals("") || criteria.getAuthor().equals(nodeinfo.getAuthor())) {
-          // Date range matching
-          Date versionDate = nodeinfo.getDate();
-          if (versionDate.after(criteria.getMinDate())
-              && versionDate.before(criteria.getMaxDate())) {
-            results.add(nodeinfo.getVersion().toString());
-          }
+      // Author matching
+      if ((criteria.getIncludeMinorVersions() || !nextNodeinfo.isMinorEdit())
+          && (criteria.getAuthor().equals("")
+              || criteria.getAuthor().equals(nodeinfo.getAuthor()))) {
+        // Date range matching
+        Date versionDate = nodeinfo.getDate();
+        if (versionDate.after(criteria.getMinDate())
+            && versionDate.before(criteria.getMaxDate())) {
+          results.add(nodeinfo.getVersion().toString());
         }
       }
     }
 
     nodeinfo = nextNodeinfo;
-    if (nodeinfo != null) {
-      if (criteria.getAuthor().equals("") || criteria.getAuthor().equals(nodeinfo.getAuthor())) {
-        // Date range matching
-        Date versionDate = nodeinfo.getDate();
-        if (versionDate.after(criteria.getMinDate()) && versionDate.before(criteria.getMaxDate())) {
-          results.add(nodeinfo.getVersion().toString());
-        }
+    if ((nodeinfo != null)
+        && (criteria.getAuthor().equals("") || criteria.getAuthor().equals(nodeinfo.getAuthor()))) {
+      // Date range matching
+      Date versionDate = nodeinfo.getDate();
+      if (versionDate.after(criteria.getMinDate()) && versionDate.before(criteria.getMaxDate())) {
+        results.add(nodeinfo.getVersion().toString());
       }
     }
 
@@ -2238,10 +2217,8 @@ public class XWikiDocument implements DocumentModelBridge {
         return null;
       }
       for (BaseObject obj : objects) {
-        if (obj != null) {
-          if (value.equals(obj.getStringValue(key))) {
-            return obj;
-          }
+        if ((obj != null) && value.equals(obj.getStringValue(key))) {
+          return obj;
         }
       }
 
@@ -3009,7 +2986,7 @@ public class XWikiDocument implements DocumentModelBridge {
     result.append("{table}\n");
     boolean first = true;
     for (String propertyName : bclass.getPropertyList()) {
-      if (first == true) {
+      if (first) {
         first = false;
       } else {
         result.append("|");
@@ -3022,7 +2999,7 @@ public class XWikiDocument implements DocumentModelBridge {
       if (object != null) {
         first = true;
         for (String propertyName : bclass.getPropertyList()) {
-          if (first == true) {
+          if (first) {
             first = false;
           } else {
             result.append("|");
@@ -3071,11 +3048,10 @@ public class XWikiDocument implements DocumentModelBridge {
     }
 
     String creator = eform.getCreator();
-    if ((creator != null) && (!creator.equals(getCreator()))) {
-      if ((getCreator().equals(context.getUser()))
-          || (context.getWiki().getRightService().hasAdminRights(context))) {
-        setCreator(creator);
-      }
+    if (((creator != null) && (!creator.equals(getCreator())))
+        && ((getCreator().equals(context.getUser()))
+            || (context.getWiki().getRightService().hasAdminRights(context)))) {
+      setCreator(creator);
     }
 
     String parent = eform.getParent();
@@ -3286,9 +3262,13 @@ public class XWikiDocument implements DocumentModelBridge {
    * @throws XWikiException
    *           in case of error
    */
-  private void clone(XWikiDocument document) throws XWikiException {
+  private void assumeIdentity(XWikiDocument document) throws XWikiException {
     setDocumentReference(document.getDocumentReference());
-    setId(document.getId());
+    if (document.hasValidId()) {
+      setIdInternal(document.getId(), document.getIdVersion());
+    } else {
+      setIdInternal(0, null);
+    }
     setRCSVersion(document.getRCSVersion());
     setDocumentArchive(document.getDocumentArchive());
     setAuthor(document.getAuthor());
@@ -3305,7 +3285,6 @@ public class XWikiDocument implements DocumentModelBridge {
     setMeta(document.getMeta());
     setMostRecent(document.isMostRecent());
     setNew(document.isNew());
-    setStore(document.getStore());
     setTemplateDocumentReference(document.getTemplateDocumentReference());
     setParent(document.getParent());
     setCreator(document.getCreator());
@@ -3350,11 +3329,10 @@ public class XWikiDocument implements DocumentModelBridge {
       boolean keepsIdentity) {
     XWikiDocument doc = null;
     try {
-      Constructor<? extends XWikiDocument> constructor = getClass().getConstructor(
-          DocumentReference.class);
-      doc = constructor.newInstance(newDocumentReference);
-
-      doc.setId(getId());
+      doc = getClass().getConstructor(DocumentReference.class).newInstance(newDocumentReference);
+      if (keepsIdentity && hasValidId()) {
+        doc.setId(getId(), getIdVersion());
+      }
       // use version field instead of getRCSVersion because it returns "1.1" if version==null.
       doc.version = this.version;
       doc.setDocumentArchive(getDocumentArchive());
@@ -3371,8 +3349,7 @@ public class XWikiDocument implements DocumentModelBridge {
       doc.setElements(getElements());
       doc.setMeta(getMeta());
       doc.setMostRecent(isMostRecent());
-      doc.setNew(isNew());
-      doc.setStore(getStore());
+      doc.setNew(!keepsIdentity || isNew());
       doc.setTemplateDocumentReference(getTemplateDocumentReference());
       doc.setParentReference(getRelativeParentReference());
       doc.setCreator(getCreator());
@@ -3404,8 +3381,7 @@ public class XWikiDocument implements DocumentModelBridge {
 
       doc.originalDocument = this.originalDocument;
     } catch (ReflectiveOperationException exc) {
-      // This should not happen
-      LOG.error("Exception while cloning document", exc);
+      throw new IllegalStateException("should not happen", exc);
     }
     return doc;
   }
@@ -3473,15 +3449,9 @@ public class XWikiDocument implements DocumentModelBridge {
     }
 
     XWikiDocument doc = (XWikiDocument) object;
-    if (!getDocumentReference().equals(doc.getDocumentReference())) {
-      return false;
-    }
-
-    if (!getAuthor().equals(doc.getAuthor())) {
-      return false;
-    }
-
-    if (!getContentAuthor().equals(doc.getContentAuthor())) {
+    if (!getDocumentReference().equals(doc.getDocumentReference())
+        || !getAuthor().equals(doc.getAuthor())
+        || !getContentAuthor().equals(doc.getContentAuthor())) {
       return false;
     }
 
@@ -3490,19 +3460,9 @@ public class XWikiDocument implements DocumentModelBridge {
       return false;
     }
 
-    if (!getCreator().equals(doc.getCreator())) {
-      return false;
-    }
-
-    if (!getDefaultLanguage().equals(doc.getDefaultLanguage())) {
-      return false;
-    }
-
-    if (!getLanguage().equals(doc.getLanguage())) {
-      return false;
-    }
-
-    if (getTranslation() != doc.getTranslation()) {
+    if (!getCreator().equals(doc.getCreator())
+        || !getDefaultLanguage().equals(doc.getDefaultLanguage())
+        || !getLanguage().equals(doc.getLanguage()) || (getTranslation() != doc.getTranslation())) {
       return false;
     }
 
@@ -4595,29 +4555,28 @@ public class XWikiDocument implements DocumentModelBridge {
 
         for (LinkBlock linkBlock : linkBlocks) {
           ResourceReference reference = linkBlock.getReference();
-          if (reference.getType().equals(ResourceType.DOCUMENT)) {
-            // If the reference is empty, the link is an autolink
-            if (!StringUtils.isEmpty(reference.getReference())
-                || (StringUtils.isEmpty(reference.getParameter(DocumentResourceReference.ANCHOR))
-                    && StringUtils
-                        .isEmpty(reference.getParameter(DocumentResourceReference.QUERY_STRING)))) {
-              // The reference may not have the space or even document specified (in case of an
-              // empty
-              // string)
-              // Thus we need to find the fully qualified document name
-              DocumentReference documentReference = this.currentDocumentReferenceResolver
-                  .resolve(reference.getReference());
+          // If the reference is empty, the link is an autolink
+          if (reference.getType().equals(ResourceType.DOCUMENT) && (!StringUtils
+              .isEmpty(reference.getReference())
+              || (StringUtils.isEmpty(reference.getParameter(DocumentResourceReference.ANCHOR))
+                  && StringUtils
+                      .isEmpty(reference.getParameter(DocumentResourceReference.QUERY_STRING))))) {
+            // The reference may not have the space or even document specified (in case of an
+            // empty
+            // string)
+            // Thus we need to find the fully qualified document name
+            DocumentReference documentReference = this.currentDocumentReferenceResolver
+                .resolve(reference.getReference());
 
-              // Verify that the link is not an autolink (i.e. a link to the current document)
-              if (!documentReference.equals(currentDocumentReference)) {
-                // Since this method is used for saving backlinks and since backlinks must be
-                // saved with the space and page name but without the wiki part, we remove the wiki
-                // part before serializing.
-                // This is a bit of a hack since the default serializer should theoretically fail
-                // if it's passed an invalid reference.
-                pageNames
-                    .add(this.compactWikiEntityReferenceSerializer.serialize(documentReference));
-              }
+            // Verify that the link is not an autolink (i.e. a link to the current document)
+            if (!documentReference.equals(currentDocumentReference)) {
+              // Since this method is used for saving backlinks and since backlinks must be
+              // saved with the space and page name but without the wiki part, we remove the wiki
+              // part before serializing.
+              // This is a bit of a hack since the default serializer should theoretically fail
+              // if it's passed an invalid reference.
+              pageNames
+                  .add(this.compactWikiEntityReferenceSerializer.serialize(documentReference));
             }
           }
         }
@@ -4684,10 +4643,9 @@ public class XWikiDocument implements DocumentModelBridge {
         this.defaultEntityReferenceSerializer.serialize(getDocumentReference()),
         this.localEntityReferenceSerializer.serialize(getDocumentReference()),
         getDocumentReference().getName(), getDocumentReference().getLastSpaceReference().getName());
-
     String whereStatement = "doc.parent=? or doc.parent=? or (doc.parent=? and doc.space=?)";
-    return context.getWiki().getStore().searchDocumentReferences(whereStatement, nb, start,
-        whereParams, context);
+    return getStore(context).searchDocumentReferences(whereStatement, nb, start, whereParams,
+        context);
   }
 
   /**
@@ -5260,56 +5218,64 @@ public class XWikiDocument implements DocumentModelBridge {
     return this.translation;
   }
 
+  // don't name it "isTranslation" to not break hibernate mapping
+  public boolean isTrans() {
+    return this.translation != 0;
+  }
+
   public void setTranslation(int translation) {
     this.translation = translation;
-
     setMetaDataDirty(true);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public String getTranslatedContent(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
-
     return getTranslatedContent(language, context);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public String getTranslatedContent(String language, XWikiContext context) throws XWikiException {
     XWikiDocument tdoc = getTranslatedDocument(language, context);
     return tdoc.getContent();
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public XWikiDocument getTranslatedDocument(XWikiContext context) throws XWikiException {
     String language = context.getWiki().getLanguagePreference(context);
     return getTranslatedDocument(language, context);
   }
 
+  /**
+   * @deprecated since 5.9, instead use ModelAccess
+   */
+  @Deprecated
   public XWikiDocument getTranslatedDocument(String language, XWikiContext context)
       throws XWikiException {
-    XWikiDocument tdoc = this;
-
-    if (((language != null) && !language.equals("") && !language.equals(getDefaultLanguage()))) {
-      tdoc = new XWikiDocument(getDocumentReference());
-      tdoc.setLanguage(language);
-      String database = context.getDatabase();
-      try {
-        // We might need to switch database to
-        // get the translated content
-        if (getDatabase() != null) {
-          context.setDatabase(getDatabase());
-        }
-
-        tdoc = getStore(context).loadXWikiDoc(tdoc, context);
-
-        if (tdoc.isNew()) {
-          tdoc = this;
-        }
-      } catch (Exception e) {
-        tdoc = this;
-      } finally {
-        context.setDatabase(database);
+    if (isTrans()) {
+      LOG.warn("shouldn't be called on a translation");
+    }
+    if (getLanguage().equals(language)) {
+      return this;
+    }
+    if ((!isNullOrEmpty(language) && !language.equals(getDefaultLanguage()))) {
+      XWikiDocument dummyDoc = new XWikiDocument(getDocumentReference());
+      dummyDoc.setLanguage(language);
+      XWikiDocument loadedDoc = getStore(context).loadXWikiDoc(dummyDoc, context);
+      if (!loadedDoc.isNew() && loadedDoc.isTrans()) {
+        return loadedDoc;
       }
     }
-
-    return tdoc;
+    return this;
   }
 
   public String getRealLanguage(XWikiContext context) throws XWikiException {
@@ -5326,8 +5292,9 @@ public class XWikiDocument implements DocumentModelBridge {
     }
   }
 
+  @Deprecated
   public List<String> getTranslationList(XWikiContext context) throws XWikiException {
-    return getStore().getTranslationList(this, context);
+    return getStore(context).getTranslationList(this, context);
   }
 
   public List<Delta> getXMLDiff(XWikiDocument fromDoc, XWikiDocument toDoc, XWikiContext context)
@@ -5817,9 +5784,8 @@ public class XWikiDocument implements DocumentModelBridge {
     xwiki.deleteDocument(this, context);
 
     // Step 6: The current document needs to point to the renamed document as otherwise it's
-    // pointing to an
-    // invalid XWikiDocument object as it's been deleted...
-    clone(newDocument);
+    // pointing to an invalid XWikiDocument object as it's been deleted...
+    this.assumeIdentity(newDocument);
   }
 
   /**
@@ -6075,7 +6041,7 @@ public class XWikiDocument implements DocumentModelBridge {
     String language = "";
     XWikiDocument tdoc = (XWikiDocument) context.get("tdoc");
     String realLang = tdoc.getRealLanguage(context);
-    if ((xwiki.isMultiLingual(context) == true) && (!realLang.equals(""))) {
+    if (xwiki.isMultiLingual(context) && (!realLang.equals(""))) {
       language = realLang;
     }
 
@@ -6764,16 +6730,11 @@ public class XWikiDocument implements DocumentModelBridge {
    * @return the XWiki context for the current thread
    */
   private XWikiContext getXWikiContext() {
-    Execution execution = Utils.getComponent(Execution.class);
-
-    ExecutionContext ec = execution.getContext();
-
-    XWikiContext context = null;
-    if (ec != null) {
-      context = (XWikiContext) ec.getProperty("xwikicontext");
+    if (execution.getContext() != null) {
+      return (XWikiContext) this.execution.getContext()
+          .getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
     }
-
-    return context;
+    return null;
   }
 
   /**
@@ -6970,13 +6931,8 @@ public class XWikiDocument implements DocumentModelBridge {
     DocumentSection docSection = getDocumentSection(sectionNumber);
     int numberOfSections = getSections().size();
     int indexSection = docSection.getSectionIndex();
-    if (numberOfSections == 1) {
+    if ((numberOfSections == 1) || (sectionNumber == numberOfSections)) {
       // there is only a sections in document
-      String contentBegin = getContent().substring(0, indexSection);
-      newContent = newContent.append(contentBegin).append(newSectionContent);
-      return newContent.toString();
-    } else if (sectionNumber == numberOfSections) {
-      // edit lastest section that doesn't contain subtitle
       String contentBegin = getContent().substring(0, indexSection);
       newContent = newContent.append(contentBegin).append(newSectionContent);
       return newContent.toString();
@@ -6987,10 +6943,8 @@ public class XWikiDocument implements DocumentModelBridge {
       for (int i = sectionNumber; i < numberOfSections; i++) {
         DocumentSection nextSection = getDocumentSection(i + 1); // get next section
         String nextSectionLevel = nextSection.getSectionLevel();
-        if (sectionLevel.equals(nextSectionLevel)) {
-          nextSectionIndex = nextSection.getSectionIndex();
-          break;
-        } else if (sectionLevel.length() > nextSectionLevel.length()) {
+        if (sectionLevel.equals(nextSectionLevel)
+            || (sectionLevel.length() > nextSectionLevel.length())) {
           nextSectionIndex = nextSection.getSectionIndex();
           break;
         }
@@ -6999,7 +6953,6 @@ public class XWikiDocument implements DocumentModelBridge {
       if (nextSectionIndex == 0) {// edit the last section
         newContent = newContent.append(getContent().substring(0, indexSection))
             .append(newSectionContent);
-        return newContent.toString();
       } else {
         String contentAfter = getContent().substring(nextSectionIndex);
         String contentBegin = getContent().substring(0, indexSection);
@@ -7156,11 +7109,7 @@ public class XWikiDocument implements DocumentModelBridge {
         return newXObject(classReference, context);
       }
 
-      if (obj == null) {
-        return null;
-      } else {
-        return obj;
-      }
+      return obj;
     } catch (Exception e) {
       return null;
     }
@@ -7326,6 +7275,10 @@ public class XWikiDocument implements DocumentModelBridge {
       }
     }
     return null;
+  }
+
+  public String serialize() {
+    return this.defaultEntityReferenceSerializer.serialize(getDocumentReference());
   }
 
   @Override
@@ -7714,4 +7667,80 @@ public class XWikiDocument implements DocumentModelBridge {
     setContentDirty(true);
     return bobject;
   }
+
+  // START XWikiDocumentCompatibilityAspect
+  /**
+   * @deprecated use setStringListValue or setDBStringListProperty
+   */
+  @Deprecated
+  public void setListValue(String className, String fieldName, List value) {
+    BaseObject bobject = getObject(className);
+    if (bobject == null) {
+      bobject = new BaseObject();
+      addObject(className, bobject);
+    }
+    bobject.setName(getFullName());
+    bobject.setClassName(className);
+    bobject.setListValue(fieldName, value);
+    setContentDirty(true);
+  }
+
+  /**
+   * This method to split section according to title.
+   *
+   * @return the sections in the current document
+   * @throws XWikiException
+   * @deprecated use {@link #getSections()} instead, since 1.6M1
+   */
+  @Deprecated
+  public List<DocumentSection> getSplitSectionsAccordingToTitle() throws XWikiException {
+    return getSections();
+  }
+
+  /**
+   * @deprecated use {@link #getUniqueLinkedPages(XWikiContext)}
+   */
+  @Deprecated
+  public List<String> getLinkedPages(XWikiContext context) {
+    return new ArrayList<>(getUniqueLinkedPages(context));
+  }
+
+  /**
+   * @deprecated use {@link #getUniqueWikiLinkedPages(XWikiContext)} instead
+   */
+  @Deprecated
+  public List<XWikiLink> getLinks(XWikiContext context) throws XWikiException {
+    return getWikiLinkedPages(context);
+  }
+
+  /**
+   * @deprecated use {@link #getUniqueWikiLinkedPages(XWikiContext)} instead
+   */
+  @Deprecated
+  public List<XWikiLink> getWikiLinkedPages(XWikiContext context) throws XWikiException {
+    return new ArrayList<>(getUniqueWikiLinkedPages(context));
+  }
+
+  /**
+   * @deprecated use {@link #getBackLinkedPages(XWikiContext)} instead
+   */
+  @Deprecated
+  public List<String> getBacklinks(XWikiContext context) throws XWikiException {
+    return getBackLinkedPages(context);
+  }
+
+  /**
+   * @param text
+   *          the text to render
+   * @param context
+   *          the XWiki Context object
+   * @return the given text rendered in the context of this document
+   * @deprecated since 1.6M1 use
+   *             {@link #getRenderedContent(String, String, com.xpn.xwiki.XWikiContext)}
+   */
+  @Deprecated
+  public String getRenderedContent(String text, XWikiContext context) {
+    return getRenderedContent(text, Syntax.XWIKI_1_0.toIdString(), context);
+  }
+  // END XWikiDocumentCompatibilityAspect
 }

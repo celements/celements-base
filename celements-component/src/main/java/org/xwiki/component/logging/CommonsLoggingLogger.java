@@ -19,24 +19,33 @@
  */
 package org.xwiki.component.logging;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * <p>
  * Bridge between XWiki Logging and Commons Logging.
+ * </p>
+ * <p>
+ * 2021-06-11 replace with slf4j implementation and mark deprecated
+ * </p>
  *
  * @version $Id$
  * @since 2.0M1
+ * @deprecated since 5.2, instead use {@link org.slf4j.Logger}
  */
+@Deprecated
 public class CommonsLoggingLogger extends AbstractLogger {
 
   /**
-   * Wrapped Commons Logging logger object. This communicates with the underlying logging framework.
+   * Wrapped logger object. This communicates with the underlying logging framework.
    */
-  private Log logger;
+
+  private Logger logger;
 
   public CommonsLoggingLogger(Class<?> clazz) {
-    this.logger = LogFactory.getLog(clazz);
+    logger = LoggerFactory.getLogger(clazz);
+
   }
 
   /**
@@ -46,8 +55,8 @@ public class CommonsLoggingLogger extends AbstractLogger {
    */
   @Override
   public void debug(String message, Object... objects) {
-    if (this.logger.isDebugEnabled()) {
-      this.logger.debug(formatMessage(message, objects));
+    if (logger.isDebugEnabled()) {
+      logger.debug(formatMessage(message, objects));
     }
   }
 
@@ -58,8 +67,8 @@ public class CommonsLoggingLogger extends AbstractLogger {
    */
   @Override
   public void debug(String message, Throwable throwable, Object... objects) {
-    if (this.logger.isDebugEnabled()) {
-      this.logger.debug(formatMessage(message, objects), throwable);
+    if (logger.isDebugEnabled()) {
+      logger.debug(formatMessage(message, objects), throwable);
     }
   }
 
@@ -70,7 +79,7 @@ public class CommonsLoggingLogger extends AbstractLogger {
    */
   @Override
   public void debug(String message, Throwable throwable) {
-    this.logger.debug(message, throwable);
+    logger.debug(message, throwable);
   }
 
   /**
@@ -80,98 +89,98 @@ public class CommonsLoggingLogger extends AbstractLogger {
    */
   @Override
   public void debug(String message) {
-    this.logger.debug(message);
+    logger.debug(message);
   }
 
   @Override
   public void error(String message, Object... objects) {
-    if (this.logger.isErrorEnabled()) {
-      this.logger.error(formatMessage(message, objects));
+    if (logger.isErrorEnabled()) {
+      logger.error(formatMessage(message, objects));
     }
   }
 
   @Override
   public void error(String message, Throwable throwable, Object... objects) {
-    if (this.logger.isErrorEnabled()) {
-      this.logger.error(formatMessage(message, objects), throwable);
+    if (logger.isErrorEnabled()) {
+      logger.error(formatMessage(message, objects), throwable);
     }
   }
 
   @Override
   public void error(String message, Throwable throwable) {
-    this.logger.error(message, throwable);
+    logger.error(message, throwable);
   }
 
   @Override
   public void error(String message) {
-    this.logger.error(message);
+    logger.error(message);
   }
 
   @Override
   public void info(String message, Object... objects) {
-    if (this.logger.isInfoEnabled()) {
-      this.logger.info(formatMessage(message, objects));
+    if (logger.isInfoEnabled()) {
+      logger.info(formatMessage(message, objects));
     }
   }
 
   @Override
   public void info(String message, Throwable throwable, Object... objects) {
-    if (this.logger.isInfoEnabled()) {
-      this.logger.info(formatMessage(message, objects), throwable);
+    if (logger.isInfoEnabled()) {
+      logger.info(formatMessage(message, objects), throwable);
     }
   }
 
   @Override
   public void info(String message, Throwable throwable) {
-    this.logger.info(message, throwable);
+    logger.info(message, throwable);
   }
 
   @Override
   public void info(String message) {
-    this.logger.info(message);
+    logger.info(message);
   }
 
   @Override
   public boolean isDebugEnabled() {
-    return this.logger.isDebugEnabled();
+    return logger.isDebugEnabled();
   }
 
   @Override
   public boolean isErrorEnabled() {
-    return this.logger.isErrorEnabled();
+    return logger.isErrorEnabled();
   }
 
   @Override
   public boolean isInfoEnabled() {
-    return this.logger.isInfoEnabled();
+    return logger.isInfoEnabled();
   }
 
   @Override
   public boolean isWarnEnabled() {
-    return this.logger.isWarnEnabled();
+    return logger.isWarnEnabled();
   }
 
   @Override
   public void warn(String message, Object... objects) {
-    if (this.logger.isWarnEnabled()) {
-      this.logger.warn(formatMessage(message, objects));
+    if (logger.isWarnEnabled()) {
+      logger.warn(formatMessage(message, objects));
     }
   }
 
   @Override
   public void warn(String message, Throwable throwable, Object... objects) {
-    if (this.logger.isWarnEnabled()) {
-      this.logger.warn(formatMessage(message, objects), throwable);
+    if (logger.isWarnEnabled()) {
+      logger.warn(formatMessage(message, objects), throwable);
     }
   }
 
   @Override
   public void warn(String message, Throwable throwable) {
-    this.logger.warn(message, throwable);
+    logger.warn(message, throwable);
   }
 
   @Override
   public void warn(String message) {
-    this.logger.warn(message);
+    logger.warn(message);
   }
 }

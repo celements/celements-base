@@ -1,61 +1,65 @@
 package com.celements.model.access;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.util.function.Supplier;
 
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.lambda.LambdaExceptionUtil.ThrowingSupplier;
+import com.celements.model.context.Contextualiser;
 import com.celements.model.context.ModelContext;
-import com.celements.model.util.References;
-import com.xpn.xwiki.web.Utils;
 
 /**
  * ContextExecutor is used to execute code within an altered {@link ModelContext} and set it back
  * after execution. This behaviour is guaranteed within {@link #call()}, for which an implementation
  * has to be provided when subclassing or instantiating.
  *
+ * @deprecated instead use {@link Contextualiser}
+ *
  * @param <T>
  *          return parameter of {@link #call()} and {@link #execute()}
  * @param <E>
- *          subclass of {@link Throwable} thrown by {@link #call()} and {@link #execute()}
+ *          subclass of {@link Exception} thrown by {@link #call()} and {@link #execute()}
  * @author Marc Sladek
  */
-public abstract class ContextExecutor<T, E extends Throwable> {
+@Deprecated
+public abstract class ContextExecutor<T, E extends Exception> {
 
   private WikiReference wikiRef;
 
   public WikiReference getWikiRef() {
-    return References.cloneRef(wikiRef, WikiReference.class);
+    return wikiRef;
   }
 
   public ContextExecutor<T, E> inWiki(WikiReference wiki) {
-    this.wikiRef = References.cloneRef(wiki, WikiReference.class);
+    this.wikiRef = wiki;
     return this;
   }
 
   public T execute() throws E {
     checkState(wikiRef != null, "No wiki set for ContextExecutor");
-    WikiReference currWiki = getContext().getWikiRef();
-    try {
-      getContext().setWikiRef(wikiRef);
-      return call();
-    } finally {
-      getContext().setWikiRef(currWiki);
-    }
+    return new Contextualiser()
+        .withWiki(wikiRef)
+        .execute(rethrow(this::call));
   }
 
   protected abstract T call() throws E;
 
-  private ModelContext getContext() {
-    return Utils.getComponent(ModelContext.class);
-  }
-
+  /*
+   * @deprecated instead use {@link Contextualiser}
+   */
+  @Deprecated
   public static <T> T executeInWiki(WikiReference wikiRef, Supplier<T> supplier) {
     return executeInWikiThrows(wikiRef, supplier::get);
   }
 
-  public static <T, E extends Throwable> T executeInWikiThrows(WikiReference wikiRef,
+  /*
+   * @deprecated instead use {@link Contextualiser}
+   */
+  @Deprecated
+  public static <T, E extends Exception> T executeInWikiThrows(WikiReference wikiRef,
       ThrowingSupplier<T, E> supplier) throws E {
     return new ContextExecutor<T, E>() {
 
@@ -64,12 +68,5 @@ public abstract class ContextExecutor<T, E extends Throwable> {
         return supplier.get();
       }
     }.inWiki(wikiRef).execute();
-  }
-
-  @FunctionalInterface
-  public interface ThrowingSupplier<T, E extends Throwable> {
-
-    T get() throws E;
-
   }
 }

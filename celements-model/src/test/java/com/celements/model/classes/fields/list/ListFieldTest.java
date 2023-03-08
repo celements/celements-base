@@ -76,7 +76,7 @@ public class ListFieldTest extends AbstractComponentTest {
     assertEquals((Integer) 2, fieldBuilder.size);
   }
 
-  @Test
+  // @Test mutabilitydetector broken in Java11+
   public void test_immutability() {
     assertInstancesOf(AbstractListField.class, areImmutable(), allowingForSubclassing(),
         AllowedReason.provided(Marshaller.class).isAlsoImmutable());

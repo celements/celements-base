@@ -49,7 +49,7 @@ public abstract class AbstractClassDefinition implements ClassDefinition {
   @Deprecated
   protected AbstractClassDefinition() {}
 
-  protected AbstractClassDefinition(ClassReference classRef) {
+  protected AbstractClassDefinition(@NotNull ClassReference classRef) {
     this.classRef = classRef;
   }
 

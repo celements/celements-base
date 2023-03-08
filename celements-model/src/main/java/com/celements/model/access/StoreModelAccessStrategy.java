@@ -1,18 +1,30 @@
 package com.celements.model.access;
 
+import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentLoadException;
 import com.celements.model.access.exception.DocumentSaveException;
+import com.celements.model.context.Contextualiser;
 import com.celements.model.context.ModelContext;
-import com.xpn.xwiki.XWiki;
+import com.celements.store.ModelAccessStore;
+import com.celements.store.StoreFactory;
+import com.google.common.base.Suppliers;
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 
 /**
@@ -29,29 +41,28 @@ public class StoreModelAccessStrategy implements ModelAccessStrategy {
   @Requirement
   protected XWikiDocumentCreator docCreator;
 
-  /**
-   * @deprecated refactor calls to {@link #getStore()}
-   */
-  @Deprecated
-  private XWiki getWiki() {
-    return context.getXWikiContext().getWiki();
-  }
+  @Requirement
+  protected ConfigurationSource cfgSrc;
+
+  private final Supplier<XWikiStoreInterface> mainStore = Suppliers
+      .memoize(StoreFactory::getMainStore);
+
+  private final Supplier<Optional<XWikiRecycleBinStoreInterface>> recycleBinStore = Suppliers
+      .memoize(StoreFactory::getRecycleBinStore);
 
   private XWikiStoreInterface getStore() {
-    return context.getXWikiContext().getWiki().getStore();
+    return tryCast(mainStore.get(), ModelAccessStore.class)
+        .map(ModelAccessStore::getBackingStore)
+        .orElse(mainStore.get());
   }
 
   @Override
-  public boolean exists(final DocumentReference docRef, final String lang) {
+  public boolean exists(final DocumentReference docRef) {
     try {
-      return new ContextExecutor<Boolean, XWikiException>() {
-
-        @Override
-        protected Boolean call() throws XWikiException {
-          return getStore().exists(docCreator.createWithoutDefaults(docRef, lang),
-              context.getXWikiContext());
-        }
-      }.inWiki(docRef.getWikiReference()).execute();
+      XWikiDocument doc = docCreator.createWithoutDefaults(docRef);
+      return new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> getStore().exists(doc, getXContext())));
     } catch (XWikiException xwe) {
       throw new DocumentLoadException(docRef, xwe);
     }
@@ -60,38 +71,22 @@ public class StoreModelAccessStrategy implements ModelAccessStrategy {
   @Override
   public XWikiDocument getDocument(final DocumentReference docRef, final String lang) {
     try {
-      return new ContextExecutor<XWikiDocument, XWikiException>() {
-
-        @Override
-        protected XWikiDocument call() throws XWikiException {
-          return getStore().loadXWikiDoc(docCreator.createWithoutDefaults(docRef, lang),
-              context.getXWikiContext());
-        }
-      }.inWiki(docRef.getWikiReference()).execute();
+      XWikiDocument doc = docCreator.createWithoutDefaults(docRef, lang);
+      return new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> getStore().loadXWikiDoc(doc, getXContext())));
     } catch (XWikiException xwe) {
       throw new DocumentLoadException(docRef, xwe);
     }
   }
 
   @Override
-  public XWikiDocument createDocument(DocumentReference docRef, String lang) {
-    return docCreator.create(docRef, lang);
-  }
-
-  @Override
-  public void saveDocument(final XWikiDocument doc, final String comment, final boolean isMinorEdit)
-      throws DocumentSaveException {
+  public void saveDocument(final XWikiDocument doc) throws DocumentSaveException {
     DocumentReference docRef = doc.getDocumentReference();
     try {
-      new ContextExecutor<Void, XWikiException>() {
-
-        @Override
-        protected Void call() throws XWikiException {
-          // TODO access store directly
-          getWiki().saveDocument(doc, comment, isMinorEdit, context.getXWikiContext());
-          return null;
-        }
-      }.inWiki(docRef.getWikiReference()).execute();
+      new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> getStore().saveXWikiDoc(doc, getXContext())));
     } catch (XWikiException xwe) {
       throw new DocumentSaveException(docRef, xwe);
     }
@@ -102,15 +97,15 @@ public class StoreModelAccessStrategy implements ModelAccessStrategy {
       throws DocumentDeleteException {
     DocumentReference docRef = doc.getDocumentReference();
     try {
-      new ContextExecutor<Void, XWikiException>() {
-
-        @Override
-        protected Void call() throws XWikiException {
-          // TODO access store directly
-          getWiki().deleteDocument(doc, totrash, context.getXWikiContext());
-          return null;
-        }
-      }.inWiki(docRef.getWikiReference()).execute();
+      new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> {
+            recycleBinStore.get()
+                .filter(store -> totrash)
+                .ifPresent(rethrowConsumer(store -> store.saveToRecycleBin(
+                    doc, context.getUserName(), new Date(), getXContext(), true)));
+            getStore().deleteXWikiDoc(doc, getXContext());
+          }));
     } catch (XWikiException xwe) {
       throw new DocumentDeleteException(docRef, xwe);
     }
@@ -119,17 +114,16 @@ public class StoreModelAccessStrategy implements ModelAccessStrategy {
   @Override
   public List<String> getTranslations(final DocumentReference docRef) {
     try {
-      return new ContextExecutor<List<String>, XWikiException>() {
-
-        @Override
-        protected List<String> call() throws XWikiException {
-          return getStore().getTranslationList(docCreator.createWithoutDefaults(docRef,
-              IModelAccessFacade.DEFAULT_LANG), context.getXWikiContext());
-        }
-      }.inWiki(docRef.getWikiReference()).execute();
+      XWikiDocument doc = docCreator.createWithoutDefaults(docRef);
+      return new Contextualiser()
+          .withWiki(docRef.getWikiReference())
+          .execute(rethrow(() -> getStore().getTranslationList(doc, getXContext())));
     } catch (XWikiException xwe) {
       throw new DocumentLoadException(docRef, xwe);
     }
   }
 
+  private XWikiContext getXContext() {
+    return context.getXWikiContext();
+  }
 }

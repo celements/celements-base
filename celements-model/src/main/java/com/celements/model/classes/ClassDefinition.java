@@ -3,6 +3,7 @@ package com.celements.model.classes;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
@@ -22,6 +23,7 @@ public interface ClassDefinition extends ClassIdentity {
   /**
    * @return the name of the component and class definition, used for blacklisting
    */
+  @NotEmpty
   String getName();
 
   /**

@@ -4,7 +4,7 @@ import static com.celements.common.classes.IClassCollectionRole.*;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 
 import org.xwiki.component.annotation.Requirement;
 
@@ -16,7 +16,7 @@ public abstract class AbstractLegacyClassPackage extends AbstractClassPackage {
   @Requirement
   private List<IClassCollectionRole> classCollections;
 
-  public abstract @NotNull String getLegacyName();
+  public abstract @NotEmpty String getLegacyName();
 
   @Override
   public boolean isActivated() {

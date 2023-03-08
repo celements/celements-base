@@ -50,7 +50,7 @@ public class SingleListFieldTest extends AbstractComponentTest {
     fieldBuilder.size(size).displayType(displayType).picker(picker).values(values);
   }
 
-  @Test
+  // @Test mutabilitydetector broken in Java11+
   public void test_immutability() {
     assertInstancesOf(AbstractListField.class, areImmutable(), allowingForSubclassing(),
         AllowedReason.provided(Marshaller.class).isAlsoImmutable());

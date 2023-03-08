@@ -48,10 +48,10 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     ClassField<String> field = TestClassDefinition.FIELD_MY_STRING;
     BaseObject obj = new BaseObject();
     obj.setXClassReference(testClassDef.getClassReference());
-    assertFalse(accessor.getValue(obj, field).isPresent());
+    assertFalse(accessor.get(obj, field).isPresent());
     String value = "asdf";
     obj.setStringValue(field.getName(), value);
-    assertEquals(value, accessor.getValue(obj, field).get());
+    assertEquals(value, accessor.get(obj, field).get());
   }
 
   @Test
@@ -65,10 +65,9 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     obj.setDocumentReference(docRef);
     Integer number = 5;
     obj.setNumber(number);
-    assertEquals(id, accessor.getValue(obj, XWikiObjectClass.FIELD_ID).get());
-    assertEquals(docRef, accessor.getValue(obj, XWikiObjectClass.FIELD_DOC_REF).get());
-    assertEquals(classRef, accessor.getValue(obj, XWikiObjectClass.FIELD_CLASS_REF).get());
-    assertEquals(number, accessor.getValue(obj, XWikiObjectClass.FIELD_NUMBER).get());
+    assertEquals(docRef, accessor.get(obj, XWikiObjectClass.FIELD_DOC_REF).get());
+    assertEquals(classRef, accessor.get(obj, XWikiObjectClass.FIELD_CLASS_REF).get());
+    assertEquals(number, accessor.get(obj, XWikiObjectClass.FIELD_NUMBER).get());
   }
 
   @Test
@@ -78,11 +77,11 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     obj.setXClassReference(testClassDef.getClassReference());
     String value = "asdf";
     replayDefault();
-    assertTrue("value should have changed", accessor.setValue(obj, field, value));
-    assertEquals(value, accessor.getValue(obj, field).get());
-    assertFalse("value shouldn't have unchanged", accessor.setValue(obj, field, value));
-    assertTrue("value should have changed", accessor.setValue(obj, field, null));
-    assertFalse(accessor.getValue(obj, field).isPresent());
+    assertTrue("value should have changed", accessor.set(obj, field, value));
+    assertEquals(value, accessor.get(obj, field).get());
+    assertFalse("value shouldn't have unchanged", accessor.set(obj, field, value));
+    assertTrue("value should have changed", accessor.set(obj, field, null));
+    assertFalse(accessor.get(obj, field).isPresent());
     verifyDefault();
   }
 
@@ -95,14 +94,14 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws FieldAccessException {
-        accessor.getValue(obj, field);
+        accessor.get(obj, field);
       }
     }.evaluate();
     new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
-        accessor.setValue(obj, field, null);
+        accessor.set(obj, field, null);
       }
     }.evaluate();
   }
@@ -116,14 +115,14 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws FieldAccessException {
-        accessor.getValue(obj, field);
+        accessor.get(obj, field);
       }
     }.evaluate();
     new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
-        accessor.setValue(obj, field, null);
+        accessor.set(obj, field, null);
       }
     }.evaluate();
   }
@@ -133,19 +132,11 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     final BaseObject obj = new BaseObject();
     final ClassReference classRef = testClassDef.getClassReference();
     obj.setXClassReference(classRef);
-    Long id = 9876543210L;
     new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
-        accessor.setValue(obj, XWikiObjectClass.FIELD_ID, id);
-      }
-    }.evaluate();
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
-
-      @Override
-      protected void execute() throws FieldAccessException {
-        accessor.setValue(obj, XWikiObjectClass.FIELD_CLASS_REF, classRef);
+        accessor.set(obj, XWikiObjectClass.FIELD_CLASS_REF, classRef);
       }
     }.evaluate();
     final DocumentReference docRef = new DocumentReference("wiki", "space", "doc");
@@ -153,7 +144,7 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws FieldAccessException {
-        accessor.setValue(obj, XWikiObjectClass.FIELD_DOC_REF, docRef);
+        accessor.set(obj, XWikiObjectClass.FIELD_DOC_REF, docRef);
       }
     }.evaluate();
     final Integer number = 5;
@@ -161,7 +152,7 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws FieldAccessException {
-        accessor.setValue(obj, XWikiObjectClass.FIELD_NUMBER, number);
+        accessor.set(obj, XWikiObjectClass.FIELD_NUMBER, number);
       }
     }.evaluate();
   }

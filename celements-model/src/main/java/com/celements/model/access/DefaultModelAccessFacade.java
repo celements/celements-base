@@ -1,6 +1,7 @@
 package com.celements.model.access;
 
 import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -8,23 +9,36 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xwiki.bridge.event.AbstractDocumentEvent;
+import org.xwiki.bridge.event.DocumentCreatedEvent;
+import org.xwiki.bridge.event.DocumentCreatingEvent;
+import org.xwiki.bridge.event.DocumentDeletedEvent;
+import org.xwiki.bridge.event.DocumentDeletingEvent;
+import org.xwiki.bridge.event.DocumentUpdatedEvent;
+import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.observation.ObservationManager;
 
+import com.celements.filebase.IAttachmentServiceRole;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentAlreadyExistsException;
 import com.celements.model.access.exception.DocumentDeleteException;
@@ -57,6 +71,9 @@ import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.web.Utils;
+
+import one.util.streamex.StreamEx;
 
 @Component
 public class DefaultModelAccessFacade implements IModelAccessFacade {
@@ -65,6 +82,9 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Requirement
   protected ModelAccessStrategy strategy;
+
+  @Requirement
+  protected XWikiDocumentCreator docCreator;
 
   @Requirement
   protected IRightsAccessFacadeRole rightsAccess;
@@ -113,7 +133,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
    * @return an xwiki document for readonly usage
    * @throws DocumentNotExistsException
    */
-  private XWikiDocument getDocumentReadOnly(DocumentReference docRef, String lang)
+  @Override
+  public XWikiDocument getDocumentReadOnly(DocumentReference docRef, String lang)
       throws DocumentNotExistsException {
     checkNotNull(docRef);
     XWikiDocument mainDoc = getDocumentInternal(docRef, DEFAULT_LANG);
@@ -166,7 +187,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     checkNotNull(docRef);
     lang = modelUtils.normalizeLang(lang);
     if (!existsLang(docRef, lang)) {
-      return strategy.createDocument(docRef, lang);
+      return docCreator.create(docRef, lang);
     } else {
       throw new DocumentAlreadyExistsException(docRef, lang);
     }
@@ -183,15 +204,16 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       return getDocument(docRef, lang);
     } catch (DocumentNotExistsException exc) {
       lang = modelUtils.normalizeLang(lang);
-      return strategy.createDocument(docRef, lang);
+      return docCreator.create(docRef, lang);
     }
   }
 
   @Override
   public boolean exists(DocumentReference docRef) {
-    return Optional.ofNullable(docRef)
-        .map(ref -> strategy.exists(ref, DEFAULT_LANG))
-        .orElse(false);
+    if (docRef != null) {
+      return strategy.exists(docRef);
+    }
+    return false;
   }
 
   @Override
@@ -223,11 +245,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   public void saveDocument(XWikiDocument doc, String comment, boolean isMinorEdit)
       throws DocumentSaveException {
     checkNotNull(doc);
-    String username = context.getUserName();
-    doc.setAuthor(username);
-    if (doc.isNew()) {
-      doc.setCreator(username);
-    }
+    prepareDocForSave(doc, comment, isMinorEdit);
     sanitizeLangBeforeSave(doc);
     LOGGER.info("saveDocument: doc '{}, {}', comment '{}', isMinorEdit '{}'",
         serialize(doc.getDocumentReference()), doc.getLanguage(), comment, isMinorEdit);
@@ -235,7 +253,19 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       LOGGER.trace("saveDocument: context db '{}' and StackTrace:",
           serialize(context.getWikiRef()), new Throwable());
     }
-    strategy.saveDocument(doc, comment, isMinorEdit);
+    boolean isNewDoc = doc.isNew();
+    XWikiDocument origDocBeforeSave = Optional.ofNullable(doc.getOriginalDocument())
+        .orElseGet(() -> docCreator.create(doc.getDocumentReference(), doc.getLanguage()));
+    notifyEvent(doc, isNewDoc ? DocumentCreatingEvent.class : DocumentUpdatingEvent.class);
+    strategy.saveDocument(doc);
+    try {
+      XWikiDocument notifyDoc = doc.clone(); // avoid mutating doc in notify after save
+      notifyDoc.setOriginalDocument(origDocBeforeSave);
+      notifyEvent(notifyDoc, isNewDoc ? DocumentCreatedEvent.class : DocumentUpdatedEvent.class);
+    } catch (Exception exc) {
+      LOGGER.error("Failed to notify save event for doc [{}] with lang [{}]",
+          serialize(doc.getDocumentReference()), doc.getLanguage(), exc);
+    }
   }
 
   private void sanitizeLangBeforeSave(XWikiDocument doc) throws DocumentSaveException {
@@ -263,11 +293,23 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     }
   }
 
+  private void prepareDocForSave(XWikiDocument doc, String comment, boolean isMinorEdit) {
+    doc.setAuthor(context.getUserName());
+    if (doc.isNew()) {
+      doc.setCreator(context.getUserName());
+    }
+    doc.setComment(Strings.nullToEmpty(comment));
+    doc.setMinorEdit(isMinorEdit);
+  }
+
   @Override
   public void deleteDocument(DocumentReference docRef, boolean totrash)
       throws DocumentDeleteException {
     try {
-      deleteDocument(getDocument(docRef), totrash);
+      XWikiDocument mainDoc = getDocument(docRef);
+      getTranslations(docRef).values().forEach(rethrowConsumer(
+          transDoc -> deleteDocumentInternal(transDoc, totrash)));
+      deleteDocumentInternal(mainDoc, totrash);
     } catch (DocumentNotExistsException exc) {
       LOGGER.debug("doc trying to delete does not exist '{}'", serialize(docRef), exc);
     } catch (ModelAccessRuntimeException exc) {
@@ -276,19 +318,37 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   }
 
   @Override
-  public void deleteDocument(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
-    checkNotNull(doc);
-    List<XWikiDocument> toDelDocs = new ArrayList<>();
-    toDelDocs.addAll(getTranslations(doc.getDocumentReference()).values());
-    toDelDocs.add(doc);
-    for (XWikiDocument toDel : toDelDocs) {
-      deleteDocumentWithoutTranslations(toDel, totrash);
+  public void deleteTranslation(DocumentReference docRef, String lang, boolean totrash)
+      throws DocumentDeleteException {
+    try {
+      XWikiDocument doc = getDocument(docRef, lang);
+      if (doc.isTrans()) {
+        deleteDocumentInternal(doc, totrash);
+      } else {
+        throw new DocumentDeleteException(docRef);
+      }
+    } catch (DocumentNotExistsException exc) {
+      LOGGER.debug("doc trying to delete does not exist '{}'", serialize(docRef), exc);
+    } catch (ModelAccessRuntimeException exc) {
+      throw new DocumentDeleteException(docRef, exc);
     }
   }
 
+  @Deprecated
+  @Override
+  public void deleteDocument(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
+    checkNotNull(doc);
+    deleteDocument(doc.getDocumentReference(), totrash);
+  }
+
+  @Deprecated
   @Override
   public void deleteDocumentWithoutTranslations(XWikiDocument doc, boolean totrash)
       throws DocumentDeleteException {
+    deleteDocumentInternal(doc, totrash);
+  }
+
+  void deleteDocumentInternal(XWikiDocument doc, boolean totrash) throws DocumentDeleteException {
     checkNotNull(doc);
     LOGGER.debug("deleteDocument: doc '{}, {}', totrash '{}'",
         serialize(doc.getDocumentReference()), doc.getLanguage(), totrash);
@@ -296,18 +356,38 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
       LOGGER.trace("deleteDocument: context db '{}' and StackTrace:",
           serialize(context.getWikiRef()), new Throwable());
     }
+    notifyEvent(doc, DocumentDeletingEvent.class);
     strategy.deleteDocument(doc, totrash);
+    try {
+      // to follow DocumentUpdatedEvent policy source doc must be a new empty document with the
+      // old deleted version available using doc.getOriginalDocument()
+      XWikiDocument notifyDoc = docCreator.create(doc.getDocumentReference(), doc.getLanguage());
+      notifyDoc.setOriginalDocument(doc);
+      notifyEvent(notifyDoc, DocumentDeletedEvent.class);
+    } catch (Exception exc) {
+      LOGGER.error("Failed to notify delete event for doc [{}] with lang [{}]",
+          serialize(doc.getDocumentReference()), doc.getLanguage(), exc);
+    }
+  }
+
+  @Deprecated
+  @Override
+  public List<String> getExistingLangs(DocumentReference docRef) {
+    return getTranslationLangs(docRef);
   }
 
   @Override
-  public List<String> getExistingLangs(DocumentReference docRef) {
-    return strategy.getTranslations(docRef);
+  public List<String> getTranslationLangs(DocumentReference docRef) {
+    if (docRef != null) {
+      return strategy.getTranslations(docRef);
+    }
+    return new ArrayList<>();
   }
 
   @Override
   public Map<String, XWikiDocument> getTranslations(DocumentReference docRef) {
     Map<String, XWikiDocument> transMap = new HashMap<>();
-    for (String lang : getExistingLangs(docRef)) {
+    for (String lang : getTranslationLangs(docRef)) {
       lang = modelUtils.normalizeLang(lang);
       try {
         transMap.put(lang, getDocument(docRef, lang));
@@ -319,9 +399,10 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     return transMap;
   }
 
+  @Deprecated
   @Override
   public boolean isTranslation(XWikiDocument doc) {
-    return checkNotNull(doc).getTranslation() == 1;
+    return checkNotNull(doc).isTrans();
   }
 
   /**
@@ -333,11 +414,38 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   private XWikiDocument cloneDoc(XWikiDocument doc) {
     if (doc.isFromCache()) {
       doc = doc.clone();
-      // missing docRef clone in XWikiDocument.clone() doesn't matter since:
-      // [CELDEV-522] Use ImmutableDocumentReference in DocumentBuilder
       doc.setFromCache(false);
     }
     return doc;
+  }
+
+  @Override
+  public Stream<XWikiDocument> streamParents(XWikiDocument doc) {
+    return StreamEx.of(new Iterator<XWikiDocument>() {
+
+      private XWikiDocument current = doc;
+      private Set<DocumentReference> seen = new HashSet<>();
+
+      @Override
+      public boolean hasNext() {
+        return (current != null)
+            && (current.getParentReference() != null)
+            && exists(current.getParentReference());
+      }
+
+      @Override
+      public XWikiDocument next() {
+        try {
+          if (seen.add(current.getParentReference())) {
+            return current = getDocument(current.getParentReference());
+          } else {
+            throw new IllegalStateException("cyclic parent referencing: " + seen);
+          }
+        } catch (DocumentNotExistsException | NullPointerException exc) {
+          throw new NoSuchElementException(exc.getClass().getSimpleName() + " " + exc.getMessage());
+        }
+      }
+    });
   }
 
   @Override
@@ -694,7 +802,8 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   @Override
   @Deprecated
   public <T> boolean setProperty(XWikiDocument doc, ClassField<T> field, T value) {
-    return setProperty(getOrCreateXObject(doc, field.getClassDef().getClassRef()), field, value);
+    DocumentReference classDocRef = field.getClassReference().getDocRef();
+    return setProperty(getOrCreateXObject(doc, classDocRef), field, value);
   }
 
   @Override
@@ -710,24 +819,30 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   }
 
   @Override
+  @Deprecated
   public XWikiAttachment getAttachmentNameEqual(XWikiDocument doc, String filename)
       throws AttachmentNotExistsException {
-    for (XWikiAttachment attach : doc.getAttachmentList()) {
-      if ((attach != null) && attach.getFilename().equals(filename)) {
-        return attach;
-      }
+    return Utils.getComponent(IAttachmentServiceRole.class).getAttachmentNameEqual(doc, filename);
+  }
+
+  private void notifyEvent(XWikiDocument doc, Class<? extends AbstractDocumentEvent> eventType) {
+    try {
+      AbstractDocumentEvent event = eventType
+          .getConstructor(DocumentReference.class)
+          .newInstance(doc.getDocumentReference());
+      LOGGER.trace("notify event [{}] for doc [{}] with lang [{}]", eventType.getSimpleName(),
+          serialize(doc.getDocumentReference()), doc.getLanguage());
+      getObservationManager().notify(event, doc, context.getXWikiContext());
+    } catch (ReflectiveOperationException exc) {
+      throw new IllegalArgumentException(exc);
     }
-    LOGGER.debug("getAttachmentNameEqual: not found! file: [{}], doc: [{}]", filename,
-        serialize(doc.getDocumentReference()));
-    // FIXME empty or null filename leads to exception:
-    // java.lang.IllegalArgumentException: An Entity Reference name cannot be null or
-    // empty
-    if (Strings.isNullOrEmpty(filename)) {
-      throw new AttachmentNotExistsException(null);
-    } else {
-      throw new AttachmentNotExistsException(new AttachmentReference(filename,
-          doc.getDocumentReference()));
-    }
+  }
+
+  /**
+   * beware of cyclic dependencies
+   */
+  private ObservationManager getObservationManager() {
+    return Utils.getComponent(ObservationManager.class);
   }
 
   private Supplier<String> serialize(EntityReference ref) {

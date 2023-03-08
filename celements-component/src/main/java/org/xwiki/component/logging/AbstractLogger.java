@@ -26,7 +26,9 @@ import java.text.MessageFormat;
  *
  * @version $Id$
  * @since 2.0M1
+ * @deprecated since 5.2, instead use {@link org.slf4j.Logger}
  */
+@Deprecated
 public abstract class AbstractLogger implements Logger {
 
   /**

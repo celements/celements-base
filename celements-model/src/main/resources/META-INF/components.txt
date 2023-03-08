@@ -32,6 +32,7 @@ com.celements.model.object.xwiki.XWikiObjectBridge
 com.celements.query.QueryExecutionService
 com.celements.store.CelHibernateStore
 com.celements.web.classes.oldcore.XWikiGlobalRightsClass
+com.celements.store.id.DefaultIdComputer
 com.celements.store.id.UniqueHashIdComputer
 com.celements.model.migration.BaseCollectionIdColumnMigration
 com.celements.mandatory.MandatoryDocumentCompositor
@@ -50,3 +51,6 @@ com.celements.model.migration.InvalidXObjectsMigration
 com.celements.convert.bean.XDocBeanConversionLoader
 com.celements.model.reference.ReferenceScriptService
 com.celements.debug.DebugScriptService
+com.celements.store.DefaultHibernateStore
+com.celements.store.DefaultXWikiStore
+com.celements.store.ModelAccessStore

@@ -2,6 +2,7 @@ package com.celements.store;
 
 import static com.celements.common.test.CelementsTestUtils.*;
 import static com.celements.store.TestHibernateQuery.*;
+import static com.celements.store.part.CelHibernateStoreDocumentPart.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -19,9 +20,12 @@ import org.xwiki.model.reference.ImmutableDocumentReference;
 import org.xwiki.model.reference.ImmutableReference;
 
 import com.celements.common.test.AbstractComponentTest;
-import com.celements.common.test.ExceptionAsserter;
 import com.celements.model.access.IModelAccessFacade;
+import com.celements.store.id.CelementsIdComputer;
+import com.celements.store.id.CelementsIdComputer.IdComputationException;
+import com.celements.store.id.IdVersion;
 import com.celements.store.part.XWikiDummyDocComparator;
+import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -36,6 +40,10 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   private SessionFactory sessionFactoryMock;
   private XWikiHibernateStore primaryStoreMock;
 
+  private final DocumentReference docRef = new ImmutableDocumentReference(
+      "xwikidb", "space", "doc");
+  private XWikiDocument doc;
+
   @Before
   public void prepareTest() throws Exception {
     registerComponentMock(IModelAccessFacade.class);
@@ -45,21 +53,22 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     expect(getWikiMock().getConfig()).andReturn(new XWikiConfig()).anyTimes();
     expect(getWikiMock().getPlugin("monitor", getContext())).andReturn(null).anyTimes();
     expect(getWikiMock().hasDynamicCustomMappings()).andReturn(false).anyTimes();
-    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
     expect(getWikiMock().hasVersioning(getContext())).andReturn(false).anyTimes();
     expect(getWikiMock().hasBacklinks(getContext())).andReturn(false).anyTimes();
     expect(getWikiMock().Param(eq("xwiki.store.hibernate.useclasstables.read"), eq("1"))).andReturn(
         "0").anyTimes();
+    doc = new XWikiDocument(docRef);
   }
 
   @Test
   public void test_loadXWikiDoc() throws Exception {
-    DocumentReference docRef = new ImmutableDocumentReference("xwikidb", "space", "doc");
-    XWikiDocument doc = new XWikiDocument(docRef);
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
     Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
     expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
     expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
-    sessionMock.load(same(doc), eq(doc.getId()));
+    sessionMock.load(same(doc), eq(docId));
 
     replayDefault();
     XWikiDocument ret = getStore(sessionMock).loadXWikiDoc(doc, getContext());
@@ -74,13 +83,14 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_loadXWikiDoc_immutability() throws Exception {
-    DocumentReference docRef = new ImmutableDocumentReference("xwikidb", "space", "doc");
-    XWikiDocument doc = new XWikiDocument(docRef);
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
     Capture<XWikiDocument> docCapture = newCapture();
     Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
     expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
     expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
-    sessionMock.load(capture(docCapture), eq(doc.getId()));
+    sessionMock.load(capture(docCapture), eq(docId));
     expectLastCall().once();
 
     replayDefault();
@@ -97,12 +107,30 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_loadXWikiDoc_collision() throws Exception {
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
+    Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
+    expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
+    expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
+    sessionMock.load(cmp(doc, (actual, expected) -> {
+      actual.setFullName("space.other"); // simulate getting different fullName from DB
+      return actual == expected ? 0 : 1;
+    }, LogicalOperator.EQUAL), eq(docId));
+
+    replayDefault();
+    XWikiException xwe = assertThrows(XWikiException.class,
+        () -> getStore(sessionMock).loadXWikiDoc(doc, getContext()));
+    assertTrue(xwe.getMessage(), xwe.getMessage().toLowerCase().contains("collision"));
+    verifyDefault();
+  }
+
+  @Test
   public void test_saveXWikiDoc_immutability() throws Exception {
-    DocumentReference docRef = new ImmutableDocumentReference("xwikidb", "space", "doc");
-    XWikiDocument doc = new XWikiDocument(docRef);
     Capture<XWikiDocument> docCapture = newCapture();
     Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, null);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of());
     expect(sessionMock.save(capture(docCapture))).andReturn(null).once();
     expect(sessionMock.close()).andReturn(null);
 
@@ -120,11 +148,10 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_saveXWikiDoc_save() throws Exception {
-    XWikiDocument doc = new XWikiDocument(new DocumentReference("xwikidb", "space", "doc"));
     Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, null);
-    expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(),
-        LogicalOperator.EQUAL))).andReturn(null);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of());
+    expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
+        .andReturn(null);
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -138,9 +165,10 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_saveXWikiDoc_update() throws Exception {
-    XWikiDocument doc = new XWikiDocument(new DocumentReference("xwikidb", "space", "doc"));
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
+    doc.setId(docId, IdVersion.CELEMENTS_3);
+    doc.setNew(false);
     Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, doc.getDocumentReference());
     sessionMock.update(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL));
     expectLastCall();
     expect(sessionMock.close()).andReturn(null);
@@ -149,26 +177,43 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     getStore(sessionMock).saveXWikiDoc(doc, getContext());
     verifyDefault();
 
+    assertEquals(docId, doc.getId());
+    assertSame(IdVersion.CELEMENTS_3, doc.getIdVersion());
     assertFalse(doc.isNew());
     assertFalse(doc.isContentDirty());
     assertFalse(doc.isMetaDataDirty());
   }
 
   @Test
-  public void test_saveXWikiDoc_collision() throws Exception {
-    final XWikiDocument doc = new XWikiDocument(new DocumentReference("xwikidb", "space", "doc"));
+  public void test_saveXWikiDoc_collision_single() throws Exception {
     final Session sessionMock = createSessionMock(doc);
-    expectSaveDocExists(sessionMock, new DocumentReference("xwikidb", "space", "other"));
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { computeDocId(START_COLLISION_COUNT_DEFAULT), "space.other", "" }));
+    expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
+        .andReturn(null);
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
-    new ExceptionAsserter<XWikiException>(XWikiException.class) {
+    getStore(sessionMock).saveXWikiDoc(doc, getContext());
+    verifyDefault();
 
-      @Override
-      protected void execute() throws XWikiException {
-        getStore(sessionMock).saveXWikiDoc(doc, getContext());
-      }
-    }.evaluate();
+    assertEquals(computeDocId(START_COLLISION_COUNT_DEFAULT + 1), doc.getId());
+    assertSame(IdVersion.CELEMENTS_3, doc.getIdVersion());
+  }
+
+  @Test
+  public void test_saveXWikiDoc_collision_exhausted() throws Exception {
+    final Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { computeDocId(0), "space.other1", "" },
+        new Object[] { computeDocId(1), "space.other2", "" },
+        new Object[] { computeDocId(2), "space.other3", "" },
+        new Object[] { computeDocId(3), "space.other4", "" }));
+    expect(sessionMock.close()).andReturn(null);
+
+    replayDefault();
+    assertThrows("fail on saving collision", XWikiException.class,
+        () -> getStore(sessionMock).saveXWikiDoc(doc, getContext()));
     verifyDefault();
   }
 
@@ -180,14 +225,34 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     replayDefault();
     final CelHibernateStore store = getStore(sessionMock);
     doc.setStore(store);
-    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class,
-        "different wiki than context db should fast fail") {
+    assertThrows("different wiki than context db should fast fail", IllegalArgumentException.class,
+        () -> store.deleteXWikiDoc(doc, getContext()));
+    verifyDefault();
+  }
 
-      @Override
-      protected void execute() throws Exception {
-        store.deleteXWikiDoc(doc, getContext());
-      }
-    }.evaluate();
+  @Test
+  public void test_getSchemaFromWikiName_virtual() {
+    expect(getWikiMock().isVirtualMode()).andReturn(true).anyTimes();
+    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
+    replayDefault();
+    CelHibernateStore store = getStore(null);
+    assertNull(store.getSchemaFromWikiName(null, null, getContext()));
+    assertEquals("pref_as5df", store.getSchemaFromWikiName("as5df", null, getContext()));
+    assertEquals("pref_as5df", store.getSchemaFromWikiName("AS5DF", null, getContext()));
+    assertEquals("pref_as5df", store.getSchemaFromWikiName("a$s5(DF)", null, getContext()));
+    assertEquals("pref_as5df_suf", store.getSchemaFromWikiName("AS5DF-SUF", null, getContext()));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getSchemaFromWikiName_main() {
+    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
+    expect(getWikiMock().Param("xwiki.db")).andReturn("main").anyTimes();
+    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
+    replayDefault();
+    CelHibernateStore store = getStore(null);
+    assertNull(store.getSchemaFromWikiName(null, null, getContext()));
+    assertEquals("pref_main", store.getSchemaFromWikiName("as5df", null, getContext()));
     verifyDefault();
   }
 
@@ -207,6 +272,11 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     sessionMock.clear();
     expectLastCall().anyTimes();
     return sessionMock;
+  }
+
+  private long computeDocId(int collisionCount) throws IdComputationException {
+    return Utils.getComponent(CelementsIdComputer.class)
+        .computeDocumentId(docRef, "", (byte) collisionCount);
   }
 
 }

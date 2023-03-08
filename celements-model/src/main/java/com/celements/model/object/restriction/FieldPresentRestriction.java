@@ -16,7 +16,7 @@ public class FieldPresentRestriction<O, T> extends ClassRestriction<O> {
   private final ClassField<T> field;
 
   public FieldPresentRestriction(@NotNull ObjectBridge<?, O> bridge, @NotNull ClassField<T> field) {
-    super(bridge, field.getClassDef().getClassReference());
+    super(bridge, field.getClassReference());
     this.field = checkNotNull(field);
   }
 

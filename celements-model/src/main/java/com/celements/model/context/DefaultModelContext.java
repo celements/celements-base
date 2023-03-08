@@ -3,6 +3,7 @@ package com.celements.model.context;
 import static com.google.common.base.Preconditions.*;
 
 import java.net.URL;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,16 +23,14 @@ import org.xwiki.model.reference.WikiReference;
 import com.celements.auth.user.User;
 import com.celements.auth.user.UserInstantiationException;
 import com.celements.auth.user.UserService;
+import com.celements.common.MoreOptional;
 import com.celements.configuration.CelementsFromWikiConfigurationSource;
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
-import com.google.common.base.Optional;
-import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.user.api.XWikiUser;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiRequest;
@@ -108,35 +107,43 @@ public class DefaultModelContext implements ModelContext {
   }
 
   @Override
-  public Optional<XWikiDocument> getCurrentDoc() {
-    return Optional.fromNullable(getDocInternal());
+  @Deprecated
+  public com.google.common.base.Optional<XWikiDocument> getCurrentDoc() {
+    return com.google.common.base.Optional.fromJavaUtil(getDocument());
   }
 
   @Override
-  public Optional<DocumentReference> getCurrentDocRef() {
-    if (getDocInternal() != null) {
-      return Optional.of(getDocInternal().getDocumentReference());
-    }
-    return Optional.absent();
+  public Optional<XWikiDocument> getDocument() {
+    return Optional.ofNullable(getDocInternal());
   }
 
   @Override
-  public Optional<SpaceReference> getCurrentSpaceRef() {
-    if (getDocInternal() != null) {
-      return Optional.of(getDocInternal().getDocumentReference().getLastSpaceReference());
-    }
-    return Optional.absent();
+  @Deprecated
+  public com.google.common.base.Optional<DocumentReference> getCurrentDocRef() {
+    return com.google.common.base.Optional.fromJavaUtil(getDocRef());
+  }
+
+  @Override
+  public Optional<DocumentReference> getDocRef() {
+    return getDocument().map(XWikiDocument::getDocumentReference);
+  }
+
+  @Override
+  @Deprecated
+  public com.google.common.base.Optional<SpaceReference> getCurrentSpaceRef() {
+    return com.google.common.base.Optional.fromJavaUtil(getSpaceRef());
+  }
+
+  @Override
+  public Optional<SpaceReference> getSpaceRef() {
+    return getDocRef().map(DocumentReference::getLastSpaceReference);
   }
 
   @Override
   public SpaceReference getCurrentSpaceRefOrDefault() {
-    Optional<DocumentReference> docRef = getCurrentDocRef();
-    if (docRef.isPresent()) {
-      return getModelUtils().extractRef(docRef.get(), SpaceReference.class).get();
-    } else {
-      return new RefBuilder().wiki(getWikiRef().getName()).space(refValProvider.getDefaultValue(
-          EntityType.SPACE)).build(SpaceReference.class);
-    }
+    return getSpaceRef().orElseGet(() -> RefBuilder.from(getWikiRef())
+        .space(refValProvider.getDefaultValue(EntityType.SPACE))
+        .build(SpaceReference.class));
   }
 
   private XWikiDocument getDocInternal() {
@@ -145,7 +152,7 @@ public class DefaultModelContext implements ModelContext {
 
   @Override
   public XWikiDocument setDoc(XWikiDocument doc) {
-    XWikiDocument oldDoc = getCurrentDoc().orNull();
+    XWikiDocument oldDoc = getDocument().orElse(null);
     getXWikiContext().setDoc(doc);
     return oldDoc;
   }
@@ -157,22 +164,19 @@ public class DefaultModelContext implements ModelContext {
   }
 
   @Override
-  public Optional<User> getCurrentUser() {
-    XWikiUser xUser = getXWikiContext().getXWikiUser();
-    if (isValidUser(xUser)) {
-      DocumentReference userDocRef = getUserService().resolveUserDocRef(xUser.getUser());
-      try {
-        return Optional.of(getUserService().getUser(userDocRef));
-      } catch (UserInstantiationException exc) {
-        LOGGER.warn("failed loading user '{}'", userDocRef, exc);
-      }
-    }
-    return Optional.absent();
+  @Deprecated
+  public com.google.common.base.Optional<User> getCurrentUser() {
+    return com.google.common.base.Optional.fromJavaUtil(user());
   }
 
-  private boolean isValidUser(XWikiUser xUser) {
-    return (xUser != null) && !Strings.isNullOrEmpty(xUser.getUser()) && !xUser.getUser().equals(
-        XWikiRightService.GUEST_USER_FULLNAME);
+  @Override
+  public Optional<User> user() {
+    try {
+      return Optional.of(getUserService().getUser(getUserName()));
+    } catch (UserInstantiationException exc) {
+      LOGGER.debug("failed loading user [{}]", getUserDocRef(), exc);
+    }
+    return Optional.empty();
   }
 
   @Override
@@ -205,33 +209,55 @@ public class DefaultModelContext implements ModelContext {
   }
 
   @Override
-  @Deprecated
+  public Optional<DocumentReference> getUserDocRef() {
+    try {
+      return Optional.of(getUserService().resolveUserDocRef(getUserName()));
+    } catch (IllegalArgumentException iae) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
   public String getUserName() {
     return getXWikiContext().getUser();
   }
 
   @Override
-  public Optional<XWikiRequest> getRequest() {
-    return Optional.fromNullable(getXWikiContext().getRequest());
+  @Deprecated
+  public com.google.common.base.Optional<XWikiRequest> getRequest() {
+    return com.google.common.base.Optional.fromJavaUtil(request());
   }
 
   @Override
-  public Optional<String> getRequestParameter(String name) {
-    Optional<String> ret = Optional.absent();
-    if (getRequest().isPresent()) {
-      ret = Optional.fromNullable(Strings.emptyToNull(getRequest().get().get(name)));
-    }
-    return ret;
+  public Optional<XWikiRequest> request() {
+    return Optional.ofNullable(getXWikiContext().getRequest());
   }
 
   @Override
-  public Optional<XWikiResponse> getResponse() {
-    return Optional.fromNullable(getXWikiContext().getResponse());
+  @Deprecated
+  public com.google.common.base.Optional<String> getRequestParameter(String key) {
+    return com.google.common.base.Optional.fromJavaUtil(getRequestParam(key));
   }
 
   @Override
-  public java.util.Optional<String> getLanguage() {
-    return java.util.Optional.ofNullable(getXWikiContext().getLanguage());
+  public Optional<String> getRequestParam(String key) {
+    return request().map(r -> r.get(key)).flatMap(MoreOptional::asNonBlank);
+  }
+
+  @Override
+  @Deprecated
+  public com.google.common.base.Optional<XWikiResponse> getResponse() {
+    return com.google.common.base.Optional.fromJavaUtil(response());
+  }
+
+  @Override
+  public Optional<XWikiResponse> response() {
+    return Optional.ofNullable(getXWikiContext().getResponse());
+  }
+
+  @Override
+  public Optional<String> getLanguage() {
+    return Optional.ofNullable(getXWikiContext().getLanguage());
   }
 
   @Override
@@ -251,7 +277,7 @@ public class DefaultModelContext implements ModelContext {
 
   private String getDefaultLangFromDoc(EntityReference ref) {
     String ret = "";
-    Optional<DocumentReference> docRef = getModelUtils().extractRef(ref, DocumentReference.class);
+    Optional<DocumentReference> docRef = ref.extractRef(DocumentReference.class);
     if (docRef.isPresent()) {
       try {
         ret = getModelAccess().getDocument(docRef.get()).getDefaultLanguage();
@@ -263,23 +289,15 @@ public class DefaultModelContext implements ModelContext {
   }
 
   private String getDefaultLangFromConfigSrc(EntityReference ref) {
-    WikiReference wikiBefore = getWikiRef();
-    XWikiDocument docBefore = getCurrentDoc().orNull();
-    try {
-      ConfigurationSource configSrc;
-      setWikiRef(getModelUtils().extractRef(ref, WikiReference.class).or(getWikiRef()));
-      XWikiDocument spacePrefDoc = getSpacePrefDoc(ref);
-      if (spacePrefDoc != null) {
-        setDoc(spacePrefDoc);
-        configSrc = defaultConfigSrc; // checks space preferences
-      } else {
-        configSrc = wikiConfigSrc; // skips space preferences
-      }
-      return configSrc.getProperty(CFG_KEY_DEFAULT_LANG, FALLBACK_DEFAULT_LANG);
-    } finally {
-      setWikiRef(wikiBefore);
-      setDoc(docBefore);
-    }
+    XWikiDocument spacePrefDoc = getSpacePrefDoc(ref);
+    final ConfigurationSource configSrc = (spacePrefDoc != null)
+        ? defaultConfigSrc // checks space preferences
+        : wikiConfigSrc; // skips space preferences
+    return new Contextualiser()
+        .withDoc(spacePrefDoc)
+        .withWiki(ref.extractRef(WikiReference.class).orElse(null))
+        .execute(() -> configSrc.getProperty(CFG_KEY_DEFAULT_LANG, FALLBACK_DEFAULT_LANG));
+
   }
 
   @Override
@@ -297,7 +315,7 @@ public class DefaultModelContext implements ModelContext {
 
   private XWikiDocument getSpacePrefDoc(EntityReference ref) {
     XWikiDocument ret = null;
-    Optional<SpaceReference> spaceRef = getModelUtils().extractRef(ref, SpaceReference.class);
+    Optional<SpaceReference> spaceRef = ref.extractRef(SpaceReference.class);
     if (spaceRef.isPresent()) {
       try {
         ret = getModelAccess().getDocument(new DocumentReference(WEB_PREF_DOC_NAME,
@@ -310,15 +328,27 @@ public class DefaultModelContext implements ModelContext {
   }
 
   @Override
-  public Optional<URL> getUrl() {
-    return Optional.fromNullable(getXWikiContext().getURL());
+  @Deprecated
+  public com.google.common.base.Optional<URL> getUrl() {
+    return com.google.common.base.Optional.fromJavaUtil(getURL());
   }
 
   @Override
-  public Optional<URL> setUrl(URL url) {
+  public Optional<URL> getURL() {
+    return Optional.ofNullable(getXWikiContext().getURL());
+  }
+
+  @Override
+  @Deprecated
+  public com.google.common.base.Optional<URL> setUrl(URL url) {
+    return com.google.common.base.Optional.fromJavaUtil(setURL(url));
+  }
+
+  @Override
+  public Optional<URL> setURL(URL url) {
     URL oldUrl = getXWikiContext().getURL();
     getXWikiContext().setURL(url);
-    return Optional.fromNullable(oldUrl);
+    return Optional.ofNullable(oldUrl);
   }
 
   private ModelUtils getModelUtils() {

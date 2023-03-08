@@ -1,11 +1,15 @@
 package com.celements.model.reference;
 
+import static com.google.common.base.Strings.*;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.ImmutableObjectReference;
+import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.script.service.ScriptService;
 
 import com.celements.model.context.ModelContext;
@@ -13,6 +17,8 @@ import com.celements.model.util.ModelUtils;
 import com.celements.model.util.ReferenceSerializationMode;
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
+
+import one.util.streamex.StreamEx;
 
 @Component(ReferenceScriptService.NAME)
 public class ReferenceScriptService implements ScriptService {
@@ -26,7 +32,15 @@ public class ReferenceScriptService implements ScriptService {
   private ModelContext context;
 
   public RefBuilder create() {
-    return new RefBuilder().nullable().with(context.getWikiRef());
+    return RefBuilder.create().nullable().with(context.getWikiRef());
+  }
+
+  public RefBuilder create(EntityReference... refs) {
+    RefBuilder builder = create();
+    if (refs != null) {
+      StreamEx.of(refs).forEach(builder::with);
+    }
+    return builder;
   }
 
   public ClassReference createClassRef(String space, String name) {
@@ -65,7 +79,15 @@ public class ReferenceScriptService implements ScriptService {
 
   public EntityReference resolve(String name, EntityReference baseRef) {
     try {
-      return utils.resolveRef(name, baseRef);
+      return utils.resolveRef(nullToEmpty(name), baseRef);
+    } catch (IllegalArgumentException iae) {
+      return null;
+    }
+  }
+
+  public SpaceReference resolveSpaceRef(String name) {
+    try {
+      return utils.resolveRef(nullToEmpty(name), SpaceReference.class);
     } catch (IllegalArgumentException iae) {
       return null;
     }
@@ -77,11 +99,19 @@ public class ReferenceScriptService implements ScriptService {
 
   public String serialize(EntityReference ref, String mode) {
     try {
+      if (ref == null) {
+        return null;
+      }
       return utils.serializeRef(ref, Enums.getIfPresent(ReferenceSerializationMode.class,
           Strings.nullToEmpty(mode).toUpperCase()).or(ReferenceSerializationMode.COMPACT_WIKI));
     } catch (IllegalArgumentException iae) {
       return null;
     }
+  }
+
+  public EntityType getEntityType(String name) {
+    name = Strings.nullToEmpty(name).toUpperCase();
+    return Enums.getIfPresent(EntityType.class, name).toJavaUtil().orElse(null);
   }
 
 }

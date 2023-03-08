@@ -147,10 +147,8 @@ public class BaseClass extends BaseCollection implements ClassInterface {
   @Override
   public void addField(String name, PropertyInterface element) {
     Set<String> properties = getPropertyList();
-    if (!properties.contains(name)) {
-      if (((BaseCollection) element).getNumber() == 0) {
-        ((BaseCollection) element).setNumber(properties.size() + 1);
-      }
+    if (!properties.contains(name) && (((BaseCollection) element).getNumber() == 0)) {
+      ((BaseCollection) element).setNumber(properties.size() + 1);
     }
 
     super.addField(name, element);
@@ -436,31 +434,14 @@ public class BaseClass extends BaseCollection implements ClassInterface {
 
     BaseClass bclass = (BaseClass) obj;
 
-    if (!getCustomClass().equals(bclass.getCustomClass())) {
+    if (!getCustomClass().equals(bclass.getCustomClass())
+        || !getCustomMapping().equals(bclass.getCustomMapping())
+        || !getDefaultViewSheet().equals(bclass.getDefaultViewSheet())
+        || !getDefaultEditSheet().equals(bclass.getDefaultEditSheet())) {
       return false;
     }
 
-    if (!getCustomMapping().equals(bclass.getCustomMapping())) {
-      return false;
-    }
-
-    if (!getDefaultViewSheet().equals(bclass.getDefaultViewSheet())) {
-      return false;
-    }
-
-    if (!getDefaultEditSheet().equals(bclass.getDefaultEditSheet())) {
-      return false;
-    }
-
-    if (!getDefaultWeb().equals(bclass.getDefaultWeb())) {
-      return false;
-    }
-
-    if (!getValidationScript().equals(bclass.getValidationScript())) {
-      return false;
-    }
-
-    if (!getNameField().equals(bclass.getNameField())) {
+    if (!getDefaultWeb().equals(bclass.getDefaultWeb()) || !getValidationScript().equals(bclass.getValidationScript()) || !getNameField().equals(bclass.getNameField())) {
       return false;
     }
 
@@ -1007,10 +988,8 @@ public class BaseClass extends BaseCollection implements ClassInterface {
       XWikiContext context)
       throws XWikiException {
     BaseClass bclass = context.getWiki().getXClass(classReference, context);
-    BaseObject object = (bclass == null) ? new BaseObject()
+    return (bclass == null) ? new BaseObject()
         : bclass.newCustomClassInstance(context);
-
-    return object;
   }
 
   /**
@@ -1021,10 +1000,8 @@ public class BaseClass extends BaseCollection implements ClassInterface {
   public static BaseObject newCustomClassInstance(String className, XWikiContext context)
       throws XWikiException {
     BaseClass bclass = context.getWiki().getClass(className, context);
-    BaseObject object = (bclass == null) ? new BaseObject()
+    return (bclass == null) ? new BaseObject()
         : bclass.newCustomClassInstance(context);
-
-    return object;
   }
 
   public String getDefaultWeb() {

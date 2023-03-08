@@ -202,11 +202,7 @@ public class BaseObject extends BaseCollection implements ObjectInterface, Seria
       return true;
     }
 
-    if (!super.equals(obj)) {
-      return false;
-    }
-
-    if (getNumber() != ((BaseObject) obj).getNumber()) {
+    if (!super.equals(obj) || (getNumber() != ((BaseObject) obj).getNumber())) {
       return false;
     }
 
@@ -348,22 +344,20 @@ public class BaseObject extends BaseCollection implements ObjectInterface, Seria
       String propertyType = (pclass == null) ? ""
           : StringUtils.substringAfterLast(pclass.getClassType(), ".");
 
-      if (newProperty == null) {
-        // The property exists in the old object, but not in the new one
-        if ((oldProperty != null) && (!oldProperty.toText().equals(""))) {
-          if (pclass != null) {
-            // Put the values as they would be displayed in the interface
-            String oldPropertyValue = (oldProperty.getValue() instanceof String)
-                ? oldProperty.toText()
-                : pclass.displayView(propertyName, oldObject, context);
-            difflist.add(new ObjectDiff(oldObject.getClassName(), oldObject.getNumber(),
-                oldObject.getGuid(), "removed", propertyName, propertyType, oldPropertyValue, ""));
-          } else {
-            // Cannot get property definition, so use the plain value
-            difflist.add(new ObjectDiff(oldObject.getClassName(), oldObject.getNumber(),
-                oldObject.getGuid(), "removed", propertyName, propertyType, oldProperty.toText(),
-                ""));
-          }
+      // The property exists in the old object, but not in the new one
+      if ((newProperty == null) && ((oldProperty != null) && (!oldProperty.toText().equals("")))) {
+        if (pclass != null) {
+          // Put the values as they would be displayed in the interface
+          String oldPropertyValue = (oldProperty.getValue() instanceof String)
+              ? oldProperty.toText()
+              : pclass.displayView(propertyName, oldObject, context);
+          difflist.add(new ObjectDiff(oldObject.getClassName(), oldObject.getNumber(),
+              oldObject.getGuid(), "removed", propertyName, propertyType, oldPropertyValue, ""));
+        } else {
+          // Cannot get property definition, so use the plain value
+          difflist.add(new ObjectDiff(oldObject.getClassName(), oldObject.getNumber(),
+              oldObject.getGuid(), "removed", propertyName, propertyType, oldProperty.toText(),
+              ""));
         }
       }
     }

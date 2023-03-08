@@ -26,7 +26,9 @@ package org.xwiki.component.logging;
  * interface. A quick way to enable logging is to extend {@link AbstractLogEnabled}.
  *
  * @version $Id$
+ * @deprecated since 5.2, instead use {@link org.slf4j.Logger}
  */
+@Deprecated
 public interface Logger {
 
   /**

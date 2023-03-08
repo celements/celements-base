@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
 
+import com.celements.filebase.IAttachmentServiceRole;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentAlreadyExistsException;
 import com.celements.model.access.exception.DocumentDeleteException;
@@ -47,6 +49,22 @@ public interface IModelAccessFacade {
   @NotNull
   Optional<XWikiDocument> getDocumentOpt(@NotNull DocumentReference docRef, @Nullable String lang);
 
+  /**
+   * CAUTION: never ever change anything on the returned XWikiDocument, because it is the object in
+   * cache. Thus the same object will be returned for the following requests. If you change this
+   * object, concurrent request might get a partially modified object, or worse, if an error occurs
+   * during the save (or no save call happens), the cached object will not reflect the actual
+   * document at all.
+   *
+   * @param docRef
+   * @param lang
+   * @return an xwiki document for readonly usage
+   * @throws DocumentNotExistsException
+   */
+  @NotNull
+  XWikiDocument getDocumentReadOnly(@NotNull DocumentReference docRef, @Nullable String lang)
+      throws DocumentNotExistsException;
+
   @NotNull
   XWikiDocument createDocument(@NotNull DocumentReference docRef)
       throws DocumentAlreadyExistsException;
@@ -64,13 +82,13 @@ public interface IModelAccessFacade {
   /**
    * @return true if the default document denoted by {@code docRef} exists.
    */
-  boolean exists(@NotNull DocumentReference docRef);
+  boolean exists(@Nullable DocumentReference docRef);
 
   /**
    * @return true if the document denoted by {@code docRef} exists for the given {@code lang}.
    *         This may be a translation or the default document with the inquired {@code lang}.
    */
-  boolean existsLang(@NotNull DocumentReference docRef, @Nullable String lang);
+  boolean existsLang(@Nullable DocumentReference docRef, @Nullable String lang);
 
   void saveDocument(@NotNull XWikiDocument doc) throws DocumentSaveException;
 
@@ -83,19 +101,45 @@ public interface IModelAccessFacade {
   void deleteDocument(@NotNull DocumentReference docRef, boolean totrash)
       throws DocumentDeleteException;
 
-  void deleteDocument(@NotNull XWikiDocument doc, boolean totrash)
+  void deleteTranslation(@NotNull DocumentReference docRef, @NotNull String lang, boolean totrash)
       throws DocumentDeleteException;
 
+  /**
+   * @deprecated since 5.9, instead use {@link #deleteDocument(DocumentReference, boolean)}
+   */
+  @Deprecated
+  void deleteDocument(@NotNull XWikiDocument doc, boolean totrash) throws DocumentDeleteException;
+
+  /**
+   * @deprecated since 5.9, instead use
+   *             {@link #deleteTranslation(DocumentReference, String, boolean)}
+   */
+  @Deprecated
   void deleteDocumentWithoutTranslations(@NotNull XWikiDocument doc, boolean totrash)
       throws DocumentDeleteException;
 
+  /**
+   * @deprecated since 5.9, misnomer, instead use
+   *             {@link #getTranslationLangs(DocumentReference, String, boolean)}
+   */
+  @Deprecated
   @NotNull
-  List<String> getExistingLangs(@NotNull DocumentReference docRef);
+  List<String> getExistingLangs(@Nullable DocumentReference docRef);
 
   @NotNull
-  Map<String, XWikiDocument> getTranslations(@NotNull DocumentReference docRef);
+  List<String> getTranslationLangs(@Nullable DocumentReference docRef);
 
+  @NotNull
+  Map<String, XWikiDocument> getTranslations(@Nullable DocumentReference docRef);
+
+  /**
+   * @deprecated since 5.9, instead use {@link XWikiDocument#isTrans()}
+   */
+  @Deprecated
   boolean isTranslation(@NotNull XWikiDocument doc);
+
+  @NotNull
+  Stream<XWikiDocument> streamParents(@NotNull XWikiDocument doc);
 
   /**
    * @deprecated instead use {@link XWikiObjectFetcher}
@@ -516,11 +560,9 @@ public interface IModelAccessFacade {
    * CAUTION: document.getAttachment returns "startWith" matches. Instead use
    * getAttachmentNameEqual or methods on IAttachmentServiceRole
    *
-   * @param document
-   * @param filename
-   * @return
-   * @throws AttachmentNotExistsException
+   * @deprecated since 5.9, instead use {@link IAttachmentServiceRole}
    */
+  @Deprecated
   XWikiAttachment getAttachmentNameEqual(XWikiDocument document, String filename)
       throws AttachmentNotExistsException;
 

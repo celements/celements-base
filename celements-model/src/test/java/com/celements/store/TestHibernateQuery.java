@@ -3,6 +3,7 @@ package com.celements.store;
 import static org.easymock.EasyMock.*;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,14 +18,14 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.impl.AbstractQueryImpl;
-import org.xwiki.model.reference.DocumentReference;
+import org.hibernate.type.Type;
 
-import com.celements.model.util.ModelUtils;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
-import com.xpn.xwiki.web.Utils;
+
+import one.util.streamex.StreamEx;
 
 public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
 
@@ -67,14 +68,29 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
   }
 
   @Override
-  public Query setInteger(String named, int val) {
-    this.params.put(named, new Integer(val));
+  public Query setString(String named, String val) {
+    this.params.put(named, val);
     return this;
   }
 
   @Override
   public Query setLong(String named, long val) {
-    this.params.put(named, new Long(val));
+    this.params.put(named, Long.valueOf(val));
+    return this;
+  }
+
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Query setParameterList(String named, Collection vals) throws HibernateException {
+    this.params.put(named, vals);
+    return this;
+  }
+
+  @SuppressWarnings("rawtypes")
+  @Override
+  public Query setParameterList(String named, Collection vals, Type type)
+      throws HibernateException {
+    this.params.put(named, vals);
     return this;
   }
 
@@ -94,19 +110,18 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
     throw new UnsupportedOperationException("getLockModes not supported");
   }
 
-  public static void expectSaveDocExists(Session sessionMock,
-      final DocumentReference existingDocRef) {
-    String hql = "select fullName from XWikiDocument where id = :id";
+  public static void expectLoadExistingDocs(Session sessionMock, List<Object[]> existingDocs) {
+    String hql = "select id, fullName, language from XWikiDocument where id in (:ids) order by id";
     Query query = new TestHibernateQuery<XWikiAttachment>(hql) {
 
       @Override
-      public Object uniqueResult() throws HibernateException {
-        if (existingDocRef != null) {
-          return Utils.getComponent(ModelUtils.class).serializeRefLocal(existingDocRef);
-        }
-        return null;
+      public Iterator<Object[]> iterate() throws HibernateException {
+        return StreamEx.of(existingDocs)
+            .mapToEntry(row -> (long) row[0], row -> row)
+            .filterKeys(((Collection<?>) params.get("ids"))::contains)
+            .sortedBy(Map.Entry::getKey)
+            .values().iterator();
       }
-
     };
     expect(sessionMock.createQuery(eq(hql))).andReturn(query).anyTimes();
   }
@@ -120,7 +135,6 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
       public List<XWikiAttachment> list() throws HibernateException {
         return attList;
       }
-
     };
     expect(sessionMock.createQuery(eq(hql))).andReturn(query).anyTimes();
   }
@@ -151,7 +165,6 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
       public List<String[]> list() throws HibernateException {
         return propertiesMap.get(params.get("id"));
       }
-
     };
     expect(sessionMock.createQuery(eq(hql))).andReturn(queryProp).atLeastOnce();
     sessionMock.load(isA(PropertyInterface.class), isA(Serializable.class));

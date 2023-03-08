@@ -36,7 +36,7 @@ public class ReferenceFieldTest extends AbstractComponentTest {
         .build();
   }
 
-  @Test
+  // @Test mutabilitydetector broken in Java11+
   public void test_immutability() {
     assertInstancesOf(ReferenceField.class, areImmutable(), allowingForSubclassing(),
         assumingFields("marshaller").areNotModifiedAndDoNotEscape());

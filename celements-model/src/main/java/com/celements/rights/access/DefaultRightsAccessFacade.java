@@ -1,5 +1,7 @@
 package com.celements.rights.access;
 
+import static com.xpn.xwiki.user.api.XWikiRightService.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
@@ -68,7 +70,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   @Override
   public boolean hasAccessLevel(EntityReference ref, EAccessLevel level) {
-    return hasAccessLevel(ref, level, context.getCurrentUser().orNull());
+    return hasAccessLevel(ref, level, context.user().orElse(null));
   }
 
   @Override
@@ -105,7 +107,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
   private boolean hasAccessLevelInternal(String fullName, String level,
       DocumentReference userDocRef) {
     try {
-      String accountName = XWikiRightService.GUEST_USER_FULLNAME;
+      String accountName = GUEST_USER_FULLNAME;
       if (userDocRef != null) {
         accountName = modelUtils.serializeRef(userDocRef);
       }
@@ -130,14 +132,16 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   @Override
   public boolean isLoggedIn() {
-    boolean ret = context.getCurrentUser().isPresent();
+    boolean ret = context.user()
+        .filter(user -> !user.getDocRef().getName().equals(GUEST_USER))
+        .isPresent();
     LOGGER.info("isLoggedIn: {}", ret);
     return ret;
   }
 
   @Override
   public boolean isAdmin() {
-    return isAdmin(context.getCurrentUser().orNull());
+    return isAdmin(context.user().orElse(null));
   }
 
   @Override

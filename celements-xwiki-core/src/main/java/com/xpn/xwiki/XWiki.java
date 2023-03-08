@@ -19,6 +19,9 @@
  */
 package com.xpn.xwiki;
 
+import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -87,11 +90,8 @@ import org.securityfilter.filter.URLPatternMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
-import org.xwiki.bridge.event.DocumentCreatingEvent;
 import org.xwiki.bridge.event.DocumentDeletedEvent;
-import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
-import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.cache.Cache;
 import org.xwiki.cache.CacheException;
 import org.xwiki.cache.CacheFactory;
@@ -101,7 +101,6 @@ import org.xwiki.cache.eviction.EntryEvictionConfiguration;
 import org.xwiki.cache.eviction.LRUEvictionConfiguration;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -120,6 +119,8 @@ import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
+import com.celements.model.reference.RefBuilder;
+import com.celements.store.StoreFactory;
 import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.api.User;
@@ -176,7 +177,6 @@ import com.xpn.xwiki.stats.impl.XWikiStatsServiceImpl;
 import com.xpn.xwiki.store.AttachmentRecycleBinStore;
 import com.xpn.xwiki.store.AttachmentVersioningStore;
 import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
-import com.xpn.xwiki.store.XWikiCacheStore;
 import com.xpn.xwiki.store.XWikiCacheStoreInterface;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
@@ -497,7 +497,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Host is full.host.name in DNS-based multiwiki, and wikiname in path-based multiwiki.
     String host = "";
     // Canonical name of the wiki (database)
-    String wikiName = "";
+    String wikiName;
     // wikiDefinition should be the document holding the definition of the virtual wiki, a document
     // in the main
     // wiki with a XWiki.XWikiServerClass object attached to it
@@ -610,12 +610,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       Method method = obj.getClass().getDeclaredMethod(methodName, classes);
       method.setAccessible(true);
       return method.invoke(obj, args);
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-      return null;
     } catch (NoSuchMethodException e) {
       return null;
-    } catch (InvocationTargetException e) {
+    } catch (IllegalAccessException | InvocationTargetException e) {
       e.printStackTrace();
       return null;
     } finally {}
@@ -624,8 +621,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public static String getFormEncoded(String content) {
     Filter filter = new CharacterFilter();
     filter.removeAttribute("'");
-    String scontent = filter.process(content);
-    return scontent;
+    return filter.process(content);
   }
 
   public static HttpClient getHttpClient(int timeout, String userAgent) {
@@ -678,8 +674,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public static String getXMLEncoded(String content) {
     Filter filter = new CharacterFilter();
-    String scontent = filter.process(content);
-    return scontent;
+    return filter.process(content);
   }
 
   public static String getTextArea(String content, XWikiContext context) {
@@ -779,17 +774,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Prepare the store
     setConfig(config);
 
-    XWikiStoreInterface basestore = Utils.getComponent(XWikiStoreInterface.class, Param(
-        "xwiki.store.main.hint"));
-
-    // Check if we need to use the cache store..
-    boolean nocache = "0".equals(Param("xwiki.store.cache", "1"));
-    if (!nocache) {
-      XWikiCacheStoreInterface cachestore = new XWikiCacheStore(basestore, context);
-      setStore(cachestore);
-    } else {
-      setStore(basestore);
-    }
+    setStore(StoreFactory.getMainStore());
 
     setCriteriaService((XWikiCriteriaService) createClassFromConfig("xwiki.criteria.class",
         "com.xpn.xwiki.criteria.impl.XWikiCriteriaServiceImpl", context));
@@ -804,10 +789,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         hasAttachmentVersioning(context) ? Param("xwiki.store.attachment.versioning.hint")
             : "void"));
 
-    if (hasRecycleBin(context)) {
-      setRecycleBinStore(Utils.getComponent(XWikiRecycleBinStoreInterface.class, Param(
-          "xwiki.store.recyclebin.hint")));
-    }
+    StoreFactory.getRecycleBinStore().ifPresent(this::setRecycleBinStore);
 
     if (hasAttachmentRecycleBin(context)) {
       setAttachmentRecycleBinStore(Utils.getComponent(AttachmentRecycleBinStore.class, Param(
@@ -917,27 +899,15 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public XWikiStoreInterface getNotCacheStore() {
-    XWikiStoreInterface store = getStore();
-    if (store instanceof XWikiCacheStoreInterface) {
-      store = ((XWikiCacheStoreInterface) store).getStore();
-    }
-    return store;
+    return getHibernateStore();
   }
 
   public XWikiHibernateStore getHibernateStore() {
-    XWikiStoreInterface store = getStore();
-    if (store instanceof XWikiHibernateStore) {
-      return (XWikiHibernateStore) store;
-    } else if (store instanceof XWikiCacheStoreInterface) {
-      store = ((XWikiCacheStoreInterface) store).getStore();
-      if (store instanceof XWikiHibernateStore) {
-        return (XWikiHibernateStore) store;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
+    XWikiStoreInterface hibStore = this.store;
+    if (!(hibStore instanceof XWikiHibernateStore)) {
+      hibStore = Utils.getComponent(XWikiStoreInterface.class, "hibernate");
     }
+    return (XWikiHibernateStore) hibStore;
   }
 
   public void updateDatabase(String wikiName, XWikiContext context) throws HibernateException,
@@ -1142,10 +1112,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       throws XWikiException {
     String storeclass = Param(param, defClass);
     try {
-      Class<?>[] classes = new Class<?>[] { XWikiContext.class };
-      Object[] args = new Object[] { context };
-      Object result = Class.forName(storeclass).getConstructor(classes).newInstance(args);
-      return result;
+      Class<?>[] classes = { XWikiContext.class };
+      Object[] args = { context };
+      return Class.forName(storeclass).getConstructor(classes).newInstance(args);
     } catch (Exception e) {
       Throwable ecause = e;
       if (e instanceof InvocationTargetException) {
@@ -1370,111 +1339,41 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void saveDocument(XWikiDocument doc, String comment, boolean isMinorEdit,
       XWikiContext context) throws XWikiException {
-    String server = null, database = null;
+    doc.setComment(StringUtils.defaultString(comment));
+    doc.setMinorEdit(isMinorEdit);
+    XWikiDocument originalDocument = doc.getOriginalDocument();
+    if (originalDocument == null) {
+      originalDocument = new XWikiDocument(doc.getDocumentReference());
+    }
+    // legacy notification mechanism
+    if (originalDocument.isNew()) {
+      getNotificationManager().preverify(doc, originalDocument,
+          XWikiDocChangeNotificationInterface.EVENT_NEW, context);
+    } else {
+      getNotificationManager().preverify(doc, originalDocument,
+          XWikiDocChangeNotificationInterface.EVENT_CHANGE, context);
+    }
+    getStore().saveXWikiDoc(doc, context);
     try {
-      server = doc.getDocumentReference().getWikiReference().getName();
-
-      if (server != null) {
-        database = context.getDatabase();
-        context.setDatabase(server);
-      }
-
-      // Setting comment & minor edit before saving
-      doc.setComment(StringUtils.defaultString(comment));
-      doc.setMinorEdit(isMinorEdit);
-
-      // We need to save the original document since saveXWikiDoc() will reset it and we
-      // need that original document for the notification below.
-      XWikiDocument originalDocument = doc.getOriginalDocument();
-      // Always use an originalDocument, to provide a consistent behavior. The cases where
-      // originalDocument is null are rare (specifically when the XWikiDocument object is
-      // manually constructed, and not obtained using the API).
-      if (originalDocument == null) {
-        originalDocument = new XWikiDocument(doc.getDocumentReference());
-      }
-
-      ObservationManager om = Utils.getComponent(ObservationManager.class);
-
-      // Notify listeners about the document about to be created or updated
-
-      // First the legacy notification mechanism
-
-      // Then the new observation module
-      // Note that for the moment the event being send is a bridge event, as we are still passing
-      // around
-      // an XWikiDocument as source and an XWikiContext as data.
-
+      doc = doc.clone();
+      doc.setOriginalDocument(originalDocument);
+      // legacy notification mechanism
       if (originalDocument.isNew()) {
-        getNotificationManager().preverify(doc, originalDocument,
+        getNotificationManager().verify(doc, originalDocument,
             XWikiDocChangeNotificationInterface.EVENT_NEW, context);
-        if (om != null) {
-          om.notify(new DocumentCreatingEvent(doc.getDocumentReference()), doc, context);
-        }
       } else {
-        getNotificationManager().preverify(doc, originalDocument,
+        getNotificationManager().verify(doc, originalDocument,
             XWikiDocChangeNotificationInterface.EVENT_CHANGE, context);
-        if (om != null) {
-          om.notify(new DocumentUpdatingEvent(doc.getDocumentReference()), doc, context);
-        }
       }
-
-      getStore().saveXWikiDoc(doc, context);
-
-      // Since the store#saveXWikiDoc resets originalDocument, we need to temporarily put it
-      // back to send notifications.
-      XWikiDocument newOriginal = doc.getOriginalDocument();
-
-      try {
-        doc.setOriginalDocument(originalDocument);
-
-        // Notify listeners about the document having been created or updated
-
-        // First the legacy notification mechanism
-
-        // Then the new observation module
-        // Note that for the moment the event being send is a bridge event, as we are still passing
-        // around
-        // an XWikiDocument as source and an XWikiContext as data.
-        // The old version is made available using doc.getOriginalDocument()
-
-        if (originalDocument.isNew()) {
-          getNotificationManager().verify(doc, originalDocument,
-              XWikiDocChangeNotificationInterface.EVENT_NEW, context);
-          if (om != null) {
-            om.notify(new DocumentCreatedEvent(doc.getDocumentReference()), doc, context);
-          }
-        } else {
-          getNotificationManager().verify(doc, originalDocument,
-              XWikiDocChangeNotificationInterface.EVENT_CHANGE, context);
-          if (om != null) {
-            om.notify(new DocumentUpdatedEvent(doc.getDocumentReference()), doc, context);
-          }
-        }
-      } catch (Exception ex) {
-        LOG.error("Failed to send document save notification for document ["
-            + this.defaultEntityReferenceSerializer.serialize(doc.getDocumentReference()) + "]",
-            ex);
-      } finally {
-        doc.setOriginalDocument(newOriginal);
-      }
-    } finally {
-      if ((server != null) && (database != null)) {
-        context.setDatabase(database);
-      }
+    } catch (Exception ex) {
+      LOG.error("Failed to send document save notification for document ["
+          + this.defaultEntityReferenceSerializer.serialize(doc.getDocumentReference()) + "]",
+          ex);
     }
   }
 
   public XWikiDocument getDocument(XWikiDocument doc, XWikiContext context) throws XWikiException {
-    String database = context.getDatabase();
-    try {
-      if (doc.getDocumentReference().getWikiReference().getName() != null) {
-        context.setDatabase(doc.getDocumentReference().getWikiReference().getName());
-      }
-
-      return getStore().loadXWikiDoc(doc, context);
-    } finally {
-      context.setDatabase(database);
-    }
+    return getStore().loadXWikiDoc(doc, context);
   }
 
   public XWikiDocument getDocument(XWikiDocument doc, String revision, XWikiContext context)
@@ -2093,35 +1992,27 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       // Try to get it from URL
       if (context.getRequest() != null) {
         skin = context.getRequest().getParameter("skin");
-        if (LOG.isDebugEnabled()) {
-          if ((skin != null) && !skin.equals("")) {
-            LOG.debug("Requested skin in the URL: [" + skin + "]");
-          }
+        if (LOG.isDebugEnabled() && ((skin != null) && !skin.equals(""))) {
+          LOG.debug("Requested skin in the URL: [" + skin + "]");
         }
       }
 
       if ((skin == null) || (skin.equals(""))) {
         skin = getUserPreference("skin", context);
-        if (LOG.isDebugEnabled()) {
-          if ((skin != null) && !skin.equals("")) {
-            LOG.debug("Configured skin in user preferences: [" + skin + "]");
-          }
+        if (LOG.isDebugEnabled() && ((skin != null) && !skin.equals(""))) {
+          LOG.debug("Configured skin in user preferences: [" + skin + "]");
         }
       }
       if ((skin == null) || skin.equals("")) {
         skin = Param("xwiki.defaultskin");
-        if (LOG.isDebugEnabled()) {
-          if ((skin != null) && !skin.equals("")) {
-            LOG.debug("Configured default skin in preferences: [" + skin + "]");
-          }
+        if (LOG.isDebugEnabled() && ((skin != null) && !skin.equals(""))) {
+          LOG.debug("Configured default skin in preferences: [" + skin + "]");
         }
       }
       if ((skin == null) || skin.equals("")) {
         skin = getDefaultBaseSkin(context);
-        if (LOG.isDebugEnabled()) {
-          if ((skin != null) && !skin.equals("")) {
-            LOG.debug("Configured default base skin in preferences: [" + skin + "]");
-          }
+        if (LOG.isDebugEnabled() && ((skin != null) && !skin.equals(""))) {
+          LOG.debug("Configured default base skin in preferences: [" + skin + "]");
         }
       }
     } catch (Exception e) {
@@ -2129,11 +2020,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       skin = getDefaultBaseSkin(context);
     }
     try {
-      if (skin.indexOf(".") != -1) {
-        if (!getRightService().hasAccessLevel("view", context.getUser(), skin, context)) {
-          LOG.debug("Cannot access configured skin due to access rights, using the default skin.");
-          skin = Param("xwiki.defaultskin", getDefaultBaseSkin(context));
-        }
+      if ((skin.indexOf(".") != -1)
+          && !getRightService().hasAccessLevel("view", context.getUser(), skin, context)) {
+        LOG.debug("Cannot access configured skin due to access rights, using the default skin.");
+        skin = Param("xwiki.defaultskin", getDefaultBaseSkin(context));
       }
     } catch (XWikiException e) {
       // if it fails here, let's just ignore it
@@ -2475,7 +2365,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Next from the default user preference
     try {
       String user = context.getUser();
-      XWikiDocument userdoc = null;
+      XWikiDocument userdoc;
       userdoc = getDocument(user, context);
       if (userdoc != null) {
         language = Util.normalizeLanguage(userdoc.getStringValue("XWiki.XWikiUsers",
@@ -2667,7 +2557,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Get user preference
     try {
       String user = context.getUser();
-      XWikiDocument userdoc = null;
+      XWikiDocument userdoc;
       userdoc = getDocument(user, context);
       if (userdoc != null) {
         userPreferenceLanguage = userdoc.getStringValue("XWiki.XWikiUsers",
@@ -2793,10 +2683,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   private XWikiContext getXWikiContext() {
     Execution execution = Utils.getComponent(Execution.class);
-
-    ExecutionContext ec = execution.getContext();
-
-    return ec != null ? (XWikiContext) ec.getProperty("xwikicontext") : null;
+    if (execution.getContext() != null) {
+      return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    }
+    return null;
   }
 
   /**
@@ -2821,11 +2711,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       this.groupService.flushCache();
     }
 
-    // If we use the Cache Store layer.. we need to flush it
-    XWikiStoreInterface store = getStore();
-    if ((store != null) && (store instanceof XWikiCacheStoreInterface)) {
-      ((XWikiCacheStoreInterface) getStore()).flushCache();
-    }
+    // Flush the Cache Stores
+    Utils.getComponentList(XWikiStoreInterface.class).stream()
+        .flatMap(tryCast(XWikiCacheStoreInterface.class))
+        .forEach(XWikiCacheStoreInterface::flushCache);
+
     // Flush renderers.. Groovy renderer has a cache
     XWikiRenderingEngine rengine = getRenderingEngine();
     if (rengine != null) {
@@ -2906,18 +2796,16 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   @Override
   public void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc,
       int event, XWikiContext context) {
-    if (!isVirtualMode()) {
-      if (newdoc.getFullName().equals("XWiki.XWikiPreferences")) {
-        // If the XWikiPreferences document is modified, reload all plugins. The reason is that
-        // plugins may
-        // cache data taken from XWikiPreferences during their initialization.
-        // TODO: Fix the plugins, they should implement Observation listeners if they want to be
-        // aware of a
-        // change in the XWikiPreferences document but we should definitely not reinitialize all
-        // plugins like
-        // this.
-        preparePlugins(context);
-      }
+    if (!isVirtualMode() && newdoc.getFullName().equals("XWiki.XWikiPreferences")) {
+      // If the XWikiPreferences document is modified, reload all plugins. The reason is that
+      // plugins may
+      // cache data taken from XWikiPreferences during their initialization.
+      // TODO: Fix the plugins, they should implement Observation listeners if they want to be
+      // aware of a
+      // change in the XWikiPreferences document but we should definitely not reinitialize all
+      // plugins like
+      // this.
+      preparePlugins(context);
     }
 
     if (olddoc != null) {
@@ -2932,12 +2820,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       for (BaseObject bobj : bobjects) {
         if (bobj != null) {
           String host = bobj.getStringValue("server");
-          if (StringUtils.isNotEmpty(host)) {
-            if (this.virtualWikiMap != null) {
-              if (this.virtualWikiMap.get(host) != null) {
-                this.virtualWikiMap.remove(host);
-              }
-            }
+          if ((StringUtils.isNotEmpty(host) && (this.virtualWikiMap != null))
+              && (this.virtualWikiMap.get(host) != null)) {
+            this.virtualWikiMap.remove(host);
           }
         }
       }
@@ -2969,7 +2854,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     needsUpdate |= bclass.addStaticListField(XWikiConstant.TAG_CLASS_PROP_TAGS, "Tags", 30, true,
         true, "", "input", "|,");
     StaticListClass tagClass = (StaticListClass) bclass.get(XWikiConstant.TAG_CLASS_PROP_TAGS);
-    if (tagClass.isRelationalStorage() == false) {
+    if (!tagClass.isRelationalStorage()) {
       tagClass.setRelationalStorage(true);
       needsUpdate = true;
     }
@@ -3288,7 +3173,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public BaseClass getGroupClass(XWikiContext context) throws XWikiException {
     XWikiDocument doc;
-    XWikiDocument template = null;
+    XWikiDocument template;
     boolean needsUpdate = false;
 
     doc = getDocument(new DocumentReference(context.getDatabase(), "XWiki", "XWikiGroups"),
@@ -3667,7 +3552,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
             "Could not connect to server {0} port {1} error code {2} ({3})", null, args);
       }
 
-      if (smtpc.login(login) == false) {
+      if (!smtpc.login(login)) {
         reply = smtpc.getReplyCode();
         Object[] args = { server, port, new Integer(reply), smtpc.getReplyString() };
         throw new XWikiException(XWikiException.MODULE_XWIKI_EMAIL,
@@ -3675,7 +3560,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
             "Could not login to mail server {0} port {1} error code {2} ({3})", null, args);
       }
 
-      if (smtpc.sendSimpleMessage(sender, recipient, message) == false) {
+      if (!smtpc.sendSimpleMessage(sender, recipient, message)) {
         reply = smtpc.getReplyCode();
         Object[] args = { server, port, new Integer(reply), smtpc.getReplyString() };
         throw new XWikiException(XWikiException.MODULE_XWIKI_EMAIL,
@@ -3823,14 +3708,12 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public User getUser(XWikiContext context) {
     XWikiUser xwikiUser = context.getXWikiUser();
-    User user = new User(xwikiUser, context);
-    return user;
+    return new User(xwikiUser, context);
   }
 
   public User getUser(String username, XWikiContext context) {
     XWikiUser xwikiUser = new XWikiUser(username);
-    User user = new User(xwikiUser, context);
-    return user;
+    return new User(xwikiUser, context);
   }
 
   /**
@@ -3957,7 +3840,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         // Get document to include
         doc = getDocument(((XWikiDocument) context.get("doc")).getSpace(), localTopic, context);
 
-        if (checkAccess("view", doc, context) == false) {
+        if (!checkAccess("view", doc, context)) {
           throw new XWikiException(XWikiException.MODULE_XWIKI_ACCESS,
               XWikiException.ERROR_XWIKI_ACCESS_DENIED, "Access to this document is denied: "
                   + doc);
@@ -4022,35 +3905,23 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         context.setDatabase(database);
       }
 
-      if (currentdoc != null) {
-        if (vcontext != null) {
-          vcontext.put("doc", currentdoc);
-        }
+      if ((currentdoc != null) && (vcontext != null)) {
+        vcontext.put("doc", currentdoc);
       }
-      if (gcurrentdoc != null) {
-        if (gcontext != null) {
-          gcontext.put("doc", gcurrentdoc);
-        }
+      if ((gcurrentdoc != null) && (gcontext != null)) {
+        gcontext.put("doc", gcurrentdoc);
       }
-      if (currentcdoc != null) {
-        if (vcontext != null) {
-          vcontext.put("cdoc", currentcdoc);
-        }
+      if ((currentcdoc != null) && (vcontext != null)) {
+        vcontext.put("cdoc", currentcdoc);
       }
-      if (gcurrentcdoc != null) {
-        if (gcontext != null) {
-          gcontext.put("cdoc", gcurrentcdoc);
-        }
+      if ((gcurrentcdoc != null) && (gcontext != null)) {
+        gcontext.put("cdoc", gcurrentcdoc);
       }
-      if (currenttdoc != null) {
-        if (vcontext != null) {
-          vcontext.put("tdoc", currenttdoc);
-        }
+      if ((currenttdoc != null) && (vcontext != null)) {
+        vcontext.put("tdoc", currenttdoc);
       }
-      if (gcurrenttdoc != null) {
-        if (gcontext != null) {
-          gcontext.put("tdoc", gcurrenttdoc);
-        }
+      if ((gcurrenttdoc != null) && (gcontext != null)) {
+        gcontext.put("tdoc", gcurrenttdoc);
       }
     }
   }
@@ -4097,55 +3968,32 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void deleteDocument(XWikiDocument doc, boolean totrash, XWikiContext context)
       throws XWikiException {
-    ObservationManager om = Utils.getComponent(ObservationManager.class);
-
-    // Inform notification mechanisms that a document is about to be deleted
-
-    // First the legacy notification mechanism
+    // legacy notification mechanism
     getNotificationManager().preverify(doc, new XWikiDocument(doc.getDocumentReference()),
         XWikiDocChangeNotificationInterface.EVENT_DELETE, context);
-
-    // Then the new observation module
-    // Note that for the moment the event being send is a bridge event, as we are still passing
-    // around
-    // an XWikiDocument as source and an XWikiContext as data.
-    om.notify(new DocumentDeletingEvent(doc.getDocumentReference()), new XWikiDocument(
-        doc.getDocumentReference()), context);
-
-    if (hasRecycleBin(context) && totrash) {
-      getRecycleBinStore().saveToRecycleBin(doc, context.getUser(), new Date(), context, true);
-    }
-
-    getStore().deleteXWikiDoc(doc, context);
-
+    withContextValue(context, "delete_totrash", totrash,
+        rethrow(() -> getStore().deleteXWikiDoc(doc, context)));
     try {
-      // Inform notification mecanisms that a document has been deleted
-
-      // First the legacy notification mechanism
+      // legacy notification mechanism
       getNotificationManager().verify(new XWikiDocument(doc.getDocumentReference()), doc,
           XWikiDocChangeNotificationInterface.EVENT_DELETE, context);
-
-      // Then the new observation module
-      // Note that for the moment the event being send is a bridge event, as we are still passing
-      // around
-      // an XWikiDocument as source and an XWikiContext as data.
-      // The source document is a new empty XWikiDocument to follow
-      // DocumentUpdatedEvent policy: source document in new document and the old version is
-      // available using
-      // doc.getOriginalDocument()
-      if (om != null) {
-        XWikiDocument blankDoc = new XWikiDocument(doc.getDocumentReference());
-        // Again to follow general event policy, new document author is the user who modified the
-        // document (here
-        // the modification is delete)
-        blankDoc.setOriginalDocument(doc);
-        blankDoc.setAuthor(context.getUser());
-        blankDoc.setContentAuthor(context.getUser());
-        om.notify(new DocumentDeletedEvent(doc.getDocumentReference()), blankDoc, context);
-      }
     } catch (Exception ex) {
       LOG.error("Failed to send document delete notifications for document ["
           + doc.getPrefixedFullName() + "]", ex);
+    }
+  }
+
+  private void withContextValue(XWikiContext context, String key, Object value, Runnable runnable) {
+    Object previous = context.get(key);
+    try {
+      context.put(key, value);
+      runnable.run();
+    } finally {
+      if (previous == null) {
+        context.remove(key);
+      } else {
+        context.put(key, previous);
+      }
     }
   }
 
@@ -4504,18 +4352,18 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public boolean copyDocument(String docname, String targetdocname, String sourceWiki,
       String targetWiki, String wikilanguage, boolean reset, boolean force,
       boolean resetCreationData, XWikiContext context) throws XWikiException {
-    DocumentReference sourceDocumentReference = this.currentMixedDocumentReferenceResolver.resolve(
-        docname);
+    DocumentReference sourceDocumentReference = this.currentMixedDocumentReferenceResolver
+        .resolve(docname);
     if (!StringUtils.isEmpty(sourceWiki)) {
-      sourceDocumentReference.setWikiReference(new WikiReference(sourceWiki));
+      sourceDocumentReference = RefBuilder.from(sourceDocumentReference).wiki(sourceWiki)
+          .build(DocumentReference.class);
     }
-
-    DocumentReference targetDocumentReference = this.currentMixedDocumentReferenceResolver.resolve(
-        targetdocname);
+    DocumentReference targetDocumentReference = this.currentMixedDocumentReferenceResolver
+        .resolve(targetdocname);
     if (!StringUtils.isEmpty(targetWiki)) {
-      targetDocumentReference.setWikiReference(new WikiReference(targetWiki));
+      targetDocumentReference = RefBuilder.from(targetDocumentReference).wiki(targetWiki)
+          .build(DocumentReference.class);
     }
-
     return copyDocument(sourceDocumentReference, targetDocumentReference, wikilanguage, reset,
         force, resetCreationData, context);
   }
@@ -4750,14 +4598,12 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
     String servletPath = Param("xwiki.servletpath", "");
 
-    if (context.getRequest() != null) {
-      if (StringUtils.isEmpty(servletPath)) {
-        String currentServletpath = context.getRequest().getServletPath();
-        if ((currentServletpath != null) && currentServletpath.startsWith("/bin")) {
-          servletPath = "bin/";
-        } else {
-          servletPath = Param("xwiki.defaultservletpath", "bin/");
-        }
+    if ((context.getRequest() != null) && StringUtils.isEmpty(servletPath)) {
+      String currentServletpath = context.getRequest().getServletPath();
+      if ((currentServletpath != null) && currentServletpath.startsWith("/bin")) {
+        servletPath = "bin/";
+      } else {
+        servletPath = Param("xwiki.defaultservletpath", "bin/");
       }
     }
 
@@ -5066,7 +4912,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
     // We need to check rights before we look for translations
     // Otherwise we don't have the user language
-    if (checkAccess(context.getAction(), doc, context) == false) {
+    if (!checkAccess(context.getAction(), doc, context)) {
       Object[] args = { doc.getFullName(), context.getUser() };
       setPhonyDocument(reference, context, vcontext);
       throw new XWikiException(XWikiException.MODULE_XWIKI_ACCESS,
@@ -5134,7 +4980,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       VelocityContext vcontext) {
     XWikiDocument doc = new XWikiDocument(reference);
     doc.setElements(XWikiDocument.HAS_ATTACHMENTS | XWikiDocument.HAS_OBJECTS);
-    doc.setStore(getStore());
     context.put("doc", doc);
     vcontext.put("doc", doc.newDocument(context));
     vcontext.put("cdoc", vcontext.get("doc"));
@@ -5307,19 +5152,17 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public XWikiStatsService getStatsService(XWikiContext context) {
     synchronized (this.STATS_SERVICE_LOCK) {
-      if (this.statsService == null) {
-        if ("1".equals(Param("xwiki.stats", "1"))) {
-          String storeClass = Param("xwiki.stats.class",
-              "com.xpn.xwiki.stats.impl.XWikiStatsServiceImpl");
-          try {
-            this.statsService = (XWikiStatsService) Class.forName(storeClass).newInstance();
-          } catch (Exception e) {
-            e.printStackTrace();
-            this.statsService = new XWikiStatsServiceImpl();
-          }
-
-          this.statsService.init(context);
+      if ((this.statsService == null) && "1".equals(Param("xwiki.stats", "1"))) {
+        String storeClass = Param("xwiki.stats.class",
+            "com.xpn.xwiki.stats.impl.XWikiStatsServiceImpl");
+        try {
+          this.statsService = (XWikiStatsService) Class.forName(storeClass).newInstance();
+        } catch (Exception e) {
+          e.printStackTrace();
+          this.statsService = new XWikiStatsServiceImpl();
         }
+
+        this.statsService.init(context);
       }
 
       return this.statsService;
@@ -5679,23 +5522,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public boolean exists(DocumentReference documentReference, XWikiContext context) {
-    String server = null, database = null;
     try {
       XWikiDocument doc = new XWikiDocument(documentReference);
-      server = doc.getDatabase();
-
-      if (server != null) {
-        database = context.getDatabase();
-        context.setDatabase(server);
-      }
-
       return getStore().exists(doc, context);
     } catch (XWikiException e) {
       return false;
-    } finally {
-      if ((server != null) && (database != null)) {
-        context.setDatabase(database);
-      }
     }
   }
 
@@ -6050,7 +5881,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       List<String> docs = getStore().getQueryManager().getNamedQuery("getAllDocuments").execute();
       for (String doc : docs) {
         XWikiDocument myDoc = this.getDocument(doc, context);
-        myDoc.getStore().saveLinks(myDoc, context, true);
+        getStore().saveLinks(myDoc, context, true);
       }
     } catch (QueryException ex) {
       throw new XWikiException(0, 0, ex.getMessage(), ex);
@@ -6200,7 +6031,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    *          maybe will be useful
    */
   public boolean hasRecycleBin(XWikiContext context) {
-    return "1".equals(Param("xwiki.recyclebin", "1"));
+    return (recycleBinStore != null);
   }
 
   /**
@@ -6359,9 +6190,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       throws XWikiException {
     Map<String, String[]> map = Util.getObject(context.getRequest(), className);
     BaseClass bclass = context.getWiki().getClass(className, context);
-    BaseObject newobject = (BaseObject) bclass.fromMap(map, context);
-
-    return newobject;
+    return (BaseObject) bclass.fromMap(map, context);
   }
 
   public String getConvertingUserNameType(XWikiContext context) {
@@ -7227,6 +7056,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return "xwiki-core";
   }
 
+  // START XWikiCompatibilityAspect
   /*
    * --------------------------------------------------------------------------------------------
    * following only deprecated methods copied from XWikiCompatibilityAspect, since 3.1 FIXME find
@@ -7442,4 +7272,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
     return parseMessage(message, context);
   }
+  // END XWikiCompatibilityAspect
+
 }

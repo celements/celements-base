@@ -1,7 +1,6 @@
 package org.xwiki.model.reference;
 
 import static com.celements.model.util.ReferenceSerializationMode.*;
-import static com.celements.model.util.References.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.io.Serializable;
@@ -10,10 +9,13 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 import com.celements.common.MoreObjectsCel;
+import com.celements.model.util.ModelUtils;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.web.Utils;
 
 /**
- * similar to {@link ObjectReference} but immutable and doesn't extend {@link EntityReference} for now
+ * similar to {@link ObjectReference} but immutable and doesn't extend {@link EntityReference} for
+ * now
  * <p>
  * TODO [CELDEV-521] Immutable References
  * let it extend EntityReference and implement ImmutableReference
@@ -24,12 +26,12 @@ public class ImmutableObjectReference implements Serializable {
 
   private static final long serialVersionUID = 2638847219120582547L;
 
-  private final ImmutableDocumentReference docRef;
+  private final DocumentReference docRef;
   private final ClassReference classRef;
   private final int nb;
 
   public ImmutableObjectReference(DocumentReference docRef, ClassReference classRef, int nb) {
-    this.docRef = cloneRef(docRef, ImmutableDocumentReference.class);
+    this.docRef = checkNotNull(docRef);
     this.classRef = checkNotNull(classRef);
     this.nb = nb;
     checkArgument(nb >= 0);
@@ -62,7 +64,7 @@ public class ImmutableObjectReference implements Serializable {
   }
 
   public String serialize() {
-    return docRef.serialize(GLOBAL) + "_" + classRef.serialize() + "_" + nb;
+    return getModelUtils().serializeRef(docRef, GLOBAL) + "_" + classRef.serialize() + "_" + nb;
   }
 
   @Override
@@ -73,6 +75,10 @@ public class ImmutableObjectReference implements Serializable {
   public static ImmutableObjectReference from(BaseObject xObj) {
     return new ImmutableObjectReference(xObj.getDocumentReference(),
         new ClassReference(xObj.getXClassReference()), xObj.getNumber());
+  }
+
+  private static ModelUtils getModelUtils() {
+    return Utils.getComponent(ModelUtils.class);
   }
 
 }

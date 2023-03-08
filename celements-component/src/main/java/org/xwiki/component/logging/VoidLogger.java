@@ -28,7 +28,9 @@ package org.xwiki.component.logging;
  *
  * @version $Id$
  * @since 1.8RC3
+ * @deprecated since 5.2, instead use {@link org.slf4j.Logger}
  */
+@Deprecated
 public class VoidLogger implements Logger {
 
   /**
