@@ -914,9 +914,15 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <!-- XWiki rule is to put test in *Test classes -->
           <configuration>
+            <argLine>
+                --add-opens java.base/java.lang=ALL-UNNAMED
+                --add-opens java.base/java.util=ALL-UNNAMED
+                --add-opens java.base/java.io=ALL-UNNAMED
+                --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+            </argLine>
             <includes>
+              <!-- XWiki rule is to put test in *Test classes -->
               <include>**/*Test.class</include>
             </includes>
             <!-- Prevent Out Of Memory errors resulting from tests that do no free up the memory correctly -->
