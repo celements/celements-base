@@ -915,11 +915,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+<!-- activate on jvm >= 9 only
             <argLine>
-                --add-opens java.base/java.lang=ALL-UNNAMED
-                --add-opens java.base/java.util=ALL-UNNAMED
-                --add-opens java.base/java.io=ALL-UNNAMED
+                - -add-opens java.base/java.lang=ALL-UNNAMED
+                - -add-opens java.base/java.util=ALL-UNNAMED
+                - -add-opens java.base/java.io=ALL-UNNAMED
             </argLine>
+-->
             <includes>
               <!-- XWiki rule is to put test in *Test classes -->
               <include>**/*Test.class</include>
