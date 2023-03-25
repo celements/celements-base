@@ -55,13 +55,10 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
 
   @Override
   public XWikiDocument create(DocumentReference docRef, String lang) {
-    String defaultLang = DEFAULT_LANG;
     lang = modelUtils.normalizeLang(lang);
-    if (!context.getXWikiPreferencesDocRef().equals(docRef)) {
-      defaultLang = getDefaultLangForCreatingDoc(docRef);
-      if (defaultLang.equals(lang)) {
-        lang = DEFAULT_LANG;
-      }
+    String defaultLang = getDefaultLangForCreatingDoc(docRef);
+    if (defaultLang.equals(lang)) {
+      lang = DEFAULT_LANG;
     }
     XWikiDocument doc = createWithoutDefaults(docRef, lang);
     doc.setDefaultLanguage(defaultLang);
@@ -70,11 +67,13 @@ public class DefaultXWikiDocumentCreator implements XWikiDocumentCreator {
 
   /**
    * when creating doc, get default language from space. except get it from wiki directly when
-   * creating web preferences
+   * creating web preferences. AND if creating XWikiPreferences use DEFAULT_LANG
    */
-  private String getDefaultLangForCreatingDoc(DocumentReference docRef) {
+  String getDefaultLangForCreatingDoc(DocumentReference docRef) {
     Class<? extends EntityReference> toExtractClass;
-    if (docRef.getName().equals(ModelContext.WEB_PREF_DOC_NAME)) {
+    if (context.getXWikiPreferencesDocRef().equals(docRef)) {
+      return DEFAULT_LANG;
+    } else if (docRef.getName().equals(ModelContext.WEB_PREF_DOC_NAME)) {
       toExtractClass = WikiReference.class;
     } else {
       toExtractClass = SpaceReference.class;
