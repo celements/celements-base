@@ -54,3 +54,6 @@ com.celements.debug.DebugScriptService
 com.celements.store.DefaultHibernateStore
 com.celements.store.DefaultXWikiStore
 com.celements.store.ModelAccessStore
+com.celements.mandatory.XWikiDocIndexes
+com.celements.mandatory.XWikiObjectIndexes
+com.celements.mandatory.XWikiAttachmentIndexes
