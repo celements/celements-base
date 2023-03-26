@@ -44,7 +44,9 @@ public class FileBaseDefaultDoc extends AbstractMandatoryDocument {
 
   @Override
   protected boolean checkDocuments(XWikiDocument doc) throws XWikiException {
-    return !modelContext.isMainWiki() && !modelAccess.exists(getDocRef());
+    boolean isDirty = !modelContext.isMainWiki() && !modelAccess.exists(getDocRef());
+    LOGGER.debug("FileBaseDefaultDoc: checkDocuments returing {}", isDirty);
+    return isDirty;
   }
 
   @Override
