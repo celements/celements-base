@@ -13,10 +13,10 @@ import com.celements.model.reference.RefBuilder;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 
-@Component(FileBaseDefaultDoc.HINT_NAME)
+@Component(FileBaseDefaultDoc.NAME)
 public class FileBaseDefaultDoc extends AbstractMandatoryDocument {
 
-  public static final String HINT_NAME = "celements.mandatory.filebase_defaultdoc";
+  public static final String NAME = "celements.mandatory.filebase_defaultdoc";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FileBaseDefaultDoc.class);
 

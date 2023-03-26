@@ -54,3 +54,4 @@ com.celements.debug.DebugScriptService
 com.celements.store.DefaultHibernateStore
 com.celements.store.DefaultXWikiStore
 com.celements.store.ModelAccessStore
+com.celements.mandatory.FileBaseDefaultDoc
