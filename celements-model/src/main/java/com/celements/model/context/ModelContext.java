@@ -230,7 +230,22 @@ public interface ModelContext {
    * @return the XWikiPreferences document
    */
   @NotNull
+  XWikiDocument getXWikiPreferencesDoc();
+
+  /**
+   * Returns the XWikiPreferences document. Creates it (in memory) if it does not exist.
+   *
+   * @return the XWikiPreferences document
+   * @deprecated since 5.10 instead use getXWikiPreferencesDoc
+   */
+  @Deprecated
+  @NotNull
   XWikiDocument getXWikiPreferenceDoc();
+
+  /**
+   * @return the XWikiPreferences DocumentReference
+   */
+  DocumentReference getXWikiPreferencesDocRef();
 
   /**
    * Returns the space preferences document for the given SpaceReference. Creates it (in memory) if

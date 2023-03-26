@@ -94,6 +94,17 @@ public class DefaultXWikiDocumentCreatorTest extends AbstractComponentTest {
     assertEquals(0, ret.getTranslation());
   }
 
+  @Test
+  public void test_getDefaultLangForCreatingDoc_xwikiPrefDocRef() {
+    DocumentReference xwikiPrefDocRef = new DocumentReference(getContext().getDatabase(),
+        ModelContext.XWIKI_SPACE,
+        ModelContext.XWIKI_PREF_DOC_NAME);
+    replayDefault();
+    assertEquals("prevent endless recursion and Stackoverflow",
+        IModelAccessFacade.DEFAULT_LANG, docCreator.getDefaultLangForCreatingDoc(xwikiPrefDocRef));
+    verifyDefault();
+  }
+
   private void expectSpacePreferences(SpaceReference spaceRef) throws DocumentNotExistsException {
     XWikiDocument webPrefDoc = new XWikiDocument(new DocumentReference(
         ModelContext.WEB_PREF_DOC_NAME, spaceRef));

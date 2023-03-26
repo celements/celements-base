@@ -301,10 +301,20 @@ public class DefaultModelContext implements ModelContext {
   }
 
   @Override
+  @Deprecated
   public XWikiDocument getXWikiPreferenceDoc() {
-    DocumentReference docRef = new RefBuilder().wiki(getWikiRef().getName()).space(XWIKI_SPACE).doc(
-        XWIKI_PREF_DOC_NAME).build(DocumentReference.class);
-    return getModelAccess().getOrCreateDocument(docRef);
+    return getXWikiPreferencesDoc();
+  }
+
+  @Override
+  public XWikiDocument getXWikiPreferencesDoc() {
+    return getModelAccess().getOrCreateDocument(getXWikiPreferencesDocRef());
+  }
+
+  @Override
+  public DocumentReference getXWikiPreferencesDocRef() {
+    return new RefBuilder().wiki(getWikiRef().getName()).space(XWIKI_SPACE).doc(XWIKI_PREF_DOC_NAME)
+        .build(DocumentReference.class);
   }
 
   @Override
