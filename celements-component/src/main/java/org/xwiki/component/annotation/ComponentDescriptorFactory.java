@@ -26,6 +26,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -113,8 +114,6 @@ public class ComponentDescriptorFactory {
     descriptor.setRole(componentRoleClass);
     descriptor.setImplementation(componentClass);
     descriptor.setRoleHint(hint);
-
-    // Set the instantiation strategy
     InstantiationStrategy instantiationStrategy = componentClass
         .getAnnotation(InstantiationStrategy.class);
     if (instantiationStrategy != null) {
@@ -122,21 +121,14 @@ public class ComponentDescriptorFactory {
     } else {
       descriptor.setInstantiationStrategy(ComponentInstantiationStrategy.SINGLETON);
     }
-
-    // Set the requirements.
-    // Note: that we need to find all fields since we can have some inherited fields which are
-    // annotated in a
-    // superclass. Since Java doesn't offer a method to return all fields we have to traverse all
-    // parent classes
-    // looking for declared fields.
-    for (Field field : ReflectionUtils.getAllFields(componentClass)) {
-      ComponentDependency<?> dependency = createComponentDependency(field);
-      if (dependency != null) {
-        descriptor.addComponentDependency(dependency);
-      }
-    }
-
+    createComponentDependencies(componentClass).forEach(descriptor::addComponentDependency);
     return descriptor;
+  }
+
+  public Stream<ComponentDependency<Object>> createComponentDependencies(Class<?> componentClass) {
+    return ReflectionUtils.getAllFields(componentClass).stream()
+        .map(this::createComponentDependency)
+        .filter(Objects::nonNull);
   }
 
   /**

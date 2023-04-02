@@ -25,4 +25,5 @@ public interface ComponentRole<T> {
   Class<T> getRole();
 
   String getRoleHint();
+
 }

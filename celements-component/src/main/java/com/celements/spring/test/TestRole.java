@@ -1,4 +1,4 @@
-package com.celements.spring;
+package com.celements.spring.test;
 
 import org.xwiki.component.annotation.ComponentRole;
 

@@ -39,14 +39,13 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(TYPE)
 @Inherited
-@org.springframework.stereotype.Component // TODO working?
+@org.springframework.stereotype.Component // TODO needed?
 public @interface Component {
 
   /**
    * The hint value. Can be any text value. It's used to differentiate one component implementation
    * from another one.
    */
-  // TODO AliasFor not working :(
   // @AliasFor(annotation = org.springframework.stereotype.Component.class, attribute = "value")
   String value() default "";
 

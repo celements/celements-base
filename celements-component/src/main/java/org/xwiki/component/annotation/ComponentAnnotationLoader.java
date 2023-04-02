@@ -38,10 +38,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.internal.RoleHint;
-import org.xwiki.component.logging.AbstractLogEnabled;
-import org.xwiki.component.logging.VoidLogger;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.manager.ComponentRepositoryException;
 
@@ -52,7 +52,9 @@ import org.xwiki.component.manager.ComponentRepositoryException;
  * @version $Id$
  * @since 1.8.1
  */
-public class ComponentAnnotationLoader extends AbstractLogEnabled {
+public class ComponentAnnotationLoader {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ComponentAnnotationLoader.class);
 
   /**
    * Location in the classloader of the file defining the list of component implementation class to
@@ -81,7 +83,6 @@ public class ComponentAnnotationLoader extends AbstractLogEnabled {
    */
   public ComponentAnnotationLoader() {
     // make sure to not fail even if no one provided a logger
-    enableLogging(new VoidLogger());
     factory = new ComponentDescriptorFactory();
   }
 
@@ -127,6 +128,7 @@ public class ComponentAnnotationLoader extends AbstractLogEnabled {
     List<String> componentClassNames = getDeclaredComponents(classLoader, COMPONENT_LIST);
     List<String> componentOverrideClassNames = getDeclaredComponents(classLoader,
         COMPONENT_OVERRIDE_LIST);
+    System.err.println(componentClassNames); // TODO remove
     return loadDescriptors(classLoader, componentClassNames, componentOverrideClassNames);
   }
 
@@ -152,7 +154,7 @@ public class ComponentAnnotationLoader extends AbstractLogEnabled {
             descriptorMap.put(new RoleHint<>(descriptor.getRole(), descriptor.getRoleHint()),
                 descriptor);
             if (!componentOverrideClassNames.contains(descriptor.getImplementation().getName())) {
-              getLogger().warn("Component [" + existingDescriptor.getImplementation().getName()
+              LOG.warn("Component [" + existingDescriptor.getImplementation().getName()
                   + "] is being overwritten by component ["
                   + descriptor.getImplementation().getName() + "] for Role/Hint ["
                   + roleHint + "]. It will not be possible to look it up.");

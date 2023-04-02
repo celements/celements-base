@@ -1,5 +1,3 @@
 org.xwiki.component.internal.DefaultComponentManager
-org.xwiki.component.internal.embed.EmbeddableComponentManagerFactory
-org.xwiki.component.internal.ContextComponentManager
-org.xwiki.component.internal.UserComponentManager
-org.xwiki.component.internal.WikiComponentManager
+com.celements.spring.test.TestComponentXWiki
+com.celements.spring.test.TestComponentXWiki2

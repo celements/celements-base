@@ -22,6 +22,9 @@ package org.xwiki.component.internal;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.manager.ComponentEventManager;
@@ -29,6 +32,8 @@ import org.xwiki.component.manager.ComponentLifecycleException;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.manager.ComponentRepositoryException;
+
+import com.celements.spring.component.SpringComponentManager;
 
 /**
  * Wraps the Component Manager in a component so that components requiring the component Manager can
@@ -38,21 +43,14 @@ import org.xwiki.component.manager.ComponentRepositoryException;
  * @since 2.0M1
  */
 @Component
-public class DefaultComponentManager implements ComponentManager, Composable {
+public class DefaultComponentManager implements ComponentManager {
 
-  /**
-   * The Component Manager instance we're wrapping.
-   */
-  private ComponentManager componentManager;
+  private final ComponentManager componentManager;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see Composable#compose(ComponentManager)
-   */
-  @Override
-  public void compose(ComponentManager componentManager) {
-    this.componentManager = componentManager;
+  @Inject
+  public DefaultComponentManager(
+      @Named(SpringComponentManager.NAME) ComponentManager cm) {
+    this.componentManager = cm;
   }
 
   /**

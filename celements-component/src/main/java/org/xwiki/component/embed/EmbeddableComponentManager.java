@@ -29,7 +29,6 @@ import org.xwiki.component.annotation.ComponentAnnotationLoader;
 import org.xwiki.component.descriptor.ComponentDependency;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
-import org.xwiki.component.internal.Composable;
 import org.xwiki.component.internal.RoleHint;
 import org.xwiki.component.logging.CommonsLoggingLogger;
 import org.xwiki.component.logging.Logger;
@@ -70,7 +69,6 @@ public class EmbeddableComponentManager implements ComponentManager {
    */
   public void initialize(ClassLoader classLoader) {
     ComponentAnnotationLoader loader = new ComponentAnnotationLoader();
-    loader.enableLogging(new CommonsLoggingLogger(loader.getClass()));
     loader.initialize(this, classLoader);
 
     // Extension point to allow component to manipulate ComponentManager initialized state.
@@ -427,15 +425,6 @@ public class EmbeddableComponentManager implements ComponentManager {
     // LogEnabled
     if (LogEnabled.class.isAssignableFrom(descriptor.getImplementation())) {
       ((LogEnabled) instance).enableLogging(new CommonsLoggingLogger(instance.getClass()));
-    }
-
-    // Composable
-    // Only support Composable for classes implementing ComponentManager since for all other
-    // components
-    // they should have ComponentManager injected.
-    if (ComponentManager.class.isAssignableFrom(descriptor.getImplementation())
-        && Composable.class.isAssignableFrom(descriptor.getImplementation())) {
-      ((Composable) instance).compose(this);
     }
 
     // Initializable

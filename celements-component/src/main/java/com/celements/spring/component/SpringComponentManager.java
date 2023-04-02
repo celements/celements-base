@@ -1,35 +1,33 @@
 package com.celements.spring.component;
 
 import static java.util.stream.Collectors.*;
+import static org.xwiki.component.descriptor.ComponentDescriptor.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Service;
-import org.xwiki.component.annotation.ComponentAnnotationLoader;
+import org.xwiki.component.annotation.ComponentDescriptorFactory;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
-import org.xwiki.component.descriptor.DefaultComponentRole;
 import org.xwiki.component.embed.EmbeddableComponentManager;
-import org.xwiki.component.logging.CommonsLoggingLogger;
 import org.xwiki.component.manager.ComponentEventManager;
 import org.xwiki.component.manager.ComponentLifecycleException;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.manager.ComponentManagerInitializer;
 import org.xwiki.component.manager.ComponentRepositoryException;
+
+import com.google.common.collect.ImmutableList;
+
+import one.util.streamex.EntryStream;
 
 /**
  * TODO compare class with {@link EmbeddableComponentManager} and analyse missing stuff
@@ -39,45 +37,28 @@ public class SpringComponentManager implements ComponentManager {
 
   public static final String NAME = "springify";
 
-  private final AtomicBoolean initialised = new AtomicBoolean(false);
-
-  private Map<String, ComponentDescriptor<?>> descriptors = new ConcurrentHashMap<>();
-
   private final GenericApplicationContext springContext;
 
-  private final ComponentAnnotationLoader descriptorLoader;
-
+  // TODO init ?
+  // TODO notifies aren't always running anymore. what is it needed for?
   private ComponentEventManager eventManager;
 
   @Inject
   public SpringComponentManager(GenericApplicationContext context) {
     springContext = context;
-    descriptorLoader = new ComponentAnnotationLoader();
-    descriptorLoader.enableLogging(new CommonsLoggingLogger(SpringComponentManager.class));
   }
 
   /**
    * Load all component annotations and register them as components.
    */
-  // TODO Post
-  public void initialize() {
-    if (!initialised.getAndSet(true)) {
-      try {
-        ClassLoader classLoader = this.getClass().getClassLoader();
-        for (ComponentDescriptor<?> descriptor : descriptorLoader
-            .loadDeclaredDescriptors(classLoader)) {
-          registerComponent(descriptor);
-        }
-        // Extension point to allow component to manipulate ComponentManager initialized state.
-        lookupList(ComponentManagerInitializer.class).stream()
-            .forEach(initializer -> initializer.initialize(this));
-        // springContext.refresh(); TODO not allowed?
-      } catch (ClassNotFoundException | IOException | ComponentLookupException
-          | ComponentRepositoryException | BeansException exc) {
-        throw new RuntimeException("failed to initialise component manager", exc);
-      }
-    } else {
-      throw new IllegalStateException("already initialised");
+  // @PostConstruct TODO
+  public void init() {
+    try {
+      // Extension point to allow component to manipulate ComponentManager initialized state.
+      lookupList(ComponentManagerInitializer.class).stream()
+          .forEach(initializer -> initializer.initialize(this));
+    } catch (ComponentLookupException exc) {
+      throw new RuntimeException("failed to initialise component manager", exc);
     }
   }
 
@@ -88,11 +69,9 @@ public class SpringComponentManager implements ComponentManager {
 
   @Override
   public <T> boolean hasComponent(Class<T> role, String hint) {
-    return hasComponent(uniqueBeanName(role, hint));
-  }
-
-  private boolean hasComponent(String beanName) {
-    return descriptors.containsKey(beanName);
+    String beanName = uniqueBeanName(role, hint);
+    Map<String, T> beans = springContext.getBeansOfType(role);
+    return beans.containsKey(beanName) || beans.containsKey(hint);
   }
 
   @Override
@@ -102,33 +81,31 @@ public class SpringComponentManager implements ComponentManager {
 
   @Override
   public <T> T lookup(Class<T> role, String hint) throws ComponentLookupException {
-    Throwable cause = null;
-    String beanName = uniqueBeanName(role, hint);
-    if (hasComponent(beanName)) {
-      try {
-        return springContext.getBean(beanName, role);
-      } catch (BeansException exc) {
-        cause = exc;
-      }
-    }
-    throw new ComponentLookupException("lookup - failed for role [" + role
-        + "] and hint [" + hint + "]", cause);
+    return getBean(uniqueBeanName(role, hint), role)
+        .map(Optional::of)
+        .orElseGet(() -> getBean(hint, role))
+        .orElseThrow(() -> new ComponentLookupException("lookup - failed for role [" + role
+            + "] and hint [" + hint + "]"));
   }
 
-  private <T> T lookup(ComponentDescriptor<T> descriptor) throws ComponentLookupException {
-    return lookup(descriptor.getRole(), descriptor.getRoleHint());
+  private <T> Optional<T> getBean(String name, Class<T> type) {
+    try {
+      return Optional.of(springContext.getBean(name, type));
+    } catch (NoSuchBeanDefinitionException exc) {
+      return Optional.empty();
+    }
   }
 
   @Override
   public <T> Map<String, T> lookupMap(Class<T> role) throws ComponentLookupException {
-    return streamDescriptors(role).collect(toMap(
-        ComponentDescriptor::getRoleHint,
-        rethrow(this::lookup)));
+    return EntryStream.of(springContext.getBeansOfType(role))
+        .mapKeys(ComponentDescriptor::getHintFromBeanName)
+        .toImmutableMap();
   }
 
   @Override
   public <T> List<T> lookupList(Class<T> role) throws ComponentLookupException {
-    return streamDescriptors(role).map(rethrow(this::lookup)).collect(toList());
+    return ImmutableList.copyOf(springContext.getBeansOfType(role).values());
   }
 
   @Override
@@ -140,7 +117,7 @@ public class SpringComponentManager implements ComponentManager {
   @Override
   public <T> void registerComponent(ComponentDescriptor<T> descriptor, T component)
       throws ComponentRepositoryException {
-    String beanName = uniqueBeanName(descriptor);
+    String beanName = descriptor.getBeanName();
     try {
       if (component != null) {
         // according to method contract, if an instance is provided it should never be created from
@@ -156,13 +133,9 @@ public class SpringComponentManager implements ComponentManager {
         // TODO required?
         // builder.addPropertyValue("property1", "propertyValue");
         // builder.setInitMethodName("initialize"); // perhaps for initializables ?
-        builder.setScope(getSpringBeanScope(descriptor));
-        // TODO use in a post bean factory:
-        // org.xwiki.component.embed.EmbeddableComponentManager.createInstance(ComponentDescriptor<T>)
+        builder.setScope(descriptor.getBeanScope());
         springContext.registerBeanDefinition(beanName, builder.getBeanDefinition());
       }
-      // springContext.refresh(); // TODO not allowed?
-      descriptors.put(beanName, descriptor);
       getEventManager().ifPresent(em -> em.notifyComponentRegistered(descriptor));
     } catch (BeansException exc) {
       throw new ComponentRepositoryException("registerComponent - failed for descriptor ["
@@ -170,27 +143,14 @@ public class SpringComponentManager implements ComponentManager {
     }
   }
 
-  private String getSpringBeanScope(ComponentDescriptor<?> descriptor)
-      throws ComponentRepositoryException {
-    switch (descriptor.getInstantiationStrategy()) {
-      case SINGLETON:
-        return BeanDefinition.SCOPE_SINGLETON;
-      case PER_LOOKUP:
-        return BeanDefinition.SCOPE_PROTOTYPE;
-      default:
-        throw new ComponentRepositoryException(
-            "registerComponent - invalid strategy for descriptor [" + descriptor + "]");
-    }
-  }
-
   @Override
   public void unregisterComponent(Class<?> role, String hint) {
     String beanName = uniqueBeanName(role, hint);
-    ComponentDescriptor<?> descriptor = descriptors.remove(beanName);
+    ComponentDescriptor<?> descriptor = getComponentDescriptor(role, hint);
     if (descriptor != null) {
       try {
         springContext.removeBeanDefinition(beanName);
-        // springContext.refresh(); // TODO not allowed?
+        // springContext.refresh(); // TODO needed?
       } catch (BeansException exc) {
         // TODO log
       }
@@ -220,21 +180,29 @@ public class SpringComponentManager implements ComponentManager {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public <T> ComponentDescriptor<T> getComponentDescriptor(Class<T> role, String hint) {
-    return (ComponentDescriptor<T>) descriptors.get(uniqueBeanName(role, hint));
+    String beanName = uniqueBeanName(role, hint);
+    return createComponentDescriptor(role, beanName, springContext.getBean(beanName));
   }
 
   @Override
   public <T> List<ComponentDescriptor<T>> getComponentDescriptorList(Class<T> role) {
-    return streamDescriptors(role).collect(toList());
+    return EntryStream.of(springContext.getBeansOfType(role))
+        .mapKeyValue((name, instance) -> createComponentDescriptor(role, name, instance))
+        .collect(toList());
   }
 
+  private final ComponentDescriptorFactory cdFactory = new ComponentDescriptorFactory();
+
   @SuppressWarnings("unchecked")
-  private <T> Stream<ComponentDescriptor<T>> streamDescriptors(Class<T> role) {
-    return descriptors.values().stream()
-        .filter(descriptor -> descriptor.getRole().equals(role))
-        .map(descriptor -> (ComponentDescriptor<T>) descriptor);
+  public <T> ComponentDescriptor<T> createComponentDescriptor(Class<T> role, String beanName,
+      Object instance) {
+    if (instance != null) {
+      Class<? extends T> instanceClass = (Class<? extends T>) instance.getClass();
+      return cdFactory.create(instanceClass, role,
+          getHintFromBeanName(beanName));
+    }
+    return null;
   }
 
   @Override
@@ -261,41 +229,6 @@ public class SpringComponentManager implements ComponentManager {
     if (parentComponentManager != null) {
       throw new UnsupportedOperationException("parent component manager not supported");
     }
-  }
-
-  public String uniqueBeanName(ComponentDescriptor<?> descriptor) {
-    return uniqueBeanName(descriptor.getRole(), descriptor.getRoleHint());
-  }
-
-  public String uniqueBeanName(Class<?> role, String hint) {
-    if ((hint == null) || hint.trim().isEmpty()) {
-      hint = DefaultComponentRole.HINT;
-    }
-    return role.getName() + "_" + hint;
-  }
-
-  // TODO move to celements-commons
-  @FunctionalInterface
-  public interface ThrowingFunction<T, R, E extends Exception> {
-
-    R apply(T t) throws E;
-  }
-
-  public static <T, R, E extends Exception> Function<T, R> rethrow(
-      ThrowingFunction<T, R, E> function) throws E {
-    return t -> {
-      try {
-        return function.apply(t);
-      } catch (Exception exception) {
-        sneakyThrow(exception);
-        throw new RuntimeException("sneakyThrow always throws");
-      }
-    };
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <E extends Throwable> void sneakyThrow(Exception exception) throws E {
-    throw (E) exception;
   }
 
 }

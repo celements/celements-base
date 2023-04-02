@@ -20,7 +20,13 @@
  */
 package org.xwiki.component.descriptor;
 
+import static com.google.common.base.Strings.*;
+
 import java.util.Collection;
+
+import org.springframework.beans.factory.config.BeanDefinition;
+
+import com.google.common.base.Splitter;
 
 /**
  * Represent a component.
@@ -35,4 +41,30 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
   ComponentInstantiationStrategy getInstantiationStrategy();
 
   Collection<ComponentDependency<?>> getComponentDependencies();
+
+  default String getBeanName() {
+    return uniqueBeanName(getRole(), getRoleHint());
+  }
+
+  default String getBeanScope() {
+    switch (getInstantiationStrategy()) {
+      case PER_LOOKUP:
+        return BeanDefinition.SCOPE_PROTOTYPE;
+      case SINGLETON:
+      default:
+        return BeanDefinition.SCOPE_SINGLETON;
+    }
+  }
+
+  static String uniqueBeanName(Class<?> role, String hint) {
+    if (isNullOrEmpty(hint)) {
+      hint = DefaultComponentRole.HINT;
+    }
+    return role.getName() + "|" + hint;
+  }
+
+  static String getHintFromBeanName(String beanName) {
+    return Splitter.on('|').splitToStream(beanName).reduce((s1, s2) -> s2)
+        .orElse(DefaultComponentRole.HINT);
+  }
 }
