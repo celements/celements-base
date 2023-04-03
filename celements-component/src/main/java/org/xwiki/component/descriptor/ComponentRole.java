@@ -20,10 +20,18 @@
  */
 package org.xwiki.component.descriptor;
 
+import static com.google.common.base.Strings.*;
+
 public interface ComponentRole<T> {
+
+  String DEFAULT_HINT = "default";
 
   Class<T> getRole();
 
   String getRoleHint();
+
+  default boolean isDefault() {
+    return isNullOrEmpty(getRoleHint()) || DEFAULT_HINT.equals(getRoleHint());
+  }
 
 }

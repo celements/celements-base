@@ -1,10 +1,12 @@
 package com.celements.spring.context;
 
+import static com.celements.common.MoreOptional.*;
 import static com.google.common.base.Strings.*;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.inject.Named;
 
@@ -12,11 +14,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.TypeConverter;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.stereotype.Component;
-import org.xwiki.component.annotation.ComponentRole;
-import org.xwiki.component.descriptor.DefaultComponentRole;
+import org.xwiki.component.descriptor.ComponentRole;
 
 import com.celements.common.lambda.LambdaExceptionUtil.ThrowingFunction;
 import com.google.common.base.Splitter;
@@ -26,7 +28,7 @@ public class CelementsBeanFactory extends DefaultListableBeanFactory {
 
   public static String uniqueBeanName(Class<?> role, String hint) {
     if (isNullOrEmpty(hint)) {
-      hint = DefaultComponentRole.HINT;
+      hint = ComponentRole.DEFAULT_HINT;
     }
     return role.getName() + "|" + hint;
   }
@@ -35,7 +37,7 @@ public class CelementsBeanFactory extends DefaultListableBeanFactory {
     return Splitter.on('|').omitEmptyStrings()
         .splitToStream(beanName)
         .reduce((s1, s2) -> s2)
-        .orElse(DefaultComponentRole.HINT);
+        .orElse(ComponentRole.DEFAULT_HINT);
   }
 
   /**
@@ -85,15 +87,22 @@ public class CelementsBeanFactory extends DefaultListableBeanFactory {
 
     @Override
     public Object resolveShortcut(BeanFactory beanFactory) throws BeansException {
-      return Optional.ofNullable(getAnnotation(Named.class))
-          .map(annotation -> uniqueBeanName(getDependencyType(), annotation.value()))
+      return getAnnotatedBeanName()
+          .map(value -> uniqueBeanName(getDependencyType(), value))
           .flatMap(asOpt(beanFactory::getBean))
           .orElse(null);
+    }
+
+    private Optional<String> getAnnotatedBeanName() {
+      return findFirstPresent(Stream.of(
+          () -> Optional.ofNullable(getAnnotation(Named.class)).map(Named::value),
+          () -> Optional.ofNullable(getAnnotation(Qualifier.class)).map(Qualifier::value)));
     }
   }
 
   private boolean isComponentRole(Class<?> type) {
-    return (type != null) && type.isAnnotationPresent(ComponentRole.class);
+    return (type != null) && type.isAnnotationPresent(
+        org.xwiki.component.annotation.ComponentRole.class);
   }
 
   private <F, T> Function<F, Optional<T>> asOpt(ThrowingFunction<F, T, BeansException> func) {

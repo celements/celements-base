@@ -56,13 +56,11 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
   }
 
   default BeanDefinition asBeanDefinition() {
-    BeanDefinitionBuilder builder = BeanDefinitionBuilder
-        .genericBeanDefinition(getImplementation());
-    // TODO required?
-    // builder.addPropertyValue("property1", "propertyValue");
-    // builder.setInitMethodName("initialize"); // perhaps for initializables ?
-    builder.setScope(getBeanScope());
-    return builder.getBeanDefinition();
+    return BeanDefinitionBuilder
+        .genericBeanDefinition(getImplementation())
+        .setScope(getBeanScope())
+        .setPrimary(isDefault())
+        .getBeanDefinition();
   }
 
 }

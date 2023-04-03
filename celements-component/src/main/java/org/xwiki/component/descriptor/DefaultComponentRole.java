@@ -21,11 +21,11 @@ package org.xwiki.component.descriptor;
 
 public class DefaultComponentRole<T> implements ComponentRole<T> {
 
-  public static final String HINT = "default";
+  public static final String HINT = ComponentRole.DEFAULT_HINT;
 
   private Class<T> role;
 
-  private String roleHint = HINT;
+  private String roleHint = DEFAULT_HINT;
 
   public void setRole(Class<T> role) {
     this.role = role;
@@ -47,9 +47,7 @@ public class DefaultComponentRole<T> implements ComponentRole<T> {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("role = [").append(getRole().getName()).append("]");
-    buffer.append(" hint = [").append(getRoleHint()).append("]");
-    return buffer.toString();
+    return "role = [" + getRole().getName() + "]"
+        + " hint = [" + getRoleHint() + "]";
   }
 }
