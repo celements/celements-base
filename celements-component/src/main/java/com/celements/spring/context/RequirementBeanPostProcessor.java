@@ -47,23 +47,10 @@ public class RequirementBeanPostProcessor implements BeanPostProcessor {
 
   private void injectXWikiDependency(ComponentDependency<Object> dependency, Object bean) {
     try {
-      LOGGER.debug("injectXWikiDependency: [{}] into [{}]", dependency, bean);
       ReflectionUtils.setFieldValue(bean, dependency.getName(), getInstance(dependency));
+      LOGGER.debug("injectXWikiDependency - [{}] into [{}]", dependency, bean);
     } catch (ComponentLookupException cle) {
-      // TODO can't always init an instance, how did this work before?
-      /*
-       * e.g.:
-       * ERROR instantiating ComponentDependency [name=currentDocumentNameFactory, hints=null]
-       * on bean: org.xwiki.bridge.internal.DefaultAttachmentNameFactory@505fc5a4
-       * ERROR instantiating ComponentDependency [name=documentAccessBridge, hints=null]
-       * on bean: org.xwiki.bridge.internal.DefaultAttachmentNameFactory@505fc5a4
-       *
-       */
-      System.err.println("ERROR instantiating " + dependency
-          + " on bean: " + bean
-          + " - " + cle.getMessage());
-      // throw new IllegalStateException("failed instantiating " + dependency + " on bean: "
-      // + bean, cle);
+      LOGGER.error("injectXWikiDependency - failed [{}] into [{}]" + bean, dependency, bean, cle);
     }
   }
 

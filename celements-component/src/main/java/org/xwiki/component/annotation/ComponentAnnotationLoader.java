@@ -128,7 +128,6 @@ public class ComponentAnnotationLoader {
     List<String> componentClassNames = getDeclaredComponents(classLoader, COMPONENT_LIST);
     List<String> componentOverrideClassNames = getDeclaredComponents(classLoader,
         COMPONENT_OVERRIDE_LIST);
-    System.err.println(componentClassNames); // TODO remove
     return loadDescriptors(classLoader, componentClassNames, componentOverrideClassNames);
   }
 

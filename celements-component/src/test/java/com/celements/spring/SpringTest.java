@@ -14,13 +14,13 @@ import com.celements.spring.context.SpringComponentManager;
 import com.celements.spring.context.SpringContextManager;
 import com.celements.spring.test.TestRole;
 
-public class SpringTest /* extends AbstractComponentTest */ {
+public class SpringTest {
 
   GenericApplicationContext ctx;
   ComponentManager cm;
 
   @Before
-  public void setup() {
+  public void prepare() {
     ctx = SpringContextManager.get();
     cm = ctx.getBean(SpringComponentManager.NAME, ComponentManager.class);
   }
