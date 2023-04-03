@@ -20,13 +20,12 @@
  */
 package org.xwiki.component.descriptor;
 
-import static com.google.common.base.Strings.*;
-
 import java.util.Collection;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 
-import com.google.common.base.Splitter;
+import com.celements.spring.component.CelementsBeanFactory;
 
 /**
  * Represent a component.
@@ -43,7 +42,7 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
   Collection<ComponentDependency<?>> getComponentDependencies();
 
   default String getBeanName() {
-    return uniqueBeanName(getRole(), getRoleHint());
+    return CelementsBeanFactory.uniqueBeanName(getRole(), getRoleHint());
   }
 
   default String getBeanScope() {
@@ -56,15 +55,14 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
     }
   }
 
-  static String uniqueBeanName(Class<?> role, String hint) {
-    if (isNullOrEmpty(hint)) {
-      hint = DefaultComponentRole.HINT;
-    }
-    return role.getName() + "|" + hint;
+  default BeanDefinition asBeanDefinition() {
+    BeanDefinitionBuilder builder = BeanDefinitionBuilder
+        .genericBeanDefinition(getImplementation());
+    // TODO required?
+    // builder.addPropertyValue("property1", "propertyValue");
+    // builder.setInitMethodName("initialize"); // perhaps for initializables ?
+    builder.setScope(getBeanScope());
+    return builder.getBeanDefinition();
   }
 
-  static String getHintFromBeanName(String beanName) {
-    return Splitter.on('|').splitToStream(beanName).reduce((s1, s2) -> s2)
-        .orElse(DefaultComponentRole.HINT);
-  }
 }

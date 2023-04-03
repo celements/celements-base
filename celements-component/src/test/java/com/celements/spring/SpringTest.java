@@ -5,10 +5,10 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.GenericApplicationContext;
-import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.script.service.ScriptService;
 
+import com.celements.spring.component.CelementsBeanFactory;
 import com.celements.spring.component.SpringComponentManager;
 import com.celements.spring.test.TestRole;
 
@@ -25,10 +25,9 @@ public class SpringTest /* extends AbstractComponentTest */ {
   @Test
   public void test_init() throws Exception {
     assertTrue(cm.hasComponent(ScriptService.class, "model"));
-    assertSame(
-        SpringContextManager.get().getBean(ComponentDescriptor.uniqueBeanName(
-            ScriptService.class, "model")),
-        cm.lookup(ScriptService.class, "model"));
+    assertSame(cm.lookup(ScriptService.class, "model"),
+        SpringContextManager.get().getBean(CelementsBeanFactory.uniqueBeanName(
+            ScriptService.class, "model")));
   }
 
   @Test

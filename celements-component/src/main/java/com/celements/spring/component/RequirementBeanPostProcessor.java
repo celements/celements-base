@@ -36,13 +36,20 @@ public class RequirementBeanPostProcessor implements BeanPostProcessor {
       try {
         ReflectionUtils.setFieldValue(bean, dependency.getName(), getInstance(dependency));
       } catch (ComponentLookupException cle) {
-        // TODO can't always init an instance, e.g.
-        // org.xwiki.component.internal.UserComponentManager
-        // has DocumentAccessBridge interface without any impls here... how did this work before?
-        // throw new IllegalStateException("on bean " + bean + " failed instantiating " +
-        // dependency, cle);
-        System.err.println("on bean " + bean + " failed instantiating " + dependency + " - "
-            + cle.getMessage());
+        // TODO can't always init an instance, how did this work before?
+        /*
+         * e.g.:
+         * ERROR instantiating ComponentDependency [name=currentDocumentNameFactory, hints=null]
+         * on bean: org.xwiki.bridge.internal.DefaultAttachmentNameFactory@505fc5a4
+         * ERROR instantiating ComponentDependency [name=documentAccessBridge, hints=null]
+         * on bean: org.xwiki.bridge.internal.DefaultAttachmentNameFactory@505fc5a4
+         *
+         */
+        System.err.println("ERROR instantiating " + dependency
+            + " on bean: " + bean
+            + " - " + cle.getMessage());
+        // throw new IllegalStateException("failed instantiating " + dependency + " on bean: "
+        // + bean, cle);
       }
     });
     return bean;

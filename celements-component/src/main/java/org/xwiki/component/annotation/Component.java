@@ -39,7 +39,6 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(TYPE)
 @Inherited
-@org.springframework.stereotype.Component // TODO needed?
 public @interface Component {
 
   /**

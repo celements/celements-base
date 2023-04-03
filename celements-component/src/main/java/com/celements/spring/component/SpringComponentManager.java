@@ -1,7 +1,7 @@
 package com.celements.spring.component;
 
+import static com.celements.spring.component.CelementsBeanFactory.*;
 import static java.util.stream.Collectors.*;
-import static org.xwiki.component.descriptor.ComponentDescriptor.*;
 
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,6 @@ import javax.inject.Inject;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Service;
 import org.xwiki.component.annotation.ComponentDescriptorFactory;
@@ -99,7 +98,7 @@ public class SpringComponentManager implements ComponentManager {
   @Override
   public <T> Map<String, T> lookupMap(Class<T> role) throws ComponentLookupException {
     return EntryStream.of(springContext.getBeansOfType(role))
-        .mapKeys(ComponentDescriptor::getHintFromBeanName)
+        .mapKeys(CelementsBeanFactory::getHintFromBeanName)
         .toImmutableMap();
   }
 
@@ -128,13 +127,7 @@ public class SpringComponentManager implements ComponentManager {
         }
         springContext.getBeanFactory().registerSingleton(beanName, component);
       } else {
-        BeanDefinitionBuilder builder = BeanDefinitionBuilder
-            .genericBeanDefinition(descriptor.getImplementation());
-        // TODO required?
-        // builder.addPropertyValue("property1", "propertyValue");
-        // builder.setInitMethodName("initialize"); // perhaps for initializables ?
-        builder.setScope(descriptor.getBeanScope());
-        springContext.registerBeanDefinition(beanName, builder.getBeanDefinition());
+        springContext.registerBeanDefinition(beanName, descriptor.asBeanDefinition());
       }
       getEventManager().ifPresent(em -> em.notifyComponentRegistered(descriptor));
     } catch (BeansException exc) {
@@ -171,7 +164,7 @@ public class SpringComponentManager implements ComponentManager {
         // .map(this::uniqueBeanName)
         // .filter(beanName -> ctx.getBean(beanName) == component)
         // .forEach(beanName -> ctx.getDefaultListableBeanFactory().destroySingleton(beanName));
-        // springContext.refresh(); // TODO not allowed?
+        // springContext.refresh(); // TODO needed?
       } catch (BeansException exc) {
         throw new ComponentLifecycleException("release - failed for class ["
             + component.getClass() + "]", exc);
