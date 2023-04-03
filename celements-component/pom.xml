@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>5.7</version>
+    <version>5.9</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-component</artifactId>
@@ -26,7 +26,7 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>5.0</version>
+      <version>5.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -39,18 +39,21 @@
       <artifactId>xwiki-core-script</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <!-- External -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>5.3.6</version>
+      <version>5.3.26</version>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.2</version>
     </dependency>
 
     <!-- Logging -->
