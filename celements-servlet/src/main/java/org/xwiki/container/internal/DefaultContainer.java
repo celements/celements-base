@@ -30,107 +30,107 @@ import org.xwiki.container.Response;
 import org.xwiki.container.Session;
 
 /**
- * We're using ThreadLocals to store the request, response and session so that each thread 
+ * We're using ThreadLocals to store the request, response and session so that each thread
  * (i.e. each user request) has its own value for these objects. In addition we sometime need
  * to create a new request, response or session even while in the same thread. For this use case
  * we've added the possibility to push/pop different implementations for these Objects.
  */
 @Component
-public class DefaultContainer implements Container
-{
-    private ApplicationContext applicationContext;
-    private ThreadLocal<Stack<Request>> request = new ThreadLocal<Stack<Request>>();
-    private ThreadLocal<Stack<Response>> response = new ThreadLocal<Stack<Response>>();
-    private ThreadLocal<Stack<Session>> session = new ThreadLocal<Stack<Session>>();
+public class DefaultContainer implements Container {
 
-    public ApplicationContext getApplicationContext()
-    {
-        return this.applicationContext;
-    }
+  private ApplicationContext applicationContext;
+  private ThreadLocal<Stack<Request>> request = new ThreadLocal<>();
+  private ThreadLocal<Stack<Response>> response = new ThreadLocal<>();
+  private ThreadLocal<Stack<Session>> session = new ThreadLocal<>();
 
-    public void pushRequest(Request request)
-    {
-        this.request.get().push(request);
-    }
-    
-    public void popRequest()
-    {
-        this.request.get().pop();
-    }
-    
-    public Request getRequest()
-    {
-        return this.request.get().peek();
-    }
+  @Override
+  public ApplicationContext getApplicationContext() {
+    return this.applicationContext;
+  }
 
-    public Response getResponse()
-    {
-        return this.response.get().peek();
-    }
+  @Override
+  public void pushRequest(Request request) {
+    this.request.get().push(request);
+  }
 
-    public void pushResponse(Response response)
-    {
-        this.response.get().push(response);
-    }
-    
-    public void popResponse()
-    {
-        this.response.get().pop();
-    }
+  @Override
+  public void popRequest() {
+    this.request.get().pop();
+  }
 
-    public Session getSession()
-    {
-        return this.session.get().peek();
-    }
+  @Override
+  public Request getRequest() {
+    return this.request.get().peek();
+  }
 
-    public void pushSession(Session session)
-    {
-        this.session.get().push(session);
-    }
-    
-    public void popSession()
-    {
-        this.session.get().pop();
-    }
+  @Override
+  public Response getResponse() {
+    return this.response.get().peek();
+  }
 
-    public void setApplicationContext(ApplicationContext context)
-    {
-        this.applicationContext = context;
-    }
+  @Override
+  public void pushResponse(Response response) {
+    this.response.get().push(response);
+  }
 
-    public void setRequest(Request request)
-    {
-        Stack<Request> stack = new Stack<Request>();
-        stack.push(request);
-        this.request.set(stack);
-    }
-    
-    public void removeRequest()
-    {
-        this.request.remove();
-    }
+  @Override
+  public void popResponse() {
+    this.response.get().pop();
+  }
 
-    public void setResponse(Response response)
-    {
-        Stack<Response> stack = new Stack<Response>();
-        stack.push(response);
-        this.response.set(stack);
-    }
+  @Override
+  public Session getSession() {
+    return this.session.get().peek();
+  }
 
-    public void removeResponse()
-    {
-        this.response.remove();
-    }
+  @Override
+  public void pushSession(Session session) {
+    this.session.get().push(session);
+  }
 
-    public void setSession(Session session)
-    {
-        Stack<Session> stack = new Stack<Session>();
-        stack.push(session);
-        this.session.set(stack);
-    }
+  @Override
+  public void popSession() {
+    this.session.get().pop();
+  }
 
-    public void removeSession()
-    {
-        this.session.remove();
-    }
+  @Override
+  public void setApplicationContext(ApplicationContext context) {
+    this.applicationContext = context;
+  }
+
+  @Override
+  public void setRequest(Request request) {
+    Stack<Request> stack = new Stack<>();
+    stack.push(request);
+    this.request.set(stack);
+  }
+
+  @Override
+  public void removeRequest() {
+    this.request.remove();
+  }
+
+  @Override
+  public void setResponse(Response response) {
+    Stack<Response> stack = new Stack<>();
+    stack.push(response);
+    this.response.set(stack);
+  }
+
+  @Override
+  public void removeResponse() {
+    this.response.remove();
+  }
+
+  @Override
+  public void setSession(Session session) {
+    Stack<Session> stack = new Stack<>();
+    stack.push(session);
+    this.session.set(stack);
+  }
+
+  @Override
+  public void removeSession() {
+    this.session.remove();
+  }
 }

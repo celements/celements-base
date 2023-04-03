@@ -22,9 +22,7 @@ package org.xwiki.container;
 
 /**
  * Represents a session.
- * 
+ *
  * @version $Id$
  */
-public interface Session
-{
-}
+public interface Session {}

@@ -20,13 +20,13 @@
  */
 package org.xwiki.container;
 
-public interface ContainerFactory
-{
-    Request createRequest(Object... objects);
-    
-    Response createResponse(Object... objects);
-    
-    Session createSession(Object... objects);
-    
-    ApplicationContext createApplicationContext(Object... objects);
+public interface ContainerFactory {
+
+  Request createRequest(Object... objects);
+
+  Response createResponse(Object... objects);
+
+  Session createSession(Object... objects);
+
+  ApplicationContext createApplicationContext(Object... objects);
 }

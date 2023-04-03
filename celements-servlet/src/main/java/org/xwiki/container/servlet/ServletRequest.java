@@ -20,48 +20,45 @@
  */
 package org.xwiki.container.servlet;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.xwiki.container.Request;
 import org.xwiki.url.XWikiURL;
 
-import javax.servlet.http.HttpServletRequest;
+public class ServletRequest implements Request {
 
-public class ServletRequest implements Request
-{
-    private HttpServletRequest httpServletRequest;
-    private XWikiURL xwikiURL;
+  private HttpServletRequest httpServletRequest;
+  private XWikiURL xwikiURL;
 
-    public ServletRequest(HttpServletRequest httpServletRequest)
-    {
-        this.httpServletRequest = httpServletRequest;
-    }
+  public ServletRequest(HttpServletRequest httpServletRequest) {
+    this.httpServletRequest = httpServletRequest;
+  }
 
-    public HttpServletRequest getHttpServletRequest()
-    {
-        return this.httpServletRequest;
-    }
+  public HttpServletRequest getHttpServletRequest() {
+    return this.httpServletRequest;
+  }
 
-    public XWikiURL getURL()
-    {
-        return this.xwikiURL;
-    }
+  @Override
+  public XWikiURL getURL() {
+    return this.xwikiURL;
+  }
 
-    public void setXWikiURL(XWikiURL url)
-    {
-        this.xwikiURL = url;
-    }
+  public void setXWikiURL(XWikiURL url) {
+    this.xwikiURL = url;
+  }
 
-    public Object getProperty(String key)
-    {
-        return this.httpServletRequest.getAttribute(key);
-    }
+  @Override
+  public Object getProperty(String key) {
+    return this.httpServletRequest.getAttribute(key);
+  }
 
-    public void setProperty(String key, Object value)
-    {
-        this.httpServletRequest.setAttribute(key, value);
-    }
+  @Override
+  public void setProperty(String key, Object value) {
+    this.httpServletRequest.setAttribute(key, value);
+  }
 
-    public void removeProperty(String key)
-    {
-        this.httpServletRequest.removeAttribute(key);
-    }
+  @Override
+  public void removeProperty(String key) {
+    this.httpServletRequest.removeAttribute(key);
+  }
 }

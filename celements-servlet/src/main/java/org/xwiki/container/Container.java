@@ -23,27 +23,39 @@ package org.xwiki.container;
 import org.xwiki.component.annotation.ComponentRole;
 
 @ComponentRole
-public interface Container
-{
-    ApplicationContext getApplicationContext();
+public interface Container {
 
-    void setApplicationContext(ApplicationContext context);
-    
-    Request getRequest();
-    void setRequest(Request request);
-    void removeRequest();
-    void pushRequest(Request request);
-    void popRequest();
+  ApplicationContext getApplicationContext();
 
-    Response getResponse();
-    void setResponse(Response response);
-    void removeResponse();
-    void pushResponse(Response response);
-    void popResponse();
+  void setApplicationContext(ApplicationContext context);
 
-    Session getSession();
-    void setSession(Session session);
-    void removeSession();
-    void pushSession(Session session);
-    void popSession();
+  Request getRequest();
+
+  void setRequest(Request request);
+
+  void removeRequest();
+
+  void pushRequest(Request request);
+
+  void popRequest();
+
+  Response getResponse();
+
+  void setResponse(Response response);
+
+  void removeResponse();
+
+  void pushResponse(Response response);
+
+  void popResponse();
+
+  Session getSession();
+
+  void setSession(Session session);
+
+  void removeSession();
+
+  void pushSession(Session session);
+
+  void popSession();
 }

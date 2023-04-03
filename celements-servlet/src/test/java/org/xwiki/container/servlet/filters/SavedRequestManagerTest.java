@@ -32,70 +32,72 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.container.servlet.filters.SavedRequestManager.SavedRequest;
 
-
 /**
  * Test for {@link SavedRequestManager}.
- * 
+ *
  * @version $Id$
  * @since 2.5M1
  */
-public class SavedRequestManagerTest
-{
-    /** Fake test URL. */
-    private static final String TEST_URL = "http://localhost/xwiki/bin/view/Test/Page";
+public class SavedRequestManagerTest {
 
-    /** Mocked request. */
-    private HttpServletRequest request;
+  /** Fake test URL. */
+  private static final String TEST_URL = "http://localhost/xwiki/bin/view/Test/Page";
 
-    @Before
-    public void setUp()
-    {
-        Mockery mockery = new Mockery();
-        final HttpSession mockSession = mockery.mock(HttpSession.class);
-        final HttpServletRequest mockRequest = mockery.mock(HttpServletRequest.class);
-        final Map<String, String[]> params = new HashMap<String, String[]>();
-        params.put("aaa", new String[]{"bbb"});
-        params.put("srid", new String[]{"r4Nd0m"});
-        // request
-        mockery.checking(new Expectations() {{
-            allowing(mockRequest).getSession();
-            will(returnValue(mockSession));
-            allowing(mockRequest).getParameterMap();
-            will(returnValue(params));
-            allowing(mockRequest).getRequestURL();
-            will(returnValue(new StringBuffer(TEST_URL)));
-            allowing(mockRequest).getParameter("srid");
-            will(returnValue("r4Nd0m"));
-        }});
-        final Map<String, SavedRequest> saveMap = new HashMap<String, SavedRequest>();
-        saveMap.put("r4Nd0m", new SavedRequest(mockRequest));
-        // session
-        mockery.checking(new Expectations() {{
-            allowing(mockSession).getAttribute(with(any(String.class)));
-            will(returnValue(saveMap));
-        }});
-        this.request = mockRequest;
-    }
+  /** Mocked request. */
+  private HttpServletRequest request;
 
-    @Test
-    public void testGetters()
-    {
-        Assert.assertEquals("srid", SavedRequestManager.getSavedRequestIdentifier());
-        Assert.assertEquals(SavedRequest.class.getCanonicalName() + "_SavedRequests", SavedRequestManager.getSavedRequestKey());
-    }
+  @Before
+  public void setUp() {
+    Mockery mockery = new Mockery();
+    final HttpSession mockSession = mockery.mock(HttpSession.class);
+    final HttpServletRequest mockRequest = mockery.mock(HttpServletRequest.class);
+    final Map<String, String[]> params = new HashMap<>();
+    params.put("aaa", new String[] { "bbb" });
+    params.put("srid", new String[] { "r4Nd0m" });
+    // request
+    mockery.checking(new Expectations() {
 
-    @Test
-    public void testSave()
-    {
-        String srid = SavedRequestManager.saveRequest(this.request);
-        Assert.assertNotNull(srid);
-        Assert.assertFalse("".equals(srid));
-    }
+      {
+        allowing(mockRequest).getSession();
+        will(returnValue(mockSession));
+        allowing(mockRequest).getParameterMap();
+        will(returnValue(params));
+        allowing(mockRequest).getRequestURL();
+        will(returnValue(new StringBuffer(TEST_URL)));
+        allowing(mockRequest).getParameter("srid");
+        will(returnValue("r4Nd0m"));
+      }
+    });
+    final Map<String, SavedRequest> saveMap = new HashMap<>();
+    saveMap.put("r4Nd0m", new SavedRequest(mockRequest));
+    // session
+    mockery.checking(new Expectations() {
 
-    @Test
-    public void testSavedUrl()
-    {
-        Assert.assertEquals(TEST_URL + "?srid=r4Nd0m", SavedRequestManager.getOriginalUrl(this.request));
-    }
+      {
+        allowing(mockSession).getAttribute(with(any(String.class)));
+        will(returnValue(saveMap));
+      }
+    });
+    this.request = mockRequest;
+  }
+
+  @Test
+  public void testGetters() {
+    Assert.assertEquals("srid", SavedRequestManager.getSavedRequestIdentifier());
+    Assert.assertEquals(SavedRequest.class.getCanonicalName() + "_SavedRequests",
+        SavedRequestManager.getSavedRequestKey());
+  }
+
+  @Test
+  public void testSave() {
+    String srid = SavedRequestManager.saveRequest(this.request);
+    Assert.assertNotNull(srid);
+    Assert.assertFalse("".equals(srid));
+  }
+
+  @Test
+  public void testSavedUrl() {
+    Assert.assertEquals(TEST_URL + "?srid=r4Nd0m",
+        SavedRequestManager.getOriginalUrl(this.request));
+  }
 }
-

@@ -25,18 +25,21 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public interface ApplicationContext
-{
-    InputStream getResourceAsStream(String resourceName);
+public interface ApplicationContext {
 
-    URL getResource(String resourceName) throws MalformedURLException;
+  InputStream getResourceAsStream(String resourceName);
 
-    /**
-     * Gets the directory which the container must provide for storing temporary data. The contents of this directory
-     * may be deleted between container restarts (<em>temporary</em>, as the name implies), so it is not a safe place to
-     * store permanent/important data.
-     * 
-     * @return a {@link File} object pointing to a directory that the application can use for storing temporary files
-     */
-    File getTemporaryDirectory();
+  URL getResource(String resourceName) throws MalformedURLException;
+
+  /**
+   * Gets the directory which the container must provide for storing temporary data. The contents of
+   * this directory
+   * may be deleted between container restarts (<em>temporary</em>, as the name implies), so it is
+   * not a safe place to
+   * store permanent/important data.
+   *
+   * @return a {@link File} object pointing to a directory that the application can use for storing
+   *         temporary files
+   */
+  File getTemporaryDirectory();
 }

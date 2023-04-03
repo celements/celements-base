@@ -24,24 +24,27 @@ import org.xwiki.component.annotation.ComponentRole;
 
 /**
  * Component responsible for managing all {@link ApplicationContextListener} components.
- * 
+ *
  * @version $Id$
  * @since 1.9M2
  */
 @ComponentRole
-public interface ApplicationContextListenerManager
-{
-    /**
-     * Looks up all {@link ApplicationContextListener} components and allows each of them to initialize.
-     * 
-     * @param applicationContext the {@link ApplicationContext}.
-     */
-    void initializeApplicationContext(ApplicationContext applicationContext);
-    
-    /**
-     * Looks up all {@link ApplicationContextListener} components and allows each of them to finalize.
-     * 
-     * @param applicationContext the {@link ApplicationContext}.
-     */
-    void destroyApplicationContext(ApplicationContext applicationContext);
+public interface ApplicationContextListenerManager {
+
+  /**
+   * Looks up all {@link ApplicationContextListener} components and allows each of them to
+   * initialize.
+   *
+   * @param applicationContext
+   *          the {@link ApplicationContext}.
+   */
+  void initializeApplicationContext(ApplicationContext applicationContext);
+
+  /**
+   * Looks up all {@link ApplicationContextListener} components and allows each of them to finalize.
+   *
+   * @param applicationContext
+   *          the {@link ApplicationContext}.
+   */
+  void destroyApplicationContext(ApplicationContext applicationContext);
 }

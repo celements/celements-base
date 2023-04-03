@@ -25,32 +25,39 @@ import java.io.OutputStream;
 
 /**
  * Represents a server response.
- * 
+ *
  * @version $Id$
  */
-public interface Response
-{
-    /**
-     * Returns an OutputStream suitable for writing binary data in the response.
-     * 
-     * @return the binary OutputStream for the response, or {@code null} if the response does not allow writing data
-     * @throws IOException if an output exception occurred
-     */
-    OutputStream getOutputStream() throws IOException;
+public interface Response {
 
-    /**
-     * Sets the length of the content body in the response. If this length is not relevant to the type of connection, it
-     * will simply be ignored.
-     * 
-     * @param length an integer specifying the length of the content being returned to the client
-     */
-    void setContentLength(int length);
+  /**
+   * Returns an OutputStream suitable for writing binary data in the response.
+   *
+   * @return the binary OutputStream for the response, or {@code null} if the response does not
+   *         allow writing data
+   * @throws IOException
+   *           if an output exception occurred
+   */
+  OutputStream getOutputStream() throws IOException;
 
-    /**
-     * Sets the content type of the response being sent to the client, as a MIME type string. For example, {@code
-     * text/html}. If the MIME type is not relevant to the type of connection, it will simply be ignored.
-     * 
-     * @param mimeType the MIME type for this response, according to the RFC 2045.
-     */
-    void setContentType(String mimeType);
+  /**
+   * Sets the length of the content body in the response. If this length is not relevant to the type
+   * of connection, it
+   * will simply be ignored.
+   *
+   * @param length
+   *          an integer specifying the length of the content being returned to the client
+   */
+  void setContentLength(int length);
+
+  /**
+   * Sets the content type of the response being sent to the client, as a MIME type string. For
+   * example, {@code
+   * text/html}. If the MIME type is not relevant to the type of connection, it will simply be
+   * ignored.
+   *
+   * @param mimeType
+   *          the MIME type for this response, according to the RFC 2045.
+   */
+  void setContentType(String mimeType);
 }

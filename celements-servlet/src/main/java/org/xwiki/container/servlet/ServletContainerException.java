@@ -20,20 +20,18 @@
  */
 package org.xwiki.container.servlet;
 
-public class ServletContainerException extends Exception
-{
-    /**
-     * Provides an id for serialization 
-     */
-    private static final long serialVersionUID = 5066268026510266390L;
+public class ServletContainerException extends Exception {
 
-    public ServletContainerException(String message)
-    {
-        super(message);
-    }
+  /**
+   * Provides an id for serialization
+   */
+  private static final long serialVersionUID = 5066268026510266390L;
 
-    public ServletContainerException(String message, Throwable throwable)
-    {
-        super(message, throwable);
-    }
+  public ServletContainerException(String message) {
+    super(message);
+  }
+
+  public ServletContainerException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }

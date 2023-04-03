@@ -27,45 +27,43 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.xwiki.container.Response;
 
-public class ServletResponse implements Response
-{
-    private HttpServletResponse httpServletResponse;
+public class ServletResponse implements Response {
 
-    public ServletResponse(HttpServletResponse httpServletResponse)
-    {
-        this.httpServletResponse = httpServletResponse;
-    }
+  private HttpServletResponse httpServletResponse;
 
-    public HttpServletResponse getHttpServletResponse()
-    {
-        return this.httpServletResponse;
-    }
+  public ServletResponse(HttpServletResponse httpServletResponse) {
+    this.httpServletResponse = httpServletResponse;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public OutputStream getOutputStream() throws IOException
-    {
-        try {
-            return this.httpServletResponse.getOutputStream();
-        } catch (IllegalStateException ex) {
-            return null;
-        }
-    }
+  public HttpServletResponse getHttpServletResponse() {
+    return this.httpServletResponse;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setContentLength(int length)
-    {
-        this.httpServletResponse.setContentLength(length);
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public OutputStream getOutputStream() throws IOException {
+    try {
+      return this.httpServletResponse.getOutputStream();
+    } catch (IllegalStateException ex) {
+      return null;
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setContentType(String mimeType)
-    {
-        this.httpServletResponse.setContentType(mimeType);
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void setContentLength(int length) {
+    this.httpServletResponse.setContentLength(length);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void setContentType(String mimeType) {
+    this.httpServletResponse.setContentType(mimeType);
+  }
 }

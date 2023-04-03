@@ -22,13 +22,13 @@ package org.xwiki.container;
 
 import org.xwiki.url.XWikiURL;
 
-public interface Request
-{
-    XWikiURL getURL();
-    
-    void setProperty(String key, Object value);
-    
-    Object getProperty(String key);
-    
-    void removeProperty(String key);
+public interface Request {
+
+  XWikiURL getURL();
+
+  void setProperty(String key, Object value);
+
+  Object getProperty(String key);
+
+  void removeProperty(String key);
 }

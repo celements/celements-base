@@ -33,49 +33,50 @@ import org.xwiki.container.ApplicationContextListenerManager;
 
 /**
  * Default implementation of {@link ApplicationContextListenerManager}.
- * 
+ *
  * @version $Id$
  * @since 1.9M2
  */
 @Component
-public class DefaultApplicationContextListenerManager extends AbstractLogEnabled 
-    implements ApplicationContextListenerManager
-{
-    /**
-     * The {@link ComponentManager} used to lookup for all {@link ApplicationContextListener} components.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+public class DefaultApplicationContextListenerManager extends AbstractLogEnabled
+    implements ApplicationContextListenerManager {
 
-    /**
-     * {@inheritDoc}
-     */
-    public void initializeApplicationContext(ApplicationContext applicationContext)
-    {
-        try {
-            List<ApplicationContextListener> initializers =
-                this.componentManager.lookupList(ApplicationContextListener.class);
-            for (ApplicationContextListener initializer : initializers) {
-                initializer.initializeApplicationContext(applicationContext);
-            }
-        } catch (ComponentLookupException ex) {
-            getLogger().error(ex.getMessage(), ex);
-        }
+  /**
+   * The {@link ComponentManager} used to lookup for all {@link ApplicationContextListener}
+   * components.
+   */
+  @Requirement
+  private ComponentManager componentManager;
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void initializeApplicationContext(ApplicationContext applicationContext) {
+    try {
+      List<ApplicationContextListener> initializers = this.componentManager
+          .lookupList(ApplicationContextListener.class);
+      for (ApplicationContextListener initializer : initializers) {
+        initializer.initializeApplicationContext(applicationContext);
+      }
+    } catch (ComponentLookupException ex) {
+      getLogger().error(ex.getMessage(), ex);
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void destroyApplicationContext(ApplicationContext applicationContext)
-    {
-        try {
-            List<ApplicationContextListener> initializers =
-                this.componentManager.lookupList(ApplicationContextListener.class);
-            for (ApplicationContextListener initializer : initializers) {
-                initializer.destroyApplicationContext(applicationContext);
-            }
-        } catch (ComponentLookupException ex) {
-            getLogger().error(ex.getMessage(), ex);
-        }
-    }       
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void destroyApplicationContext(ApplicationContext applicationContext) {
+    try {
+      List<ApplicationContextListener> initializers = this.componentManager
+          .lookupList(ApplicationContextListener.class);
+      for (ApplicationContextListener initializer : initializers) {
+        initializer.destroyApplicationContext(applicationContext);
+      }
+    } catch (ComponentLookupException ex) {
+      getLogger().error(ex.getMessage(), ex);
+    }
+  }
 }

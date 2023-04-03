@@ -28,51 +28,57 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * Make threads names created by the application server more meaningful.
- * 
- * TODO When it will be possible it would be better to do this a component like a RequestInitializer component to work
- *      for any kind of container. Right now component can't really access the initial URL.
+ *
+ * TODO When it will be possible it would be better to do this a component like a RequestInitializer
+ * component to work
+ * for any kind of container. Right now component can't really access the initial URL.
+ *
  * @version $Id$
  * @since 2.0M3
  */
-public class SetThreadNameServletRequestListener implements ServletRequestListener
-{
-    /** The name of the servlet request attribute holding the original name of the processing thread. */
-    private static final String ORIGINAL_THREAD_NAME_ATTRIBUTE = "xwiki.thread.originalName";
+public class SetThreadNameServletRequestListener implements ServletRequestListener {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see javax.servlet.ServletRequestListener#requestInitialized(javax.servlet.ServletRequestEvent)
-     */
-    public void requestInitialized(ServletRequestEvent sre)
-    {
-        ServletRequest servletRequest = sre.getServletRequest();
+  /**
+   * The name of the servlet request attribute holding the original name of the processing thread.
+   */
+  private static final String ORIGINAL_THREAD_NAME_ATTRIBUTE = "xwiki.thread.originalName";
 
-        if (servletRequest instanceof HttpServletRequest) {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+  /**
+   * {@inheritDoc}
+   *
+   * @see javax.servlet.ServletRequestListener#requestInitialized(javax.servlet.ServletRequestEvent)
+   */
+  @Override
+  public void requestInitialized(ServletRequestEvent sre) {
+    ServletRequest servletRequest = sre.getServletRequest();
 
-            String threadName = httpServletRequest.getRequestURL().toString();
+    if (servletRequest instanceof HttpServletRequest) {
+      HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
-            if (httpServletRequest.getQueryString() != null) {
-                threadName += "?" + httpServletRequest.getQueryString();
-            }
+      String threadName = httpServletRequest.getRequestURL().toString();
 
-            httpServletRequest.setAttribute(ORIGINAL_THREAD_NAME_ATTRIBUTE, Thread.currentThread().getName());
-            Thread.currentThread().setName(threadName);
-        }
+      if (httpServletRequest.getQueryString() != null) {
+        threadName += "?" + httpServletRequest.getQueryString();
+      }
+
+      httpServletRequest.setAttribute(ORIGINAL_THREAD_NAME_ATTRIBUTE,
+          Thread.currentThread().getName());
+      Thread.currentThread().setName(threadName);
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see javax.servlet.ServletRequestListener#requestDestroyed(javax.servlet.ServletRequestEvent)
-     */
-    public void requestDestroyed(ServletRequestEvent sre)
-    {
-        ServletRequest servletRequest = sre.getServletRequest();
-        if (servletRequest instanceof HttpServletRequest) {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-            Thread.currentThread().setName("" + httpServletRequest.getAttribute(ORIGINAL_THREAD_NAME_ATTRIBUTE));
-        }
+  /**
+   * {@inheritDoc}
+   *
+   * @see javax.servlet.ServletRequestListener#requestDestroyed(javax.servlet.ServletRequestEvent)
+   */
+  @Override
+  public void requestDestroyed(ServletRequestEvent sre) {
+    ServletRequest servletRequest = sre.getServletRequest();
+    if (servletRequest instanceof HttpServletRequest) {
+      HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+      Thread.currentThread()
+          .setName("" + httpServletRequest.getAttribute(ORIGINAL_THREAD_NAME_ATTRIBUTE));
     }
+  }
 }

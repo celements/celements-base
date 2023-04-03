@@ -36,28 +36,29 @@ import org.xwiki.container.RequestInitializerManager;
  * @see org.xwiki.container.RequestInitializerManager
  */
 @Component
-public class DefaultRequestInitializerManager implements RequestInitializerManager
-{
-    /**
-     * The component manager we used to find all components implementing the
-     * {@link org.xwiki.container.RequestInitializer} role.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+public class DefaultRequestInitializerManager implements RequestInitializerManager {
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.container.RequestInitializerManager#initializeRequest(Request)
-     */
-    public void initializeRequest(Request request) throws RequestInitializerException
-    {
-        // Find all request interceptors and call them to initialize the Request
-        try {
-            for (Object interceptor : this.componentManager.lookupList(RequestInitializer.class)) {
-                ((RequestInitializer) interceptor).initialize(request);
-            }
-        } catch (ComponentLookupException e) {
-            throw new RequestInitializerException("Failed to initialize request", e);
-        }
+  /**
+   * The component manager we used to find all components implementing the
+   * {@link org.xwiki.container.RequestInitializer} role.
+   */
+  @Requirement
+  private ComponentManager componentManager;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.container.RequestInitializerManager#initializeRequest(Request)
+   */
+  @Override
+  public void initializeRequest(Request request) throws RequestInitializerException {
+    // Find all request interceptors and call them to initialize the Request
+    try {
+      for (Object interceptor : this.componentManager.lookupList(RequestInitializer.class)) {
+        ((RequestInitializer) interceptor).initialize(request);
+      }
+    } catch (ComponentLookupException e) {
+      throw new RequestInitializerException("Failed to initialize request", e);
     }
+  }
 }

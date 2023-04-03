@@ -20,22 +20,20 @@
  */
 package org.xwiki.container.servlet;
 
-import org.xwiki.container.Session;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-public class ServletSession implements Session
-{
-    private HttpSession httpSession;
+import org.xwiki.container.Session;
 
-    public ServletSession(HttpServletRequest request)
-    {
-        this.httpSession = request.getSession(true);
-    }
+public class ServletSession implements Session {
 
-    public HttpSession getHttpSession()
-    {
-        return this.httpSession;
-    }
+  private HttpSession httpSession;
+
+  public ServletSession(HttpServletRequest request) {
+    this.httpSession = request.getSession(true);
+  }
+
+  public HttpSession getHttpSession() {
+    return this.httpSession;
+  }
 }

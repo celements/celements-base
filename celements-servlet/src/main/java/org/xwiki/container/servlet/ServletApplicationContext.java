@@ -29,48 +29,46 @@ import javax.servlet.ServletContext;
 
 import org.xwiki.container.ApplicationContext;
 
-public class ServletApplicationContext implements ApplicationContext
-{
-    private ServletContext servletContext;
+public class ServletApplicationContext implements ApplicationContext {
 
-    public ServletApplicationContext(ServletContext servletContext)
-    {
-        this.servletContext = servletContext;
-    }
+  private ServletContext servletContext;
 
-    public ServletContext getServletContext()
-    {
-        return this.servletContext;
-    }
+  public ServletApplicationContext(ServletContext servletContext) {
+    this.servletContext = servletContext;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.container.ApplicationContext#getResourceAsStream(String)
-     */
-    public InputStream getResourceAsStream(String resourceName)
-    {
-        return getServletContext().getResourceAsStream(resourceName);
-    }
+  public ServletContext getServletContext() {
+    return this.servletContext;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.container.ApplicationContext#getResource(String)
-     */
-    public URL getResource(String resourceName) throws MalformedURLException
-    {
-        return getServletContext().getResource(resourceName);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.container.ApplicationContext#getResourceAsStream(String)
+   */
+  @Override
+  public InputStream getResourceAsStream(String resourceName) {
+    return getServletContext().getResourceAsStream(resourceName);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.container.ApplicationContext#getTemporaryDirectory()
-     */
-    public File getTemporaryDirectory()
-    {
-        // Section SRV.4.7.1 of the Servlet 2.5 specification says that this should be available.
-        return (File) this.servletContext.getAttribute("javax.servlet.context.tempdir");
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.container.ApplicationContext#getResource(String)
+   */
+  @Override
+  public URL getResource(String resourceName) throws MalformedURLException {
+    return getServletContext().getResource(resourceName);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.container.ApplicationContext#getTemporaryDirectory()
+   */
+  @Override
+  public File getTemporaryDirectory() {
+    // Section SRV.4.7.1 of the Servlet 2.5 specification says that this should be available.
+    return (File) this.servletContext.getAttribute("javax.servlet.context.tempdir");
+  }
 }

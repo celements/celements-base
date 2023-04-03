@@ -27,17 +27,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.xwiki.component.annotation.ComponentRole;
 
 @ComponentRole
-public interface ServletContainerInitializer
-{
-    void initializeRequest(HttpServletRequest request, Object xwikiContext)
-        throws ServletContainerException;
-    
-    void initializeRequest(HttpServletRequest request)
-        throws ServletContainerException;
+public interface ServletContainerInitializer {
 
-    void initializeResponse(HttpServletResponse response);
-    
-    void initializeSession(HttpServletRequest request);
-    
-    void initializeApplicationContext(ServletContext servletContext);
+  void initializeRequest(HttpServletRequest request, Object xwikiContext)
+      throws ServletContainerException;
+
+  void initializeRequest(HttpServletRequest request)
+      throws ServletContainerException;
+
+  void initializeResponse(HttpServletResponse response);
+
+  void initializeSession(HttpServletRequest request);
+
+  void initializeApplicationContext(ServletContext servletContext);
 }

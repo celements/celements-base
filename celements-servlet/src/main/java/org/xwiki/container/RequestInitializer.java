@@ -30,14 +30,16 @@ import org.xwiki.component.annotation.ComponentRole;
  * @version $Id$
  */
 @ComponentRole
-public interface RequestInitializer
-{
-    /**
-     * Perform initializations here, such as storing objects in the Request.
-     * 
-     * @param request the XWiki Request object
-     * @throws RequestInitializerException if the initialization fails. It's expected that the
-     *         application should stop if this happens.
-     */
-    void initialize(Request request) throws RequestInitializerException;
+public interface RequestInitializer {
+
+  /**
+   * Perform initializations here, such as storing objects in the Request.
+   *
+   * @param request
+   *          the XWiki Request object
+   * @throws RequestInitializerException
+   *           if the initialization fails. It's expected that the
+   *           application should stop if this happens.
+   */
+  void initialize(Request request) throws RequestInitializerException;
 }

@@ -42,83 +42,84 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextManager;
 
 @Component
-public class DefaultServletContainerInitializer implements ServletContainerInitializer
-{
-     // Implementation note: It's important that we don't use @Requirement annotations here
-     // for RequestInitializerManager and ExecutionContextManager since we can have
-     // RequestInitializer and ExecutionContextInitializer components which try to access
-     // the Application Context in their initialize() method and we need it to be available 
-     // (i.e. initializeApplicationContext() needs to have been called) before they are 
-     // looked up (and thus initialized).
+public class DefaultServletContainerInitializer implements ServletContainerInitializer {
+  // Implementation note: It's important that we don't use @Requirement annotations here
+  // for RequestInitializerManager and ExecutionContextManager since we can have
+  // RequestInitializer and ExecutionContextInitializer components which try to access
+  // the Application Context in their initialize() method and we need it to be available
+  // (i.e. initializeApplicationContext() needs to have been called) before they are
+  // looked up (and thus initialized).
 
-    @Requirement
-    private ApplicationContextListenerManager applicationContextListenerManager;
+  @Requirement
+  private ApplicationContextListenerManager applicationContextListenerManager;
 
-    @Requirement
-    private Container container;
+  @Requirement
+  private Container container;
 
-    @Requirement
-    private Execution execution;
+  @Requirement
+  private Execution execution;
 
-    @Requirement
-    private ComponentManager componentManager;
+  @Requirement
+  private ComponentManager componentManager;
 
-    public void initializeApplicationContext(ServletContext servletContext)
-    {
-        ApplicationContext applicationContext = new ServletApplicationContext(servletContext);
-        this.container.setApplicationContext(applicationContext);
-        this.applicationContextListenerManager.initializeApplicationContext(applicationContext);
+  @Override
+  public void initializeApplicationContext(ServletContext servletContext) {
+    ApplicationContext applicationContext = new ServletApplicationContext(servletContext);
+    this.container.setApplicationContext(applicationContext);
+    this.applicationContextListenerManager.initializeApplicationContext(applicationContext);
+  }
+
+  @Override
+  public void initializeRequest(HttpServletRequest httpServletRequest, Object xwikiContext)
+      throws ServletContainerException {
+    // 1) Create an empty request. From this point forward request initializers can use the
+    // Container object to get any data they want from the Request.
+    this.container.setRequest(new ServletRequest(httpServletRequest));
+
+    // 2) Create an empty Execution context so that the Container initializers can put things in the
+    // execution context when they execute.
+    this.execution.setContext(new ExecutionContext());
+
+    // 3) Bridge with old code to play well with new components. Old code relies on the
+    // XWikiContext object whereas new code uses the Container component.
+    if (xwikiContext != null) {
+      this.execution.getContext().setProperty("xwikicontext", xwikiContext);
     }
 
-    public void initializeRequest(HttpServletRequest httpServletRequest, Object xwikiContext)
-        throws ServletContainerException
-    {
-        // 1) Create an empty request. From this point forward request initializers can use the
-        // Container object to get any data they want from the Request.
-        this.container.setRequest(new ServletRequest(httpServletRequest));
-
-        // 2) Create an empty Execution context so that the Container initializers can put things in the
-        // execution context when they execute.
-        this.execution.setContext(new ExecutionContext());
-
-        // 3) Bridge with old code to play well with new components. Old code relies on the
-        // XWikiContext object whereas new code uses the Container component.
-        if (xwikiContext != null) {
-            this.execution.getContext().setProperty("xwikicontext", xwikiContext);
-        }
-
-        // 4) Call the request initializers to populate the Request.
-        // TODO: This is where the URL should be converted to a XWikiURL and the wiki, space,
-        // document, skin and possibly other parameters are put in the Execution Context by proper
-        // initializers.
-        try {
-            RequestInitializerManager manager = this.componentManager.lookup(RequestInitializerManager.class);
-            manager.initializeRequest(this.container.getRequest());
-        } catch (Exception e) {
-            throw new ServletContainerException("Failed to initialize request", e);
-        }
-
-        // 5) Call Execution Context initializers to perform further Execution Context initializations
-        try {
-            ExecutionContextManager manager = this.componentManager.lookup(ExecutionContextManager.class);
-            manager.initialize(this.execution.getContext());
-        } catch (Exception e) {
-            throw new ServletContainerException("Failed to initialize Execution Context", e);
-        }
+    // 4) Call the request initializers to populate the Request.
+    // TODO: This is where the URL should be converted to a XWikiURL and the wiki, space,
+    // document, skin and possibly other parameters are put in the Execution Context by proper
+    // initializers.
+    try {
+      RequestInitializerManager manager = this.componentManager
+          .lookup(RequestInitializerManager.class);
+      manager.initializeRequest(this.container.getRequest());
+    } catch (Exception e) {
+      throw new ServletContainerException("Failed to initialize request", e);
     }
 
-    public void initializeRequest(HttpServletRequest httpServletRequest) throws ServletContainerException
-    {
-        initializeRequest(httpServletRequest, null);
+    // 5) Call Execution Context initializers to perform further Execution Context initializations
+    try {
+      ExecutionContextManager manager = this.componentManager.lookup(ExecutionContextManager.class);
+      manager.initialize(this.execution.getContext());
+    } catch (Exception e) {
+      throw new ServletContainerException("Failed to initialize Execution Context", e);
     }
+  }
 
-    public void initializeResponse(HttpServletResponse httpServletResponse)
-    {
-        this.container.setResponse(new ServletResponse(httpServletResponse));
-    }
+  @Override
+  public void initializeRequest(HttpServletRequest httpServletRequest)
+      throws ServletContainerException {
+    initializeRequest(httpServletRequest, null);
+  }
 
-    public void initializeSession(HttpServletRequest httpServletRequest)
-    {
-        this.container.setSession(new ServletSession(httpServletRequest));
-    }
+  @Override
+  public void initializeResponse(HttpServletResponse httpServletResponse) {
+    this.container.setResponse(new ServletResponse(httpServletResponse));
+  }
+
+  @Override
+  public void initializeSession(HttpServletRequest httpServletRequest) {
+    this.container.setSession(new ServletSession(httpServletRequest));
+  }
 }

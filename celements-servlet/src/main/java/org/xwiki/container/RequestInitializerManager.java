@@ -28,15 +28,17 @@ import org.xwiki.component.annotation.ComponentRole;
  * @version $Id$
  */
 @ComponentRole
-public interface RequestInitializerManager
-{
-    /**
-     * Call all components which implement the {@link org.xwiki.container.RequestInitializer} role so
-     * that they can each perform their own initializations.
-     *
-     * @param request the XWiki Request object
-     * @throws RequestInitializerException if the initialization fails. It's expected that the
-     *         application should stop if this happens.
-     */
-    void initializeRequest(Request request) throws RequestInitializerException;
+public interface RequestInitializerManager {
+
+  /**
+   * Call all components which implement the {@link org.xwiki.container.RequestInitializer} role so
+   * that they can each perform their own initializations.
+   *
+   * @param request
+   *          the XWiki Request object
+   * @throws RequestInitializerException
+   *           if the initialization fails. It's expected that the
+   *           application should stop if this happens.
+   */
+  void initializeRequest(Request request) throws RequestInitializerException;
 }
