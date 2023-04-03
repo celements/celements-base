@@ -33,7 +33,7 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.manager.ComponentRepositoryException;
 
-import com.celements.spring.component.SpringComponentManager;
+import com.celements.spring.context.SpringComponentManager;
 
 /**
  * Wraps the Component Manager in a component so that components requiring the component Manager can

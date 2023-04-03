@@ -1,3 +1,1 @@
 org.xwiki.component.internal.DefaultComponentManager
-com.celements.spring.test.TestComponentXWiki
-com.celements.spring.test.TestComponentXWiki2

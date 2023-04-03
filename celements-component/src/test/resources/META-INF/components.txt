@@ -1,0 +1,2 @@
+com.celements.spring.test.TestComponentXWiki
+com.celements.spring.test.TestComponentXWiki2

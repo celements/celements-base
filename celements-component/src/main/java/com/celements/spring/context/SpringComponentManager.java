@@ -1,6 +1,6 @@
-package com.celements.spring.component;
+package com.celements.spring.context;
 
-import static com.celements.spring.component.CelementsBeanFactory.*;
+import static com.celements.spring.context.CelementsBeanFactory.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;

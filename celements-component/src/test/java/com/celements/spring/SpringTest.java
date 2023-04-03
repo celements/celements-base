@@ -8,8 +8,9 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.script.service.ScriptService;
 
-import com.celements.spring.component.CelementsBeanFactory;
-import com.celements.spring.component.SpringComponentManager;
+import com.celements.spring.context.CelementsBeanFactory;
+import com.celements.spring.context.SpringComponentManager;
+import com.celements.spring.context.SpringContextManager;
 import com.celements.spring.test.TestRole;
 
 public class SpringTest /* extends AbstractComponentTest */ {

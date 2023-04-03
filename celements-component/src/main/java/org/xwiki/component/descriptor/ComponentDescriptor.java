@@ -25,7 +25,7 @@ import java.util.Collection;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 
-import com.celements.spring.component.CelementsBeanFactory;
+import com.celements.spring.context.CelementsBeanFactory;
 
 /**
  * Represent a component.

@@ -1,4 +1,4 @@
-package com.celements.spring.component;
+package com.celements.spring.context;
 
 import static com.google.common.base.Strings.*;
 

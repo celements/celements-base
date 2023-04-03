@@ -1,4 +1,4 @@
-package com.celements.spring;
+package com.celements.spring.context;
 
 import java.io.IOException;
 
@@ -6,8 +6,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.xwiki.component.annotation.ComponentAnnotationLoader;
-
-import com.celements.spring.component.CelementsBeanFactory;
 
 public class CelementsAnnotationConfigApplicationContext
     extends AnnotationConfigApplicationContext {

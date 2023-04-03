@@ -1,4 +1,4 @@
-package com.celements.spring;
+package com.celements.spring.context;
 
 import java.util.function.Supplier;
 
