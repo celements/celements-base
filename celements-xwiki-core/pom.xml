@@ -24,7 +24,7 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>5.10</version>
+    <version>5.11-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-xwiki-core</artifactId>
@@ -66,14 +66,6 @@
       <artifactId>celements-servlet</artifactId>
       <version>5.0-SNAPSHOT</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>portlet-api</groupId>
-      <artifactId>portlet-api</artifactId>
     </dependency>
     <dependency>
       <groupId>struts</groupId>
@@ -230,49 +222,6 @@
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-captcha</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-office-importer</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-configuration-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-formula-renderer</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-xmlrpc-model</artifactId>
-      <version>2.7.2</version>
-    </dependency>
 
     <!-- XWiki syntax parsers -->
     <dependency>
@@ -306,17 +255,6 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-box</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-chart</artifactId>
       <version>2.7.2</version>
       <exclusions>
         <exclusion>
@@ -375,29 +313,7 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-formula</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-groovy</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-python</artifactId>
       <version>2.7.2</version>
       <exclusions>
         <exclusion>
@@ -451,21 +367,6 @@
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-rss</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -631,13 +532,6 @@
       <artifactId>ecs</artifactId>
     </dependency>
 
-    <!-- XmlRpc -->
-    <dependency>
-      <!-- keep the server until we've cleaned out all classes from the xwiki-core -->
-      <groupId>org.apache.xmlrpc</groupId>
-      <artifactId>xmlrpc-server</artifactId>
-    </dependency>
-
     <!-- JSON -->
     <dependency>
       <groupId>net.sf.json-lib</groupId>
@@ -655,15 +549,6 @@
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-    </dependency>
-    <!-- RSS Feed processing -->
-    <dependency>
-      <groupId>rome</groupId>
-      <artifactId>rome</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>rome</groupId>
-      <artifactId>rome-fetcher</artifactId>
     </dependency>
     <!-- iCal processing -->
     <dependency>
@@ -691,141 +576,11 @@
       <artifactId>groovy-all</artifactId>
     </dependency>
 
-   <!-- Exo POMs seems to have a problem. See http://jira.exoplatform.org/browse/PLT-24. When this is resolved,
-         get the Exo JARS from the ObjectWeb remote repo (or from the central repository when ObjectWeb
-         is synced to there. -->
-    <dependency>
-      <groupId>exo-platform</groupId>
-      <artifactId>exo-platform.container</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>exo-platform</groupId>
-      <artifactId>exo-platform.commons</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>exo-platform</groupId>
-      <artifactId>exo-platform.service.organization.api</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>exo-platform</groupId>
-      <artifactId>exo-platform.service.security.api</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>exo-platform</groupId>
-      <artifactId>exo-platform.service.database.api</artifactId>
-      <version>2.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-      <version>1.0.13</version>
-    </dependency>
-    <!-- JFreeChart 1.0.13 has no POM file in the Maven Central Repository and thus we need to manually define
-         its own Maven dependency on JFree Common. Remove this dependency when it's fixed. -->
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jcommon</artifactId>
-      <version>1.0.15</version>
-    </dependency>
-
-    <!-- PDF export, image processing -->
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>fop</artifactId>
-      <version>1.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
+    <!-- Barcode generation -->
     <dependency>
       <groupId>org.apache.avalon.framework</groupId>
       <artifactId>avalon-framework-impl</artifactId>
       <version>4.3.1</version>
-    </dependency>
-    <!-- fop depends on batik 1.7, but the batik folks did not release the rasterizer module
-         for this version, which we need. Since the 1.6 and 1.7 releases are fairly compatible,
-         but use different groupId names, we can use all the modules from 1.7, and exclude all
-         the 1.6 dependencies pulled by the rasterizer, until we can depend on a clean 1.7
-         rasterizer module.
-         See https://issues.apache.org/bugzilla/show_bug.cgi?id=45020 -->
-    <dependency>
-      <groupId>batik</groupId>
-      <artifactId>batik-rasterizer</artifactId>
-      <version>1.6</version>
-      <exclusions>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-awt-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-bridge</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-css</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-dom</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-gvt</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-parser</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-script</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-svg-dom</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-transcoder</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-util</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>batik</groupId>
-          <artifactId>batik-xml</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- fop gets us batik but not batik-codec and we need this one for SVGPlugin -->
-    <dependency>
-      <groupId>org.apache.xmlgraphics</groupId>
-      <artifactId>batik-codec</artifactId>
-      <version>1.7</version>
-      <exclusions>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
 

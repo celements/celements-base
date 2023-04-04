@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
-import org.apache.xmlrpc.server.XmlRpcServer;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
@@ -53,16 +52,22 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public static final int MODE_SERVLET = 0;
 
+  @Deprecated
   public static final int MODE_PORTLET = 1;
 
+  @Deprecated
   public static final int MODE_XMLRPC = 2;
 
+  @Deprecated
   public static final int MODE_ATOM = 3;
 
+  @Deprecated
   public static final int MODE_PDF = 4;
 
+  @Deprecated
   public static final int MODE_GWT = 5;
 
+  @Deprecated
   public static final int MODE_GWT_DEBUG = 6;
 
   public static final String EXECUTIONCONTEXT_KEY = "xwikicontext";
@@ -104,8 +109,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
   private URL url;
 
   private XWikiURLFactory URLFactory;
-
-  private XmlRpcServer xmlRpcServer;
 
   private String wikiOwner;
 
@@ -386,14 +389,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public void setFinished(boolean finished) {
     this.finished = finished;
-  }
-
-  public XmlRpcServer getXMLRPCServer() {
-    return this.xmlRpcServer;
-  }
-
-  public void setXMLRPCServer(XmlRpcServer xmlRpcServer) {
-    this.xmlRpcServer = xmlRpcServer;
   }
 
   public void setWikiOwner(String wikiOwner) {

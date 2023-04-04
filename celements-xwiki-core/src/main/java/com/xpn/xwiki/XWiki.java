@@ -187,8 +187,6 @@ import com.xpn.xwiki.user.api.XWikiAuthService;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.user.api.XWikiUser;
-import com.xpn.xwiki.user.impl.LDAP.XWikiLDAPAuthServiceImpl;
-import com.xpn.xwiki.user.impl.exo.ExoAuthServiceImpl;
 import com.xpn.xwiki.user.impl.xwiki.XWikiAuthServiceImpl;
 import com.xpn.xwiki.user.impl.xwiki.XWikiGroupServiceImpl;
 import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
@@ -4735,20 +4733,17 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * @return true for multi-wiki/false for mono-wiki
    */
   public boolean isVirtualMode() {
-    // With exo we can't be using virtual mode
-    if (isExo()) {
-      return false;
-    }
-
     return "1".equals(Param("xwiki.virtual"));
   }
 
+  @Deprecated
   public boolean isExo() {
-    return "1".equals(Param("xwiki.exo"));
+    return false;
   }
 
+  @Deprecated
   public boolean isLDAP() {
-    return "1".equals(Param("xwiki.authentication.ldap"));
+    return false;
   }
 
   public int checkActive(XWikiContext context) throws XWikiException {
@@ -4780,19 +4775,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public DocumentReference getDocumentReference(XWikiRequest request, XWikiContext context) {
     DocumentReference reference;
     if (context.getMode() == XWikiContext.MODE_PORTLET) {
-      if (request.getParameter("topic") != null) {
-        reference = this.currentMixedDocumentReferenceResolver.resolve(request.getParameter(
-            "topic"));
-      } else {
-        // Point to this wiki's home page
-        reference = new DocumentReference(context.getDatabase(),
-            this.defaultEntityReferenceValueProvider.getDefaultValue(EntityType.SPACE),
-            this.defaultEntityReferenceValueProvider.getDefaultValue(EntityType.DOCUMENT));
-      }
+      throw new UnsupportedOperationException();
     } else if (context.getMode() == XWikiContext.MODE_XMLRPC) {
-      reference = new DocumentReference(context.getDatabase(),
-          context.getDoc().getDocumentReference().getLastSpaceReference().getName(),
-          context.getDoc().getDocumentReference().getName());
+      throw new UnsupportedOperationException();
     } else {
       String action = context.getAction();
       if ((request.getParameter("topic") != null) && (action.equals("edit") || action.equals(
@@ -5023,31 +5008,14 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public XWikiGroupService getGroupService(XWikiContext context) throws XWikiException {
     synchronized (this.GROUP_SERVICE_LOCK) {
       if (this.groupService == null) {
-        String groupClass;
-        if (isExo()) {
-          groupClass = Param("xwiki.authentication.groupclass",
-              "com.xpn.xwiki.user.impl.exo.ExoGroupServiceImpl");
-        } else {
-          groupClass = Param("xwiki.authentication.groupclass",
-              "com.xpn.xwiki.user.impl.xwiki.XWikiGroupServiceImpl");
-        }
-
+        String groupClass = Param("xwiki.authentication.groupclass",
+            "com.xpn.xwiki.user.impl.xwiki.XWikiGroupServiceImpl");
         try {
           this.groupService = (XWikiGroupService) Class.forName(groupClass).newInstance();
         } catch (Exception e) {
-          e.printStackTrace();
-          // If eXo we still want to use instanciation to not have class dependency
-          // for java 1.4 compatibility
-          if (isExo()) {
-            try {
-              this.groupService = (XWikiGroupService) Class.forName(
-                  "com.xpn.xwiki.user.impl.exo.ExoGroupServiceImpl").newInstance();
-            } catch (Exception e2) {
-              e2.printStackTrace();
-            }
-          } else {
-            this.groupService = new XWikiGroupServiceImpl();
-          }
+          LOG.warn("Failed to initialize GroupService " + groupClass
+              + " using Reflection, trying default implementations using 'new'.", e);
+          this.groupService = new XWikiGroupServiceImpl();
         }
         this.groupService.init(this, context);
       }
@@ -5064,47 +5032,16 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public XWikiAuthService getAuthService() {
     synchronized (this.AUTH_SERVICE_LOCK) {
       if (this.authService == null) {
-
         LOG.info("Initializing AuthService...");
-
-        String authClass = Param("xwiki.authentication.authclass");
-        if (!StringUtils.isEmpty(authClass)) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Using custom AuthClass " + authClass + ".");
-          }
-        } else {
-          if (isExo()) {
-            authClass = "com.xpn.xwiki.user.impl.exo.ExoAuthServiceImpl";
-          } else if (isLDAP()) {
-            authClass = "com.xpn.xwiki.user.impl.LDAP.XWikiLDAPAuthServiceImpl";
-          } else {
-            authClass = "com.xpn.xwiki.user.impl.xwiki.XWikiAuthServiceImpl";
-          }
-
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Using default AuthClass " + authClass + ".");
-          }
-        }
-
+        String authClass = Param("xwiki.authentication.authclass",
+            "com.xpn.xwiki.user.impl.xwiki.XWikiAuthServiceImpl");
         try {
           this.authService = (XWikiAuthService) Class.forName(authClass).newInstance();
           LOG.debug("Initialized AuthService using Relfection.");
         } catch (Exception e) {
           LOG.warn("Failed to initialize AuthService " + authClass
               + " using Reflection, trying default implementations using 'new'.", e);
-
-          if (isExo()) {
-            this.authService = new ExoAuthServiceImpl();
-          } else if (isLDAP()) {
-            this.authService = new XWikiLDAPAuthServiceImpl();
-          } else {
-            this.authService = new XWikiAuthServiceImpl();
-          }
-
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Initialized AuthService " + this.authService.getClass().getName()
-                + " using 'new'.");
-          }
+          this.authService = new XWikiAuthServiceImpl();
         }
       }
 

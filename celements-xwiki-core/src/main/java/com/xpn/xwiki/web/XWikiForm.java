@@ -44,7 +44,7 @@ public abstract class XWikiForm extends ActionForm {
   }
 
   public void setRequest(PortletRequest request) {
-    this.request = new XWikiPortletRequest(request);
+    throw new UnsupportedOperationException();
   }
 
   /**
