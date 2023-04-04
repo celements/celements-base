@@ -162,8 +162,8 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
   @Override
   public void endRendering(XWikiContext context) {
     // we used to call cleanFileList here but we should not anymore as endRendering is called to
-    // many times and empties the file upload list. This is handled by XWikiAction and
-    // XWikiPortlet which clean up lists in a finally block
+    // many times and empties the file upload list. This is handled by XWikiAction which clean up
+    // lists in a finally block
   }
 
   /**
@@ -271,7 +271,6 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
       }
     }
 
-    // TODO: Does this work in portlet mode, or we must use PortletFileUpload?
     FileUpload fileupload = new ServletFileUpload(factory);
     RequestContext reqContext = new ServletRequestContext(
         context.getRequest().getHttpServletRequest());
