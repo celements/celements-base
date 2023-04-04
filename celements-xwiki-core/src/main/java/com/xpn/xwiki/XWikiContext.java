@@ -53,16 +53,22 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public static final int MODE_SERVLET = 0;
 
+  @Deprecated
   public static final int MODE_PORTLET = 1;
 
+  @Deprecated
   public static final int MODE_XMLRPC = 2;
 
+  @Deprecated
   public static final int MODE_ATOM = 3;
 
+  @Deprecated
   public static final int MODE_PDF = 4;
 
+  @Deprecated
   public static final int MODE_GWT = 5;
 
+  @Deprecated
   public static final int MODE_GWT_DEBUG = 6;
 
   public static final String EXECUTIONCONTEXT_KEY = "xwikicontext";
