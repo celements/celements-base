@@ -4775,19 +4775,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public DocumentReference getDocumentReference(XWikiRequest request, XWikiContext context) {
     DocumentReference reference;
     if (context.getMode() == XWikiContext.MODE_PORTLET) {
-      if (request.getParameter("topic") != null) {
-        reference = this.currentMixedDocumentReferenceResolver.resolve(request.getParameter(
-            "topic"));
-      } else {
-        // Point to this wiki's home page
-        reference = new DocumentReference(context.getDatabase(),
-            this.defaultEntityReferenceValueProvider.getDefaultValue(EntityType.SPACE),
-            this.defaultEntityReferenceValueProvider.getDefaultValue(EntityType.DOCUMENT));
-      }
+      throw new UnsupportedOperationException();
     } else if (context.getMode() == XWikiContext.MODE_XMLRPC) {
-      reference = new DocumentReference(context.getDatabase(),
-          context.getDoc().getDocumentReference().getLastSpaceReference().getName(),
-          context.getDoc().getDocumentReference().getName());
+      throw new UnsupportedOperationException();
     } else {
       String action = context.getAction();
       if ((request.getParameter("topic") != null) && (action.equals("edit") || action.equals(

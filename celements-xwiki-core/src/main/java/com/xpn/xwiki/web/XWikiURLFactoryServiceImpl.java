@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.xmlrpc.XWikiXmlRpcURLFactory;
 
 public class XWikiURLFactoryServiceImpl implements XWikiURLFactoryService {
 
@@ -42,8 +41,6 @@ public class XWikiURLFactoryServiceImpl implements XWikiURLFactoryService {
 
   private void init(XWiki xwiki) {
     factoryMap = new HashMap<>();
-    register(xwiki, XWikiContext.MODE_XMLRPC, XWikiXmlRpcURLFactory.class,
-        "xwiki.urlfactory.xmlrpcclass");
     register(xwiki, XWikiContext.MODE_SERVLET, XWikiServletURLFactory.class,
         "xwiki.urlfactory.servletclass");
     register(xwiki, XWikiContext.MODE_PORTLET, XWikiPortletURLFactory.class,

@@ -65,11 +65,7 @@ public class XWikiRequestProcessor extends org.apache.struts.action.RequestProce
     }
 
     if (StringUtils.countMatches(result, "/") <= 2) {
-      if (result.startsWith("/xmlrpc/")) {
-        return "/xmlrpc/";
-      } else {
-        return "/view/";
-      }
+      return "/view/";
     } else {
       return result.substring(0, result.indexOf("/", 1) + 1);
     }

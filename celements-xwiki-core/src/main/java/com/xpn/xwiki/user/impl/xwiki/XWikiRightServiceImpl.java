@@ -201,11 +201,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
     if (user == null) {
       needsAuth = needsAuth(right, context);
       try {
-        if (context.getMode() != XWikiContext.MODE_XMLRPC) {
-          user = context.getWiki().checkAuth(context);
-        } else {
-          user = new XWikiUser(context.getUser());
-        }
+        user = context.getWiki().checkAuth(context);
 
         if ((user == null) && (needsAuth)) {
           logDeny("unauthentified", doc.getFullName(), action, "Authentication needed");
