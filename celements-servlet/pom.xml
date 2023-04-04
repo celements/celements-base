@@ -6,9 +6,9 @@
     <version>5.10</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>celements-config-source</artifactId>
-  <version>5.2-SNAPSHOT</version>
-  <description>Celements Configuration Source</description>
+  <artifactId>celements-servlet</artifactId>
+  <version>5.0-SNAPSHOT</version>
+  <description>Celements Servlet</description>
   <dependencies>
 
     <!-- celements -->
@@ -24,46 +24,21 @@
       <version>5.2</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-config-source-api</artifactId>
-      <version>5.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-reference</artifactId>
-      <version>5.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-servlet</artifactId>
-      <version>5.0-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
 
     <!-- xwiki -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-bridge</artifactId>
+      <artifactId>xwiki-core-context</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-properties</artifactId>
+      <artifactId>xwiki-core-action</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-script</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
+      <artifactId>xwiki-core-observation-api</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -74,27 +49,15 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
 
     <!-- testing -->
     <dependency>
-      <groupId>org.jmock</groupId>
-      <artifactId>jmock-junit4</artifactId>
-      <version>2.12.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-shared-tests</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-component-default</artifactId>
-      <version>2.7.2</version>
       <scope>test</scope>
     </dependency>
 
