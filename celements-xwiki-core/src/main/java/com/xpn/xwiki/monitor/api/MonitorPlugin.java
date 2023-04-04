@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.plugin.XWikiDefaultPlugin;
 
+@Deprecated
 public class MonitorPlugin extends XWikiDefaultPlugin {
 
   private static final Log log = LogFactory.getLog(MonitorPlugin.class);
