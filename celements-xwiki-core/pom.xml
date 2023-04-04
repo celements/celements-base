@@ -249,25 +249,6 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-formula-renderer</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-container-portlet</artifactId>
       <version>2.7.2</version>
     </dependency>
@@ -319,17 +300,6 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-chart</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-code</artifactId>
       <version>2.7.2</version>
       <exclusions>
@@ -368,17 +338,6 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-rendering-macro-footnotes</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-formula</artifactId>
       <version>2.7.2</version>
       <exclusions>
         <exclusion>
@@ -454,21 +413,6 @@
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-rss</artifactId>
-      <version>2.7.2</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>jdom</groupId>
-          <artifactId>jdom</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -659,15 +603,6 @@
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
     </dependency>
-    <!-- RSS Feed processing -->
-    <dependency>
-      <groupId>rome</groupId>
-      <artifactId>rome</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>rome</groupId>
-      <artifactId>rome-fetcher</artifactId>
-    </dependency>
     <!-- iCal processing -->
     <dependency>
       <groupId>ical4j</groupId>
@@ -721,19 +656,6 @@
       <groupId>exo-platform</groupId>
       <artifactId>exo-platform.service.database.api</artifactId>
       <version>2.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-      <version>1.0.13</version>
-    </dependency>
-    <!-- JFreeChart 1.0.13 has no POM file in the Maven Central Repository and thus we need to manually define
-         its own Maven dependency on JFree Common. Remove this dependency when it's fixed. -->
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jcommon</artifactId>
-      <version>1.0.15</version>
     </dependency>
 
     <!-- PDF export, image processing -->
