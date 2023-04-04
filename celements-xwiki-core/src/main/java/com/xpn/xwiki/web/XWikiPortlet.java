@@ -43,8 +43,6 @@ import org.apache.struts.upload.MultipartRequestWrapper;
 import org.apache.velocity.VelocityContext;
 import org.xwiki.container.ApplicationContextListenerManager;
 import org.xwiki.container.Container;
-import org.xwiki.container.portlet.PortletContainerException;
-import org.xwiki.container.portlet.PortletContainerInitializer;
 import org.xwiki.context.Execution;
 import org.xwiki.velocity.VelocityManager;
 
@@ -201,7 +199,8 @@ public class XWikiPortlet extends GenericPortlet {
         form = new EditForm();
       } else if (context.getAction().equals("rollback")) {
         form = new RollbackForm();
-      } else if (context.getAction().equals("objectadd") || context.getAction().equals("commentadd")) {
+      } else if (context.getAction().equals("objectadd")
+          || context.getAction().equals("commentadd")) {
         form = new ObjectAddForm();
       } else if (context.getAction().equals("objectremove")) {
         form = new ObjectRemoveForm();
@@ -423,23 +422,7 @@ public class XWikiPortlet extends GenericPortlet {
 
   protected void initializeContainerComponent(XWikiContext context)
       throws PortletException {
-    // Initialize the Container fields (request, response, session).
-    // Note that this is a bridge between the old core and the component architecture.
-    // In the new component architecture we use ThreadLocal to transport the request,
-    // response and session to components which require them.
-    PortletContainerInitializer containerInitializer = Utils
-        .getComponent(PortletContainerInitializer.class);
-
-    try {
-      containerInitializer.initializeRequest(
-          ((XWikiPortletRequest) context.getRequest()).getPortletRequest(), context);
-      containerInitializer.initializeResponse(
-          ((XWikiPortletResponse) context.getResponse()).getPortletResponse());
-      containerInitializer.initializeSession(
-          ((XWikiPortletRequest) context.getRequest()).getPortletRequest());
-    } catch (PortletContainerException e) {
-      throw new PortletException("Failed to initialize request/response or session", e);
-    }
+    throw new UnsupportedOperationException("Portlet not supported.");
   }
 
   protected void cleanupComponents() {
