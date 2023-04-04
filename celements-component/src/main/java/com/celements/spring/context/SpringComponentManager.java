@@ -34,12 +34,10 @@ public class SpringComponentManager implements ComponentManager {
 
   public static final String NAME = "springify";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequirementBeanPostProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SpringComponentManager.class);
 
   private final GenericApplicationContext springContext;
   private final ComponentDescriptorFactory descriptorFactory;
-
-  private ComponentEventManager eventManager;
 
   @Inject
   public SpringComponentManager(GenericApplicationContext context) {
@@ -133,7 +131,6 @@ public class SpringComponentManager implements ComponentManager {
       } else {
         springContext.registerBeanDefinition(beanName, descriptor.asBeanDefinition());
       }
-      getEventManager().ifPresent(em -> em.notifyComponentRegistered(descriptor));
     } catch (BeansException exc) {
       throw new ComponentRepositoryException("registerComponent - failed for [" + descriptor + "]",
           exc);
@@ -143,9 +140,7 @@ public class SpringComponentManager implements ComponentManager {
   @Override
   public void unregisterComponent(Class<?> role, String hint) {
     try {
-      ComponentDescriptor<?> descriptor = getComponentDescriptor(role, hint);
       springContext.removeBeanDefinition(uniqueBeanName(role, hint));
-      getEventManager().ifPresent(em -> em.notifyComponentUnregistered(descriptor));
     } catch (NoSuchBeanDefinitionException exc) {
       LOGGER.debug("unregisterComponent - component [{}], not registered",
           uniqueBeanName(role, hint));
@@ -188,18 +183,16 @@ public class SpringComponentManager implements ComponentManager {
     return null;
   }
 
+  @Deprecated
   @Override
   public ComponentEventManager getComponentEventManager() {
-    return eventManager;
+    return null;
   }
 
-  public Optional<ComponentEventManager> getEventManager() {
-    return Optional.ofNullable(eventManager);
-  }
-
+  @Deprecated
   @Override
   public void setComponentEventManager(ComponentEventManager eventManager) {
-    this.eventManager = eventManager;
+    // not supported
   }
 
   @Override

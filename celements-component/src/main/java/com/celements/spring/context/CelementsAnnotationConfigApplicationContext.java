@@ -10,8 +10,6 @@ import org.xwiki.component.annotation.ComponentAnnotationLoader;
 public class CelementsAnnotationConfigApplicationContext
     extends AnnotationConfigApplicationContext {
 
-  // TODO CelementsServletContextListener
-
   public CelementsAnnotationConfigApplicationContext(String... basePackages) {
     super(new CelementsBeanFactory());
     setBeanNameGenerator(new FullyQualifiedAnnotationBeanNameGenerator());

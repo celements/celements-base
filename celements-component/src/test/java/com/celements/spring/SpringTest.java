@@ -3,15 +3,17 @@ package com.celements.spring;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.GenericApplicationContext;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.script.service.ScriptService;
 
+import com.celements.spring.context.CelementsAnnotationConfigApplicationContext;
 import com.celements.spring.context.CelementsBeanFactory;
 import com.celements.spring.context.SpringComponentManager;
-import com.celements.spring.context.SpringContextManager;
+import com.celements.spring.context.SpringContext;
 import com.celements.spring.test.TestRole;
 
 public class SpringTest {
@@ -19,9 +21,15 @@ public class SpringTest {
   GenericApplicationContext ctx;
   ComponentManager cm;
 
+  @BeforeClass
+  public static void prepareClass() {
+    SpringContext.INSTANCE.setContext(new CelementsAnnotationConfigApplicationContext(
+        "com.celements.spring"));
+  }
+
   @Before
   public void prepare() {
-    ctx = SpringContextManager.get();
+    ctx = SpringContext.get();
     cm = ctx.getBean(SpringComponentManager.NAME, ComponentManager.class);
   }
 
@@ -29,7 +37,7 @@ public class SpringTest {
   public void test_init() throws Exception {
     assertTrue(cm.hasComponent(ScriptService.class, "model"));
     assertSame(cm.lookup(ScriptService.class, "model"),
-        SpringContextManager.get().getBean(CelementsBeanFactory.uniqueBeanName(
+        SpringContext.get().getBean(CelementsBeanFactory.uniqueBeanName(
             ScriptService.class, "model")));
   }
 

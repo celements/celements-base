@@ -36,7 +36,9 @@ import org.xwiki.observation.event.Event;
  *
  * @version $Id$
  * @since 2.0M1
+ * @deprecated since 6.0
  */
+@Deprecated
 public class StackingComponentEventManager implements ComponentEventManager {
 
   private ObservationManager observationManager;
