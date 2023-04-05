@@ -19,10 +19,10 @@
  */
 package com.xpn.xwiki.internal;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.jfree.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
@@ -36,6 +36,7 @@ import org.xwiki.rendering.macro.wikibridge.WikiMacro;
 import org.xwiki.rendering.macro.wikibridge.WikiMacroExecutionFinishedEvent;
 import org.xwiki.rendering.macro.wikibridge.WikiMacroExecutionStartsEvent;
 
+import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 
@@ -49,6 +50,8 @@ import com.xpn.xwiki.doc.XWikiDocument;
 @Component("WikiMacroExecutionEventListener")
 public class WikiMacroExecutionEventListener extends AbstractLogEnabled implements EventListener {
 
+  private static final Logger LOG = LoggerFactory.getLogger(WikiMacroExecutionEventListener.class);
+
   /**
    * The name of the listener.
    */
@@ -57,13 +60,9 @@ public class WikiMacroExecutionEventListener extends AbstractLogEnabled implemen
   /**
    * The events to match.
    */
-  private static final List<Event> EVENTS = new ArrayList<Event>() {
-
-    {
-      add(new WikiMacroExecutionStartsEvent());
-      add(new WikiMacroExecutionFinishedEvent());
-    }
-  };
+  private static final List<Event> EVENTS = ImmutableList.<Event>of(
+      new WikiMacroExecutionStartsEvent(),
+      new WikiMacroExecutionFinishedEvent());
 
   /**
    * Used to extract the {@link XWikiContext}.
@@ -143,7 +142,7 @@ public class WikiMacroExecutionEventListener extends AbstractLogEnabled implemen
 
         xwikiContext.setDoc(contextDoc);
       } catch (Exception e) {
-        Log.error("Failed to setup context before wiki macro execution");
+        LOG.error("Failed to setup context before wiki macro execution");
       }
     } else {
       // Restore context document
@@ -153,7 +152,7 @@ public class WikiMacroExecutionEventListener extends AbstractLogEnabled implemen
 
         xwikiContext.setDoc(contextDoc);
       } catch (Exception e) {
-        Log.error("Failed to setup context after wiki macro execution");
+        LOG.error("Failed to setup context after wiki macro execution");
       }
     }
   }
