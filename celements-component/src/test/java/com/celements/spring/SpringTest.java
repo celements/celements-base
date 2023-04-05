@@ -5,39 +5,37 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.script.service.ScriptService;
 
-import com.celements.spring.context.CelementsAnnotationConfigApplicationContext;
-import com.celements.spring.context.CelementsBeanFactory;
-import com.celements.spring.context.SpringComponentManager;
-import com.celements.spring.context.SpringContext;
+import com.celements.spring.context.CelSpringContext;
+import com.celements.spring.context.SpringShimComponentManager;
+import com.celements.spring.context.XWikiShimBeanFactory;
 import com.celements.spring.test.TestRole;
 
 public class SpringTest {
 
-  GenericApplicationContext ctx;
+  static ApplicationContext ctx;
   ComponentManager cm;
 
   @BeforeClass
   public static void prepareClass() {
-    SpringContext.INSTANCE.setContext(new CelementsAnnotationConfigApplicationContext(
-        "com.celements.spring"));
+    ctx = new CelSpringContext();
   }
 
   @Before
   public void prepare() {
-    ctx = SpringContext.get();
-    cm = ctx.getBean(SpringComponentManager.NAME, ComponentManager.class);
+    // ctx = SpringContext.get();
+    cm = ctx.getBean(SpringShimComponentManager.NAME, ComponentManager.class);
   }
 
   @Test
   public void test_init() throws Exception {
     assertTrue(cm.hasComponent(ScriptService.class, "model"));
     assertSame(cm.lookup(ScriptService.class, "model"),
-        SpringContext.get().getBean(CelementsBeanFactory.uniqueBeanName(
+        ctx.getBean(XWikiShimBeanFactory.uniqueBeanName(
             ScriptService.class, "model")));
   }
 
@@ -45,7 +43,7 @@ public class SpringTest {
   public void test_hasComponent() throws Exception {
     assertTrue(cm.hasComponent(ComponentManager.class));
     assertTrue(cm.hasComponent(ComponentManager.class, "default"));
-    assertTrue(cm.hasComponent(ComponentManager.class, SpringComponentManager.NAME));
+    assertTrue(cm.hasComponent(ComponentManager.class, SpringShimComponentManager.NAME));
   }
 
   @Test

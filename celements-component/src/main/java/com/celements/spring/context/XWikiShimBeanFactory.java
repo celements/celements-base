@@ -24,7 +24,7 @@ import com.celements.common.lambda.LambdaExceptionUtil.ThrowingFunction;
 import com.google.common.base.Splitter;
 
 @Component
-public class CelementsBeanFactory extends DefaultListableBeanFactory {
+public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
 
   public static String uniqueBeanName(Class<?> role, String hint) {
     if (isNullOrEmpty(hint)) {

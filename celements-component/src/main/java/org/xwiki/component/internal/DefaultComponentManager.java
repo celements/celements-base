@@ -33,7 +33,7 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.manager.ComponentRepositoryException;
 
-import com.celements.spring.context.SpringComponentManager;
+import com.celements.spring.context.SpringShimComponentManager;
 
 /**
  * Wraps the Component Manager in a component so that components requiring the component Manager can
@@ -49,7 +49,7 @@ public class DefaultComponentManager implements ComponentManager {
 
   @Inject
   public DefaultComponentManager(
-      @Named(SpringComponentManager.NAME) ComponentManager cm) {
+      @Named(SpringShimComponentManager.NAME) ComponentManager cm) {
     this.componentManager = cm;
   }
 

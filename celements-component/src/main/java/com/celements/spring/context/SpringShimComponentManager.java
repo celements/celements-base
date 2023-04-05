@@ -1,6 +1,6 @@
 package com.celements.spring.context;
 
-import static com.celements.spring.context.CelementsBeanFactory.*;
+import static com.celements.spring.context.XWikiShimBeanFactory.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;
@@ -29,18 +29,18 @@ import com.google.common.collect.ImmutableList;
 
 import one.util.streamex.EntryStream;
 
-@Service(SpringComponentManager.NAME)
-public class SpringComponentManager implements ComponentManager {
+@Service(SpringShimComponentManager.NAME)
+public class SpringShimComponentManager implements ComponentManager {
 
   public static final String NAME = "springify";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SpringComponentManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SpringShimComponentManager.class);
 
   private final GenericApplicationContext springContext;
   private final ComponentDescriptorFactory descriptorFactory;
 
   @Inject
-  public SpringComponentManager(GenericApplicationContext context) {
+  public SpringShimComponentManager(GenericApplicationContext context) {
     springContext = context;
     descriptorFactory = new ComponentDescriptorFactory();
   }
@@ -95,7 +95,7 @@ public class SpringComponentManager implements ComponentManager {
   public <T> Map<String, T> lookupMap(Class<T> role) throws ComponentLookupException {
     try {
       return EntryStream.of(springContext.getBeansOfType(role))
-          .mapKeys(CelementsBeanFactory::getHintFromBeanName)
+          .mapKeys(XWikiShimBeanFactory::getHintFromBeanName)
           .toImmutableMap();
     } catch (BeansException exc) {
       throw new ComponentLookupException("lookupMap - failed for [" + role + "]", exc);

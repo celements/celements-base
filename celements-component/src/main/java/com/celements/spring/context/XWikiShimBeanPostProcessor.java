@@ -24,15 +24,15 @@ import org.xwiki.component.phase.InitializationException;
 import org.xwiki.component.util.ReflectionUtils;
 
 @Component
-public class RequirementBeanPostProcessor implements BeanPostProcessor {
+public class XWikiShimBeanPostProcessor implements BeanPostProcessor {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RequirementBeanPostProcessor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(XWikiShimBeanPostProcessor.class);
 
   private final ComponentManager componentManager;
   private final ComponentDescriptorFactory descriptorFactory;
 
   @Inject
-  public RequirementBeanPostProcessor(ComponentManager componentManager) {
+  public XWikiShimBeanPostProcessor(ComponentManager componentManager) {
     this.componentManager = componentManager;
     this.descriptorFactory = new ComponentDescriptorFactory();
   }

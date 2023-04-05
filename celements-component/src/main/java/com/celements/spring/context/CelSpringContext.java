@@ -1,24 +1,37 @@
 package com.celements.spring.context;
 
 import java.io.IOException;
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.xwiki.component.annotation.ComponentAnnotationLoader;
 
-public class CelementsAnnotationConfigApplicationContext
-    extends AnnotationConfigApplicationContext {
+import com.celements.spring.CelSpringConfig;
+import com.google.common.collect.ImmutableList;
 
-  public CelementsAnnotationConfigApplicationContext(String... basePackages) {
-    super(new CelementsBeanFactory());
+public class CelSpringContext extends AnnotationConfigApplicationContext {
+
+  public CelSpringContext() {
+    this(ImmutableList.of());
+  }
+
+  public CelSpringContext(@NotNull List<Class<?>> additionalConfigs) {
+    super(new XWikiShimBeanFactory());
     setBeanNameGenerator(new FullyQualifiedAnnotationBeanNameGenerator());
-    scan(basePackages); // spring components
-    scanXWiki(); // xwiki components
+    register(ImmutableList.<Class<?>>builder()
+        .add(CelSpringConfig.class)
+        .addAll(additionalConfigs)
+        .build()
+        .toArray(new Class[0]));
+    registerXWiki();
     refresh();
   }
 
-  private void scanXWiki() {
+  protected final void registerXWiki() {
     try {
       ClassLoader classLoader = this.getClass().getClassLoader();
       new ComponentAnnotationLoader().loadDeclaredDescriptors(classLoader)
@@ -29,4 +42,5 @@ public class CelementsAnnotationConfigApplicationContext
       throw new IllegalStateException("failed to scan XWiki components", exc);
     }
   }
+
 }
