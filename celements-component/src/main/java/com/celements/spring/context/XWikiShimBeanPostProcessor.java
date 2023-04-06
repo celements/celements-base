@@ -47,10 +47,11 @@ public class XWikiShimBeanPostProcessor implements BeanPostProcessor {
 
   private void injectXWikiDependency(ComponentDependency<Object> dependency, Object bean) {
     try {
-      ReflectionUtils.setFieldValue(bean, dependency.getName(), getInstance(dependency));
       LOGGER.debug("injectXWikiDependency - [{}] into [{}]", dependency, bean);
+      ReflectionUtils.setFieldValue(bean, dependency.getName(), getInstance(dependency));
     } catch (ComponentLookupException cle) {
-      LOGGER.error("injectXWikiDependency - failed [{}] into [{}]" + bean, dependency, bean, cle);
+      throw new BeanInitializationException(
+          "failed injecting [" + dependency + "] into [" + bean + "]", cle);
     }
   }
 

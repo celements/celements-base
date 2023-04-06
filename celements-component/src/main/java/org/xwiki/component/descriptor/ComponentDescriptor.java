@@ -20,6 +20,8 @@
  */
 package org.xwiki.component.descriptor;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.util.Collection;
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -57,7 +59,8 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
 
   default BeanDefinition asBeanDefinition() {
     return BeanDefinitionBuilder
-        .genericBeanDefinition(getImplementation())
+        .genericBeanDefinition(checkNotNull(getImplementation()))
+        .setLazyInit(true) // xwiki components are always lazy
         .setScope(getBeanScope())
         .setPrimary(isDefault())
         .getBeanDefinition();

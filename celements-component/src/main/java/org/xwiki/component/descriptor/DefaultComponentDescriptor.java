@@ -70,15 +70,13 @@ public class DefaultComponentDescriptor<T> extends DefaultComponentRole<T>
     DefaultComponentDependency<TT> componentDependency = new DefaultComponentDependency<>();
     componentDependency.setRole(role);
     componentDependency.setRoleHint(roleHint);
-
     this.componentDependencies.add(componentDependency);
   }
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(super.toString());
-    buffer.append(" implementation = [").append(getImplementation().getName()).append("]");
-    buffer.append(" instantiation = [").append(getInstantiationStrategy()).append("]");
-    return buffer.toString();
+    return super.toString()
+        + " implementation = [" + getImplementation() + "]"
+        + " instantiation = [" + getInstantiationStrategy() + "]";
   }
 }

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Service;
 import org.xwiki.component.annotation.ComponentDescriptorFactory;
@@ -120,16 +121,13 @@ public class SpringShimComponentManager implements ComponentManager {
   @Override
   public <T> void registerComponent(ComponentDescriptor<T> descriptor, T component)
       throws ComponentRepositoryException {
-    String beanName = descriptor.getBeanName();
     try {
-      // TODO test
+      DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) springContext
+          .getBeanFactory();
+      String beanName = descriptor.getBeanName();
+      beanFactory.registerBeanDefinition(beanName, descriptor.asBeanDefinition());
       if (component != null) {
-        // according to method contract, if an instance is provided it should never be created from
-        // the descriptor, irrespective of the instantiation strategy. the component must be fully
-        // initialized already.
-        springContext.getBeanFactory().registerSingleton(beanName, component);
-      } else {
-        springContext.registerBeanDefinition(beanName, descriptor.asBeanDefinition());
+        beanFactory.registerSingleton(beanName, component);
       }
     } catch (BeansException exc) {
       throw new ComponentRepositoryException("registerComponent - failed for [" + descriptor + "]",
