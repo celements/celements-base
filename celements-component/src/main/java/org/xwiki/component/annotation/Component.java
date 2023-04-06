@@ -45,7 +45,6 @@ public @interface Component {
    * The hint value. Can be any text value. It's used to differentiate one component implementation
    * from another one.
    */
-  // @AliasFor(annotation = org.springframework.stereotype.Component.class, attribute = "value")
   String value() default "";
 
   /**

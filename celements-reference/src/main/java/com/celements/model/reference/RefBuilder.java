@@ -59,6 +59,11 @@ public class RefBuilder implements Cloneable {
     return with(EntityType.ATTACHMENT, name);
   }
 
+  public RefBuilder with(RefBuilder other) {
+    other.refs.values().forEach(this::with);
+    return this;
+  }
+
   public RefBuilder with(EntityReference ref) {
     while (ref != null) {
       with(ref.getType(), ref.getName());
