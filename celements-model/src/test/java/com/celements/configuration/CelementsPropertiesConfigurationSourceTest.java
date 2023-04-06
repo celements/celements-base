@@ -23,7 +23,9 @@ import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.xwiki.component.descriptor.DefaultComponentDescriptor;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.container.ApplicationContext;
 import org.xwiki.container.Container;
@@ -36,6 +38,16 @@ import com.xpn.xwiki.web.Utils;
 @ComponentList({ @HintedComponent(clazz = ConfigurationSource.class,
     hint = "celementsproperties") })
 public class CelementsPropertiesConfigurationSourceTest extends AbstractComponentTest {
+
+  @Before
+  public void prepareTest() throws Exception {
+    DefaultComponentDescriptor<ConfigurationSource> descriptor = new DefaultComponentDescriptor<>();
+    descriptor.setRole(ConfigurationSource.class);
+    descriptor.setRoleHint(CelementsPropertiesConfigurationSource.NAME);
+    descriptor.setImplementation(CelementsPropertiesConfigurationSource.class);
+    getComponentManager().unregisterComponent(descriptor.getRole(), descriptor.getRoleHint());
+    getComponentManager().registerComponent(descriptor);
+  }
 
   @Test
   public void test_initialize() throws Exception {
