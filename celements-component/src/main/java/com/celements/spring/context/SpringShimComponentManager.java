@@ -149,7 +149,6 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> void release(T component) throws ComponentLifecycleException {
     if (component != null) {
       try {
-        // TODO is this sufficient ? (test with&without bean definition)
         springContext.getBeanFactory().destroyBean(component);
       } catch (BeansException exc) {
         throw new ComponentLifecycleException("release - failed for class ["

@@ -5,29 +5,44 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.xwiki.component.annotation.ComponentAnnotationLoader;
+import org.xwiki.component.descriptor.ComponentDescriptor;
 
 import com.celements.spring.CelSpringConfig;
+import com.celements.spring.XWikiSpringConfig;
 import com.google.common.collect.ImmutableList;
 
 public class CelSpringContext extends AnnotationConfigApplicationContext {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CelSpringContext.class);
 
   public CelSpringContext() {
     this(ImmutableList.of());
   }
 
   public CelSpringContext(@NotNull List<Class<?>> additionalConfigs) {
+    this(new FullyQualifiedAnnotationBeanNameGenerator(),
+        ImmutableList.<Class<?>>builder()
+            .add(CelSpringConfig.class)
+            .add(XWikiSpringConfig.class)
+            .addAll(additionalConfigs)
+            .build());
+  }
+
+  public CelSpringContext(
+      @NotNull BeanNameGenerator beanNameGenerator,
+      @NotNull List<Class<?>> configs) {
     super(new XWikiShimBeanFactory());
-    setBeanNameGenerator(new FullyQualifiedAnnotationBeanNameGenerator());
-    register(ImmutableList.<Class<?>>builder()
-        .add(CelSpringConfig.class)
-        .addAll(additionalConfigs)
-        .build()
-        .toArray(new Class[0]));
+    setBeanNameGenerator(beanNameGenerator);
+    register(configs.toArray(new Class[configs.size()]));
     registerXWiki();
+    LOGGER.info("initializing configs: {}", configs);
     refresh();
   }
 
@@ -35,12 +50,15 @@ public class CelSpringContext extends AnnotationConfigApplicationContext {
     try {
       ClassLoader classLoader = this.getClass().getClassLoader();
       new ComponentAnnotationLoader().loadDeclaredDescriptors(classLoader)
-          .forEach(descriptor -> registerBeanDefinition(
-              descriptor.getBeanName(),
-              descriptor.asBeanDefinition()));
+          .forEach(this::registerXWikiComponent);
     } catch (ClassNotFoundException | IOException | BeansException exc) {
       throw new IllegalStateException("failed to scan XWiki components", exc);
     }
+  }
+
+  private void registerXWikiComponent(ComponentDescriptor<?> descriptor) {
+    LOGGER.debug("registerXWikiComponent: {}", descriptor);
+    registerBeanDefinition(descriptor.getBeanName(), descriptor.asBeanDefinition());
   }
 
 }

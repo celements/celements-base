@@ -21,6 +21,7 @@
 package org.xwiki.component.descriptor;
 
 import static com.google.common.base.Preconditions.*;
+import static org.xwiki.component.descriptor.ComponentInstantiationStrategy.*;
 
 import java.util.Collection;
 
@@ -47,22 +48,14 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
     return XWikiShimBeanFactory.uniqueBeanName(getRole(), getRoleHint());
   }
 
-  default String getBeanScope() {
-    switch (getInstantiationStrategy()) {
-      case PER_LOOKUP:
-        return BeanDefinition.SCOPE_PROTOTYPE;
-      case SINGLETON:
-      default:
-        return BeanDefinition.SCOPE_SINGLETON;
-    }
-  }
-
   default BeanDefinition asBeanDefinition() {
     return BeanDefinitionBuilder
         .genericBeanDefinition(checkNotNull(getImplementation()))
         .setLazyInit(true) // xwiki components are always lazy
-        .setScope(getBeanScope())
-        .setPrimary(isDefault())
+        .setPrimary(isDefault()) // default components are primary beans
+        .setScope(getInstantiationStrategy() == PER_LOOKUP
+            ? BeanDefinition.SCOPE_PROTOTYPE
+            : BeanDefinition.SCOPE_SINGLETON)
         .getBeanDefinition();
   }
 
