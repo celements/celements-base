@@ -48,8 +48,7 @@ public class CelSpringContext extends AnnotationConfigApplicationContext {
 
   protected final void registerXWiki() {
     try {
-      ClassLoader classLoader = this.getClass().getClassLoader();
-      new ComponentAnnotationLoader().loadDeclaredDescriptors(classLoader)
+      new ComponentAnnotationLoader().loadDeclaredDescriptors(getClassLoader())
           .forEach(this::registerXWikiComponent);
     } catch (ClassNotFoundException | IOException | BeansException exc) {
       throw new IllegalStateException("failed to scan XWiki components", exc);
