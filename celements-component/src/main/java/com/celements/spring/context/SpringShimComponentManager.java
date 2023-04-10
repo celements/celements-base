@@ -5,7 +5,9 @@ import static java.util.stream.Collectors.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -19,14 +21,14 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Service;
 import org.xwiki.component.annotation.ComponentDescriptorFactory;
 import org.xwiki.component.descriptor.ComponentDescriptor;
+import org.xwiki.component.descriptor.ComponentRole;
+import org.xwiki.component.descriptor.DefaultComponentRole;
 import org.xwiki.component.manager.ComponentEventManager;
 import org.xwiki.component.manager.ComponentLifecycleException;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.manager.ComponentManagerInitializer;
 import org.xwiki.component.manager.ComponentRepositoryException;
-
-import com.google.common.collect.ImmutableList;
 
 import one.util.streamex.EntryStream;
 
@@ -48,10 +50,13 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @PostConstruct
   public void init() {
-    // Extension point to allow component to manipulate ComponentManager initialized state.
-    springContext.getBeansOfType(ComponentManagerInitializer.class)
-        .values().stream()
-        .forEach(initializer -> initializer.initialize(this));
+    try {
+      // Extension point to allow component to manipulate ComponentManager initialized state.
+      lookupEntries(ComponentManagerInitializer.class).values()
+          .forEach(initializer -> initializer.initialize(this));
+    } catch (ComponentLookupException cle) {
+      throw new IllegalStateException("failed initialising ComponentManager", cle);
+    }
   }
 
   @Override
@@ -62,8 +67,8 @@ public class SpringShimComponentManager implements ComponentManager {
   @Override
   public <T> boolean hasComponent(Class<T> role, String hint) {
     String beanName = uniqueBeanName(role, hint);
-    Map<String, T> beans = springContext.getBeansOfType(role);
-    return beans.containsKey(beanName) || beans.containsKey(hint);
+    return Stream.of(springContext.getBeanNamesForType(role))
+        .anyMatch(name -> name.equals(hint) || name.equals(beanName));
   }
 
   @Override
@@ -85,30 +90,37 @@ public class SpringShimComponentManager implements ComponentManager {
   }
 
   private <T> Optional<T> getBean(String name, Class<T> type) {
-    try {
-      return Optional.of(springContext.getBean(name, type));
-    } catch (NoSuchBeanDefinitionException exc) {
-      return Optional.empty();
+    if (name != null) {
+      try {
+        return Optional.of(springContext.getBean(name, type));
+      } catch (NoSuchBeanDefinitionException exc) {}
     }
+    return Optional.empty();
   }
 
   @Override
   public <T> Map<String, T> lookupMap(Class<T> role) throws ComponentLookupException {
-    try {
-      return EntryStream.of(springContext.getBeansOfType(role))
-          .mapKeys(XWikiShimBeanFactory::getHintFromBeanName)
-          .toImmutableMap();
-    } catch (BeansException exc) {
-      throw new ComponentLookupException("lookupMap - failed for [" + role + "]", exc);
-    }
+    return lookupEntries(role)
+        .mapKeys(ComponentRole::getRoleHint)
+        .toImmutableMap();
   }
 
   @Override
   public <T> List<T> lookupList(Class<T> role) throws ComponentLookupException {
+    return lookupEntries(role)
+        .values()
+        .toImmutableList();
+  }
+
+  private <T> EntryStream<ComponentRole<T>, T> lookupEntries(Class<T> role)
+      throws ComponentLookupException {
     try {
-      return ImmutableList.copyOf(springContext.getBeansOfType(role).values());
+      return EntryStream.of(springContext.getBeansOfType(role))
+          .mapKeys(beanName -> XWikiShimBeanFactory.<T>getRoleFromBeanName(beanName)
+              .orElseGet(() -> new DefaultComponentRole<>(role, beanName)))
+          .filterKeys(compRole -> compRole.getRole() == role);
     } catch (BeansException exc) {
-      throw new ComponentLookupException("lookupList - failed for [" + role + "]", exc);
+      throw new ComponentLookupException("lookupEntries - failed for [" + role + "]", exc);
     }
   }
 
@@ -159,23 +171,28 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> ComponentDescriptor<T> getComponentDescriptor(Class<T> role, String hint) {
-    String beanName = uniqueBeanName(role, hint);
-    return createComponentDescriptor(role, beanName, springContext.getBean(beanName));
+    return createComponentDescriptor(
+        new DefaultComponentRole<>(role, hint),
+        getBean(hint, role).orElse(null));
   }
 
   @Override
   public <T> List<ComponentDescriptor<T>> getComponentDescriptorList(Class<T> role) {
-    return EntryStream.of(springContext.getBeansOfType(role))
-        .mapKeyValue((name, instance) -> createComponentDescriptor(role, name, instance))
-        .collect(toList());
+    Stream<ComponentDescriptor<T>> ret = Stream.empty();
+    try {
+      ret = lookupEntries(role).mapKeyValue(this::createComponentDescriptor);
+    } catch (ComponentLookupException cle) {
+      LOGGER.error("getComponentDescriptorList - failed for [{}]", role, cle);
+    }
+    return ret.filter(Objects::nonNull).collect(toList());
   }
 
   @SuppressWarnings("unchecked")
-  public <T> ComponentDescriptor<T> createComponentDescriptor(Class<T> role, String beanName,
+  private <T> ComponentDescriptor<T> createComponentDescriptor(ComponentRole<T> compRole,
       Object instance) {
     if (instance != null) {
       Class<? extends T> instanceClass = (Class<? extends T>) instance.getClass();
-      return descriptorFactory.create(instanceClass, role, getHintFromBeanName(beanName));
+      return descriptorFactory.create(instanceClass, compRole.getRole(), compRole.getRoleHint());
     }
     return null;
   }

@@ -19,6 +19,8 @@
  */
 package org.xwiki.component.descriptor;
 
+import java.util.Objects;
+
 public class DefaultComponentRole<T> implements ComponentRole<T> {
 
   public static final String HINT = ComponentRole.DEFAULT_HINT;
@@ -26,6 +28,14 @@ public class DefaultComponentRole<T> implements ComponentRole<T> {
   private Class<T> role;
 
   private String roleHint = DEFAULT_HINT;
+
+  @Deprecated
+  public DefaultComponentRole() {}
+
+  public DefaultComponentRole(Class<T> role, String hint) {
+    setRole(role);
+    setRoleHint(hint);
+  }
 
   public void setRole(Class<T> role) {
     this.role = role;
@@ -43,6 +53,24 @@ public class DefaultComponentRole<T> implements ComponentRole<T> {
   @Override
   public String getRoleHint() {
     return roleHint;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getRole(), getRoleHint());
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof ComponentRole)) {
+      return false;
+    } else {
+      ComponentRole<?> other = (ComponentRole<?>) obj;
+      return Objects.equals(this.getRole(), other.getRole())
+          && Objects.equals(this.getRoleHint(), other.getRoleHint());
+    }
   }
 
   @Override

@@ -3,6 +3,7 @@ package com.celements.spring.context;
 import static com.celements.common.MoreOptional.*;
 import static com.google.common.base.Strings.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.stereotype.Component;
 import org.xwiki.component.descriptor.ComponentRole;
+import org.xwiki.component.descriptor.DefaultComponentRole;
 
 import com.celements.common.lambda.LambdaExceptionUtil.ThrowingFunction;
 import com.google.common.base.Splitter;
@@ -26,18 +28,27 @@ import com.google.common.base.Splitter;
 @Component
 public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
 
+  public static final String SEPARATOR = "|||";
+
   public static String uniqueBeanName(Class<?> role, String hint) {
     if (isNullOrEmpty(hint)) {
       hint = ComponentRole.DEFAULT_HINT;
     }
-    return role.getName() + "|" + hint;
+    return role.getName() + SEPARATOR + hint;
   }
 
-  public static String getHintFromBeanName(String beanName) {
-    return Splitter.on('|').omitEmptyStrings()
-        .splitToStream(beanName)
-        .reduce((s1, s2) -> s2)
-        .orElse(ComponentRole.DEFAULT_HINT);
+  @SuppressWarnings("unchecked")
+  public static <T> Optional<ComponentRole<T>> getRoleFromBeanName(String beanName) {
+    try {
+      List<String> parts = Splitter.on(SEPARATOR).omitEmptyStrings().splitToList(beanName);
+      if (parts.size() > 1) {
+        Class<T> role = (Class<T>) Class.forName(parts.get(0));
+        return Optional.of(new DefaultComponentRole<>(role, parts.get(1)));
+      }
+      return Optional.empty();
+    } catch (ClassNotFoundException exc) {
+      throw new IllegalArgumentException(exc);
+    }
   }
 
   /**
