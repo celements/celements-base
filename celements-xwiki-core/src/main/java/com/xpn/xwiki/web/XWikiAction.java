@@ -207,40 +207,37 @@ public abstract class XWikiAction extends Action {
               "Exception while sending response",
               e);
         }
-        if (!(e instanceof XWikiException)) {
-          e = new XWikiException(XWikiException.MODULE_XWIKI_APP,
-              XWikiException.ERROR_XWIKI_UNKNOWN,
-              "Unknown exception: " + e.getMessage(), e);
-        }
         try {
-          XWikiException xex = (XWikiException) e;
-          if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
-            // Connection aborted, simply ignore this.
-            LOG.error("Connection aborted");
-            // We don't write any other message, as the connection is broken, anyway.
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_ACCESS_DENIED) {
-            Utils.parseTemplate(context.getWiki().Param("xwiki.access_exception", "accessdenied"),
-                context);
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_USER_INACTIVE) {
-            Utils.parseTemplate(context.getWiki().Param("xwiki.user_exception", "userinactive"),
-                context);
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_ATTACHMENT_NOT_FOUND) {
-            context.put("message", "attachmentdoesnotexist");
-            Utils.parseTemplate(context.getWiki().Param("xwiki.attachment_exception",
-                "attachmentdoesnotexist"), context);
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION) {
-            vcontext.put("message", context.getMessageTool().get("platform.core.invalidUrl"));
-            xwiki.setPhonyDocument(
-                xwiki.getDefaultSpace(context) + "." + xwiki.getDefaultPage(context),
-                context, vcontext);
-            context.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            Utils.parseTemplate(context.getWiki().Param("xwiki.invalid_url_exception", "error"),
-                context);
-            return null;
+          if (e instanceof XWikiException) {
+            XWikiException xex = (XWikiException) e;
+            if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
+              // Connection aborted, simply ignore this.
+              LOG.error("Connection aborted");
+              // We don't write any other message, as the connection is broken, anyway.
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_ACCESS_DENIED) {
+              Utils.parseTemplate(context.getWiki().Param("xwiki.access_exception", "accessdenied"),
+                  context);
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_USER_INACTIVE) {
+              Utils.parseTemplate(context.getWiki().Param("xwiki.user_exception", "userinactive"),
+                  context);
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_ATTACHMENT_NOT_FOUND) {
+              context.put("message", "attachmentdoesnotexist");
+              Utils.parseTemplate(context.getWiki().Param("xwiki.attachment_exception",
+                  "attachmentdoesnotexist"), context);
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION) {
+              vcontext.put("message", context.getMessageTool().get("platform.core.invalidUrl"));
+              xwiki.setPhonyDocument(
+                  xwiki.getDefaultSpace(context) + "." + xwiki.getDefaultPage(context),
+                  context, vcontext);
+              context.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
+              Utils.parseTemplate(context.getWiki().Param("xwiki.invalid_url_exception", "error"),
+                  context);
+              return null;
+            }
           }
           vcontext.put("exp", e);
           LOG.error("Uncaught exception: " + e.getMessage(), e);
