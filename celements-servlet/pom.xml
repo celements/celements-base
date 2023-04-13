@@ -74,6 +74,16 @@
       <artifactId>commons-lang</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>one.util</groupId>
+      <artifactId>streamex</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- Logging -->
     <dependency>
