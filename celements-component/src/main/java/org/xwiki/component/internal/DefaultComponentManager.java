@@ -43,14 +43,23 @@ import com.celements.spring.context.SpringShimComponentManager;
  * @since 2.0M1
  */
 @Component
-public class DefaultComponentManager implements ComponentManager {
+public class DefaultComponentManager implements ComponentManager, Composable {
 
-  private final ComponentManager componentManager;
+  private ComponentManager componentManager;
+
+  public DefaultComponentManager() {
+    // used for EmbeddableComponentManager
+  }
 
   @Inject
   public DefaultComponentManager(
-      @Named(SpringShimComponentManager.NAME) ComponentManager cm) {
-    this.componentManager = cm;
+      @Named(SpringShimComponentManager.NAME) ComponentManager componentManager) {
+    this.componentManager = componentManager;
+  }
+
+  @Override
+  public void compose(ComponentManager componentManager) {
+    this.componentManager = componentManager;
   }
 
   /**
