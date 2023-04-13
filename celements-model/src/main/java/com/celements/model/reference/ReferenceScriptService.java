@@ -4,6 +4,9 @@ import static com.google.common.base.Strings.*;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -35,11 +38,13 @@ public class ReferenceScriptService implements ScriptService {
   @Requirement
   private ModelContext context;
 
+  @NotNull
   public RefBuilder create() {
     return RefBuilder.create().nullable().with(context.getWikiRef());
   }
 
-  public RefBuilder create(EntityReference... refs) {
+  @NotNull
+  public RefBuilder create(@Nullable EntityReference... refs) {
     RefBuilder builder = create();
     if (refs != null) {
       StreamEx.of(refs).forEach(builder::with);
@@ -47,7 +52,8 @@ public class ReferenceScriptService implements ScriptService {
     return builder;
   }
 
-  public ClassReference createClassRef(String space, String name) {
+  @Nullable
+  public ClassReference createClassRef(@Nullable String space, @Nullable String name) {
     try {
       return new ClassReference(space, name);
     } catch (IllegalArgumentException iae) {
@@ -55,7 +61,8 @@ public class ReferenceScriptService implements ScriptService {
     }
   }
 
-  public ClassReference createClassRef(EntityReference ref) {
+  @Nullable
+  public ClassReference createClassRef(@Nullable EntityReference ref) {
     try {
       return new ClassReference(ref);
     } catch (IllegalArgumentException iae) {
@@ -63,8 +70,9 @@ public class ReferenceScriptService implements ScriptService {
     }
   }
 
-  public ImmutableObjectReference createObjRef(DocumentReference docRef, ClassReference classRef,
-      int objNb) {
+  @Nullable
+  public ImmutableObjectReference createObjRef(@Nullable DocumentReference docRef,
+      @Nullable ClassReference classRef, int objNb) {
     try {
       return new ImmutableObjectReference(docRef, classRef, objNb);
     } catch (IllegalArgumentException iae) {
@@ -72,18 +80,21 @@ public class ReferenceScriptService implements ScriptService {
     }
   }
 
-  public ImmutableObjectReference createObjRef(DocumentReference docRef, String space, String name,
-      int objNb) {
+  @Nullable
+  public ImmutableObjectReference createObjRef(@Nullable DocumentReference docRef,
+      @Nullable String space, @Nullable String name, int objNb) {
     return createObjRef(docRef, createClassRef(space, name), objNb);
   }
 
   @Deprecated
-  public EntityReference resolve(String name) {
+  @Nullable
+  public EntityReference resolve(@Nullable String name) {
     return resolve(name, (EntityReference) null);
   }
 
   @Deprecated
-  public EntityReference resolve(String name, EntityReference baseRef) {
+  @Nullable
+  public EntityReference resolve(@Nullable String name, @Nullable EntityReference baseRef) {
     try {
       return utils.resolveRef(nullToEmpty(name), baseRef);
     } catch (IllegalArgumentException iae) {
@@ -91,35 +102,44 @@ public class ReferenceScriptService implements ScriptService {
     }
   }
 
-  public WikiReference resolveWikiRef(String name) {
+  @Nullable
+  public WikiReference resolveWikiRef(@Nullable String name) {
     return resolve(name, null, WikiReference.class);
   }
 
-  public WikiReference resolveWikiRef(String name, EntityReference baseRef) {
+  @Nullable
+  public WikiReference resolveWikiRef(@Nullable String name, @Nullable EntityReference baseRef) {
     return resolve(name, baseRef, WikiReference.class);
   }
 
-  public SpaceReference resolveSpaceRef(String name) {
+  @Nullable
+  public SpaceReference resolveSpaceRef(@Nullable String name) {
     return resolve(name, null, SpaceReference.class);
   }
 
-  public SpaceReference resolveSpaceRef(String name, EntityReference baseRef) {
+  @Nullable
+  public SpaceReference resolveSpaceRef(@Nullable String name, @Nullable EntityReference baseRef) {
     return resolve(name, baseRef, SpaceReference.class);
   }
 
-  public DocumentReference resolveDocRef(String name) {
+  @Nullable
+  public DocumentReference resolveDocRef(@Nullable String name) {
     return resolve(name, null, DocumentReference.class);
   }
 
-  public DocumentReference resolveDocRef(String name, EntityReference baseRef) {
+  @Nullable
+  public DocumentReference resolveDocRef(@Nullable String name, @Nullable EntityReference baseRef) {
     return resolve(name, baseRef, DocumentReference.class);
   }
 
-  public AttachmentReference resolveAttRef(String name) {
+  @Nullable
+  public AttachmentReference resolveAttRef(@Nullable String name) {
     return resolve(name, null, AttachmentReference.class);
   }
 
-  public AttachmentReference resolveAttRef(String name, EntityReference baseRef) {
+  @Nullable
+  public AttachmentReference resolveAttRef(@Nullable String name,
+      @Nullable EntityReference baseRef) {
     return resolve(name, baseRef, AttachmentReference.class);
   }
 
@@ -139,11 +159,13 @@ public class ReferenceScriptService implements ScriptService {
         .orElseGet(context::getWikiRef);
   }
 
-  public String serialize(EntityReference ref) {
+  @Nullable
+  public String serialize(@Nullable EntityReference ref) {
     return serialize(ref, null);
   }
 
-  public String serialize(EntityReference ref, String mode) {
+  @Nullable
+  public String serialize(@Nullable EntityReference ref, @Nullable String mode) {
     try {
       if (ref == null) {
         return null;
@@ -155,7 +177,8 @@ public class ReferenceScriptService implements ScriptService {
     }
   }
 
-  public EntityType getEntityType(String name) {
+  @Nullable
+  public EntityType getEntityType(@Nullable String name) {
     name = Strings.nullToEmpty(name).toUpperCase();
     return Enums.getIfPresent(EntityType.class, name).toJavaUtil().orElse(null);
   }
