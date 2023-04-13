@@ -20,6 +20,8 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.google.common.base.Strings.*;
+
 import java.io.IOException;
 import java.util.Vector;
 
@@ -28,14 +30,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.container.Container;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
@@ -49,7 +51,6 @@ import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.monitor.api.MonitorPlugin;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
 
@@ -95,7 +96,7 @@ import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
  */
 public abstract class XWikiAction extends Action {
 
-  private static final Log LOG = LogFactory.getLog(XWikiAction.class);
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Handle server requests.
@@ -137,10 +138,8 @@ public abstract class XWikiAction extends Action {
   }
 
   public ActionForward execute(XWikiContext context) throws Exception {
-    MonitorPlugin monitor = null;
     FileUploadPlugin fileupload = null;
     String docName = "";
-
     try {
       // Verify that the requested wiki exists
       XWiki xwiki;
@@ -159,75 +158,37 @@ public abstract class XWikiAction extends Action {
           throw e;
         }
       }
-
       // Send global redirection (if any)
       if (sendGlobalRedirect(context.getResponse(), context.getURL().toString(), context)) {
         return null;
       }
-
-      // Start monitoring timer
-      monitor = (MonitorPlugin) xwiki.getPlugin("monitor", context);
-      if (monitor != null) {
-        monitor.startRequest("", context.getAction(), context.getURL());
-        monitor.startTimer("multipart");
-      }
-
       // Parses multipart so that params in multipart are available for all actions
       fileupload = Utils.handleMultipart(context.getRequest().getHttpServletRequest(), context);
-      if (monitor != null) {
-        monitor.endTimer("multipart");
-      }
-
       XWikiURLFactory urlf = xwiki.getURLFactoryService().createURLFactory(context.getMode(),
           context);
       context.setURLFactory(urlf);
-
-      String sajax = context.getRequest().get("ajax");
-      boolean ajax = false;
-      if ((sajax != null) && !sajax.trim().equals("") && !sajax.equals("0")) {
-        ajax = true;
-      }
+      String sajax = nullToEmpty(context.getRequest().get("ajax")).trim();
+      boolean ajax = (!sajax.isEmpty() && !sajax.equals("0"));
       context.put("ajax", ajax);
-
       // Any error before this will be treated using a redirection to an error page
-
-      if (monitor != null) {
-        monitor.startTimer("request");
-      }
-
       VelocityManager velocityManager = Utils.getComponent(VelocityManager.class);
       VelocityContext vcontext = velocityManager.getVelocityContext();
-
       try {
         // Prepare documents and put them in the context
         if (!xwiki.prepareDocuments(context.getRequest(), context, vcontext)) {
           return null;
-        }
-
-        if (monitor != null) {
-          monitor.setWikiPage(context.getDoc().getFullName());
-        }
-
-        // Let's handle the notification and make sure it never fails
-        if (monitor != null) {
-          monitor.startTimer("prenotify");
         }
         try {
           xwiki.getNotificationManager().preverify(context.getDoc(), context.getAction(), context);
         } catch (Throwable e) {
           LOG.error("Exception while pre-notifying", e);
         }
-        if (monitor != null) {
-          monitor.endTimer("prenotify");
-        }
-
         String renderResult = null;
         XWikiDocument doc = context.getDoc();
         docName = doc.getFullName();
         if (action(context)) {
           renderResult = render(context);
         }
-
         if (renderResult != null) {
           if (doc.isNew() && "view".equals(context.getAction())
               && !"recyclebin".equals(context.getRequest().get("viewer"))) {
@@ -246,13 +207,11 @@ public abstract class XWikiAction extends Action {
               "Exception while sending response",
               e);
         }
-
         if (!(e instanceof XWikiException)) {
           e = new XWikiException(XWikiException.MODULE_XWIKI_APP,
               XWikiException.ERROR_XWIKI_UNKNOWN,
-              "Uncaught exception", e);
+              "Unknown exception: " + e.getMessage(), e);
         }
-
         try {
           XWikiException xex = (XWikiException) e;
           if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
@@ -284,9 +243,7 @@ public abstract class XWikiAction extends Action {
             return null;
           }
           vcontext.put("exp", e);
-          if (LOG.isWarnEnabled()) {
-            LOG.warn("Uncaught exception: " + e.getMessage(), e);
-          }
+          LOG.error("Uncaught exception: " + e.getMessage(), e);
           // If the request is an AJAX request, we don't return a whole HTML page, but just the
           // exception inline.
           String exceptionTemplate = ajax ? "exceptioninline" : "exception";
@@ -310,12 +267,6 @@ public abstract class XWikiAction extends Action {
           // This might happen if the connection was closed, for example.
           // If we can't flush, then there's nothing more we can send to the client.
         }
-
-        if (monitor != null) {
-          monitor.endTimer("request");
-          monitor.startTimer("notify");
-        }
-
         // Let's handle the notification and make sure it never fails
         // This is the old notification mechanism. It is kept here because it is in a
         // deprecation stage. It will be removed later.
@@ -335,11 +286,6 @@ public abstract class XWikiAction extends Action {
           LOG.error("Cannot send action notifications for document [" + docName + " using action ["
               + context.getAction() + "]", ex);
         }
-
-        if (monitor != null) {
-          monitor.endTimer("notify");
-        }
-
         // Make sure we cleanup database connections
         // There could be cases where we have some
         if ((context != null) && (xwiki != null)) {
@@ -347,15 +293,9 @@ public abstract class XWikiAction extends Action {
         }
       }
     } finally {
-      // End request
-      if (monitor != null) {
-        monitor.endRequest();
-      }
-
       if ((context != null) && (fileupload != null)) {
         fileupload.cleanFileList(context);
       }
-
       MDC.remove("url");
     }
   }
