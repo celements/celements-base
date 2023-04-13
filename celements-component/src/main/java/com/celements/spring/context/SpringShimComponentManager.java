@@ -102,14 +102,14 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> Map<String, T> lookupMap(Class<T> role) throws ComponentLookupException {
     return lookupEntries(role)
         .mapKeys(ComponentRole::getRoleHint)
-        .toImmutableMap();
+        .toMap();
   }
 
   @Override
   public <T> List<T> lookupList(Class<T> role) throws ComponentLookupException {
     return lookupEntries(role)
         .values()
-        .toImmutableList();
+        .toList();
   }
 
   private <T> EntryStream<ComponentRole<T>, T> lookupEntries(Class<T> role)
