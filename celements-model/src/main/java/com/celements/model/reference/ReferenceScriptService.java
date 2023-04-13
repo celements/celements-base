@@ -2,14 +2,18 @@ package com.celements.model.reference;
 
 import static com.google.common.base.Strings.*;
 
+import java.util.Optional;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
+import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.ImmutableObjectReference;
 import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.script.service.ScriptService;
 
 import com.celements.model.context.ModelContext;
@@ -73,10 +77,12 @@ public class ReferenceScriptService implements ScriptService {
     return createObjRef(docRef, createClassRef(space, name), objNb);
   }
 
+  @Deprecated
   public EntityReference resolve(String name) {
-    return resolve(name, null);
+    return resolve(name, (EntityReference) null);
   }
 
+  @Deprecated
   public EntityReference resolve(String name, EntityReference baseRef) {
     try {
       return utils.resolveRef(nullToEmpty(name), baseRef);
@@ -85,12 +91,52 @@ public class ReferenceScriptService implements ScriptService {
     }
   }
 
+  public WikiReference resolveWikiRef(String name) {
+    return resolve(name, null, WikiReference.class);
+  }
+
+  public WikiReference resolveWikiRef(String name, EntityReference baseRef) {
+    return resolve(name, baseRef, WikiReference.class);
+  }
+
   public SpaceReference resolveSpaceRef(String name) {
+    return resolve(name, null, SpaceReference.class);
+  }
+
+  public SpaceReference resolveSpaceRef(String name, EntityReference baseRef) {
+    return resolve(name, baseRef, SpaceReference.class);
+  }
+
+  public DocumentReference resolveDocRef(String name) {
+    return resolve(name, null, DocumentReference.class);
+  }
+
+  public DocumentReference resolveDocRef(String name, EntityReference baseRef) {
+    return resolve(name, baseRef, DocumentReference.class);
+  }
+
+  public AttachmentReference resolveAttRef(String name) {
+    return resolve(name, null, AttachmentReference.class);
+  }
+
+  public AttachmentReference resolveAttRef(String name, EntityReference baseRef) {
+    return resolve(name, baseRef, AttachmentReference.class);
+  }
+
+  private <T extends EntityReference> T resolve(String name, EntityReference baseRef,
+      Class<T> token) {
     try {
-      return utils.resolveRef(nullToEmpty(name), SpaceReference.class);
+      return utils.resolveRef(nullToEmpty(name), token, Optional.ofNullable(baseRef)
+          .orElseGet(this::getCurrentReference));
     } catch (IllegalArgumentException iae) {
       return null;
     }
+  }
+
+  private EntityReference getCurrentReference() {
+    return context.getDocRef()
+        .map(EntityReference.class::cast)
+        .orElseGet(context::getWikiRef);
   }
 
   public String serialize(EntityReference ref) {
