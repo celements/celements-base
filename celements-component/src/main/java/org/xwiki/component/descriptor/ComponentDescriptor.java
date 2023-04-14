@@ -28,8 +28,6 @@ import java.util.Collection;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 
-import com.celements.spring.context.XWikiShimBeanFactory;
-
 /**
  * Represent a component.
  *
@@ -43,10 +41,6 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
   ComponentInstantiationStrategy getInstantiationStrategy();
 
   Collection<ComponentDependency<?>> getComponentDependencies();
-
-  default String getBeanName() {
-    return XWikiShimBeanFactory.uniqueBeanName(getRole(), getRoleHint());
-  }
 
   default BeanDefinition asBeanDefinition() {
     return BeanDefinitionBuilder

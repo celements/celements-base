@@ -16,6 +16,7 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 import org.xwiki.component.annotation.ComponentDescriptorFactory;
+import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.descriptor.ComponentDependency;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
@@ -23,6 +24,10 @@ import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.component.util.ReflectionUtils;
 
+/**
+ * Shim {@link BeanPostProcessor} that injects {@link Requirement} dependencies into any bean
+ * managed by Spring.
+ */
 @Component
 public class XWikiShimBeanPostProcessor implements BeanPostProcessor {
 

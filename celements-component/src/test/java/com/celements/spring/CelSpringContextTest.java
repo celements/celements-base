@@ -1,6 +1,5 @@
 package com.celements.spring;
 
-import static com.celements.spring.context.XWikiShimBeanFactory.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -9,6 +8,7 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.xwiki.component.descriptor.DefaultComponentRole;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 
@@ -53,11 +53,11 @@ public class CelSpringContextTest {
     assertSame(cm.lookup(ComponentManager.class),
         ctx.getBean(ComponentManager.class));
     assertSame(cm.lookup(ComponentManager.class),
-        ctx.getBean(uniqueBeanName(ComponentManager.class, null)));
+        ctx.getBean(new DefaultComponentRole<>(ComponentManager.class, null).getBeanName()));
     assertSame(cm.lookup(ComponentManager.class, "default"),
-        ctx.getBean(uniqueBeanName(ComponentManager.class, null)));
+        ctx.getBean(new DefaultComponentRole<>(ComponentManager.class, null).getBeanName()));
     assertSame(cm.lookup(ComponentManager.class, "default"),
-        ctx.getBean(uniqueBeanName(ComponentManager.class, "default")));
+        ctx.getBean(new DefaultComponentRole<>(ComponentManager.class, "default").getBeanName()));
     assertSame(cm.lookup(ComponentManager.class, SpringShimComponentManager.NAME),
         ctx.getBean(SpringShimComponentManager.NAME, ComponentManager.class));
   }

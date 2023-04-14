@@ -1,9 +1,7 @@
 package com.celements.spring.context;
 
 import static com.celements.common.MoreOptional.*;
-import static com.google.common.base.Strings.*;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -23,37 +21,18 @@ import org.xwiki.component.descriptor.ComponentRole;
 import org.xwiki.component.descriptor.DefaultComponentRole;
 
 import com.celements.common.lambda.LambdaExceptionUtil.ThrowingFunction;
-import com.google.common.base.Splitter;
 
+/**
+ * Extension of the {@link DefaultListableBeanFactory} ensuring backwards compatibility with XWiki
+ * components. Since XWiki components are identified by Role+Hint we need to register, wire and
+ * request them with the {@link ComponentRole#getBeanName()}.
+ */
 @Component
 public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
 
-  public static final String SEPARATOR = "|||";
-
-  public static String uniqueBeanName(Class<?> role, String hint) {
-    if (isNullOrEmpty(hint)) {
-      hint = ComponentRole.DEFAULT_HINT;
-    }
-    return role.getName() + SEPARATOR + hint;
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T> Optional<ComponentRole<T>> getRoleFromBeanName(String beanName) {
-    try {
-      List<String> parts = Splitter.on(SEPARATOR).omitEmptyStrings().splitToList(beanName);
-      if (parts.size() > 1) {
-        Class<T> role = (Class<T>) Class.forName(parts.get(0));
-        return Optional.of(new DefaultComponentRole<>(role, parts.get(1)));
-      }
-      return Optional.empty();
-    } catch (ClassNotFoundException exc) {
-      throw new IllegalArgumentException(exc);
-    }
-  }
-
   /**
    * This fallback is required for {@link org.xwiki.component.annotation.Component} beans, which are
-   * registered with the {@link #uniqueBeanName(Class, String)} but may be requested by their hint.
+   * registered with the {@link ComponentRole#getBeanName()} but may be requested by their hint.
    */
   @Override
   protected <T> T doGetBean(String name, Class<T> requiredType, Object[] args,
@@ -63,7 +42,8 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
     } catch (NoSuchBeanDefinitionException exc) {
       return Optional.ofNullable(requiredType)
           .filter(this::isComponentRole)
-          .map(t -> uniqueBeanName(t, name))
+          .map(t -> new DefaultComponentRole<>(t, name))
+          .map(ComponentRole::getBeanName)
           .flatMap(asOpt(n -> super.doGetBean(n, requiredType, args, typeCheckOnly)))
           .orElseThrow(() -> exc);
     }
@@ -71,7 +51,7 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
 
   /**
    * This fallback is required for {@link org.xwiki.component.annotation.Component} beans, which are
-   * registered with the {@link #uniqueBeanName(Class, String)} but may be autowired by their hint.
+   * registered with the {@link ComponentRole#getBeanName()} but may be autowired by their hint.
    */
   @Override
   public Object doResolveDependency(DependencyDescriptor descriptor, String beanName,
@@ -99,7 +79,8 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
     @Override
     public Object resolveShortcut(BeanFactory beanFactory) throws BeansException {
       return getAnnotatedBeanName()
-          .map(value -> uniqueBeanName(getDependencyType(), value))
+          .map(value -> new DefaultComponentRole<>(getDependencyType(), value))
+          .map(ComponentRole::getBeanName)
           .flatMap(asOpt(beanFactory::getBean))
           .orElse(null);
     }

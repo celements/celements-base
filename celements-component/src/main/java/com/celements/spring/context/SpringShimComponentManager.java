@@ -1,6 +1,5 @@
 package com.celements.spring.context;
 
-import static com.celements.spring.context.XWikiShimBeanFactory.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;
@@ -14,9 +13,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Service;
 import org.xwiki.component.annotation.ComponentDescriptorFactory;
 import org.xwiki.component.descriptor.ComponentDescriptor;
@@ -30,6 +28,12 @@ import org.xwiki.component.manager.ComponentRepositoryException;
 
 import one.util.streamex.EntryStream;
 
+/**
+ * Shim implementation of the XWiki {@link ComponentManager} that converts all calls to
+ * the Spring {@link BeanFactory}. Since XWiki components are identified by Role+Hint they are
+ * registered with the {@link ComponentRole#getBeanName()} as
+ * {@link ComponentDescriptor#asBeanDefinition()}.
+ */
 @Service(SpringShimComponentManager.NAME)
 public class SpringShimComponentManager implements ComponentManager {
 
@@ -37,13 +41,13 @@ public class SpringShimComponentManager implements ComponentManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SpringShimComponentManager.class);
 
-  private final GenericApplicationContext springContext;
+  private final XWikiShimBeanFactory beanFactory;
   private final ComponentDescriptorFactory descriptorFactory;
 
   @Inject
-  public SpringShimComponentManager(GenericApplicationContext context) {
-    springContext = context;
-    descriptorFactory = new ComponentDescriptorFactory();
+  public SpringShimComponentManager(XWikiShimBeanFactory beanFactory) {
+    this.beanFactory = beanFactory;
+    this.descriptorFactory = new ComponentDescriptorFactory();
   }
 
   @Override
@@ -53,9 +57,9 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> boolean hasComponent(Class<T> role, String hint) {
-    String beanName = uniqueBeanName(role, hint);
-    return Stream.of(springContext.getBeanNamesForType(role))
-        .anyMatch(name -> name.equals(hint) || name.equals(beanName));
+    ComponentRole<?> compRole = new DefaultComponentRole<>(role, hint);
+    return Stream.of(beanFactory.getBeanNamesForType(role))
+        .anyMatch(name -> name.equals(hint) || name.equals(compRole.getBeanName()));
   }
 
   @Override
@@ -65,21 +69,21 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> T lookup(Class<T> role, String hint) throws ComponentLookupException {
-    String beanName = uniqueBeanName(role, hint);
+    ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
     try {
-      return getBean(beanName, role)
+      return getBean(compRole.getBeanName(), role)
           .map(Optional::of)
           .orElseGet(() -> getBean(hint, role))
-          .orElseThrow(() -> new ComponentLookupException("lookup - [" + beanName + "] failed"));
+          .orElseThrow(() -> new ComponentLookupException("lookup - [" + compRole + "] failed"));
     } catch (BeansException exc) {
-      throw new ComponentLookupException("lookup - [" + beanName + "] failed", exc);
+      throw new ComponentLookupException("lookup - [" + compRole + "] failed", exc);
     }
   }
 
   private <T> Optional<T> getBean(String name, Class<T> type) {
     if (name != null) {
       try {
-        return Optional.of(springContext.getBean(name, type));
+        return Optional.of(beanFactory.getBean(name, type));
       } catch (NoSuchBeanDefinitionException exc) {}
     }
     return Optional.empty();
@@ -102,8 +106,8 @@ public class SpringShimComponentManager implements ComponentManager {
   private <T> EntryStream<ComponentRole<T>, T> lookupEntries(Class<T> role)
       throws ComponentLookupException {
     try {
-      return EntryStream.of(springContext.getBeansOfType(role))
-          .mapKeys(beanName -> XWikiShimBeanFactory.<T>getRoleFromBeanName(beanName)
+      return EntryStream.of(beanFactory.getBeansOfType(role))
+          .mapKeys(beanName -> ComponentRole.<T>fromBeanName(beanName)
               .orElseGet(() -> new DefaultComponentRole<>(role, beanName)))
           .filterKeys(compRole -> compRole.getRole() == role);
     } catch (BeansException exc) {
@@ -121,8 +125,6 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> void registerComponent(ComponentDescriptor<T> descriptor, T component)
       throws ComponentRepositoryException {
     try {
-      DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) springContext
-          .getBeanFactory();
       String beanName = descriptor.getBeanName();
       beanFactory.registerBeanDefinition(beanName, descriptor.asBeanDefinition());
       if (component != null) {
@@ -136,11 +138,11 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public void unregisterComponent(Class<?> role, String hint) {
+    ComponentRole<?> compRole = new DefaultComponentRole<>(role, hint);
     try {
-      springContext.removeBeanDefinition(uniqueBeanName(role, hint));
+      beanFactory.removeBeanDefinition(compRole.getBeanName());
     } catch (NoSuchBeanDefinitionException exc) {
-      LOGGER.debug("unregisterComponent - component [{}], not registered",
-          uniqueBeanName(role, hint));
+      LOGGER.debug("unregisterComponent - component [{}], not registered", compRole);
     }
   }
 
@@ -148,7 +150,7 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> void release(T component) throws ComponentLifecycleException {
     if (component != null) {
       try {
-        springContext.getBeanFactory().destroyBean(component);
+        beanFactory.destroyBean(component);
       } catch (BeansException exc) {
         throw new ComponentLifecycleException("release - failed for class ["
             + component.getClass() + "]", exc);
@@ -158,8 +160,8 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> ComponentDescriptor<T> getComponentDescriptor(Class<T> role, String hint) {
-    return createComponentDescriptor(new DefaultComponentRole<>(role, hint),
-        getBean(hint, role).orElse(null));
+    ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
+    return createComponentDescriptor(compRole, getBean(hint, role).orElse(null));
   }
 
   @Override

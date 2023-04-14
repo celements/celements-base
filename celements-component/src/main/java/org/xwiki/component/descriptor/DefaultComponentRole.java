@@ -19,6 +19,8 @@
  */
 package org.xwiki.component.descriptor;
 
+import static com.google.common.base.Strings.*;
+
 import java.util.Objects;
 
 public class DefaultComponentRole<T> implements ComponentRole<T> {
@@ -52,7 +54,7 @@ public class DefaultComponentRole<T> implements ComponentRole<T> {
 
   @Override
   public String getRoleHint() {
-    return roleHint;
+    return !isNullOrEmpty(roleHint) ? roleHint : ComponentRole.DEFAULT_HINT;
   }
 
   @Override

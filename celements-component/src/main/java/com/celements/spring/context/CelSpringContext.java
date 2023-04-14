@@ -18,6 +18,11 @@ import com.celements.spring.CelSpringConfig;
 import com.celements.spring.XWikiSpringConfig;
 import com.google.common.collect.ImmutableList;
 
+/**
+ * Extension of the {@link AnnotationConfigApplicationContext} ensuring backwards compatibility with
+ * XWiki components by registering not only {@link org.springframework.stereotype.Component} but
+ * also {@link org.xwiki.component.annotation.Component}, see {@link #registerXWiki()}
+ */
 public class CelSpringContext extends AnnotationConfigApplicationContext {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CelSpringContext.class);
