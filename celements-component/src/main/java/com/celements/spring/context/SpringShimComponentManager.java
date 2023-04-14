@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import org.xwiki.component.manager.ComponentEventManager;
 import org.xwiki.component.manager.ComponentLifecycleException;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.component.manager.ComponentManagerInitializer;
 import org.xwiki.component.manager.ComponentRepositoryException;
 
 import one.util.streamex.EntryStream;
@@ -46,17 +44,6 @@ public class SpringShimComponentManager implements ComponentManager {
   public SpringShimComponentManager(GenericApplicationContext context) {
     springContext = context;
     descriptorFactory = new ComponentDescriptorFactory();
-  }
-
-  @PostConstruct
-  public void init() {
-    try {
-      // Extension point to allow component to manipulate ComponentManager initialized state.
-      lookupEntries(ComponentManagerInitializer.class).values()
-          .forEach(initializer -> initializer.initialize(this));
-    } catch (ComponentLookupException cle) {
-      throw new IllegalStateException("failed initialising ComponentManager", cle);
-    }
   }
 
   @Override
@@ -171,8 +158,7 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> ComponentDescriptor<T> getComponentDescriptor(Class<T> role, String hint) {
-    return createComponentDescriptor(
-        new DefaultComponentRole<>(role, hint),
+    return createComponentDescriptor(new DefaultComponentRole<>(role, hint),
         getBean(hint, role).orElse(null));
   }
 
@@ -217,7 +203,7 @@ public class SpringShimComponentManager implements ComponentManager {
   @Override
   public void setParent(ComponentManager parentComponentManager) {
     if (parentComponentManager != null) {
-      throw new UnsupportedOperationException("parent component manager not supported");
+      throw new UnsupportedOperationException();
     }
   }
 
