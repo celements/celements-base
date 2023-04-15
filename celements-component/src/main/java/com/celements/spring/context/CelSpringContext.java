@@ -14,6 +14,8 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 import org.xwiki.component.annotation.ComponentAnnotationLoader;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 
+import com.celements.spring.CelSpringConfig;
+import com.celements.spring.XWikiSpringConfig;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -26,7 +28,9 @@ public class CelSpringContext extends AnnotationConfigApplicationContext {
   private static final Logger LOGGER = LoggerFactory.getLogger(CelSpringContext.class);
 
   public CelSpringContext() {
-    this(ImmutableList.of());
+    this(ImmutableList.of(
+        XWikiSpringConfig.class,
+        CelSpringConfig.class));
   }
 
   public CelSpringContext(@NotNull List<Class<?>> configs) {
