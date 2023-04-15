@@ -27,10 +27,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.support.GenericApplicationContext;
 import org.xwiki.action.ActionException;
 import org.xwiki.action.ActionManager;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
 
 /**
  * XWiki servlet implementation.
@@ -38,6 +38,8 @@ import org.xwiki.component.manager.ComponentManager;
  * @version $Id$
  */
 public class XWikiServlet extends HttpServlet {
+
+  public static final String SERVLET_CTX_KEY_SPRING = "spring.context";
 
   /** Serial version ID. */
   private static final long serialVersionUID = 1L;
@@ -49,49 +51,36 @@ public class XWikiServlet extends HttpServlet {
    *      javax.servlet.http.HttpServletResponse)
    */
   @Override
-  protected void service(HttpServletRequest httpServletRequest,
-      HttpServletResponse httpServletResponse)
+  protected void service(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    // Get the Component Manager instance set up in XWikiPlexusServletContextListener from the
-    // ServletContext
-    ComponentManager componentManager = (ComponentManager) getServletContext()
-        .getAttribute(ComponentManager.class.getName());
-    if (componentManager == null) {
+    GenericApplicationContext springCtx = (GenericApplicationContext) getServletContext()
+        .getAttribute(SERVLET_CTX_KEY_SPRING);
+    if (springCtx == null) {
       throw new ServletException("Plexus container is not initialized");
     }
-
     ActionManager manager;
     try {
-      manager = componentManager.lookup(ActionManager.class);
-    } catch (ComponentLookupException e) {
-      // We cannot find the Action manager, not much we can do, abort...
+      manager = springCtx.getBean(ActionManager.class);
+    } catch (NoSuchBeanDefinitionException e) {
       throw new ServletException("Failed to locate Action Manager component.", e);
     }
-
-    // Initializes XWiki's Container with the Servlet request/response/session so that
-    // components needing them can depend on the Container component to get them.
     try {
-      ServletContainerInitializer containerInitializer = componentManager
-          .lookup(ServletContainerInitializer.class);
-      containerInitializer.initializeRequest(httpServletRequest);
-      containerInitializer.initializeResponse(httpServletResponse);
-      containerInitializer.initializeSession(httpServletRequest);
+      ServletContainerInitializer containerInitializer = springCtx
+          .getBean(ServletContainerInitializer.class);
+      containerInitializer.initializeRequest(request);
+      containerInitializer.initializeResponse(response);
+      containerInitializer.initializeSession(request);
     } catch (Exception e) {
       try {
-        // Call the error Action to handle the exception
         manager.handleRequest("error", e);
         return;
       } catch (ActionException ae) {
         throw new ServletException("Failed to call the error Action", ae);
       }
     }
-
-    // Call the Action Manager to handle the request
     try {
       manager.handleRequest();
     } catch (ActionException e) {
-      // We haven't been able to handle the exception in ActionManager so generate a
-      // container exception.
       throw new ServletException("Failed to handle request", e);
     }
   }

@@ -14,14 +14,12 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 import org.xwiki.component.annotation.ComponentAnnotationLoader;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 
-import com.celements.spring.CelSpringConfig;
-import com.celements.spring.XWikiSpringConfig;
 import com.google.common.collect.ImmutableList;
 
 /**
  * Extension of the {@link AnnotationConfigApplicationContext} ensuring backwards compatibility with
  * XWiki components by registering not only {@link org.springframework.stereotype.Component} but
- * also {@link org.xwiki.component.annotation.Component}, see {@link #registerXWiki()}
+ * also {@link org.xwiki.component.annotation.Component}, see {@link #registerXWiki()}.
  */
 public class CelSpringContext extends AnnotationConfigApplicationContext {
 
@@ -31,13 +29,8 @@ public class CelSpringContext extends AnnotationConfigApplicationContext {
     this(ImmutableList.of());
   }
 
-  public CelSpringContext(@NotNull List<Class<?>> additionalConfigs) {
-    this(new FullyQualifiedAnnotationBeanNameGenerator(),
-        ImmutableList.<Class<?>>builder()
-            .add(CelSpringConfig.class)
-            .add(XWikiSpringConfig.class)
-            .addAll(additionalConfigs)
-            .build());
+  public CelSpringContext(@NotNull List<Class<?>> configs) {
+    this(new FullyQualifiedAnnotationBeanNameGenerator(), configs);
   }
 
   public CelSpringContext(
