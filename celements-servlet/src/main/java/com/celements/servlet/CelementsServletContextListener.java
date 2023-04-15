@@ -61,7 +61,7 @@ public class CelementsServletContextListener implements ServletContextListener {
     try {
       Configuration springProperties = new PropertiesConfiguration(servletContext.getResource(
           "/WEB-INF/spring.properties"));
-      List<?> configNames = springProperties.getList("spring.configs");
+      List<?> configNames = springProperties.getList("spring.config");
       return configNames.stream()
           .map(Objects::toString)
           .map(rethrowFunction(Class::forName))
