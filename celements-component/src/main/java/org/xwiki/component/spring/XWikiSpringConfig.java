@@ -1,4 +1,4 @@
-package com.celements.spring;
+package org.xwiki.component.spring;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

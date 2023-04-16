@@ -13,9 +13,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.xwiki.component.annotation.ComponentAnnotationLoader;
 import org.xwiki.component.descriptor.ComponentDescriptor;
+import org.xwiki.component.spring.XWikiSpringConfig;
 
 import com.celements.spring.CelSpringConfig;
-import com.celements.spring.XWikiSpringConfig;
 import com.google.common.collect.ImmutableList;
 
 /**
