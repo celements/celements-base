@@ -34,7 +34,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- xwiki -->
+    <!-- XWiki -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-context</artifactId>
@@ -51,12 +51,14 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- External -->
+    <!-- Spring -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <!-- External -->
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>

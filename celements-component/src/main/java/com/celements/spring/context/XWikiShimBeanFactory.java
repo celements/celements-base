@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.inject.Named;
 
 import org.springframework.beans.BeansException;
@@ -29,6 +30,14 @@ import com.celements.common.lambda.LambdaExceptionUtil.ThrowingFunction;
  */
 @Component
 public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
+
+  public XWikiShimBeanFactory() {
+    super();
+  }
+
+  public XWikiShimBeanFactory(@Nullable BeanFactory parentBeanFactory) {
+    super(parentBeanFactory);
+  }
 
   /**
    * This fallback is required for {@link org.xwiki.component.annotation.Component} beans, which are

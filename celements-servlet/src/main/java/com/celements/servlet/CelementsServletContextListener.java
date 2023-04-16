@@ -33,7 +33,6 @@ import com.celements.spring.context.CelSpringContext;
  * Implementation of the {@link ServletContextListener}. Initializes the spring and xwiki
  * application context.
  */
-// TODO extend ContextLoaderListener from spring-web
 public class CelementsServletContextListener implements ServletContextListener {
 
   private static final Logger LOGGER = LoggerFactory
