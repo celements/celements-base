@@ -30,7 +30,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
-import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.configuration.ConversionException;
 import org.xwiki.properties.ConverterManager;
 
@@ -50,11 +49,8 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
 
   @Before
   public void prepare() throws Exception {
-    source = new CommonsConfigurationSource();
-    ConverterManager converterManager = getComponentManager().lookup(ConverterManager.class);
-    ReflectionUtils.setFieldValue(source, "converterManager", converterManager);
-    configuration = new BaseConfiguration();
-    ReflectionUtils.setFieldValue(source, "configuration", configuration);
+    source = new CommonsConfigurationSource(configuration = new BaseConfiguration(),
+        getComponentManager().lookup(ConverterManager.class));
   }
 
   @Test
@@ -154,5 +150,20 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
     assertEquals(expectedList, source.getProperty("key"));
     assertEquals(expectedProperties, source.getProperty("key", Properties.class));
     assertEquals(expectedList, source.get("key", null).orElse(null));
+  }
+
+  @Test
+  public void test_getKeys() {
+    assertTrue(source.getKeys().isEmpty());
+    configuration.setProperty("key1", "value1");
+    configuration.setProperty("key2", "value2");
+    assertEquals(Arrays.asList("key1", "key2"), source.getKeys());
+  }
+
+  @Test
+  public void test_isEmpty() {
+    assertTrue(source.isEmpty());
+    configuration.setProperty("key", "value");
+    assertFalse(source.isEmpty());
   }
 }

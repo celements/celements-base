@@ -19,24 +19,24 @@
  */
 package com.celements.configuration;
 
-import org.apache.commons.configuration.ConfigurationException;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.core.io.ResourceLoader;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
 import org.xwiki.configuration.internal.CommonsConfigurationSource;
+import org.xwiki.properties.ConverterManager;
 
 @Component(CelementsPropertiesConfigurationSource.NAME)
-public class CelementsPropertiesConfigurationSource extends CommonsConfigurationSource implements
-    Initializable {
+public class CelementsPropertiesConfigurationSource extends CommonsConfigurationSource {
 
   public static final String NAME = "celementsproperties";
 
-  @Override
-  public void initialize() throws InitializationException {
-    try {
-      setConfiguration("celements");
-    } catch (ConfigurationException exc) {
-      throw new InitializationException("failed setting config", exc);
-    }
+  @Inject
+  public CelementsPropertiesConfigurationSource(
+      @NotNull ResourceLoader loader,
+      @Nullable ConverterManager converterManager) {
+    super(loadConfiguration(loader, "celements.properties"), converterManager);
   }
 }

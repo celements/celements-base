@@ -19,8 +19,12 @@
  */
 package org.xwiki.configuration.internal;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.properties.ConverterManager;
 
 /**
  * Configuration source taking its data in the User Preferences wiki document
@@ -31,7 +35,13 @@ import org.xwiki.model.reference.DocumentReference;
  * @since 2.0M2
  */
 @Component("user")
+// TODO remove or implement
 public class UserPreferencesConfigurationSource extends AbstractDocumentConfigurationSource {
+
+  @Inject
+  public UserPreferencesConfigurationSource(@Nullable ConverterManager converterManager) {
+    super(converterManager);
+  }
 
   @Override
   protected DocumentReference getClassReference() {
@@ -44,8 +54,7 @@ public class UserPreferencesConfigurationSource extends AbstractDocumentConfigur
     // TODO: Not enabled yet. In order to enable it we need to make modifications so that
     // DAB.getCurrentUser() returns a DocumentReference and not a String as otherwise it will create
     // a stackoverflow (circular dependency): in order to create a DocumentReference we would need
-    // to
-    // use a factory which would need to use this configuration source.
+    // to use a factory which would need to use this configuration source.
     return null;
   }
 }

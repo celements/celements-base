@@ -22,6 +22,8 @@ package org.xwiki.configuration.internal;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.EntityType;
@@ -29,7 +31,9 @@ import org.xwiki.model.ModelConfiguration;
 import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
+import org.xwiki.properties.ConverterManager;
 
+import com.celements.configuration.AbstractConvertingConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -49,6 +53,10 @@ public abstract class AbstractDocumentConfigurationSource
 
   @Requirement
   private ModelConfiguration modelConfig;
+
+  protected AbstractDocumentConfigurationSource(@Nullable ConverterManager converterManager) {
+    super(converterManager);
+  }
 
   /**
    * @return the document reference of the document containing an XWiki Object with configuration

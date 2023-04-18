@@ -1,12 +1,13 @@
-package org.xwiki.configuration.internal;
+package com.celements.configuration;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.properties.ConverterManager;
 
@@ -17,8 +18,11 @@ public abstract class AbstractConvertingConfigurationSource implements Configura
 
   protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  @Requirement
-  private ConverterManager converterManager;
+  private final ConverterManager converterManager;
+
+  protected AbstractConvertingConfigurationSource(@Nullable ConverterManager converterManager) {
+    this.converterManager = converterManager;
+  }
 
   @Override
   public <T> Stream<T> stream(String key, Class<T> type) {
@@ -46,7 +50,7 @@ public abstract class AbstractConvertingConfigurationSource implements Configura
 
   @SuppressWarnings("unchecked")
   protected <T> T convertValue(Class<T> type, Object value) {
-    if ((type != null) && (value != null)) {
+    if ((converterManager != null) && (type != null) && (value != null)) {
       value = converterManager.convert(type, value);
     }
     // we need nulls instead of defaults for Optional/Stream

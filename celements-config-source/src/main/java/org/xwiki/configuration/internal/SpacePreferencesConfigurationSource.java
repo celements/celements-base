@@ -19,8 +19,12 @@
  */
 package org.xwiki.configuration.internal;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.properties.ConverterManager;
 
 import com.celements.model.reference.RefBuilder;
 
@@ -37,6 +41,11 @@ public class SpacePreferencesConfigurationSource extends AbstractDocumentConfigu
   private static final String DOCUMENT_NAME = "WebPreferences";
   private static final String CLASS_SPACE_NAME = "XWiki";
   private static final String CLASS_PAGE_NAME = "XWikiPreferences";
+
+  @Inject
+  public SpacePreferencesConfigurationSource(@Nullable ConverterManager converterManager) {
+    super(converterManager);
+  }
 
   @Override
   protected DocumentReference getClassReference() {

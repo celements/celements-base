@@ -19,9 +19,10 @@
  */
 package org.xwiki.configuration.internal;
 
+import static com.google.common.base.Preconditions.*;
 import static java.util.stream.Collectors.*;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -29,12 +30,18 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.ConfigurationRuntimeException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.core.io.ResourceLoader;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.container.Container;
+import org.xwiki.properties.ConverterManager;
+
+import com.celements.configuration.AbstractConvertingConfigurationSource;
 
 import one.util.streamex.StreamEx;
 
@@ -50,31 +57,34 @@ import one.util.streamex.StreamEx;
  */
 public class CommonsConfigurationSource extends AbstractConvertingConfigurationSource {
 
-  private Configuration configuration;
+  private final Configuration commonsConfig;
 
-  @Requirement
-  private Container container;
+  public CommonsConfigurationSource(
+      @NotNull Configuration commonsConfig,
+      @Nullable ConverterManager converterManager) {
+    super(converterManager);
+    this.commonsConfig = checkNotNull(commonsConfig);
+  }
 
-  protected void setConfiguration(String name) throws ConfigurationException {
-    String fileName = "/WEB-INF/" + name + ".properties";
+  protected static final Configuration loadConfiguration(ResourceLoader loader, String fileName) {
     try {
-      URL propertiesUrl = container.getApplicationContext().getResource(fileName);
-      configuration = new PropertiesConfiguration(propertiesUrl);
-    } catch (MalformedURLException exc) {
-      throw new ConfigurationException("for " + fileName, exc);
+      URL propertiesUrl = loader.getResource("/WEB-INF/" + fileName).getURL();
+      return new PropertiesConfiguration(propertiesUrl);
+    } catch (IOException | ConfigurationException exc) {
+      throw new ConfigurationRuntimeException("for " + fileName, exc);
     }
   }
 
   @Override
   protected Object getValue(String key, Class<?> type) {
-    Function<String, Object> getter = configuration::getProperty;
+    Function<String, Object> getter = commonsConfig::getProperty;
     if (type != null) {
       if (String.class.isAssignableFrom(type)) {
-        getter = configuration::getString;
+        getter = commonsConfig::getString;
       } else if (List.class.isAssignableFrom(type)) {
-        getter = configuration::getList;
+        getter = commonsConfig::getList;
       } else if (Properties.class.isAssignableFrom(type)) {
-        getter = configuration::getProperties;
+        getter = commonsConfig::getProperties;
       }
     }
     return getter.apply(key);
@@ -82,21 +92,21 @@ public class CommonsConfigurationSource extends AbstractConvertingConfigurationS
 
   @Override
   public List<String> getKeys() {
-    Iterator<?> keys = configuration.getKeys();
+    Iterator<?> keys = commonsConfig.getKeys();
     return StreamEx.of(keys)
-        .map(Objects::nonNull)
+        .filter(Objects::nonNull)
         .map(Object::toString)
         .collect(toList());
   }
 
   @Override
   public boolean containsKey(String key) {
-    return configuration.containsKey(key);
+    return commonsConfig.containsKey(key);
   }
 
   @Override
   public boolean isEmpty() {
-    return configuration.isEmpty();
+    return commonsConfig.isEmpty();
   }
 
 }

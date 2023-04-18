@@ -30,7 +30,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
-import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.properties.ConverterManager;
 
 import com.celements.common.test.AbstractBaseComponentTest;
@@ -52,16 +51,12 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
 
   @Before
   public void prepare() throws Exception {
-    ConverterManager converterManager = getComponentManager().lookup(ConverterManager.class);
-    CommonsConfigurationSource source1 = new CommonsConfigurationSource();
-    ReflectionUtils.setFieldValue(source1, "converterManager", converterManager);
     config1 = new BaseConfiguration();
-    ReflectionUtils.setFieldValue(source1, "configuration", config1);
-    CommonsConfigurationSource source2 = new CommonsConfigurationSource();
-    ReflectionUtils.setFieldValue(source2, "converterManager", converterManager);
     config2 = new BaseConfiguration();
-    ReflectionUtils.setFieldValue(source2, "configuration", config2);
-    composite = new CompositeConfigurationSource(ImmutableList.of(source1, source2));
+    ConverterManager converterManager = getComponentManager().lookup(ConverterManager.class);
+    composite = new CompositeConfigurationSource(ImmutableList.of(
+        new CommonsConfigurationSource(config1, converterManager),
+        new CommonsConfigurationSource(config2, converterManager)));
   }
 
   // TODO test stream for single and list values -> should get from all composites
@@ -70,7 +65,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   // TODO test get(Property) for empty overwrites, e.g. c2 has "key=value" but c1 has "key="
 
   @Test
-  public void testContainsKey() {
+  public void test_containsKey() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -83,7 +78,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetProperty() {
+  public void test_getProperty() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -96,7 +91,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetPropertyWithClass() {
+  public void test_getProperty_class() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -109,7 +104,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetPropertyWithDefaultValue() {
+  public void test_getProperty_defaultValue() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -122,16 +117,21 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetKeys() {
+  public void test_getKeys() {
     config1.setProperty("key1", "value1");
     config2.setProperty("key2", "value2");
 
     List<String> expected = Arrays.asList("key1", "key2");
-    assertEquals(expected, composite.getKeys());
+    List<String> ret = composite.getKeys();
+    assertNotNull(ret);
+    assertFalse(ret.isEmpty());
+    assertEquals("key1", ret.get(0));
+    ret.get(0);
+    assertEquals(expected, ret);
   }
 
   @Test
-  public void testIsEmpty() {
+  public void test_isEmpty() {
     assertTrue(composite.isEmpty());
 
     config2.setProperty("key", "value");
@@ -139,13 +139,13 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetPropertiesAndListsWhenEmpty() {
+  public void test_getPropery_defaultValues() {
     assertTrue(composite.getProperty("unknown", Properties.class).isEmpty());
     assertTrue(composite.getProperty("unknown", List.class).isEmpty());
   }
 
   @Test
-  public void testTypeConversionsWhenDefaultValuesAreNotUsed() {
+  public void test_getProperty_typeConversionsWhenDefaultValuesAreNotUsed() {
     config1.setProperty("key1", "true");
     config1.setProperty("key2", "item1,item2");
     config1.setProperty("key3", "prop1=value1,prop2=value2");

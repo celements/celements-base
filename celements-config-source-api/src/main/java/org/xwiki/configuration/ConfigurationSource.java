@@ -47,7 +47,8 @@ public interface ConfigurationSource {
    * @since 2.0M1
    */
   default <T> T getProperty(String key, T defaultValue) {
-    Class<T> type = MoreObjectsCel.<T>determineUtilClass(defaultValue).orElse(null);
+    Class<T> type = MoreObjectsCel.<T>findAssignableUtilClasses(defaultValue)
+        .findFirst().orElse(null);
     return this.<T>get(key, type).orElse(defaultValue);
   }
 
