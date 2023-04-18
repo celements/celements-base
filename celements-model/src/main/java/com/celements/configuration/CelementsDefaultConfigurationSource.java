@@ -19,47 +19,10 @@
  */
 package com.celements.configuration;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
-import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.configuration.internal.CompositeConfigurationSource;
+import org.xwiki.configuration.internal.DefaultConfigurationSource;
 
 /**
- * Composite Configuration Source that looks in the following sources in that order:
- * <ul>
- * <li>space preferences wiki page</li>
- * <li>wiki preferences wiki page</li>
- * <li>celements properties file (celements.properties)</li>
- * <li>xwiki properties file (xwiki.properties)</li>
- * </ul>
- * Should be used when a configuration should not be overriden by the user in his/her
- * profile (in which case the {@link CelementsAllConfigurationSource} should be used.
+ * @deprecated since 6.0 instead use {@link DefaultConfigurationSource}
  */
-@Component
-public class CelementsDefaultConfigurationSource extends CompositeConfigurationSource implements
-    Initializable {
-
-  @Requirement("xwikiproperties")
-  ConfigurationSource xwikiPropertiesSource;
-
-  @Requirement(CelementsPropertiesConfigurationSource.NAME)
-  ConfigurationSource celementsPropertiesSource;
-
-  @Requirement("wiki")
-  ConfigurationSource wikiPreferencesSource;
-
-  @Requirement("space")
-  ConfigurationSource spacePreferencesSource;
-
-  @Override
-  public void initialize() throws InitializationException {
-    // first source is looked up first when a property value is requested.
-    addConfigurationSource(this.spacePreferencesSource);
-    addConfigurationSource(this.wikiPreferencesSource);
-    addConfigurationSource(this.celementsPropertiesSource);
-    addConfigurationSource(this.xwikiPropertiesSource);
-  }
-
-}
+@Deprecated
+public class CelementsDefaultConfigurationSource extends DefaultConfigurationSource {}

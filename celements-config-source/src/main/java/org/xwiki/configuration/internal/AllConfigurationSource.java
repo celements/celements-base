@@ -19,11 +19,13 @@
  */
 package org.xwiki.configuration.internal;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
 import org.xwiki.configuration.ConfigurationSource;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Composite Configuration Source that looks in the following sources in that order:
@@ -31,40 +33,19 @@ import org.xwiki.configuration.ConfigurationSource;
  * <li>user preferences wiki page</li>
  * <li>space preferences wiki page</li>
  * <li>wiki preferences wiki page</li>
- * <li>xwiki properties file (xwiki.properties)</li>
+ * <li>properties files (xwiki/celements.properties)</li>
  * </ul>
- *
- * Should be used when a configuration can be overriden by the user in his/her profile.
- *
- * @version $Id$
- * @since 2.0M2
+ * Should be used when a configuration can be overridden by the user in his/her profile.
  */
-@Component("all")
-public class AllConfigurationSource extends CompositeConfigurationSource implements Initializable {
+@Component(AllConfigurationSource.NAME)
+public class AllConfigurationSource extends CompositeConfigurationSource {
 
-  @Requirement("xwikiproperties")
-  private ConfigurationSource xwikiPropertiesSource;
+  public static final String NAME = "all";
 
-  @Requirement("wiki")
-  private ConfigurationSource wikiPreferencesSource;
-
-  @Requirement("space")
-  private ConfigurationSource spacePreferencesSource;
-
-  @Requirement("user")
-  private ConfigurationSource userPreferencesSource;
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see Initializable#initialize()
-   */
-  @Override
-  public void initialize() throws InitializationException {
-    // First source is searched first when a property value is requested.
-    addConfigurationSource(this.userPreferencesSource);
-    addConfigurationSource(this.spacePreferencesSource);
-    addConfigurationSource(this.wikiPreferencesSource);
-    addConfigurationSource(this.xwikiPropertiesSource);
+  @Inject
+  public AllConfigurationSource(
+      ConfigurationSource defaultSrc,
+      @Named("user") ConfigurationSource userPrefSrc) {
+    super(ImmutableList.of(userPrefSrc, defaultSrc));
   }
 }

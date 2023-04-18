@@ -21,8 +21,8 @@ package org.xwiki.configuration.internal;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.SpaceReference;
-import org.xwiki.model.reference.WikiReference;
+
+import com.celements.model.reference.RefBuilder;
 
 /**
  * Configuration source taking its data in the Wiki Preferences wiki document
@@ -35,20 +35,20 @@ import org.xwiki.model.reference.WikiReference;
 public class WikiPreferencesConfigurationSource extends AbstractDocumentConfigurationSource {
 
   private static final String SPACE_NAME = "XWiki";
-
   private static final String PAGE_NAME = "XWikiPreferences";
 
   @Override
   protected DocumentReference getClassReference() {
-    // The Class reference is the same as the document refernece for XWiki.XWikiPreferences since
-    // the class is
-    // stored in the document of the same name.
+    // The Class reference is the same as the document reference for XWiki.XWikiPreferences since
+    // the class is stored in the document of the same name.
     return getDocumentReference();
   }
 
   @Override
   protected DocumentReference getDocumentReference() {
-    return new DocumentReference(PAGE_NAME, new SpaceReference(SPACE_NAME,
-        new WikiReference(getDocumentAccessBridge().getCurrentWiki())));
+    return RefBuilder.from(getCurrentWikiReference())
+        .space(SPACE_NAME)
+        .doc(PAGE_NAME)
+        .build(DocumentReference.class);
   }
 }

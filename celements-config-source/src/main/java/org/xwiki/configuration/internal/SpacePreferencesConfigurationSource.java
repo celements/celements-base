@@ -20,8 +20,9 @@
 package org.xwiki.configuration.internal;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
+
+import com.celements.model.reference.RefBuilder;
 
 /**
  * Configuration source taking its data in the Space Preferences wiki document (using data from the
@@ -34,53 +35,23 @@ import org.xwiki.model.reference.DocumentReference;
 public class SpacePreferencesConfigurationSource extends AbstractDocumentConfigurationSource {
 
   private static final String DOCUMENT_NAME = "WebPreferences";
-
   private static final String CLASS_SPACE_NAME = "XWiki";
-
   private static final String CLASS_PAGE_NAME = "XWikiPreferences";
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.configuration.internal.AbstractDocumentConfigurationSource#getClassReference()
-   */
   @Override
   protected DocumentReference getClassReference() {
-    DocumentReference classReference = null;
-    DocumentReference currentDocumentReference = getDocumentAccessBridge()
-        .getCurrentDocumentReference();
-    if (currentDocumentReference != null) {
-      // Add the current current wiki references to the XWiki Preferences class reference to form
-      // an absolute reference.
-      classReference = new DocumentReference(CLASS_PAGE_NAME, CLASS_SPACE_NAME,
-          currentDocumentReference.extractReference(
-              EntityType.WIKI).getName());
-    }
-
-    return classReference;
+    return RefBuilder.from(getDocumentAccessBridge().getCurrentDocumentReference())
+        .space(CLASS_SPACE_NAME)
+        .doc(CLASS_PAGE_NAME)
+        .buildOpt(DocumentReference.class)
+        .orElse(null);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see AbstractDocumentConfigurationSource#getDocumentReference()
-   */
   @Override
   protected DocumentReference getDocumentReference() {
-    // Note: We would normally use a Reference Resolver here but since the Model module uses the
-    // Configuration
-    // module we cannot use one as otherwise we would create a cyclic build dependency...
-    DocumentReference documentReference = null;
-    // Get the current document reference to extract the wiki and space names.
-    DocumentReference currentDocumentReference = getDocumentAccessBridge()
-        .getCurrentDocumentReference();
-    if (currentDocumentReference != null) {
-      // Add the current spaces and current wiki references to the Web Preferences document
-      // reference to form
-      // an absolute reference.
-      documentReference = new DocumentReference(DOCUMENT_NAME,
-          currentDocumentReference.getLastSpaceReference());
-    }
-    return documentReference;
+    return RefBuilder.from(getDocumentAccessBridge().getCurrentDocumentReference())
+        .doc(DOCUMENT_NAME)
+        .buildOpt(DocumentReference.class)
+        .orElse(null);
   }
 }

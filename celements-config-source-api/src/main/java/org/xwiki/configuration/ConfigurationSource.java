@@ -20,8 +20,12 @@
 package org.xwiki.configuration;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.xwiki.component.annotation.ComponentRole;
+
+import com.celements.common.MoreObjectsCel;
 
 /**
  * @version $Id$
@@ -29,6 +33,10 @@ import org.xwiki.component.annotation.ComponentRole;
  */
 @ComponentRole
 public interface ConfigurationSource {
+
+  <T> Stream<T> stream(String key, Class<T> type);
+
+  <T> Optional<T> get(String key, Class<T> type);
 
   /**
    * @param key
@@ -38,15 +46,18 @@ public interface ConfigurationSource {
    * @return the property value is found or the default value if the key wasn't found
    * @since 2.0M1
    */
-  <T> T getProperty(String key, T defaultValue);
+  default <T> T getProperty(String key, T defaultValue) {
+    Class<T> type = MoreObjectsCel.<T>determineUtilClass(defaultValue).orElse(null);
+    return this.<T>get(key, type).orElse(defaultValue);
+  }
 
   /**
    * @param key
    *          the property key for which we want the value
-   * @param valueClass
+   * @param type
    *          the type of object that should be returned. The value is converted to the passed type.
    * @return the property value is found. If the key wasn't found the returned value depends on the
-   *         passed valueClass:
+   *         passed type:
    *         <ul>
    *         <li>String: null</li>
    *         <li>Boolean: false</li>
@@ -55,16 +66,21 @@ public interface ConfigurationSource {
    *         </ul>
    * @since 2.0M1
    */
-  <T> T getProperty(String key, Class<T> valueClass);
+  default <T> T getProperty(String key, Class<T> type) {
+    return this.<T>get(key, type).orElseGet(() -> MoreObjectsCel.defaultValueNonNullable(type));
+  }
 
   /**
    * @param key
    *          the property key for which we want the value
    * @return the property as an untyped Object or null if the key wasn't found. In general you
-   *         should prefer
-   *         {@link #getProperty(String, Class)} or {@link #getProperty(String, Object)}
+   *         should prefer {@link #getProperty(String, Class)} or
+   *         {@link #getProperty(String, Object)}
+   *
    */
-  <T> T getProperty(String key);
+  default <T> T getProperty(String key) {
+    return this.<T>get(key, null).orElse(null);
+  }
 
   /**
    * @return the list of available keys in the configuration source
@@ -76,10 +92,15 @@ public interface ConfigurationSource {
    *          the key to check
    * @return true if the key is present in the configuration source or false otherwise
    */
-  boolean containsKey(String key);
+  default boolean containsKey(String key) {
+    return get(key, null).isPresent();
+  }
 
   /**
    * @return true if the configuration source doesn't have any key or false otherwise
    */
-  boolean isEmpty();
+  default boolean isEmpty() {
+    return getKeys().isEmpty();
+  }
+
 }

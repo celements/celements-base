@@ -19,7 +19,6 @@
  */
 package com.celements.configuration;
 
-import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
@@ -35,8 +34,11 @@ import org.xwiki.configuration.internal.CompositeConfigurationSource;
  * </ul>
  * Should be used when a configuration should not be overriden by space preferences (in which case
  * the {@link CelementsDefaultConfigurationSource} should be used.
+ *
+ * @deprecated since 6.0 instead use {@link FromWikiConfigurationSource}
  */
-@Component(CelementsFromWikiConfigurationSource.NAME)
+@Deprecated
+// TODO extend FromWikiConfigurationSource & move tests
 public class CelementsFromWikiConfigurationSource extends CompositeConfigurationSource implements
     Initializable {
 

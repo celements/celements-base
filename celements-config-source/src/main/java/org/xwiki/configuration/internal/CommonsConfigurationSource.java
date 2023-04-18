@@ -19,15 +19,24 @@
  */
 package org.xwiki.configuration.internal;
 
-import java.util.ArrayList;
+import static java.util.stream.Collectors.*;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.properties.ConverterManager;
+import org.xwiki.container.Container;
+
+import one.util.streamex.StreamEx;
 
 /**
  * Wrap a Commons Configuration instance into a XWiki {@link ConfigurationSource}. This allows us to
@@ -39,114 +48,55 @@ import org.xwiki.properties.ConverterManager;
  * @version $Id$
  * @since 1.6M1
  */
-public class CommonsConfigurationSource implements ConfigurationSource {
+public class CommonsConfigurationSource extends AbstractConvertingConfigurationSource {
 
   private Configuration configuration;
 
-  /**
-   * Component used for performing type conversions.
-   */
   @Requirement
-  private ConverterManager converterManager;
+  private Container container;
 
-  protected void setConfiguration(Configuration configuration) {
-    this.configuration = configuration;
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String, Object)
-   */
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getProperty(String key, T defaultValue) {
-    return getProperty(key, defaultValue, (Class<T>) defaultValue.getClass());
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String)
-   */
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getProperty(String key) {
-    return (T) this.configuration.getProperty(key);
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String, Class)
-   */
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getProperty(String key, Class<T> valueClass) {
-    T result = null;
+  protected void setConfiguration(String name) throws ConfigurationException {
+    String fileName = "/WEB-INF/" + name + ".properties";
     try {
-      if (String.class.getName().equals(valueClass.getName())) {
-        result = (T) this.configuration.getString(key);
-      } else if (List.class.isAssignableFrom(valueClass)) {
-        result = (T) this.configuration.getList(key);
-      } else if (Properties.class.isAssignableFrom(valueClass)) {
-        result = (T) this.configuration.getProperties(key);
-      } else if (null != getProperty(key)) {
-        result = this.converterManager.convert(valueClass, getProperty(key));
-      }
-    } catch (org.apache.commons.configuration.ConversionException e) {
-      throw new org.xwiki.configuration.ConversionException("Key [" + key + "] is not of type ["
-          + valueClass.getName() + "]", e);
-    } catch (org.xwiki.properties.converter.ConversionException e) {
-      throw new org.xwiki.configuration.ConversionException("Key [" + key + "] is not of type ["
-          + valueClass.getName() + "]", e);
+      URL propertiesUrl = container.getApplicationContext().getResource(fileName);
+      configuration = new PropertiesConfiguration(propertiesUrl);
+    } catch (MalformedURLException exc) {
+      throw new ConfigurationException("for " + fileName, exc);
     }
-
-    return result;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getKeys()
-   */
   @Override
-  @SuppressWarnings("unchecked")
-  public List<String> getKeys() {
-    List<String> keysList = new ArrayList<>();
-    Iterator keys = this.configuration.getKeys();
-    while (keys.hasNext()) {
-      keysList.add((String) keys.next());
+  protected Object getValue(String key, Class<?> type) {
+    Function<String, Object> getter = configuration::getProperty;
+    if (type != null) {
+      if (String.class.isAssignableFrom(type)) {
+        getter = configuration::getString;
+      } else if (List.class.isAssignableFrom(type)) {
+        getter = configuration::getList;
+      } else if (Properties.class.isAssignableFrom(type)) {
+        getter = configuration::getProperties;
+      }
     }
-    return keysList;
+    return getter.apply(key);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#containsKey(String)
-   */
+  @Override
+  public List<String> getKeys() {
+    Iterator<?> keys = configuration.getKeys();
+    return StreamEx.of(keys)
+        .map(Objects::nonNull)
+        .map(Object::toString)
+        .collect(toList());
+  }
+
   @Override
   public boolean containsKey(String key) {
-    return this.configuration.containsKey(key);
+    return configuration.containsKey(key);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#isEmpty()
-   */
   @Override
   public boolean isEmpty() {
-    return this.configuration.isEmpty();
-  }
-
-  private <T> T getProperty(String key, T defaultValue, Class<T> valueClass) {
-    T result = getProperty(key, valueClass);
-    if (result == null) {
-      result = defaultValue;
-    }
-    return result;
+    return configuration.isEmpty();
   }
 
 }

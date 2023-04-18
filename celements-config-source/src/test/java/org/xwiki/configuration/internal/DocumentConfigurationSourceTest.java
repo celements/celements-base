@@ -19,140 +19,152 @@
  */
 package org.xwiki.configuration.internal;
 
+import static com.celements.common.test.CelementsSpringTestUtil.*;
 import static java.util.stream.Collectors.*;
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
-import org.xwiki.component.util.ReflectionUtils;
+import org.xwiki.bridge.DocumentAccessBridge;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.configuration.ConversionException;
-import org.xwiki.properties.ConverterManager;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
- * Unit tests for {@link CommonsConfigurationSource}.
+ * Unit tests for {@link org.xwiki.configuration.internal.SpacePreferencesConfigurationSource}.
  *
  * @version $Id$
- * @since 2.0M1
+ * @since 2.4M2
  */
-public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
+public class DocumentConfigurationSourceTest extends AbstractBaseComponentTest {
 
-  private Configuration configuration;
-
-  private CommonsConfigurationSource source;
+  private ConfigurationSource source;
 
   @Before
   public void prepare() throws Exception {
-    source = new CommonsConfigurationSource();
-    ConverterManager converterManager = getComponentManager().lookup(ConverterManager.class);
-    ReflectionUtils.setFieldValue(source, "converterManager", converterManager);
-    configuration = new BaseConfiguration();
-    ReflectionUtils.setFieldValue(source, "configuration", configuration);
+    registerComponentMocks(DocumentAccessBridge.class);
+    source = getComponentManager().lookup(ConfigurationSource.class, "space");
+    expect(getMock(DocumentAccessBridge.class).getCurrentDocumentReference())
+        .andReturn(new DocumentReference("wiki", "space", "doc")).anyTimes();
   }
 
   @Test
-  public void test_getProperty_defaultValue() {
-    assertEquals("default", source.getProperty("key", "default"));
-    configuration.setProperty("key", "value");
-    assertEquals("value", source.getProperty("key", "default"));
-  }
+  public void test_getProperty_null() throws Exception {
+    expectProp("key", null);
 
-  @Test
-  public void test_getProperty_string() {
+    replayDefault();
     assertNull(source.getProperty("key"));
+    assertEquals("default", source.getProperty("key", "default"));
+    assertNull(source.getProperty("key", String.class));
+    assertTrue(source.getProperty("key", List.class).isEmpty());
+    assertFalse(source.get("key", String.class).isPresent());
+    assertFalse(source.stream("key", String.class).findAny().isPresent());
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getProperty_String() throws Exception {
+    String value = "value";
+    expectProp("key", value);
+
+    replayDefault();
+    assertEquals(value, source.getProperty("key"));
+    assertEquals(value, source.getProperty("key", ""));
+    assertEquals(value, source.getProperty("key", String.class));
+    assertEquals(value, source.get("key", String.class).orElse(null));
+    assertEquals(Arrays.asList(value), source.stream("key", String.class).collect(toList()));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getProperty_String_empty() throws Exception {
+    expectProp("key", " ");
+
+    replayDefault();
+    assertNull(source.getProperty("key"));
+    assertEquals("default", source.getProperty("key", "default"));
     assertNull(source.getProperty("key", String.class));
     assertFalse(source.get("key", String.class).isPresent());
     assertFalse(source.stream("key", String.class).findAny().isPresent());
-    configuration.setProperty("key", "value");
-    assertEquals("value", source.getProperty("key"));
-    assertEquals("value", source.getProperty("key", String.class));
-    assertEquals("value", source.get("key", String.class).orElse(null));
-    assertEquals(Arrays.asList("value"), source.stream("key", String.class).collect(toList()));
+    verifyDefault();
   }
 
   @Test(expected = ConversionException.class)
   public void test_getProperty_string_conversionError() {
-    configuration.setProperty("key", "value");
+    expectProp("key", "value");
+
+    replayDefault();
     source.getProperty("key", Boolean.class);
+    verifyDefault();
   }
 
   @Test
   public void test_getProperty_bool() {
     Boolean value = true;
-    assertNull(source.getProperty("key", Boolean.class));
-    assertFalse(source.get("key", Boolean.class).isPresent());
-    assertFalse(source.stream("key", Boolean.class).findAny().isPresent());
-    configuration.setProperty("key", value);
+    expectProp("key", value);
+
+    replayDefault();
     assertEquals(value, source.getProperty("key"));
     assertEquals(value, source.getProperty("key", Boolean.class));
     assertEquals(value, source.get("key", Boolean.class).orElse(null));
     assertEquals(Arrays.asList(value), source.stream("key", Boolean.class).collect(toList()));
+    verifyDefault();
   }
 
   @Test(expected = ConversionException.class)
   public void test_getProperty_bool_conversionError() {
-    configuration.setProperty("key", true);
+    expectProp("key", true);
+
+    replayDefault();
     source.getProperty("key", String.class);
+    verifyDefault();
   }
 
   @Test
   public void test_getProperty_int() {
     Integer value = 5;
-    assertNull(source.getProperty("key", Integer.class));
-    assertFalse(source.get("key", Integer.class).isPresent());
-    assertFalse(source.stream("key", Integer.class).findAny().isPresent());
-    configuration.setProperty("key", value);
+    expectProp("key", value);
+
+    replayDefault();
     assertEquals(value, source.getProperty("key"));
     assertEquals(value, source.getProperty("key", Integer.class));
     assertEquals(value, source.get("key", Integer.class).orElse(null));
     assertEquals(Arrays.asList(value), source.stream("key", Integer.class).collect(toList()));
+    verifyDefault();
   }
 
   @Test(expected = ConversionException.class)
   public void test_getProperty_int_conversionError() {
-    configuration.setProperty("key", 5);
+    expectProp("key", 5);
+
+    replayDefault();
     source.getProperty("key", List.class);
+    verifyDefault();
   }
 
   @Test
   public void test_getProperty_list() {
-    assertTrue(source.getProperty("key", List.class).isEmpty());
-    assertFalse(source.get("key", List.class).isPresent());
-    assertFalse(source.stream("key", List.class).findAny().isPresent());
-    configuration.setProperty("key", "value1");
-    configuration.addProperty("key", "value2");
     List<String> expected = Arrays.asList("value1", "value2");
+    expectProp("key", expected);
 
+    replayDefault();
     assertEquals(expected, source.getProperty("key"));
     assertEquals(expected, source.getProperty("key", List.class));
     assertEquals(expected, source.get("key", List.class).orElse(null));
     assertEquals(expected, source.stream("key", String.class).collect(toList()));
+    verifyDefault();
   }
 
-  @Test
-  public void test_getProperty_list_defaultValue() {
-    configuration.setProperty("key", "value");
-    assertEquals(Arrays.asList("value"), source.getProperty("key", Arrays.asList("default")));
-  }
-
-  @Test
-  public void test_getProperty_properties() {
-    assertTrue(source.getProperty("key", Properties.class).isEmpty());
-    configuration.setProperty("key", "key1=value1");
-    configuration.addProperty("key", "key2=value2");
-    List<String> expectedList = Arrays.asList("key1=value1", "key2=value2");
-    Properties expectedProperties = new Properties();
-    expectedProperties.put("key1", "value1");
-    expectedProperties.put("key2", "value2");
-    assertEquals(expectedList, source.getProperty("key"));
-    assertEquals(expectedProperties, source.getProperty("key", Properties.class));
-    assertEquals(expectedList, source.get("key", null).orElse(null));
+  private void expectProp(String key, Object value) {
+    DocumentReference docRef = new DocumentReference("wiki", "space", "WebPreferences");
+    DocumentReference classDocRef = new DocumentReference("wiki", "XWiki", "XWikiPreferences");
+    expect(getMock(DocumentAccessBridge.class).getProperty(docRef, classDocRef, key))
+        .andReturn(value).atLeastOnce();
   }
 }

@@ -17,10 +17,13 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.xpn.xwiki.web.Utils;
 
+/**
+ * @deprecated since 6.0
+ */
+@Deprecated
 public class ConfigSourceUtils {
 
-  private ConfigSourceUtils() {
-  }
+  private ConfigSourceUtils() {}
 
   @NotNull
   public static Optional<String> getStringProperty(@NotNull String key) {

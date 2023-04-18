@@ -19,20 +19,11 @@
  */
 package com.celements.configuration;
 
-import java.net.URL;
-
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.configuration.ConfigurationException;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.configuration.internal.CommonsConfigurationSource;
-import org.xwiki.container.ApplicationContext;
-import org.xwiki.container.Container;
 
 @Component(CelementsPropertiesConfigurationSource.NAME)
 public class CelementsPropertiesConfigurationSource extends CommonsConfigurationSource implements
@@ -40,25 +31,12 @@ public class CelementsPropertiesConfigurationSource extends CommonsConfiguration
 
   public static final String NAME = "celementsproperties";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-      CelementsPropertiesConfigurationSource.class);
-
-  static final String CELEMENTS_PROPERTIES_FILE = "/WEB-INF/celements.properties";
-
-  @Requirement
-  Container container;
-
   @Override
   public void initialize() throws InitializationException {
-    Configuration config;
     try {
-      ApplicationContext appContext = container.getApplicationContext();
-      URL propertiesURL = appContext.getResource(CELEMENTS_PROPERTIES_FILE);
-      config = new PropertiesConfiguration(propertiesURL);
-    } catch (Exception exc) {
-      LOGGER.warn("Failed to load configuration file '{}'", CELEMENTS_PROPERTIES_FILE, exc);
-      config = new BaseConfiguration();
+      setConfiguration("celements");
+    } catch (ConfigurationException exc) {
+      throw new InitializationException("failed setting config", exc);
     }
-    setConfiguration(config);
   }
 }

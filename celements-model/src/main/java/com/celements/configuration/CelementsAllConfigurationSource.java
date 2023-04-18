@@ -19,53 +19,10 @@
  */
 package com.celements.configuration;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
-import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.configuration.internal.CompositeConfigurationSource;
+import org.xwiki.configuration.internal.AllConfigurationSource;
 
 /**
- * Composite Configuration Source that looks in the following sources in that order:
- * <ul>
- * <li>user preferences wiki page</li>
- * <li>space preferences wiki page</li>
- * <li>wiki preferences wiki page</li>
- * <li>celements properties file (celements.properties)</li>
- * <li>xwiki properties file (xwiki.properties)</li>
- * </ul>
- * Should be used when a configuration can be overriden by the user in his/her profile.
+ * @deprecated since 6.0 instead use {@link AllConfigurationSource}
  */
-@Component(CelementsAllConfigurationSource.NAME)
-public class CelementsAllConfigurationSource extends CompositeConfigurationSource implements
-    Initializable {
-
-  public static final String NAME = "all";
-
-  @Requirement("xwikiproperties")
-  ConfigurationSource xwikiPropertiesSource;
-
-  @Requirement(CelementsPropertiesConfigurationSource.NAME)
-  ConfigurationSource celementsPropertiesSource;
-
-  @Requirement("wiki")
-  ConfigurationSource wikiPreferencesSource;
-
-  @Requirement("space")
-  ConfigurationSource spacePreferencesSource;
-
-  @Requirement("user")
-  ConfigurationSource userPreferencesSource;
-
-  @Override
-  public void initialize() throws InitializationException {
-    // first source is looked up first when a property value is requested.
-    addConfigurationSource(this.userPreferencesSource);
-    addConfigurationSource(this.spacePreferencesSource);
-    addConfigurationSource(this.wikiPreferencesSource);
-    addConfigurationSource(this.celementsPropertiesSource);
-    addConfigurationSource(this.xwikiPropertiesSource);
-  }
-
-}
+@Deprecated
+public class CelementsAllConfigurationSource extends AllConfigurationSource {}

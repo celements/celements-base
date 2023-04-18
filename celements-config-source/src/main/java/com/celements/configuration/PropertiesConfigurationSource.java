@@ -17,41 +17,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.configuration.internal;
+package com.celements.configuration;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.configuration.internal.CompositeConfigurationSource;
+import org.xwiki.configuration.internal.DefaultConfigurationSource;
+import org.xwiki.configuration.internal.XWikiPropertiesConfigurationSource;
 
-import com.celements.configuration.FromWikiConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**
  * Composite Configuration Source that looks in the following sources in that order:
  * <ul>
- * <li>space preferences wiki page</li>
- * <li>wiki preferences wiki page</li>
- * <li>properties files (xwiki/celements.properties)</li>
+ * <li>celements properties file (celements.properties)</li>
+ * <li>xwiki properties file (xwiki.properties)</li>
  * </ul>
- * Should be used when a configuration should not be overridden by the user in his/her
- * profile (in which case the {@link AllConfigurationSource} should be used.
+ * Should be used when a configuration should not be overriden by wiki/space preferences (in which
+ * case {@link DefaultConfigurationSource} or {@link FromWikiConfigurationSource} should be
+ * used.
  */
-@Component
-public class DefaultConfigurationSource extends CompositeConfigurationSource {
+@Component(PropertiesConfigurationSource.NAME)
+public class PropertiesConfigurationSource extends CompositeConfigurationSource {
 
-  @Requirement(FromWikiConfigurationSource.NAME)
-  ConfigurationSource fromWikiSource;
-
-  @Requirement("space")
-  ConfigurationSource spacePreferencesSource;
+  public static final String NAME = "properties";
 
   @Inject
-  public DefaultConfigurationSource(
-      @Named(FromWikiConfigurationSource.NAME) ConfigurationSource fromWikiSrc,
-      @Named("space") ConfigurationSource spacePrefSrc) {
-    super(ImmutableList.of(spacePrefSrc, fromWikiSrc));
+  public PropertiesConfigurationSource(
+      @Named(XWikiPropertiesConfigurationSource.NAME) ConfigurationSource xwikiPropSrc,
+      @Named(CelementsPropertiesConfigurationSource.NAME) ConfigurationSource celPropSrc) {
+    super(ImmutableList.of(celPropSrc, xwikiPropSrc));
   }
 }

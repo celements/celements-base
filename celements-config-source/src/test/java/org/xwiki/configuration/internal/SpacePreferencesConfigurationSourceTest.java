@@ -19,14 +19,17 @@
  */
 package org.xwiki.configuration.internal;
 
+import static com.celements.common.test.CelementsSpringTestUtil.*;
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
-import org.jmock.Expectations;
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.test.AbstractComponentTestCase;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link org.xwiki.configuration.internal.SpacePreferencesConfigurationSource}.
@@ -34,36 +37,40 @@ import org.xwiki.test.AbstractComponentTestCase;
  * @version $Id$
  * @since 2.4M2
  */
-public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTestCase {
+public class SpacePreferencesConfigurationSourceTest extends AbstractBaseComponentTest {
 
-  private DocumentAccessBridge bridge;
+  private ConfigurationSource source;
+  private DocumentReference currentDocRef;
 
-  @Override
-  protected void registerComponents() throws Exception {
-    super.registerComponents();
-    bridge = registerMockComponent(DocumentAccessBridge.class);
+  @Before
+  public void prepare() throws Exception {
+    currentDocRef = new DocumentReference("wiki", "space", "doc");
+    registerComponentMocks(DocumentAccessBridge.class);
+    source = getComponentManager().lookup(ConfigurationSource.class, "space");
   }
 
   @Test
-  public void testGetPropertyForStringWhenExists() throws Exception {
-    ConfigurationSource source = getComponentManager().lookup(ConfigurationSource.class, "space");
+  public void test_getProperty() throws Exception {
+    String key = "key", value = "value";
+    DocumentReference docRef = new DocumentReference("wiki", "space", "WebPreferences");
+    DocumentReference classDocRef = new DocumentReference("wiki", "XWiki", "XWikiPreferences");
+    expect(getMock(DocumentAccessBridge.class).getCurrentDocumentReference())
+        .andReturn(currentDocRef).atLeastOnce();
+    expect(getMock(DocumentAccessBridge.class).getProperty(docRef, classDocRef, key))
+        .andReturn(value).atLeastOnce();
 
-    final DocumentReference webPreferencesReference = new DocumentReference("wiki", "space",
-        "WebPreferences");
-    final DocumentReference currentDocument = new DocumentReference("wiki", "space", "page");
+    replayDefault();
+    assertEquals(value, source.getProperty(key));
+    verifyDefault();
+  }
 
-    getMockery().checking(new Expectations() {
+  @Test
+  public void test_getProperty_noCurrentDocRef() throws Exception {
+    expect(getMock(DocumentAccessBridge.class).getCurrentDocumentReference())
+        .andReturn(null).atLeastOnce();
 
-      {
-        allowing(bridge).getCurrentDocumentReference();
-        will(returnValue(currentDocument));
-        oneOf(bridge).getProperty(webPreferencesReference, webPreferencesReference, "key");
-        will(returnValue("value"));
-      }
-    });
-
-    String result = source.getProperty("key", String.class);
-
-    assertEquals("value", result);
+    replayDefault();
+    assertNull(source.getProperty("key"));
+    verifyDefault();
   }
 }

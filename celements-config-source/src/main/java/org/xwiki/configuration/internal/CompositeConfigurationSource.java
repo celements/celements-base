@@ -19,14 +19,17 @@
  */
 package org.xwiki.configuration.internal;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
+import static java.util.stream.Collectors.*;
+
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.xwiki.configuration.ConfigurationSource;
+
+import com.celements.common.MoreOptional;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Allows composing (aka chaining) several Configuration Sources. The order of sources is important.
@@ -40,123 +43,48 @@ public class CompositeConfigurationSource implements ConfigurationSource {
   /**
    * The order of sources is important. Sources located before other sources take priority.
    */
-  private List<ConfigurationSource> sources = new ArrayList<>();
+  private final List<ConfigurationSource> sources;
 
-  public void addConfigurationSource(ConfigurationSource source) {
-    this.sources.add(source);
+  public CompositeConfigurationSource(List<ConfigurationSource> sources) {
+    this.sources = ImmutableList.copyOf(sources);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#containsKey(String)
-   */
+  public List<ConfigurationSource> getSources() {
+    return sources;
+  }
+
   @Override
   public boolean containsKey(String key) {
-    boolean result = false;
-    for (ConfigurationSource source : this.sources) {
-      if (source.containsKey(key)) {
-        result = true;
-        break;
-      }
-    }
-    return result;
+    return getSources().stream().anyMatch(source -> source.containsKey(key));
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String)
-   */
   @Override
-  public <T> T getProperty(String key) {
-    T result = null;
-    for (ConfigurationSource source : this.sources) {
-      if (source.containsKey(key)) {
-        result = source.<T>getProperty(key);
-        break;
-      }
-    }
-    return result;
+  public <T> Stream<T> stream(String key, Class<T> type) {
+    return getSources().stream()
+        .filter(source -> source.containsKey(key))
+        .flatMap(src -> src.<T>stream(key, type))
+        .filter(Objects::nonNull);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String, Class)
-   */
   @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getProperty(String key, Class<T> valueClass) {
-    T result = null;
-    for (ConfigurationSource source : this.sources) {
-      if (source.containsKey(key)) {
-        result = source.getProperty(key, valueClass);
-        break;
-      }
-    }
-    // List and Properties must return empty collections and not null values.
-    if (result == null) {
-      if (List.class.getName().equals(valueClass.getName())) {
-        result = (T) Collections.emptyList();
-      } else if (Properties.class.getName().equals(valueClass.getName())) {
-        result = (T) new Properties();
-      }
-    }
-
-    return result;
+  public <T> Optional<T> get(String key, Class<T> type) {
+    return getSources().stream()
+        .filter(source -> source.containsKey(key))
+        .map(src -> src.<T>get(key, type))
+        .flatMap(MoreOptional::stream)
+        .findFirst();
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String, Object)
-   */
-  @Override
-  public <T> T getProperty(String key, T defaultValue) {
-    T result = null;
-    for (ConfigurationSource source : this.sources) {
-      if (source.containsKey(key)) {
-        result = source.<T>getProperty(key, defaultValue);
-        break;
-      }
-    }
-    if (result == null) {
-      result = defaultValue;
-    }
-    return result;
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getKeys()
-   */
   @Override
   public List<String> getKeys() {
-    // We use a linked hash set in order to keep the keys in the order in which they were defined in
-    // the sources.
-    Set<String> keys = new LinkedHashSet<>();
-    for (ConfigurationSource source : this.sources) {
-      keys.addAll(source.getKeys());
-    }
-    return new ArrayList<>(keys);
+    return getSources().stream()
+        .flatMap(source -> source.getKeys().stream())
+        .distinct()
+        .collect(toList());
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#isEmpty()
-   */
   @Override
   public boolean isEmpty() {
-    boolean result = true;
-    for (ConfigurationSource source : this.sources) {
-      if (!source.isEmpty()) {
-        result = false;
-        break;
-      }
-    }
-    return result;
+    return getSources().stream().allMatch(ConfigurationSource::isEmpty);
   }
 }

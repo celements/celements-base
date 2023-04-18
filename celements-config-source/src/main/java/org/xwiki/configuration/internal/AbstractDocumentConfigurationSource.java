@@ -19,21 +19,18 @@
  */
 package org.xwiki.configuration.internal;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
 
-import javax.validation.constraints.NotNull;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.model.EntityType;
+import org.xwiki.model.ModelConfiguration;
+import org.xwiki.model.ModelContext;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.WikiReference;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Common features for all Document sources (ie configuration data coming from wiki pages).
@@ -41,21 +38,22 @@ import com.google.common.base.Strings;
  * @version $Id$
  * @since 2.0M2
  */
-public abstract class AbstractDocumentConfigurationSource implements ConfigurationSource {
+public abstract class AbstractDocumentConfigurationSource
+    extends AbstractConvertingConfigurationSource {
 
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(AbstractDocumentConfigurationSource.class);
-
-  /**
-   * @see #getDocumentAccessBridge()
-   */
   @Requirement
   private DocumentAccessBridge documentAccessBridge;
 
+  @Requirement
+  private ModelContext modelContext;
+
+  @Requirement
+  private ModelConfiguration modelConfig;
+
   /**
    * @return the document reference of the document containing an XWiki Object with configuration
-   *         data or null
-   *         if there no such document in which case this configuration source will be skipped
+   *         data or null if there no such document in which case this configuration source will be
+   *         skipped
    */
   protected abstract DocumentReference getDocumentReference();
 
@@ -68,143 +66,33 @@ public abstract class AbstractDocumentConfigurationSource implements Configurati
    * @return the bridge used to access Object properties
    */
   protected DocumentAccessBridge getDocumentAccessBridge() {
-    return this.documentAccessBridge;
+    return documentAccessBridge;
   }
 
   /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#containsKey(String)
+   * @return the reference pointing to the current wiki
    */
-  @Override
-  public boolean containsKey(String key) {
-    DocumentReference documentReference = getFailsafeDocumentReference();
-    DocumentReference classReference = getFailsafeClassReference();
-    return ((documentReference != null) && (classReference != null))
-        && (getObjectProperty(key, documentReference, classReference) != null);
+  protected WikiReference getCurrentWikiReference() {
+    return Optional.ofNullable(modelContext.getCurrentEntityReference())
+        .flatMap(ref -> ref.extractRef(WikiReference.class))
+        .orElseGet(() -> new WikiReference(modelConfig.getDefaultReferenceValue(EntityType.WIKI)));
   }
 
-  private Object getObjectProperty(@NotNull String key,
-      @NotNull DocumentReference documentReference,
-      @NotNull DocumentReference classReference) {
-    Preconditions.checkNotNull(documentReference);
-    Preconditions.checkNotNull(classReference);
-    Preconditions.checkNotNull(key);
-    Object value = getDocumentAccessBridge().getProperty(documentReference, classReference, key);
-    if (value instanceof String) {
-      value = Strings.emptyToNull((String) value);
-    }
-    return value;
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getKeys()
-   */
   @Override
   public List<String> getKeys() {
+    // TODO missing method to properly implement
+    // return documentAccessBridge.getXClassPropertyNames(getDocumentReference());
+    return ImmutableList.of();
+  }
+
+  @Override
+  protected Object getValue(String key, Class<?> type) {
+    DocumentReference docRef = getDocumentReference();
+    DocumentReference classDocRef = getClassReference();
+    if ((docRef != null) && (classDocRef != null)) {
+      return getDocumentAccessBridge().getProperty(docRef, classDocRef, key);
+    }
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String, Object)
-   */
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getProperty(String key, T defaultValue) {
-    return getProperty(key, defaultValue, (Class<T>) defaultValue.getClass());
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String, Class)
-   */
-  @Override
-  public <T> T getProperty(String key, Class<T> valueClass) {
-    T result = null;
-
-    DocumentReference documentReference = getFailsafeDocumentReference();
-    DocumentReference classReference = getFailsafeClassReference();
-    if ((documentReference != null) && (classReference != null)) {
-      result = (T) getObjectProperty(key, documentReference, classReference);
-
-      // Make sure we don't return null values for List and Properties (they must return empty
-      // elements
-      // when using the typed API).
-      if (result == null) {
-        if (List.class.getName().equals(valueClass.getName())) {
-          result = (T) Collections.emptyList();
-        } else if (Properties.class.getName().equals(valueClass.getName())) {
-          result = (T) new Properties();
-        }
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#getProperty(String)
-   */
-  @Override
-  public <T> T getProperty(String key) {
-    T result = null;
-    DocumentReference documentReference = getFailsafeDocumentReference();
-    DocumentReference classReference = getFailsafeClassReference();
-    if ((documentReference != null) && (classReference != null)) {
-      result = (T) getObjectProperty(key, documentReference, classReference);
-    }
-
-    return result;
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @see ConfigurationSource#isEmpty()
-   */
-  @Override
-  public boolean isEmpty() {
-    return getKeys().isEmpty();
-  }
-
-  private <T> T getProperty(String key, T defaultValue, Class<T> valueClass) {
-    T result = getProperty(key, valueClass);
-    if (result == null) {
-      result = defaultValue;
-    }
-    return result;
-  }
-
-  private DocumentReference getFailsafeDocumentReference() {
-    DocumentReference documentReference;
-    try {
-      documentReference = getDocumentReference();
-    } catch (Exception e) {
-      LOGGER.info("Cannot load this config source. Skipping.", e);
-      // We verify that no error has happened and if one happened then we skip this configuration
-      // source. This ensures the system will continue to work even if this source has a problem.
-      documentReference = null;
-    }
-    return documentReference;
-  }
-
-  private DocumentReference getFailsafeClassReference() {
-    DocumentReference classReference;
-    try {
-      classReference = getDocumentReference();
-    } catch (Exception e) {
-      LOGGER.info("Cannot load this config source. Skipping.", e);
-      // We verify that no error has happened and if one happened then we skip this configuration
-      // source. This ensures the system will continue to work even if this source has a problem.
-      classReference = null;
-    }
-    return classReference;
-  }
 }

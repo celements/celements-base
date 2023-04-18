@@ -32,7 +32,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.properties.ConverterManager;
-import org.xwiki.test.AbstractComponentTestCase;
+
+import com.celements.common.test.AbstractBaseComponentTest;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Unit tests for {@link CompositeConfigurationSource}.
@@ -40,7 +42,7 @@ import org.xwiki.test.AbstractComponentTestCase;
  * @version $Id$
  * @since 2.0M1
  */
-public class CompositeConfigurationSourceTest extends AbstractComponentTestCase {
+public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest {
 
   private CompositeConfigurationSource composite;
 
@@ -48,25 +50,24 @@ public class CompositeConfigurationSourceTest extends AbstractComponentTestCase 
 
   private Configuration config2;
 
-  @Override
   @Before
-  public void setUp() throws Exception {
-    super.setUp();
-    composite = new CompositeConfigurationSource();
+  public void prepare() throws Exception {
     ConverterManager converterManager = getComponentManager().lookup(ConverterManager.class);
-
     CommonsConfigurationSource source1 = new CommonsConfigurationSource();
     ReflectionUtils.setFieldValue(source1, "converterManager", converterManager);
     config1 = new BaseConfiguration();
-    source1.setConfiguration(config1);
-    composite.addConfigurationSource(source1);
-
+    ReflectionUtils.setFieldValue(source1, "configuration", config1);
     CommonsConfigurationSource source2 = new CommonsConfigurationSource();
     ReflectionUtils.setFieldValue(source2, "converterManager", converterManager);
     config2 = new BaseConfiguration();
-    source2.setConfiguration(config2);
-    composite.addConfigurationSource(source2);
+    ReflectionUtils.setFieldValue(source2, "configuration", config2);
+    composite = new CompositeConfigurationSource(ImmutableList.of(source1, source2));
   }
+
+  // TODO test stream for single and list values -> should get from all composites
+
+  // TODO test get for single and list values -> should get from first composites
+  // TODO test get(Property) for empty overwrites, e.g. c2 has "key=value" but c1 has "key="
 
   @Test
   public void testContainsKey() {
