@@ -24,6 +24,7 @@ import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.configuration.internal.XWikiPropertiesConfigurationSource;
 
 import com.google.common.collect.ImmutableList;
 
