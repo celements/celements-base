@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.configuration.internal;
+package com.celements.configuration;
 
 import static com.celements.common.test.CelementsSpringTestUtil.*;
 import static java.util.stream.Collectors.*;
@@ -37,7 +37,7 @@ import org.xwiki.model.reference.DocumentReference;
 import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
- * Unit tests for {@link org.xwiki.configuration.internal.SpacePreferencesConfigurationSource}.
+ * Unit tests for {@link com.celements.configuration.SpacePreferencesConfigurationSource}.
  *
  * @version $Id$
  * @since 2.4M2

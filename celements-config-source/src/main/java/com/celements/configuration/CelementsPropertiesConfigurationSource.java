@@ -25,7 +25,6 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.core.io.ResourceLoader;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.configuration.internal.CommonsConfigurationSource;
 import org.xwiki.properties.ConverterManager;
 
 @Component(CelementsPropertiesConfigurationSource.NAME)

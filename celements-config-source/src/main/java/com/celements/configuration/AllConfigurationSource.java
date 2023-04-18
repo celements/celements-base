@@ -17,41 +17,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.configuration.internal;
+package com.celements.configuration;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
 
-import com.celements.configuration.FromWikiConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**
  * Composite Configuration Source that looks in the following sources in that order:
  * <ul>
+ * <li>user preferences wiki page</li>
  * <li>space preferences wiki page</li>
  * <li>wiki preferences wiki page</li>
  * <li>properties files (xwiki/celements.properties)</li>
  * </ul>
- * Should be used when a configuration should not be overridden by the user in his/her
- * profile (in which case the {@link AllConfigurationSource} should be used.
+ * Should be used when a configuration can be overridden by the user in his/her profile.
  */
-@Component
-public class DefaultConfigurationSource extends CompositeConfigurationSource {
+@Component(AllConfigurationSource.NAME)
+public class AllConfigurationSource extends CompositeConfigurationSource {
 
-  @Requirement(FromWikiConfigurationSource.NAME)
-  ConfigurationSource fromWikiSource;
-
-  @Requirement("space")
-  ConfigurationSource spacePreferencesSource;
+  public static final String NAME = "all";
 
   @Inject
-  public DefaultConfigurationSource(
-      @Named(FromWikiConfigurationSource.NAME) ConfigurationSource fromWikiSrc,
-      @Named("space") ConfigurationSource spacePrefSrc) {
-    super(ImmutableList.of(spacePrefSrc, fromWikiSrc));
+  public AllConfigurationSource(
+      ConfigurationSource defaultSrc,
+      @Named("user") ConfigurationSource userPrefSrc) {
+    super(ImmutableList.of(userPrefSrc, defaultSrc));
   }
 }

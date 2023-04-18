@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.configuration.internal;
+package com.celements.configuration;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +33,6 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.properties.ConverterManager;
 
-import com.celements.configuration.AbstractConvertingConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**

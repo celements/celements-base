@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.configuration.internal;
+package com.celements.configuration;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -29,35 +29,38 @@ import org.xwiki.properties.ConverterManager;
 import com.celements.model.reference.RefBuilder;
 
 /**
- * Configuration source taking its data in the Wiki Preferences wiki document
- * (using data from the XWiki.XWikiPreferences object attached to that document).
+ * Configuration source taking its data in the Space Preferences wiki document (using data from the
+ * XWiki.XWikiPreferences object attached to that document).
  *
  * @version $Id$
  * @since 2.0M2
  */
-@Component("wiki")
-public class WikiPreferencesConfigurationSource extends AbstractDocumentConfigurationSource {
+@Component("space")
+public class SpacePreferencesConfigurationSource extends AbstractDocumentConfigurationSource {
 
-  private static final String SPACE_NAME = "XWiki";
-  private static final String PAGE_NAME = "XWikiPreferences";
+  private static final String DOCUMENT_NAME = "WebPreferences";
+  private static final String CLASS_SPACE_NAME = "XWiki";
+  private static final String CLASS_PAGE_NAME = "XWikiPreferences";
 
   @Inject
-  public WikiPreferencesConfigurationSource(@Nullable ConverterManager converterManager) {
+  public SpacePreferencesConfigurationSource(@Nullable ConverterManager converterManager) {
     super(converterManager);
   }
 
   @Override
   protected DocumentReference getClassReference() {
-    // The Class reference is the same as the document reference for XWiki.XWikiPreferences since
-    // the class is stored in the document of the same name.
-    return getDocumentReference();
+    return RefBuilder.from(getDocumentAccessBridge().getCurrentDocumentReference())
+        .space(CLASS_SPACE_NAME)
+        .doc(CLASS_PAGE_NAME)
+        .buildOpt(DocumentReference.class)
+        .orElse(null);
   }
 
   @Override
   protected DocumentReference getDocumentReference() {
-    return RefBuilder.from(getCurrentWikiReference())
-        .space(SPACE_NAME)
-        .doc(PAGE_NAME)
-        .build(DocumentReference.class);
+    return RefBuilder.from(getDocumentAccessBridge().getCurrentDocumentReference())
+        .doc(DOCUMENT_NAME)
+        .buildOpt(DocumentReference.class)
+        .orElse(null);
   }
 }

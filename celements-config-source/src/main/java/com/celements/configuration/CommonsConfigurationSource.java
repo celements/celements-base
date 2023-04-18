@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.configuration.internal;
+package com.celements.configuration;
 
 import static com.google.common.base.Preconditions.*;
 import static java.util.stream.Collectors.*;
@@ -40,8 +40,6 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.springframework.core.io.ResourceLoader;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.properties.ConverterManager;
-
-import com.celements.configuration.AbstractConvertingConfigurationSource;
 
 import one.util.streamex.StreamEx;
 
