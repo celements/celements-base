@@ -1,5 +1,6 @@
 package com.celements.spring.context;
 
+import static com.google.common.base.Predicates.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;
@@ -74,18 +75,19 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> T lookup(Class<T> role, String hint) throws ComponentLookupException {
     ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
     try {
-      Stream<String> hints = Stream.of(compRole.getBeanName(), hint);
-      if (ComponentRole.DEFAULT_HINT.equals(hint)) {
-        hints = Stream.concat(hints, Stream.of(""));
-      }
-      return hints.distinct()
-          .map(name -> getBean(name, role))
-          .flatMap(MoreOptional::stream)
-          .findFirst()
-          .orElseThrow(() -> new ComponentLookupException("lookup - [" + compRole + "] failed"));
+      return getBean(compRole)
+          .orElseThrow(() -> new NoSuchBeanDefinitionException(compRole.getBeanName()));
     } catch (BeansException exc) {
       throw new ComponentLookupException("lookup - [" + compRole + "] failed", exc);
     }
+  }
+
+  private <T> Optional<T> getBean(ComponentRole<T> compRole) {
+    return Stream.of(compRole.getBeanName(), Optional.ofNullable(compRole.getRoleHint())
+        .filter(not(ComponentRole.DEFAULT_HINT::equals)).orElse(""))
+        .map(name -> getBean(name, compRole.getRole()))
+        .flatMap(MoreOptional::stream)
+        .findFirst();
   }
 
   private <T> Optional<T> getBean(String name, Class<T> type) {
@@ -170,7 +172,7 @@ public class SpringShimComponentManager implements ComponentManager {
   @Override
   public <T> ComponentDescriptor<T> getComponentDescriptor(Class<T> role, String hint) {
     ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
-    return createComponentDescriptor(compRole, getBean(hint, role).orElse(null));
+    return createComponentDescriptor(compRole, getBean(compRole).orElse(null));
   }
 
   @Override
