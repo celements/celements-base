@@ -27,8 +27,8 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
 
   @Before
   public void prepareTest() throws Exception {
-    storeStrictMock = createStrictMock(CelHibernateStore.class);
-    getDefaultMocks().add(storeStrictMock);
+    storeStrictMock = createMockAndAddToDefault(CelHibernateStore.class);
+    resetToStrict(storeStrictMock);
     expect(getWikiMock().getStore()).andReturn(storeStrictMock).anyTimes();
     sessionMock = createMockAndAddToDefault(Session.class);
     sessionMock.setFlushMode(FlushMode.COMMIT);
