@@ -26,6 +26,9 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.manager.ComponentRepositoryException;
 
+import com.celements.common.MoreOptional;
+import com.google.common.base.Strings;
+
 import one.util.streamex.EntryStream;
 
 /**
@@ -71,9 +74,14 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> T lookup(Class<T> role, String hint) throws ComponentLookupException {
     ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
     try {
-      return getBean(compRole.getBeanName(), role)
-          .map(Optional::of)
-          .orElseGet(() -> getBean(hint, role))
+      Stream<String> hints = Stream.of(compRole.getBeanName(), hint);
+      if (ComponentRole.DEFAULT_HINT.equals(hint)) {
+        hints = Stream.concat(hints, Stream.of(""));
+      }
+      return hints.distinct()
+          .map(name -> getBean(name, role))
+          .flatMap(MoreOptional::stream)
+          .findFirst()
           .orElseThrow(() -> new ComponentLookupException("lookup - [" + compRole + "] failed"));
     } catch (BeansException exc) {
       throw new ComponentLookupException("lookup - [" + compRole + "] failed", exc);
@@ -81,12 +89,13 @@ public class SpringShimComponentManager implements ComponentManager {
   }
 
   private <T> Optional<T> getBean(String name, Class<T> type) {
-    if (name != null) {
-      try {
-        return Optional.of(beanFactory.getBean(name, type));
-      } catch (NoSuchBeanDefinitionException exc) {}
+    try {
+      return (Strings.isNullOrEmpty(name))
+          ? Optional.of(beanFactory.getBean(type))
+          : Optional.of(beanFactory.getBean(name, type));
+    } catch (NoSuchBeanDefinitionException exc) {
+      return Optional.empty();
     }
-    return Optional.empty();
   }
 
   @Override
