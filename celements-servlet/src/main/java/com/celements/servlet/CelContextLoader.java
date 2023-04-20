@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.annotation.concurrent.ThreadSafe;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.configuration.Configuration;
@@ -27,6 +28,7 @@ import org.xwiki.observation.event.ApplicationStoppedEvent;
 
 import com.celements.spring.context.CelSpringContext;
 
+@ThreadSafe
 public class CelContextLoader {
 
   private static final Logger LOGGER = LoggerFactory
