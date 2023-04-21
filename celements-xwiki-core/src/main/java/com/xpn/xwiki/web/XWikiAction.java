@@ -240,7 +240,7 @@ public abstract class XWikiAction extends Action {
             }
           }
           vcontext.put("exp", e);
-          LOG.error("Uncaught exception: " + e.getMessage(), e);
+          LOG.error("Uncaught exception: {}", e.getMessage(), e);
           // If the request is an AJAX request, we don't return a whole HTML page, but just the
           // exception inline.
           String exceptionTemplate = ajax ? "exceptioninline" : "exception";
