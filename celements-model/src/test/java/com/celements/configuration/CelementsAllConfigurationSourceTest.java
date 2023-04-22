@@ -18,6 +18,7 @@ public class CelementsAllConfigurationSourceTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
+    String hint = CelementsAllConfigurationSource.NAME;
     Utils.getComponentManager().unregisterComponent(ConfigurationSource.class, "default");
     CelementsAllConfigurationSource instance = new CelementsAllConfigurationSource();
     instance.userPreferencesSource = createMockAndAddToDefault(ConfigurationSource.class);
@@ -28,10 +29,10 @@ public class CelementsAllConfigurationSourceTest extends AbstractComponentTest {
     instance.initialize();
     DefaultComponentDescriptor<ConfigurationSource> descriptor = new DefaultComponentDescriptor<>();
     descriptor.setRole(ConfigurationSource.class);
-    descriptor.setRoleHint("default");
+    descriptor.setRoleHint(hint);
+    descriptor.setImplementation(instance.getClass());
     Utils.getComponentManager().registerComponent(descriptor, instance);
-
-    cfgSrc = (CelementsAllConfigurationSource) Utils.getComponent(ConfigurationSource.class);
+    cfgSrc = (CelementsAllConfigurationSource) Utils.getComponent(ConfigurationSource.class, hint);
   }
 
   @Test

@@ -20,6 +20,8 @@
  */
 package org.xwiki.component.annotation;
 
+import static java.util.stream.Collectors.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,17 +31,19 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.internal.RoleHint;
-import org.xwiki.component.logging.AbstractLogEnabled;
-import org.xwiki.component.logging.VoidLogger;
 import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.component.manager.ComponentRepositoryException;
 
 /**
  * Dynamically loads all components defined using Annotations and declared in
@@ -48,7 +52,9 @@ import org.xwiki.component.manager.ComponentManager;
  * @version $Id$
  * @since 1.8.1
  */
-public class ComponentAnnotationLoader extends AbstractLogEnabled {
+public class ComponentAnnotationLoader {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ComponentAnnotationLoader.class);
 
   /**
    * Location in the classloader of the file defining the list of component implementation class to
@@ -70,127 +76,111 @@ public class ComponentAnnotationLoader extends AbstractLogEnabled {
   /**
    * Factory to create a Component Descriptor from an annotated class.
    */
-  private ComponentDescriptorFactory factory = new ComponentDescriptorFactory();
+  private final ComponentDescriptorFactory factory;
 
   /**
    * Default constructor.
    */
   public ComponentAnnotationLoader() {
     // make sure to not fail even if no one provided a logger
-    enableLogging(new VoidLogger());
+    factory = new ComponentDescriptorFactory();
   }
 
   /**
-   * Loads all components defined using annotations.
-   *
-   * @param manager
-   *          the component manager to use to dynamically register components
-   * @param classLoader
-   *          the classloader to use to look for the Component list declaration file (
-   *          {@code META-INF/components.txt})
+   * @deprecated since 5.2, no replacement
    */
+  @Deprecated
   public void initialize(ComponentManager manager, ClassLoader classLoader) {
     try {
-      // 1) Find all components by retrieving the list defined in COMPONENT_LIST. Also find all
-      // component
-      // overrides (i.e. the list of components that should take precedence when several are
-      // registered
-      // with the same role/hint.
-      List<String> componentClassNames = getDeclaredComponents(classLoader, COMPONENT_LIST);
-      List<String> componentOverrideClassNames = getDeclaredComponents(classLoader,
-          COMPONENT_OVERRIDE_LIST);
-
-      initialize(manager, classLoader, componentClassNames, componentOverrideClassNames);
-    } catch (Exception e) {
-      // Make sure we make the calling code fail in order to fail fast and prevent the application
-      // to start
-      // if something is amiss.
-      throw new RuntimeException("Failed to get the list of components to load", e);
+      for (ComponentDescriptor<?> descriptor : loadDeclaredDescriptors(classLoader)) {
+        manager.registerComponent(descriptor);
+      }
+    } catch (IOException | ClassNotFoundException | ComponentRepositoryException exc) {
+      throw new RuntimeException("Failed to dynamically load components with annotations", exc);
     }
   }
 
   /**
-   * @param manager
-   *          the component manager to use to dynamically register components
-   * @param classLoader
-   *          the classloader to use to look for the Component list declaration file (
-   *          {@code META-INF/components.txt})
-   * @param componentClassNames
-   *          the list of components to load
-   * @param componentOverrideClassNames
-   *          the list of components to override
-   * @since 2.5M2
+   * @deprecated since 5.2, no replacement
    */
+  @Deprecated
   public void initialize(ComponentManager manager, ClassLoader classLoader,
-      List<String> componentClassNames,
-      List<String> componentOverrideClassNames) {
+      List<String> componentClassNames, List<String> componentOverrideClassNames) {
     try {
-      // 2) For each component class name found, load its class and use introspection to find the
-      // necessary
-      // annotations required to create a Component Descriptor.
-      Map<RoleHint, ComponentDescriptor> descriptorMap = new HashMap<>();
-      for (String componentClassName : componentClassNames) {
-        Class<?> componentClass = classLoader.loadClass(componentClassName);
-
-        // Look for ComponentRole annotations and register one component per ComponentRole found
-        for (Class<?> componentRoleClass : findComponentRoleClasses(componentClass)) {
-          for (ComponentDescriptor descriptor : this.factory.createComponentDescriptors(
-              componentClass,
-              componentRoleClass)) {
-            // If there's already a existing role/hint in the list of descriptors then decide which
-            // one
-            // to keep by looking at the override list. Use those in the override list in priority.
-            // Otherwise use the last registered component.
-            RoleHint roleHint = new RoleHint(componentRoleClass, descriptor.getRoleHint());
-            if (descriptorMap.containsKey(roleHint)) {
-              // Is the component in the override list?
-              ComponentDescriptor existingDescriptor = descriptorMap.get(roleHint);
-              if (!componentOverrideClassNames
-                  .contains(existingDescriptor.getImplementation().getName())) {
-                descriptorMap.put(new RoleHint(componentRoleClass, descriptor.getRoleHint()),
-                    descriptor);
-
-                if (!componentOverrideClassNames
-                    .contains(descriptor.getImplementation().getName())) {
-                  getLogger().warn(
-                      "Component [" + existingDescriptor.getImplementation().getName()
-                          + "] is being overwritten by component ["
-                          + descriptor.getImplementation().getName() + "] for Role/Hint ["
-                          + roleHint
-                          + "]. It will not be possible to look it up.");
-                }
-              }
-            } else {
-              descriptorMap.put(new RoleHint(componentRoleClass, descriptor.getRoleHint()),
-                  descriptor);
-            }
-          }
-        }
-      }
-
-      // 3) Activate all component descriptors
-      for (ComponentDescriptor descriptor : descriptorMap.values()) {
+      for (ComponentDescriptor<?> descriptor : loadDescriptors(classLoader,
+          componentClassNames, componentOverrideClassNames)) {
         manager.registerComponent(descriptor);
       }
-
-    } catch (Exception e) {
-      // Make sure we make the calling code fail in order to fail fast and prevent the application
-      // to start
-      // if something is amiss.
-      throw new RuntimeException("Failed to dynamically load components with annotations", e);
+    } catch (ClassNotFoundException | ComponentRepositoryException exc) {
+      throw new RuntimeException("Failed to dynamically load components with annotations", exc);
     }
   }
 
-  public List<ComponentDescriptor> getComponentsDescriptors(Class<?> componentClass) {
-    List<ComponentDescriptor> descriptors = new ArrayList<>();
+  /**
+   * Loads all declared components defined using annotations.
+   *
+   * @param classLoader
+   *          the classloader to use to look for the Component list declaration file (
+   *          {@code META-INF/components.txt})
+   */
+  public List<ComponentDescriptor<?>> loadDeclaredDescriptors(ClassLoader classLoader)
+      throws IOException, ClassNotFoundException {
+    List<String> componentClassNames = getDeclaredComponents(classLoader, COMPONENT_LIST);
+    List<String> componentOverrideClassNames = getDeclaredComponents(classLoader,
+        COMPONENT_OVERRIDE_LIST);
+    return loadDescriptors(classLoader, componentClassNames, componentOverrideClassNames);
+  }
 
-    // Look for ComponentRole annotations and register one component per ComponentRole found
-    for (Class<?> componentRoleClass : findComponentRoleClasses(componentClass)) {
-      descriptors
-          .addAll(this.factory.createComponentDescriptors(componentClass, componentRoleClass));
+  public List<ComponentDescriptor<?>> loadDescriptors(ClassLoader classLoader,
+      List<String> componentClassNames, List<String> componentOverrideClassNames)
+      throws ClassNotFoundException {
+    // 2) For each component class name found, load its class and use introspection to find the
+    // necessary annotations required to create a Component Descriptor.
+    Map<RoleHint<?>, ComponentDescriptor<?>> descriptorMap = new LinkedHashMap<>();
+    for (String componentClassName : componentClassNames) {
+      Class<?> componentClass = classLoader.loadClass(componentClassName);
+      // Look for ComponentRole annotations and register one component per ComponentRole found
+      findDescriptors(componentClass).forEach(descriptor -> {
+        // If there's already a existing role/hint in the list of descriptors then decide which
+        // one to keep by looking at the override list. Use those in the override list in
+        // priority. Otherwise use the last registered component.
+        RoleHint<?> roleHint = new RoleHint<>(descriptor.getRole(), descriptor.getRoleHint());
+        if (descriptorMap.containsKey(roleHint)) {
+          // Is the component in the override list?
+          ComponentDescriptor<?> existingDescriptor = descriptorMap.get(roleHint);
+          if (!componentOverrideClassNames.contains(existingDescriptor.getImplementation()
+              .getName())) {
+            descriptorMap.put(new RoleHint<>(descriptor.getRole(), descriptor.getRoleHint()),
+                descriptor);
+            if (!componentOverrideClassNames.contains(descriptor.getImplementation().getName())) {
+              LOG.warn("Component [" + existingDescriptor.getImplementation().getName()
+                  + "] is being overwritten by component ["
+                  + descriptor.getImplementation().getName() + "] for Role/Hint ["
+                  + roleHint + "]. It will not be possible to look it up.");
+            }
+          }
+        } else {
+          descriptorMap.put(new RoleHint<>(descriptor.getRole(), descriptor.getRoleHint()),
+              descriptor);
+        }
+      });
     }
+    return new ArrayList<>(descriptorMap.values());
+  }
 
-    return descriptors;
+  /**
+   * @deprecated instead use {@link #streamComponentsDescriptors(Class)}
+   */
+  @Deprecated
+  public List<ComponentDescriptor> getComponentsDescriptors(Class<?> componentClass) {
+    return findDescriptors(componentClass).collect(toList());
+  }
+
+  @SuppressWarnings("unchecked")
+  public Stream<ComponentDescriptor<?>> findDescriptors(Class<?> componentClass) {
+    return findComponentRoleClasses(componentClass).stream()
+        .flatMap(componentRoleClass -> factory.streamDescriptors(
+            (Class<?>) componentClass, (Class<Object>) componentRoleClass));
   }
 
   /**
@@ -221,8 +211,7 @@ public class ComponentAnnotationLoader extends AbstractLogEnabled {
       }
 
       // Note that we need to look into the superclass since the super class can itself implements
-      // an interface
-      // that has the @ComponentRole annotation.
+      // an interface that has the @ComponentRole annotation.
       Class<?> superClass = componentClass.getSuperclass();
       if ((superClass != null) && !superClass.getName().equals(Object.class.getName())) {
         classes.addAll(findComponentRoleClasses(superClass));
@@ -278,8 +267,7 @@ public class ComponentAnnotationLoader extends AbstractLogEnabled {
 
     // Read all components definition from the URL
     // Always force UTF-8 as the encoding, since these files are read from the official jars, and
-    // those are
-    // generated on an 8-bit system.
+    // those are generated on an 8-bit system.
     BufferedReader in = new BufferedReader(
         new InputStreamReader(componentListStream, COMPONENT_LIST_ENCODING));
     String inputLine;

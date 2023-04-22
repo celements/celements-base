@@ -28,8 +28,8 @@ public class CelementsDefaultConfigurationSourceTest extends AbstractComponentTe
     DefaultComponentDescriptor<ConfigurationSource> descriptor = new DefaultComponentDescriptor<>();
     descriptor.setRole(ConfigurationSource.class);
     descriptor.setRoleHint("default");
+    descriptor.setImplementation(instance.getClass());
     Utils.getComponentManager().registerComponent(descriptor, instance);
-
     cfgSrc = (CelementsDefaultConfigurationSource) Utils.getComponent(ConfigurationSource.class);
   }
 

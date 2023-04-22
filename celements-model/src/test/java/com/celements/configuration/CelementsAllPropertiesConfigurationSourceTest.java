@@ -19,7 +19,7 @@ public class CelementsAllPropertiesConfigurationSourceTest extends AbstractCompo
   @Before
   public void prepareTest() throws Exception {
     String hint = CelementsAllPropertiesConfigurationSource.NAME;
-    Utils.getComponentManager().unregisterComponent(ConfigurationSource.class, hint);
+    getComponentManager().unregisterComponent(ConfigurationSource.class, hint);
     CelementsAllPropertiesConfigurationSource instance = new CelementsAllPropertiesConfigurationSource();
     instance.celementsPropertiesSource = createMockAndAddToDefault(ConfigurationSource.class);
     instance.xwikiPropertiesSource = createMockAndAddToDefault(ConfigurationSource.class);
@@ -27,8 +27,8 @@ public class CelementsAllPropertiesConfigurationSourceTest extends AbstractCompo
     DefaultComponentDescriptor<ConfigurationSource> descriptor = new DefaultComponentDescriptor<>();
     descriptor.setRole(ConfigurationSource.class);
     descriptor.setRoleHint(hint);
-    Utils.getComponentManager().registerComponent(descriptor, instance);
-
+    descriptor.setImplementation(instance.getClass());
+    getComponentManager().registerComponent(descriptor, instance);
     cfgSrc = (CelementsAllPropertiesConfigurationSource) Utils.getComponent(
         ConfigurationSource.class, hint);
   }

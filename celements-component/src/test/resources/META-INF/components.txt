@@ -1,0 +1,3 @@
+com.celements.spring.test.TestXWikiCompositeComponent
+com.celements.spring.test.TestXWikiPerLookupComponent
+com.celements.spring.test.TestXWikiSingletonComponent

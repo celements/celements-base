@@ -30,7 +30,9 @@ import org.xwiki.component.descriptor.ComponentDescriptor;
  *
  * @version $Id$
  * @since 2.0M1
+ * @deprecated since 6.0
  */
+@Deprecated
 public interface ComponentEventManager {
 
   /**

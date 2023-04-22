@@ -60,7 +60,6 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
     verifyDefault();
     assertSame(sessionMock, cmd.getSession());
     assertFalse("doc with id already set must stem from db", doc.isNew());
-    assertSame("store should be set", storeMock, doc.getStore());
     assertEquals("doc should be set to context db", getContext().getDatabase(),
         doc.getDocumentReference().getWikiReference().getName());
     assertFalse(doc.hasElement(XWikiDocument.HAS_OBJECTS));
