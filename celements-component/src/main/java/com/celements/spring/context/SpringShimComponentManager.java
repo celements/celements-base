@@ -161,7 +161,8 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> void release(T component) throws ComponentLifecycleException {
     if (component != null) {
       try {
-        beanFactory.destroyBean(component);
+        Stream.of(beanFactory.getBeanNamesForType(component.getClass()))
+            .forEach(beanFactory::destroySingleton);
       } catch (BeansException exc) {
         throw new ComponentLifecycleException("release - failed for class ["
             + component.getClass() + "]", exc);
@@ -172,26 +173,31 @@ public class SpringShimComponentManager implements ComponentManager {
   @Override
   public <T> ComponentDescriptor<T> getComponentDescriptor(Class<T> role, String hint) {
     ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
-    return createComponentDescriptor(compRole, getBean(compRole).orElse(null));
+    return Optional.ofNullable(createComponentDescriptor(role, compRole.getBeanName()))
+        .orElseGet(() -> createComponentDescriptor(role, hint));
   }
 
   @Override
   public <T> List<ComponentDescriptor<T>> getComponentDescriptorList(Class<T> role) {
-    Stream<ComponentDescriptor<T>> ret = Stream.empty();
-    try {
-      ret = lookupEntries(role).mapKeyValue(this::createComponentDescriptor);
-    } catch (ComponentLookupException cle) {
-      LOGGER.error("getComponentDescriptorList - failed for [{}]", role, cle);
-    }
-    return ret.filter(Objects::nonNull).collect(toList());
+    return Stream.of(beanFactory.getBeanDefinitionNames())
+        .map(beanName -> createComponentDescriptor(role, beanName))
+        .filter(Objects::nonNull)
+        .collect(toList());
   }
 
   @SuppressWarnings("unchecked")
-  private <T> ComponentDescriptor<T> createComponentDescriptor(ComponentRole<T> compRole,
-      Object instance) {
-    if (instance != null) {
-      Class<? extends T> instanceClass = (Class<? extends T>) instance.getClass();
-      return descriptorFactory.create(instanceClass, compRole.getRole(), compRole.getRoleHint());
+  private <T> ComponentDescriptor<T> createComponentDescriptor(Class<T> role, String beanName) {
+    try {
+      String beanClassName = beanFactory.getBeanDefinition(beanName).getBeanClassName();
+      Class<? extends T> instanceClass = (Class<? extends T>) Class.forName(beanClassName);
+      if (role.isAssignableFrom(instanceClass)) {
+        String hint = ComponentRole.fromBeanName(beanName)
+            .map(ComponentRole::getRoleHint)
+            .orElse(beanName);
+        return descriptorFactory.create(instanceClass, role, hint);
+      }
+    } catch (NoSuchBeanDefinitionException | ClassNotFoundException exc) {
+      LOGGER.error("createComponentDescriptor - failed for [{}]", beanName, exc);
     }
     return null;
   }
