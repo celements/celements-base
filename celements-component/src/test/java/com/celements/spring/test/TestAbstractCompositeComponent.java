@@ -17,6 +17,12 @@ import com.google.common.collect.ImmutableSet;
 public abstract class TestAbstractCompositeComponent implements TestCompositeComponentRole {
 
   @Inject
+  private TestComponentRole defaultFromSpring;
+
+  @Requirement
+  private TestComponentRole defaultFromXWiki;
+
+  @Inject
   @Named(TestSpringSingletonComponent.NAME)
   private TestComponentRole springFromSpring;
 
@@ -44,6 +50,10 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
 
   @Override
   public void assertComposition() {
+    assertNotNull(defaultFromSpring);
+    assertSame(TestDefaultComponent.class, defaultFromSpring.getClass());
+    assertNotNull(defaultFromXWiki);
+    assertSame(TestDefaultComponent.class, defaultFromXWiki.getClass());
     assertNotNull(springFromSpring);
     assertSame(TestSpringSingletonComponent.class, springFromSpring.getClass());
     assertNotNull(springFromXWiki);
@@ -62,9 +72,10 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
 
   private void assertList(Collection<TestComponentRole> list) {
     assertNotNull(list);
-    assertEquals(4, list.size());
-    assertTrue(list.remove(springFromXWiki));
-    assertTrue(list.remove(xwikiFromSpring));
+    assertEquals(5, list.size());
+    assertTrue(list.remove(defaultFromXWiki));
+    assertTrue(list.remove(springFromSpring));
+    assertTrue(list.remove(xwikiFromXWiki));
     assertEquals(
         ImmutableSet.of(TestSpringPerLookupComponent.class, TestXWikiPerLookupComponent.class),
         list.stream().map(o -> o.getClass()).collect(Collectors.toSet()));
@@ -72,7 +83,8 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
 
   private void assertMap(Map<String, TestComponentRole> map, String prefix) {
     assertNotNull(map);
-    assertEquals(4, map.size());
+    assertEquals(5, map.size());
+    assertSame(defaultFromSpring, map.get(prefix + "default"));
     assertSame(springFromXWiki, map.get(TestSpringSingletonComponent.NAME));
     assertSame(xwikiFromSpring, map.get(prefix + TestXWikiSingletonComponent.NAME));
     assertSame(TestSpringPerLookupComponent.class,
