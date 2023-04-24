@@ -185,12 +185,11 @@ public class SpringShimComponentManager implements ComponentManager {
         .collect(toList());
   }
 
-  @SuppressWarnings("unchecked")
   private <T> ComponentDescriptor<T> createComponentDescriptor(Class<T> role, String beanName) {
     try {
       String beanClassName = beanFactory.getBeanDefinition(beanName).getBeanClassName();
-      Class<? extends T> instanceClass = (Class<? extends T>) Class.forName(beanClassName);
-      if (role.isAssignableFrom(instanceClass)) {
+      Class<? extends T> instanceClass = classForName(role, beanClassName);
+      if (instanceClass != null) {
         String hint = ComponentRole.fromBeanName(beanName)
             .map(ComponentRole::getRoleHint)
             .orElse(beanName);
@@ -198,6 +197,18 @@ public class SpringShimComponentManager implements ComponentManager {
       }
     } catch (NoSuchBeanDefinitionException | ClassNotFoundException exc) {
       LOGGER.error("createComponentDescriptor - failed for [{}]", beanName, exc);
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> Class<? extends T> classForName(Class<T> parentClass, String className)
+      throws ClassNotFoundException {
+    if (className != null) {
+      Class<?> ret = Class.forName(className);
+      if ((parentClass == null) || parentClass.isAssignableFrom(ret)) {
+        return (Class<? extends T>) ret;
+      }
     }
     return null;
   }
