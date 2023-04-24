@@ -5,11 +5,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-public class TestController {
+public class HelloWorldController {
 
-  @GetMapping("/test")
+  @GetMapping("/helloworld")
   @ResponseBody
-  public String testEndpoint() {
-    return "Hello, this is a test spring mvc endpoint!";
+  public String helloWorld() {
+    return "Hello World!";
   }
+
 }

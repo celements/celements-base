@@ -416,4 +416,5 @@ public class XWikiServletRequestStub implements XWikiRequest {
   public DispatcherType getDispatcherType() {
     return null;
   }
+
 }

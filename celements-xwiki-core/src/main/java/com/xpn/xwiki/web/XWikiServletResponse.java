@@ -264,4 +264,5 @@ public class XWikiServletResponse implements XWikiResponse {
   public void setContentLengthLong(long len) {
     response.setContentLengthLong(len);
   }
+
 }

@@ -142,9 +142,8 @@ public class XWikiServletRequest implements XWikiRequest {
 
   public String[] filterStringArray(String[] text) {
     if (text == null) {
-      return null;
+      return new String[0];
     }
-
     for (int i = 0; i < text.length; i++) {
       text[i] = filterString(text[i]);
     }
@@ -533,4 +532,5 @@ public class XWikiServletRequest implements XWikiRequest {
   public DispatcherType getDispatcherType() {
     return request.getDispatcherType();
   }
+
 }
