@@ -40,8 +40,6 @@ public class CelContextLoader extends ContextLoader {
   @Override
   protected ConfigurableWebApplicationContext createWebApplicationContext(
       ServletContext servletContext) {
-    // TODO profiles needed?
-    // ctx.getEnvironment().setActiveProfiles(determineActiveProfiles(servletContext));
     return new CelSpringWebContext(loadSpringConfigs(servletContext));
   }
 
@@ -78,7 +76,6 @@ public class CelContextLoader extends ContextLoader {
       } finally {
         context = null;
         closeWebApplicationContext(servletContext);
-        // ContextCleanupListener.cleanupAttributes(servletContext); TODO needed ?
       }
     }
   }

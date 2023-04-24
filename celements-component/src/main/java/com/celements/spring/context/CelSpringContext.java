@@ -45,7 +45,6 @@ public class CelSpringContext extends AnnotationConfigApplicationContext {
     register(configs.toArray(new Class[configs.size()]));
     loadXWikiDescriptors(this).forEach(this::registerXWikiComponent);
     LOGGER.info("initializing configs: {}", configs);
-    refresh(); // TODO remove for flexibility
   }
 
   private void registerXWikiComponent(ComponentDescriptor<?> descriptor) {
