@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,6 +28,14 @@ public class XWikiServletResponseStub implements XWikiResponse {
     public void write(int b) throws IOException {
       outputStream.write(b);
     }
+
+    @Override
+    public boolean isReady() {
+      return outputStream != null;
+    }
+
+    @Override
+    public void setWriteListener(WriteListener writeListener) {}
   };
 
   public void setOutpuStream(OutputStream outputStream) {
@@ -182,5 +191,8 @@ public class XWikiServletResponseStub implements XWikiResponse {
   public Collection<String> getHeaderNames() {
     return null;
   }
+
+  @Override
+  public void setContentLengthLong(long len) {}
 
 }

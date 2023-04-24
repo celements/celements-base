@@ -21,6 +21,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 /**
@@ -344,6 +345,11 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
+  public String changeSessionId() {
+    return null;
+  }
+
+  @Override
   public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
     return false;
   }
@@ -362,6 +368,17 @@ public class XWikiServletRequestStub implements XWikiRequest {
   @Override
   public Part getPart(String name) throws IOException, ServletException {
     return null;
+  }
+
+  @Override
+  public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass)
+      throws IOException, ServletException {
+    return null;
+  }
+
+  @Override
+  public long getContentLengthLong() {
+    return 0;
   }
 
   @Override
