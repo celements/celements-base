@@ -2,23 +2,27 @@ package com.xpn.xwiki.web;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.portlet.PortalContext;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletPreferences;
-import javax.portlet.PortletSession;
-import javax.portlet.WindowState;
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.Part;
 
 /**
  * This stub is intended to simulate a servlet request in a daemon context, in order to be able to
@@ -68,61 +72,6 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public boolean isWindowStateAllowed(WindowState windowState) {
-    return false;
-  }
-
-  @Override
-  public boolean isPortletModeAllowed(PortletMode portletMode) {
-    return false;
-  }
-
-  @Override
-  public PortletMode getPortletMode() {
-    return null;
-  }
-
-  @Override
-  public WindowState getWindowState() {
-    return null;
-  }
-
-  @Override
-  public PortletPreferences getPreferences() {
-    return null;
-  }
-
-  @Override
-  public PortletSession getPortletSession() {
-    return null;
-  }
-
-  @Override
-  public PortletSession getPortletSession(boolean b) {
-    return null;
-  }
-
-  @Override
-  public String getProperty(String s) {
-    return null;
-  }
-
-  @Override
-  public Enumeration getProperties(String s) {
-    return null;
-  }
-
-  @Override
-  public Enumeration getPropertyNames() {
-    return null;
-  }
-
-  @Override
-  public PortalContext getPortalContext() {
-    return null;
-  }
-
-  @Override
   public String getAuthType() {
     return "";
   }
@@ -138,12 +87,12 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getHeaders(String s) {
+  public Enumeration<String> getHeaders(String s) {
     return null;
   }
 
   @Override
-  public Enumeration getHeaderNames() {
+  public Enumeration<String> getHeaderNames() {
     return null;
   }
 
@@ -228,16 +177,6 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public String getResponseContentType() {
-    return null;
-  }
-
-  @Override
-  public Enumeration getResponseContentTypes() {
-    return null;
-  }
-
-  @Override
   public boolean isRequestedSessionIdFromCookie() {
     return false;
   }
@@ -262,17 +201,12 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getAttributeNames() {
+  public Enumeration<String> getAttributeNames() {
     return null;
   }
 
   @Override
   public String getCharacterEncoding() {
-    return null;
-  }
-
-  @Override
-  public InputStream getPortletInputStream() throws IOException {
     return null;
   }
 
@@ -302,7 +236,7 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getParameterNames() {
+  public Enumeration<String> getParameterNames() {
     return null;
   }
 
@@ -312,7 +246,7 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public Map getParameterMap() {
+  public Map<String, String[]> getParameterMap() {
     return null;
   }
 
@@ -356,14 +290,10 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public void setAttribute(String s, Object o) {
-
-  }
+  public void setAttribute(String s, Object o) {}
 
   @Override
-  public void removeAttribute(String s) {
-
-  }
+  public void removeAttribute(String s) {}
 
   @Override
   public Locale getLocale() {
@@ -371,7 +301,7 @@ public class XWikiServletRequestStub implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getLocales() {
+  public Enumeration<Locale> getLocales() {
     return null;
   }
 
@@ -412,5 +342,78 @@ public class XWikiServletRequestStub implements XWikiRequest {
   @Override
   public int getLocalPort() {
     return 0;
+  }
+
+  @Override
+  public String changeSessionId() {
+    return null;
+  }
+
+  @Override
+  public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
+    return false;
+  }
+
+  @Override
+  public void login(String username, String password) throws ServletException {}
+
+  @Override
+  public void logout() throws ServletException {}
+
+  @Override
+  public Collection<Part> getParts() throws IOException, ServletException {
+    return null;
+  }
+
+  @Override
+  public Part getPart(String name) throws IOException, ServletException {
+    return null;
+  }
+
+  @Override
+  public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass)
+      throws IOException, ServletException {
+    return null;
+  }
+
+  @Override
+  public long getContentLengthLong() {
+    return 0;
+  }
+
+  @Override
+  public ServletContext getServletContext() {
+    return null;
+  }
+
+  @Override
+  public AsyncContext startAsync() throws IllegalStateException {
+    return null;
+  }
+
+  @Override
+  public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
+      throws IllegalStateException {
+    return null;
+  }
+
+  @Override
+  public boolean isAsyncStarted() {
+    return false;
+  }
+
+  @Override
+  public boolean isAsyncSupported() {
+    return false;
+  }
+
+  @Override
+  public AsyncContext getAsyncContext() {
+    return null;
+  }
+
+  @Override
+  public DispatcherType getDispatcherType() {
+    return null;
   }
 }

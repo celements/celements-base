@@ -25,15 +25,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 
-public class BufferOutputStream
-    extends ServletOutputStream {
+public class BufferOutputStream extends ServletOutputStream {
 
   protected ByteArrayOutputStream buffer;
 
   /** Creates a new instance of BufferOutputStream */
   public BufferOutputStream() {
-
     buffer = new ByteArrayOutputStream();
 
   }
@@ -45,33 +44,37 @@ public class BufferOutputStream
   }
 
   @Override
-  public void write(byte b[])
-      throws IOException {
+  public void write(byte[] b) throws IOException {
     buffer.write(b);
   }
 
   @Override
-  public void write(byte[] b, int off, int len)
-      throws IOException {
+  public void write(byte[] b, int off, int len) throws IOException {
     buffer.write(b, off, len);
   }
 
   @Override
-  public void flush()
-      throws IOException {
+  public void flush() throws IOException {
     buffer.flush();
   }
 
   @Override
-  public void close()
-      throws IOException {
+  public void close() throws IOException {
     buffer.close();
   }
 
-  public byte[] getContentsAsByteArray()
-      throws IOException {
+  public byte[] getContentsAsByteArray() throws IOException {
     flush();
     return buffer.toByteArray();
   }
 
+  @Override
+  public boolean isReady() {
+    return true;
+  }
+
+  @Override
+  public void setWriteListener(WriteListener writeListener) {
+    // No need to implement this method as the class is synchronous
+  }
 }

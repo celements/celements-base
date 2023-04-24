@@ -23,33 +23,37 @@ package com.xpn.xwiki.web;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.portlet.PortalContext;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletPreferences;
-import javax.portlet.PortletSession;
-import javax.portlet.WindowState;
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.Part;
 
 import org.apache.struts.upload.MultipartRequestWrapper;
 
 import com.xpn.xwiki.util.Util;
 
+import one.util.streamex.EntryStream;
+
 public class XWikiServletRequest implements XWikiRequest {
 
-  private HttpServletRequest request;
+  private final HttpServletRequest request;
 
   public XWikiServletRequest(HttpServletRequest request) {
     this.request = request;
@@ -78,59 +82,59 @@ public class XWikiServletRequest implements XWikiRequest {
     // Source : http://www.microsoft.com/typography/unicode/1252.htm
     if (this.request.getCharacterEncoding().startsWith("ISO-8859")) {
       // EURO SIGN
-      text = text.replaceAll("\u0080", "&euro;");
+      text = text.replace("\u0080", "&euro;");
       // SINGLE LOW-9 QUOTATION MARK
-      text = text.replaceAll("\u0082", "&sbquo;");
+      text = text.replace("\u0082", "&sbquo;");
       // LATIN SMALL LETTER F WITH HOOK
-      text = text.replaceAll("\u0083", "&fnof;");
+      text = text.replace("\u0083", "&fnof;");
       // DOUBLE LOW-9 QUOTATION MARK
-      text = text.replaceAll("\u0084", "&bdquo;");
+      text = text.replace("\u0084", "&bdquo;");
       // HORIZONTAL ELLIPSIS, entity : &hellip;
-      text = text.replaceAll("\u0085", "...");
+      text = text.replace("\u0085", "...");
       // DAGGER
-      text = text.replaceAll("\u0086", "&dagger;");
+      text = text.replace("\u0086", "&dagger;");
       // DOUBLE DAGGER
-      text = text.replaceAll("\u0087", "&Dagger;");
+      text = text.replace("\u0087", "&Dagger;");
       // MODIFIER LETTER CIRCUMFLEX ACCENT
-      text = text.replaceAll("\u0088", "&circ;");
+      text = text.replace("\u0088", "&circ;");
       // PER MILLE SIGN
-      text = text.replaceAll("\u0089", "&permil;");
+      text = text.replace("\u0089", "&permil;");
       // LATIN CAPITAL LETTER S WITH CARON
-      text = text.replaceAll("\u008a", "&Scaron;");
+      text = text.replace("\u008a", "&Scaron;");
       // SINGLE LEFT-POINTING ANGLE QUOTATION MARK, entity : &lsaquo;
-      text = text.replaceAll("\u008b", "'");
+      text = text.replace("\u008b", "'");
       // LATIN CAPITAL LIGATURE OE
-      text = text.replaceAll("\u008c", "&OElig;");
+      text = text.replace("\u008c", "&OElig;");
       // LATIN CAPITAL LETTER Z WITH CARON
-      text = text.replaceAll("\u008e", "&#381;");
+      text = text.replace("\u008e", "&#381;");
       // LEFT SINGLE QUOTATION MARK, entity : &lsquo;
-      text = text.replaceAll("\u0091", "'");
+      text = text.replace("\u0091", "'");
       // RIGHT SINGLE QUOTATION MARK, entity : &rsquo;
-      text = text.replaceAll("\u0092", "'");
+      text = text.replace("\u0092", "'");
       // LEFT DOUBLE QUOTATION MARK, entity : &ldquo;
-      text = text.replaceAll("\u0093", "\"");
+      text = text.replace("\u0093", "\"");
       // RIGHT DOUBLE QUOTATION MARK, entity : &rdquo;
-      text = text.replaceAll("\u0094", "\"");
+      text = text.replace("\u0094", "\"");
       // BULLET
-      text = text.replaceAll("\u0095", "&bull;");
+      text = text.replace("\u0095", "&bull;");
       // EN DASH, entity : &ndash;
-      text = text.replaceAll("\u0096", "-");
+      text = text.replace("\u0096", "-");
       // EM DASH, entity : &mdash;
-      text = text.replaceAll("\u0097", "-");
+      text = text.replace("\u0097", "-");
       // SMALL TILDE
-      text = text.replaceAll("\u0098", "&tilde;");
+      text = text.replace("\u0098", "&tilde;");
       // TRADE MARK SIGN
-      text = text.replaceAll("\u0099", "&trade;");
+      text = text.replace("\u0099", "&trade;");
       // LATIN SMALL LETTER S WITH CARON
-      text = text.replaceAll("\u009a", "&scaron;");
+      text = text.replace("\u009a", "&scaron;");
       // SINGLE RIGHT-POINTING ANGLE QUOTATION MARK, entity : &rsaquo;
-      text = text.replaceAll("\u009b", "'");
+      text = text.replace("\u009b", "'");
       // LATIN SMALL LIGATURE OE
-      text = text.replaceAll("\u009c", "&oelig;");
+      text = text.replace("\u009c", "&oelig;");
       // LATIN SMALL LETTER Z WITH CARON
-      text = text.replaceAll("\u009e", "&#382;");
+      text = text.replace("\u009e", "&#382;");
       // LATIN CAPITAL LETTER Y WITH DIAERESIS
-      text = text.replaceAll("\u009f", "&Yuml;");
+      text = text.replace("\u009f", "&Yuml;");
 
     }
     return text;
@@ -183,12 +187,12 @@ public class XWikiServletRequest implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getHeaders(String s) {
+  public Enumeration<String> getHeaders(String s) {
     return this.request.getHeaders(s);
   }
 
   @Override
-  public Enumeration getHeaderNames() {
+  public Enumeration<String> getHeaderNames() {
     return this.request.getHeaderNames();
   }
 
@@ -301,7 +305,7 @@ public class XWikiServletRequest implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getAttributeNames() {
+  public Enumeration<String> getAttributeNames() {
     return this.request.getAttributeNames();
   }
 
@@ -336,7 +340,7 @@ public class XWikiServletRequest implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getParameterNames() {
+  public Enumeration<String> getParameterNames() {
     return this.request.getParameterNames();
   }
 
@@ -347,22 +351,10 @@ public class XWikiServletRequest implements XWikiRequest {
   }
 
   @Override
-  public Map getParameterMap() {
-    Map newMap = new HashMap();
-    Map map = this.request.getParameterMap();
-    Iterator it = map.keySet().iterator();
-    while (it.hasNext()) {
-      String key = (String) it.next();
-      Object value = map.get(key);
-      if (value instanceof String) {
-        newMap.put(key, filterString((String) value));
-      } else if (value instanceof String[]) {
-        newMap.put(key, filterStringArray((String[]) value));
-      } else {
-        newMap.put(key, value);
-      }
-    }
-    return map;
+  public Map<String, String[]> getParameterMap() {
+    return EntryStream.of(request.getParameterMap())
+        .mapValues(this::filterStringArray)
+        .toMap();
   }
 
   @Override
@@ -422,7 +414,7 @@ public class XWikiServletRequest implements XWikiRequest {
   }
 
   @Override
-  public Enumeration getLocales() {
+  public Enumeration<Locale> getLocales() {
     return this.request.getLocales();
   }
 
@@ -465,77 +457,80 @@ public class XWikiServletRequest implements XWikiRequest {
     return this.request.getLocalPort();
   }
 
-  /*
-   * Portlet Functions. They do nothing in the servlet environement
-   */
-
   @Override
-  public boolean isWindowStateAllowed(WindowState windowState) {
-    return false;
+  public String changeSessionId() {
+    return request.changeSessionId();
   }
 
   @Override
-  public boolean isPortletModeAllowed(PortletMode portletMode) {
-    return false;
+  public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
+    return request.authenticate(response);
   }
 
   @Override
-  public PortletMode getPortletMode() {
-    return null;
+  public void login(String username, String password) throws ServletException {
+    request.login(username, password);
   }
 
   @Override
-  public WindowState getWindowState() {
-    return null;
+  public void logout() throws ServletException {
+    request.logout();
   }
 
   @Override
-  public PortletPreferences getPreferences() {
-    return null;
+  public Collection<Part> getParts() throws IOException, ServletException {
+    return request.getParts();
   }
 
   @Override
-  public PortletSession getPortletSession() {
-    return null;
+  public Part getPart(String name) throws IOException, ServletException {
+    return request.getPart(name);
   }
 
   @Override
-  public PortletSession getPortletSession(boolean b) {
-    return null;
+  public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass)
+      throws IOException, ServletException {
+    return request.upgrade(handlerClass);
   }
 
   @Override
-  public PortalContext getPortalContext() {
-    return null;
+  public long getContentLengthLong() {
+    return request.getContentLengthLong();
   }
 
   @Override
-  public String getProperty(String s) {
-    return null;
+  public ServletContext getServletContext() {
+    return request.getServletContext();
   }
 
   @Override
-  public Enumeration getProperties(String s) {
-    return null;
+  public AsyncContext startAsync() throws IllegalStateException {
+    return request.startAsync();
   }
 
   @Override
-  public Enumeration getPropertyNames() {
-    return null;
+  public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
+      throws IllegalStateException {
+    return request.startAsync(servletRequest, servletResponse);
   }
 
   @Override
-  public String getResponseContentType() {
-    return null;
+  public boolean isAsyncStarted() {
+    return request.isAsyncStarted();
   }
 
   @Override
-  public Enumeration getResponseContentTypes() {
-    return null;
+  public boolean isAsyncSupported() {
+    return request.isAsyncSupported();
   }
 
   @Override
-  public InputStream getPortletInputStream() throws IOException {
-    return null;
+  public AsyncContext getAsyncContext() {
+    return request.getAsyncContext();
+  }
+
+  @Override
+  public DispatcherType getDispatcherType() {
+    return request.getDispatcherType();
   }
 }

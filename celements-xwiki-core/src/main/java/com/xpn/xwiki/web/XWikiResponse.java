@@ -21,11 +21,9 @@
 
 package com.xpn.xwiki.web;
 
-import javax.portlet.ActionResponse;
-import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletResponse;
 
-public interface XWikiResponse extends HttpServletResponse, RenderResponse, ActionResponse {
+public interface XWikiResponse extends HttpServletResponse {
 
   HttpServletResponse getHttpServletResponse();
 

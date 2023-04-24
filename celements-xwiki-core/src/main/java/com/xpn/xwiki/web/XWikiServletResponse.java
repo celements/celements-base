@@ -22,23 +22,17 @@
 package com.xpn.xwiki.web;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Locale;
-import java.util.Map;
 
-import javax.portlet.PortletMode;
-import javax.portlet.PortletModeException;
-import javax.portlet.PortletURL;
-import javax.portlet.WindowState;
-import javax.portlet.WindowStateException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 public class XWikiServletResponse implements XWikiResponse {
 
-  private HttpServletResponse response;
+  private final HttpServletResponse response;
 
   public XWikiServletResponse(HttpServletResponse response) {
     this.response = response;
@@ -241,56 +235,33 @@ public class XWikiServletResponse implements XWikiResponse {
     this.response.sendError(i);
   }
 
-  /*
-   * Portlet Functions
-   */
-  @Override
-  public void addProperty(String s, String s1) {}
-
-  @Override
-  public void setProperty(String s, String s1) {}
-
   @Override
   public String getContentType() {
     return this.response.getContentType();
   }
 
   @Override
-  public OutputStream getPortletOutputStream() throws IOException {
-    return null;
+  public int getStatus() {
+    return response.getStatus();
   }
 
   @Override
-  public PortletURL createRenderURL() {
-    return null;
+  public String getHeader(String name) {
+    return response.getHeader(name);
   }
 
   @Override
-  public PortletURL createActionURL() {
-    return null;
+  public Collection<String> getHeaders(String name) {
+    return response.getHeaders(name);
   }
 
   @Override
-  public String getNamespace() {
-    return null;
+  public Collection<String> getHeaderNames() {
+    return response.getHeaderNames();
   }
 
   @Override
-  public void setTitle(String s) {}
-
-  @Override
-  public void setWindowState(WindowState windowState) throws WindowStateException {}
-
-  @Override
-  public void setPortletMode(PortletMode portletMode) throws PortletModeException {}
-
-  @Override
-  public void setRenderParameters(Map map) {}
-
-  @Override
-  public void setRenderParameter(String s, String s1) {}
-
-  @Override
-  public void setRenderParameter(String s, String[] strings) {}
-
+  public void setContentLengthLong(long len) {
+    response.setContentLengthLong(len);
+  }
 }

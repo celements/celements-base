@@ -28,26 +28,24 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IncludeServletAsString {
 
-  private static final Log log = LogFactory.getLog(IncludeServletAsString.class);
+  private static final Logger log = LoggerFactory.getLogger(IncludeServletAsString.class);
 
   /**
    * Creates a new instance of IncludeServletAsString
    */
   private IncludeServletAsString() {}
 
-  static public String invokeServletAndReturnAsString(String url,
+  public static String invokeServletAndReturnAsString(String url,
       HttpServletRequest servletRequest,
       HttpServletResponse servletResponse)
       throws IOException, ServletException {
 
-    if (log.isDebugEnabled()) {
-      log.debug("Including url \"" + url + "\"...");
-    }
+    log.debug("Including url [{}]...", url);
 
     RequestDispatcher requestDispatcher = servletRequest.getRequestDispatcher(url);
 
@@ -63,9 +61,7 @@ public class IncludeServletAsString {
     requestDispatcher.include(servletRequest, bufferedResponse);
 
     byte[] buffer = bufferedResponse.getBufferAsByteArray();
-    if (log.isDebugEnabled()) {
-      log.debug("Buffer returned with " + buffer.length + " bytes.");
-    }
+    log.debug("Buffer returned with {} bytes.", buffer.length);
 
     return new String(buffer, servletResponse.getCharacterEncoding());
   }
