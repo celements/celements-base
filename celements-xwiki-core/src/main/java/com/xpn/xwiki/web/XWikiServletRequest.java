@@ -42,7 +42,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 import org.apache.struts.upload.MultipartRequestWrapper;
@@ -142,9 +141,8 @@ public class XWikiServletRequest implements XWikiRequest {
 
   public String[] filterStringArray(String[] text) {
     if (text == null) {
-      return null;
+      return new String[0];
     }
-
     for (int i = 0; i < text.length; i++) {
       text[i] = filterString(text[i]);
     }
@@ -458,11 +456,6 @@ public class XWikiServletRequest implements XWikiRequest {
   }
 
   @Override
-  public String changeSessionId() {
-    return request.changeSessionId();
-  }
-
-  @Override
   public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
     return request.authenticate(response);
   }
@@ -485,17 +478,6 @@ public class XWikiServletRequest implements XWikiRequest {
   @Override
   public Part getPart(String name) throws IOException, ServletException {
     return request.getPart(name);
-  }
-
-  @Override
-  public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass)
-      throws IOException, ServletException {
-    return request.upgrade(handlerClass);
-  }
-
-  @Override
-  public long getContentLengthLong() {
-    return request.getContentLengthLong();
   }
 
   @Override
@@ -533,4 +515,5 @@ public class XWikiServletRequest implements XWikiRequest {
   public DispatcherType getDispatcherType() {
     return request.getDispatcherType();
   }
+
 }

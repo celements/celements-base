@@ -260,8 +260,4 @@ public class XWikiServletResponse implements XWikiResponse {
     return response.getHeaderNames();
   }
 
-  @Override
-  public void setContentLengthLong(long len) {
-    response.setContentLengthLong(len);
-  }
 }

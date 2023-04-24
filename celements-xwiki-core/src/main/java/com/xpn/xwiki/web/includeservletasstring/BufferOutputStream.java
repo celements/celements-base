@@ -25,7 +25,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 
 public class BufferOutputStream extends ServletOutputStream {
 
@@ -66,15 +65,5 @@ public class BufferOutputStream extends ServletOutputStream {
   public byte[] getContentsAsByteArray() throws IOException {
     flush();
     return buffer.toByteArray();
-  }
-
-  @Override
-  public boolean isReady() {
-    return true;
-  }
-
-  @Override
-  public void setWriteListener(WriteListener writeListener) {
-    // No need to implement this method as the class is synchronous
   }
 }
