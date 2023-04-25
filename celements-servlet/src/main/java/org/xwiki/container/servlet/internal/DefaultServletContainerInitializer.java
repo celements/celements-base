@@ -70,6 +70,13 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
   }
 
   @Override
+  public void destroyApplicationContext() {
+    ApplicationContext applicationContext = container.getApplicationContext();
+    applicationContextListenerManager.destroyApplicationContext(applicationContext);
+    container.setApplicationContext(null);
+  }
+
+  @Override
   public void initializeRequest(HttpServletRequest httpServletRequest, Object xwikiContext)
       throws ServletContainerException {
     // 1) Create an empty request. From this point forward request initializers can use the
@@ -121,5 +128,13 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
   @Override
   public void initializeSession(HttpServletRequest httpServletRequest) {
     this.container.setSession(new ServletSession(httpServletRequest));
+  }
+
+  @Override
+  public void cleanupSession() {
+    container.removeRequest();
+    container.removeResponse();
+    container.removeSession();
+    execution.removeContext();
   }
 }

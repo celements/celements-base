@@ -23,6 +23,7 @@ package com.xpn.xwiki.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
@@ -40,12 +41,12 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.MDC;
 import org.apache.struts.upload.MultipartRequestWrapper;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.xml.internal.XMLScriptService;
 
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -372,24 +373,20 @@ public class Utils {
     return null;
   }
 
-  public static XWikiContext prepareContext(String action, XWikiRequest request,
-      XWikiResponse response,
-      XWikiEngineContext engine_context) throws XWikiException {
+  public static XWikiContext prepareContext(String action,
+      XWikiRequest request, XWikiResponse response, XWikiEngineContext engineContext)
+      throws MalformedURLException {
     XWikiContext context = new XWikiContext();
-    String dbname = "xwiki";
-    URL url = XWiki.getRequestURL(request);
-    context.setURL(url);
-
-    // Push the URL into the Log4j MDC context so that we can display it in the generated logs using
-    // the
-    // %X{url} syntax.
-    MDC.put("url", url);
-
-    context.setEngineContext(engine_context);
+    String requestURL = request.getRequestURL().toString();
+    if (!Strings.nullToEmpty(request.getQueryString()).isEmpty()) {
+      requestURL += "?" + request.getQueryString();
+    }
+    context.setURL(new URL(requestURL));
+    context.setEngineContext(engineContext);
     context.setRequest(request);
     context.setResponse(response);
     context.setAction(action);
-    context.setDatabase(dbname);
+    context.setDatabase("xwiki");
     context.setMode(XWikiContext.MODE_SERVLET);
     return context;
   }

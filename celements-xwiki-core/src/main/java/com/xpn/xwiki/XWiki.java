@@ -582,40 +582,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return xwiki;
   }
 
-  public static URL getRequestURL(XWikiRequest request) throws XWikiException {
-    try {
-      StringBuffer requestURL = request.getRequestURL();
-      String qs = request.getQueryString();
-      if ((qs != null) && (!qs.equals(""))) {
-        return new URL(requestURL.toString() + "?" + qs);
-      } else {
-        return new URL(requestURL.toString());
-      }
-    } catch (Exception e) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI_APP,
-          XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION, "Exception while getting URL from request",
-          e);
-    }
-  }
-
-  public static Object callPrivateMethod(Object obj, String methodName) {
-    return callPrivateMethod(obj, methodName, null, null);
-  }
-
-  public static Object callPrivateMethod(Object obj, String methodName, Class<?>[] classes,
-      Object[] args) {
-    try {
-      Method method = obj.getClass().getDeclaredMethod(methodName, classes);
-      method.setAccessible(true);
-      return method.invoke(obj, args);
-    } catch (NoSuchMethodException e) {
-      return null;
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      e.printStackTrace();
-      return null;
-    } finally {}
-  }
-
   public static String getFormEncoded(String content) {
     Filter filter = new CharacterFilter();
     filter.removeAttribute("'");
