@@ -1,4 +1,4 @@
-package com.celements.servlet;
+package com.celements.spring.mvc;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
