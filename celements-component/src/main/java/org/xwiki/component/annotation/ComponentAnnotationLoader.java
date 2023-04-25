@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -71,7 +72,7 @@ public class ComponentAnnotationLoader {
   /**
    * The encoding used to parse component list files.
    */
-  private static final String COMPONENT_LIST_ENCODING = "UTF-8";
+  private static final String COMPONENT_LIST_ENCODING = StandardCharsets.UTF_8.name();
 
   /**
    * Factory to create a Component Descriptor from an annotated class.
