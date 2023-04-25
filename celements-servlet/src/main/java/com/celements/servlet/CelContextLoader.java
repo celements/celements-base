@@ -22,7 +22,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.xwiki.container.ApplicationContextListenerManager;
 import org.xwiki.container.Container;
 import org.xwiki.container.servlet.ServletContainerInitializer;
-import org.xwiki.container.servlet.XWikiServlet;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ApplicationStartedEvent;
 import org.xwiki.observation.event.ApplicationStoppedEvent;
@@ -32,8 +31,7 @@ public class CelContextLoader extends ContextLoader {
   private static final Logger LOGGER = LoggerFactory.getLogger(CelContextLoader.class);
 
   public void initAppContext(ServletContext servletContext) {
-    WebApplicationContext context = initWebApplicationContext(servletContext);
-    servletContext.setAttribute(XWikiServlet.SERVLET_CTX_KEY_SPRING, context);
+    initWebApplicationContext(servletContext);
     initXWikiAppContext(servletContext);
   }
 
@@ -67,7 +65,6 @@ public class CelContextLoader extends ContextLoader {
 
   public void closeAppContext(ServletContext servletContext) {
     ConfigurableApplicationContext context = getSpringContext(servletContext);
-    servletContext.removeAttribute(XWikiServlet.SERVLET_CTX_KEY_SPRING);
     if (context != null) {
       try {
         closeXWikiAppContext(context);
@@ -95,6 +92,6 @@ public class CelContextLoader extends ContextLoader {
 
   private ConfigurableApplicationContext getSpringContext(ServletContext servletContext) {
     return (ConfigurableApplicationContext) servletContext
-        .getAttribute(XWikiServlet.SERVLET_CTX_KEY_SPRING);
+        .getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
   }
 }

@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 import org.xwiki.action.ActionException;
 import org.xwiki.action.ActionManager;
 
@@ -38,8 +38,6 @@ import org.xwiki.action.ActionManager;
  * @version $Id$
  */
 public class XWikiServlet extends HttpServlet {
-
-  public static final String SERVLET_CTX_KEY_SPRING = "spring.context";
 
   /** Serial version ID. */
   private static final long serialVersionUID = 1L;
@@ -53,8 +51,8 @@ public class XWikiServlet extends HttpServlet {
   @Override
   protected void service(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    GenericApplicationContext springCtx = (GenericApplicationContext) getServletContext()
-        .getAttribute(SERVLET_CTX_KEY_SPRING);
+    WebApplicationContext springCtx = (WebApplicationContext) getServletContext()
+        .getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
     if (springCtx == null) {
       throw new ServletException("Plexus container is not initialized");
     }
