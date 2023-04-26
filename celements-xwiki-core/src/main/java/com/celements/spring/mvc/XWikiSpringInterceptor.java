@@ -7,7 +7,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Component;
 import org.xwiki.container.servlet.ServletContainerInitializer;
+import org.xwiki.model.reference.DocumentReference;
 
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiServletContext;
 import com.xpn.xwiki.web.XWikiServletRequest;
@@ -30,12 +33,17 @@ public class XWikiSpringInterceptor implements CelMvcInterceptor {
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
-    initializer.initializeRequest(request, Utils.prepareContext("spring",
+    XWikiContext context = Utils.prepareContext("spring",
         new XWikiServletRequest(request),
         new XWikiServletResponse(response),
-        new XWikiServletContext(servletContext)));
+        new XWikiServletContext(servletContext));
+    initializer.initializeRequest(request, context);
     initializer.initializeResponse(response);
     initializer.initializeSession(request);
+    XWiki xwiki = XWiki.getXWiki(context);
+    xwiki.prepareResources(context);
+    DocumentReference requestDocRef = xwiki.getDocumentReference(context.getRequest(), context);
+    context.setDatabase(requestDocRef.getWikiReference().getName());
     return true;
   }
 

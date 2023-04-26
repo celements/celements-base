@@ -4906,7 +4906,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       }
     }
 
-    context.put("doc", doc);
+    context.setDoc(doc);
     vcontext.put("doc", doc.newDocument(context));
     vcontext.put("cdoc", vcontext.get("doc"));
     XWikiDocument tdoc = doc.getTranslatedDocument(context);
