@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
@@ -249,7 +250,8 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
               isFormField, fileName);
           // Needed to make sure the File object is created.
           item.getOutputStream();
-          item.getStoreLocation().deleteOnExit();
+          Optional.ofNullable(item.getStoreLocation())
+              .ifPresent(File::deleteOnExit);
           return item;
         } catch (IOException e) {
           String path = System.getProperty("java.io.tmpdir");
