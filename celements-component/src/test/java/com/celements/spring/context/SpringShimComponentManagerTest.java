@@ -31,6 +31,7 @@ public class SpringShimComponentManagerTest {
   @Before
   public void prepare() {
     ctx = new CelSpringContext();
+    ctx.refresh();
     cm = ctx.getBean(SpringShimComponentManager.NAME, ComponentManager.class);
   }
 

@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
@@ -140,7 +141,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
    * the current wiki is used instead of the current document reference's wiki.
    */
   @SuppressWarnings("unchecked")
-  private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
+  private static final Supplier<DocumentReferenceResolver<String>> currentMixedDocumentReferenceResolver = () -> Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
   public XWikiContext() {}
@@ -444,7 +445,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
   public BaseClass getBaseClass(String name) {
     BaseClass baseClass = null;
     if (!StringUtils.isEmpty(name)) {
-      baseClass = this.classCache.get(this.currentMixedDocumentReferenceResolver.resolve(name));
+      baseClass = this.classCache.get(currentMixedDocumentReferenceResolver.get().resolve(name));
     }
     return baseClass;
   }

@@ -24,6 +24,7 @@ public class CelSpringContextTest {
   @Before
   public void prepare() {
     ctx = new CelSpringContext();
+    ctx.refresh();
   }
 
   @After

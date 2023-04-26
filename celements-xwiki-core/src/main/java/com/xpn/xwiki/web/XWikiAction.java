@@ -23,6 +23,7 @@ package com.xpn.xwiki.web;
 import static com.google.common.base.Strings.*;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Vector;
 
 import javax.servlet.ServletException;
@@ -38,10 +39,8 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.container.Container;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
-import org.xwiki.context.Execution;
 import org.xwiki.csrf.CSRFToken;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
@@ -298,67 +297,34 @@ public abstract class XWikiAction extends Action {
   }
 
   protected XWikiContext initializeXWikiContext(ActionMapping mapping, ActionForm form,
-      HttpServletRequest req,
-      HttpServletResponse resp) throws XWikiException, ServletException {
+      HttpServletRequest request, HttpServletResponse response)
+      throws MalformedURLException, ServletContainerException {
     String action = mapping.getName();
-
-    XWikiRequest request = new XWikiServletRequest(req);
-    XWikiResponse response = new XWikiServletResponse(resp);
-    XWikiContext context = Utils.prepareContext(action, request, response,
-        new XWikiServletContext(this.servlet.getServletContext()));
-
-    // This code is already called by struts.
-    // However struts will also set all the parameters of the form data
-    // directly from the request objects.
-    // However because of bug http://jira.xwiki.org/jira/browse/XWIKI-2422
-    // We need to perform encoding of windows-1252 chars in ISO mode
-    // So we need to make sure this code is called
+    XWikiContext context = Utils.prepareContext(action,
+        new XWikiServletRequest(request),
+        new XWikiServletResponse(response),
+        new XWikiServletContext(servlet.getServletContext()));
+    // This code is already called by struts. However struts will also set all the parameters of the
+    // form data directly from the request objects. However because of bug
+    // http://jira.xwiki.org/jira/browse/XWIKI-2422 we need to perform encoding of windows-1252
+    // chars in ISO mode so we need to make sure this code is called
     // TODO: completely get rid of struts so that we control this part of the code and can reduce
-    // drastically the
-    // number of calls
+    // drastically the number of calls
     if (form != null) {
-      form.reset(mapping, request);
+      form.reset(mapping, context.getRequest());
     }
-
     // Add the form to the context
     context.setForm((XWikiForm) form);
-
-    // Initialize the Container component which is the new way of transporting the Context in the
-    // new
-    // component architecture.
-    initializeContainerComponent(context);
-
+    ServletContainerInitializer initializer = Utils.getComponent(ServletContainerInitializer.class);
+    initializer.initializeRequest(request, context);
+    initializer.initializeResponse(response);
+    initializer.initializeSession(request);
     return context;
   }
 
-  protected void initializeContainerComponent(XWikiContext context) throws ServletException {
-    // Initialize the Container fields (request, response, session).
-    // Note that this is a bridge between the old core and the component architecture.
-    // In the new component architecture we use ThreadLocal to transport the request,
-    // response and session to components which require them.
-    // In the future this Servlet will be replaced by the XWikiPlexusServlet Servlet.
-    ServletContainerInitializer containerInitializer = Utils
-        .getComponent(ServletContainerInitializer.class);
-
-    try {
-      containerInitializer.initializeRequest(context.getRequest().getHttpServletRequest(), context);
-      containerInitializer.initializeResponse(context.getResponse().getHttpServletResponse());
-      containerInitializer.initializeSession(context.getRequest().getHttpServletRequest());
-    } catch (ServletContainerException e) {
-      throw new ServletException("Failed to initialize Request/Response or Session", e);
-    }
-  }
-
   protected void cleanupComponents() {
-    Container container = Utils.getComponent(Container.class);
-    Execution execution = Utils.getComponent(Execution.class);
-
-    // We must ensure we clean the ThreadLocal variables located in the Container and Execution
-    // components as otherwise we will have a potential memory leak.
-    container.removeRequest();
-    container.removeResponse();
-    container.removeSession();
-    execution.removeContext();
+    Utils.getComponent(ServletContainerInitializer.class)
+        .cleanupSession();
   }
 
   public String getRealPath(String path) {
