@@ -62,11 +62,6 @@
       <artifactId>spring-web</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <scope>provided</scope>
-    </dependency>
 
     <!-- External -->
     <dependency>
