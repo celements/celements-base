@@ -4767,7 +4767,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public static String stripSegmentFromPath(String path, String segment) {
     if (!path.startsWith(segment)) {
       // The context path probably contains special characters that are encoded in the URL
-      segment = URLEncoder.encode(segment, StandardCharsets.UTF_8);
+      try {
+        segment = URLEncoder.encode(segment, StandardCharsets.UTF_8.name());
+      } catch (UnsupportedEncodingException exc) {
+        throw new IllegalArgumentException(exc);
+      }
     }
     if (!path.startsWith(segment)) {
       // Some clients also encode -, although it's allowed in the path
