@@ -11,7 +11,7 @@
   <description>Celements Reference</description>
   <dependencies>
 
-    <!-- celements -->
+    <!-- Celements -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
@@ -31,7 +31,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- xwiki -->
+    <!-- XWiki -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-context</artifactId>
@@ -42,9 +42,11 @@
       <artifactId>xwiki-core-script</artifactId>
       <scope>provided</scope>
     </dependency>
+
+    <!-- Spring -->
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -56,6 +58,11 @@
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
