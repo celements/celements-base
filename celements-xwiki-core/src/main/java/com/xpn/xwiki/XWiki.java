@@ -4775,7 +4775,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
     if (!path.startsWith(segment)) {
       // Some clients also encode -, although it's allowed in the path
-      segment = segment.replaceAll("-", "%2D");
+      segment = segment.replace("-", "%2D");
     }
     if (!path.startsWith(segment)) {
       // Can't find the context path in the URL (shouldn't happen), just skip to the next path
@@ -5940,7 +5940,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
     if (getConvertingUserNameType(context).equals("1") && (username.indexOf("@") != -1)) {
       String id = "" + username.hashCode();
-      id = id.replaceAll("-", "");
+      id = id.replace("-", "");
       if (username.length() > 1) {
         int i1 = username.indexOf('@');
         id = "" + username.charAt(0) + username.substring(i1 + 1, i1 + 2) + username.charAt(
@@ -6231,7 +6231,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     buffer.append("<span class=\"tooltip_span\" onmouseover=\"");
     buffer.append(params);
     buffer.append("; return escape('");
-    buffer.append(message.replaceAll("'", "\\'"));
+    buffer.append(message.replace("'", "\\'"));
     buffer.append("');\">");
     buffer.append(html);
     buffer.append("</span>");
