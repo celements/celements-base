@@ -81,7 +81,12 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- testing -->
+    <!-- xwiki legacy testing -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-shared-tests</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.jmock</groupId>
       <artifactId>jmock-junit4</artifactId>
