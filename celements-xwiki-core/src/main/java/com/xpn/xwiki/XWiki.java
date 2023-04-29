@@ -31,7 +31,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -39,6 +38,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,13 +66,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -586,49 +579,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     Filter filter = new CharacterFilter();
     filter.removeAttribute("'");
     return filter.process(content);
-  }
-
-  public static HttpClient getHttpClient(int timeout, String userAgent) {
-    HttpClient client = new HttpClient();
-
-    if (timeout != 0) {
-      client.getParams().setSoTimeout(timeout);
-      client.getParams().setParameter("http.connection.timeout", new Integer(timeout));
-    }
-
-    client.getParams().setParameter("http.useragent", userAgent);
-
-    String proxyHost = System.getProperty("http.proxyHost");
-    String proxyPort = System.getProperty("http.proxyPort");
-    if ((proxyHost != null) && (!proxyHost.equals(""))) {
-      int port = 3128;
-      if ((proxyPort != null) && (!proxyPort.equals(""))) {
-        port = Integer.parseInt(proxyPort);
-      }
-      client.getHostConfiguration().setProxy(proxyHost, port);
-    }
-
-    String proxyUser = System.getProperty("http.proxyUser");
-    if ((proxyUser != null) && (!proxyUser.equals(""))) {
-      String proxyPassword = System.getProperty("http.proxyPassword");
-      Credentials defaultcreds = new UsernamePasswordCredentials(proxyUser, proxyPassword);
-      client.getState().setProxyCredentials(AuthScope.ANY, defaultcreds);
-    }
-
-    return client;
-  }
-
-  public static Object getPrivateField(Object obj, String fieldName) {
-    try {
-      Field field = obj.getClass().getDeclaredField(fieldName);
-      field.setAccessible(true);
-      return field.get(obj);
-    } catch (NoSuchFieldException e) {
-      return null;
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-      return null;
-    } finally {}
   }
 
   public static String getServerWikiPage(String servername) {
@@ -4818,14 +4768,14 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     if (!path.startsWith(segment)) {
       // The context path probably contains special characters that are encoded in the URL
       try {
-        segment = URIUtil.encodePath(segment);
-      } catch (URIException e) {
-        LOG.warn("Invalid path: [" + segment + "]");
+        segment = URLEncoder.encode(segment, StandardCharsets.UTF_8.name());
+      } catch (UnsupportedEncodingException exc) {
+        throw new IllegalArgumentException(exc);
       }
     }
     if (!path.startsWith(segment)) {
       // Some clients also encode -, although it's allowed in the path
-      segment = segment.replaceAll("-", "%2D");
+      segment = segment.replace("-", "%2D");
     }
     if (!path.startsWith(segment)) {
       // Can't find the context path in the URL (shouldn't happen), just skip to the next path
@@ -5564,128 +5514,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
   }
 
-  public String getURLContent(String surl, XWikiContext context) throws IOException {
-    return getURLContent(surl, getHttpTimeout(context), getHttpUserAgent(context));
-  }
-
-  public String getURLContent(String surl, int timeout, String userAgent) throws IOException {
-    String content;
-    HttpClient client = getHttpClient(timeout, userAgent);
-    GetMethod get = new GetMethod(surl);
-
-    try {
-      client.executeMethod(get);
-      content = get.getResponseBodyAsString();
-    } finally {
-      // Release any connection resources used by the method
-      get.releaseConnection();
-    }
-
-    return content;
-  }
-
-  public String getURLContent(String surl, String username, String password, XWikiContext context)
-      throws IOException {
-    return getURLContent(surl, username, password, getHttpTimeout(context), getHttpUserAgent(
-        context));
-  }
-
-  public String getURLContent(String surl, String username, String password, int timeout,
-      String userAgent) throws IOException {
-    HttpClient client = getHttpClient(timeout, userAgent);
-
-    // pass our credentials to HttpClient, they will only be used for
-    // authenticating to servers with realm "realm", to authenticate agains
-    // an arbitrary realm change this to null.
-    client.getState().setCredentials(new AuthScope(null, -1, null), new UsernamePasswordCredentials(
-        username, password));
-
-    // create a GET method that reads a file over HTTPS, we're assuming
-    // that this file requires basic authentication using the realm above.
-    GetMethod get = new GetMethod(surl);
-
-    try {
-      // Tell the GET method to automatically handle authentication. The
-      // method will use any appropriate credentials to handle basic
-      // authentication requests. Setting this value to false will cause
-      // any request for authentication to return with a status of 401.
-      // It will then be up to the client to handle the authentication.
-      get.setDoAuthentication(true);
-
-      // execute the GET
-      client.executeMethod(get);
-
-      // print the status and response
-      return get.getResponseBodyAsString();
-    } finally {
-      // release any connection resources used by the method
-      get.releaseConnection();
-    }
-  }
-
-  public byte[] getURLContentAsBytes(String surl, XWikiContext context) throws IOException {
-    return getURLContentAsBytes(surl, getHttpTimeout(context), getHttpUserAgent(context));
-  }
-
-  public byte[] getURLContentAsBytes(String surl, int timeout, String userAgent)
-      throws IOException {
-    HttpClient client = getHttpClient(timeout, userAgent);
-
-    // create a GET method that reads a file over HTTPS, we're assuming
-    // that this file requires basic authentication using the realm above.
-    GetMethod get = new GetMethod(surl);
-
-    try {
-      // execute the GET
-      client.executeMethod(get);
-
-      // print the status and response
-      return get.getResponseBody();
-    } finally {
-      // release any connection resources used by the method
-      get.releaseConnection();
-    }
-  }
-
-  public byte[] getURLContentAsBytes(String surl, String username, String password,
-      XWikiContext context) throws IOException {
-    return getURLContentAsBytes(surl, username, password, getHttpTimeout(context), getHttpUserAgent(
-        context));
-  }
-
-  public byte[] getURLContentAsBytes(String surl, String username, String password, int timeout,
-      String userAgent) throws IOException {
-    HttpClient client = getHttpClient(timeout, userAgent);
-
-    // pass our credentials to HttpClient, they will only be used for
-    // authenticating to servers with realm "realm", to authenticate agains
-    // an arbitrary realm change this to null.
-    client.getState().setCredentials(new AuthScope(null, -1, null), new UsernamePasswordCredentials(
-        username, password));
-
-    // create a GET method that reads a file over HTTPS, we're assuming
-    // that this file requires basic authentication using the realm above.
-    GetMethod get = new GetMethod(surl);
-
-    try {
-      // Tell the GET method to automatically handle authentication. The
-      // method will use any appropriate credentials to handle basic
-      // authentication requests. Setting this value to false will cause
-      // any request for authentication to return with a status of 401.
-      // It will then be up to the client to handle the authentication.
-      get.setDoAuthentication(true);
-
-      // execute the GET
-      client.executeMethod(get);
-
-      // print the status and response
-      return get.getResponseBody();
-    } finally {
-      // release any connection resources used by the method
-      get.releaseConnection();
-    }
-  }
-
   /**
    * @deprecated since 4.4 instead use ModelUtils#getAllSpaces
    */
@@ -6112,7 +5940,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
     if (getConvertingUserNameType(context).equals("1") && (username.indexOf("@") != -1)) {
       String id = "" + username.hashCode();
-      id = id.replaceAll("-", "");
+      id = id.replace("-", "");
       if (username.length() > 1) {
         int i1 = username.indexOf('@');
         id = "" + username.charAt(0) + username.substring(i1 + 1, i1 + 2) + username.charAt(
@@ -6403,7 +6231,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     buffer.append("<span class=\"tooltip_span\" onmouseover=\"");
     buffer.append(params);
     buffer.append("; return escape('");
-    buffer.append(message.replaceAll("'", "\\'"));
+    buffer.append(message.replace("'", "\\'"));
     buffer.append("');\">");
     buffer.append(html);
     buffer.append("</span>");

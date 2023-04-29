@@ -1,5 +1,6 @@
 package com.xpn.xwiki.store;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -23,6 +24,7 @@ import org.hibernate.jdbc.BorrowedConnectionProxy;
 import org.hibernate.jdbc.ConnectionManager;
 import org.hibernate.mapping.Table;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
+import org.springframework.util.ReflectionUtils;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
@@ -931,10 +933,14 @@ public class XWikiHibernateBaseStore implements Initializable {
     if (conn instanceof Proxy) {
       Object bcp = Proxy.getInvocationHandler(conn);
       if (bcp instanceof BorrowedConnectionProxy) {
-        ConnectionManager cm = (ConnectionManager) XWiki.getPrivateField(bcp, "connectionManager");
-        if (cm != null) {
-          return cm.getConnection();
-        }
+        try {
+          Field field = bcp.getClass().getDeclaredField("connectionManager");
+          ReflectionUtils.makeAccessible(field);
+          ConnectionManager cm = (ConnectionManager) field.get(bcp);
+          if (cm != null) {
+            return cm.getConnection();
+          }
+        } catch (ReflectiveOperationException e) {}
       }
     }
     return conn;
