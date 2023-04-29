@@ -501,6 +501,10 @@ public class XWikiDocumentArchive {
     return updatedNodeContents;
   }
 
+  public XWikiDocumentArchive clone(XWikiContext context) throws XWikiException {
+    return clone(getId(), context);
+  }
+
   /**
    * @return full copy of this archive with specified docId
    * @param docId

@@ -56,6 +56,8 @@ public class BaseObject extends BaseCollection implements ObjectInterface, Seria
   private DocumentReferenceResolver<EntityReference> currentMixedDocRefResolver = Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed/reference");
 
+  // TODO make static, check parents
+
   /**
    * Used here to merge setName() and setWiki() calls into the DocumentReference.
    */

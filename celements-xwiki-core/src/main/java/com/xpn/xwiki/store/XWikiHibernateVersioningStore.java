@@ -159,6 +159,7 @@ public class XWikiHibernateVersioningStore extends XWikiHibernateBaseStore
         }
         // This will also make sure that the Archive has a strong reference
         // and will not be discarded as long as the context exists.
+        // FIXME this leaks out potentially cached instances for manipulation
         context.addDocumentArchive(key, archiveDoc);
       }
       return archiveDoc;

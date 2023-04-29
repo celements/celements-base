@@ -51,6 +51,13 @@ public class XWikiRCSNodeContent extends AbstractSimpleClass
     setId((XWikiRCSNodeId) id.clone());
   }
 
+  public XWikiRCSNodeContent(XWikiRCSNodeContent other) {
+    setId(other.getId());
+    setPatch(new XWikiPatch(
+        other.getPatch().getContent(),
+        other.getPatch().isDiff()));
+  }
+
   /**
    * @return primary key
    */

@@ -91,7 +91,7 @@ public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject
   @Override
   public FluentIterable<? extends ClassIdentity> getDocClasses(XWikiDocument doc) {
     checkIsMainDoc(doc);
-    return FluentIterable.from(doc.getXObjects().keySet()).transform(ClassReference::new);
+    return FluentIterable.from(doc.getXObjectClassRefs()).transform(ClassReference::new);
   }
 
   @Override

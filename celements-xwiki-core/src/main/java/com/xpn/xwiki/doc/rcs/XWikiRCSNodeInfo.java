@@ -76,6 +76,17 @@ public class XWikiRCSNodeInfo extends AbstractSimpleClass implements Comparable<
     setId((XWikiRCSNodeId) id.clone());
   }
 
+  public XWikiRCSNodeInfo(XWikiRCSNodeInfo other) {
+    setId(other.getId());
+    setDate(other.getDate());
+    setAuthor(other.getAuthor());
+    setComment(other.getComment());
+    setDiff(other.isDiff());
+    if (contentRef.get() != null) {
+      setContent(new XWikiRCSNodeContent(contentRef.get()));
+    }
+  }
+
   /**
    * @return primary key.
    */
