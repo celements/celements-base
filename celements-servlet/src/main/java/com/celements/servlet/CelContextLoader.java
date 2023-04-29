@@ -15,14 +15,14 @@ import org.apache.commons.configuration.ConfigurationRuntimeException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.xwiki.container.servlet.ServletContainerInitializer;
-import org.xwiki.observation.ObservationManager;
-import org.xwiki.observation.event.ApplicationStartedEvent;
-import org.xwiki.observation.event.ApplicationStoppedEvent;
+
+import com.celements.servlet.CelementsLifecycleEvent.State;
 
 public class CelContextLoader extends ContextLoader {
 
@@ -57,8 +57,8 @@ public class CelContextLoader extends ContextLoader {
     ConfigurableApplicationContext context = getSpringContext(servletContext);
     context.getBean(ServletContainerInitializer.class)
         .initializeApplicationContext(servletContext);
-    context.getBean(ObservationManager.class)
-        .notify(new ApplicationStartedEvent(), this);
+    context.getBean(ApplicationEventPublisher.class)
+        .publishEvent(new CelementsLifecycleEvent(this, State.STARTED));
   }
 
   public void closeAppContext(ServletContext servletContext) {
@@ -77,8 +77,8 @@ public class CelContextLoader extends ContextLoader {
 
   private void closeXWikiAppContext(ConfigurableApplicationContext context) {
     try {
-      context.getBean(ObservationManager.class)
-          .notify(new ApplicationStoppedEvent(), this);
+      context.getBean(ApplicationEventPublisher.class)
+          .publishEvent(new CelementsLifecycleEvent(this, State.STOPPED));
     } catch (Exception exc) {
       LOGGER.error("contextDestroyed - failed ApplicationStoppedEvent", exc);
     } finally {

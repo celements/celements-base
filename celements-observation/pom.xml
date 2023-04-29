@@ -6,17 +6,12 @@
     <version>6.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>celements-servlet</artifactId>
+  <artifactId>celements-observation</artifactId>
   <version>6.0-SNAPSHOT</version>
-  <description>Celements Servlet</description>
+  <description>Celements Observation</description>
   <dependencies>
 
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-    </dependency>
-
-    <!-- celements -->
+    <!-- Celements -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
@@ -29,6 +24,24 @@
       <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-config-source-api</artifactId>
+      <version>6.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-servlet</artifactId>
+      <version>6.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>jgroups</groupId>
+      <artifactId>jgroups</artifactId>
+      <version>2.8.0.GA</version>
+    </dependency>
 
     <!-- Spring -->
     <dependency>
@@ -36,27 +49,15 @@
       <artifactId>spring-context</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <scope>provided</scope>
-    </dependency>
 
-    <!-- External -->
-    <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-      <scope>provided</scope>
-    </dependency>
+    <!-- Commons -->
     <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>javax.annotation</groupId>
-      <artifactId>javax.annotation-api</artifactId>
-      <scope>provided</scope>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -64,19 +65,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>one.util</groupId>
       <artifactId>streamex</artifactId>
-      <scope>provided</scope>
     </dependency>
 
     <!-- Logging -->
@@ -86,18 +80,38 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- testing -->
+    <!-- xwiki legacy testing -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-shared-tests</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>jmock</groupId>
+      <artifactId>jmock</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jmock</groupId>
+      <artifactId>jmock-legacy</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>jmock</groupId>
+      <artifactId>jmock-cglib</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jmock</groupId>
+      <artifactId>jmock-junit4</artifactId>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
   <scm>
-    <connection>scm:git:git@github.com:celements/celements-xwiki.git</connection>
-    <developerConnection>scm:git:git@github.com:celements/celements-xwiki.git</developerConnection>
-    <url>https://github.com/celements/celements-xwiki</url>
+    <connection>scm:git:git@github.com:celements/celements-base.git</connection>
+    <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
+    <url>https://github.com/celements/celements-base/celements-observation</url>
     <tag>HEAD</tag>
   </scm>
 </project>
