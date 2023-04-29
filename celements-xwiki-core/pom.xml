@@ -193,10 +193,6 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-context</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-bridge</artifactId>
     </dependency>
     <dependency>
@@ -231,10 +227,6 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-csrf</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-url-default</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -327,6 +319,10 @@
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -370,6 +366,10 @@
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.xwiki.platform</groupId>

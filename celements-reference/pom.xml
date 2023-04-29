@@ -30,13 +30,14 @@
       <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
-
-    <!-- XWiki -->
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-context</artifactId>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-servlet</artifactId>
+      <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- XWiki -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-script</artifactId>
