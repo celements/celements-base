@@ -20,17 +20,18 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.xwiki.container.servlet.ServletContainerInitializer;
-import org.xwiki.observation.ObservationManager;
-import org.xwiki.observation.event.ApplicationStartedEvent;
-import org.xwiki.observation.event.ApplicationStoppedEvent;
+
+import com.celements.servlet.CelementsLifecycleEvent.State;
 
 public class CelContextLoader extends ContextLoader {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CelContextLoader.class);
 
   public void initAppContext(ServletContext servletContext) {
-    initWebApplicationContext(servletContext);
-    initXWikiAppContext(servletContext);
+    WebApplicationContext context = initWebApplicationContext(servletContext);
+    context.getBean(ServletContainerInitializer.class)
+        .initializeApplicationContext(servletContext);
+    context.publishEvent(new CelementsLifecycleEvent(this, State.STARTED));
   }
 
   @Override
@@ -53,37 +54,19 @@ public class CelContextLoader extends ContextLoader {
     }
   }
 
-  private void initXWikiAppContext(ServletContext servletContext) {
-    ConfigurableApplicationContext context = getSpringContext(servletContext);
-    context.getBean(ServletContainerInitializer.class)
-        .initializeApplicationContext(servletContext);
-    context.getBean(ObservationManager.class)
-        .notify(new ApplicationStartedEvent(), this);
-  }
-
   public void closeAppContext(ServletContext servletContext) {
     ConfigurableApplicationContext context = getSpringContext(servletContext);
     if (context != null) {
       try {
-        closeXWikiAppContext(context);
+        context.publishEvent(new CelementsLifecycleEvent(this, State.STOPPED));
+        context.getBean(ServletContainerInitializer.class)
+            .destroyApplicationContext();
       } catch (Exception exc) {
         LOGGER.error("contextDestroyed - failed closeXWikiAppContext", exc);
       } finally {
         context = null;
         closeWebApplicationContext(servletContext);
       }
-    }
-  }
-
-  private void closeXWikiAppContext(ConfigurableApplicationContext context) {
-    try {
-      context.getBean(ObservationManager.class)
-          .notify(new ApplicationStoppedEvent(), this);
-    } catch (Exception exc) {
-      LOGGER.error("contextDestroyed - failed ApplicationStoppedEvent", exc);
-    } finally {
-      context.getBean(ServletContainerInitializer.class)
-          .destroyApplicationContext();
     }
   }
 

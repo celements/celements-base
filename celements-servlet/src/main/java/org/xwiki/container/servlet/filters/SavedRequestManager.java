@@ -66,7 +66,7 @@ public final class SavedRequestManager {
      */
     @SuppressWarnings("unchecked")
     public SavedRequest(HttpServletRequest request) {
-      this.parameters = new HashMap<String, String[]>(request.getParameterMap());
+      this.parameters = new HashMap<>(request.getParameterMap());
       this.requestUrl = request.getRequestURL().toString();
     }
 

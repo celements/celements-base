@@ -22,9 +22,10 @@ package org.xwiki.container.internal;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.logging.AbstractLogEnabled;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.ApplicationContext;
@@ -38,8 +39,10 @@ import org.xwiki.container.ApplicationContextListenerManager;
  * @since 1.9M2
  */
 @Component
-public class DefaultApplicationContextListenerManager extends AbstractLogEnabled
-    implements ApplicationContextListenerManager {
+public class DefaultApplicationContextListenerManager implements ApplicationContextListenerManager {
+
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(DefaultApplicationContextListenerManager.class);
 
   /**
    * The {@link ComponentManager} used to lookup for all {@link ApplicationContextListener}
@@ -60,7 +63,7 @@ public class DefaultApplicationContextListenerManager extends AbstractLogEnabled
         initializer.initializeApplicationContext(applicationContext);
       }
     } catch (ComponentLookupException ex) {
-      getLogger().error(ex.getMessage(), ex);
+      LOGGER.error(ex.getMessage(), ex);
     }
   }
 
@@ -76,7 +79,7 @@ public class DefaultApplicationContextListenerManager extends AbstractLogEnabled
         initializer.destroyApplicationContext(applicationContext);
       }
     } catch (ComponentLookupException ex) {
-      getLogger().error(ex.getMessage(), ex);
+      LOGGER.error(ex.getMessage(), ex);
     }
   }
 }

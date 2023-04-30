@@ -63,6 +63,12 @@
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
+      <artifactId>celements-observation</artifactId>
+      <version>6.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
       <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
@@ -173,27 +179,11 @@
     <!-- Other XWiki modules -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-local</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-remote</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-velocity</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-script</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-context</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -231,10 +221,6 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-csrf</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-url-default</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -327,6 +313,10 @@
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -370,6 +360,10 @@
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.xwiki.platform</groupId>

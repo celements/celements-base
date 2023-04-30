@@ -54,7 +54,7 @@ public class XWikiServlet extends HttpServlet {
     WebApplicationContext springCtx = (WebApplicationContext) getServletContext()
         .getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
     if (springCtx == null) {
-      throw new ServletException("Plexus container is not initialized");
+      throw new ServletException("Spring context is not initialized");
     }
     ActionManager manager;
     try {
