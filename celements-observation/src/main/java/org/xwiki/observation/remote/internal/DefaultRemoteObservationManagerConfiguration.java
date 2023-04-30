@@ -2,11 +2,11 @@ package org.xwiki.observation.remote.internal;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.component.descriptor.ComponentRole;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 
@@ -21,7 +21,7 @@ public class DefaultRemoteObservationManagerConfiguration
     implements RemoteObservationManagerConfiguration {
 
   @Requirement
-  private ComponentManager componentManager;
+  private Map<String, ConfigurationSource> configSources;
 
   @Override
   public boolean isEnabled() {
@@ -42,11 +42,11 @@ public class DefaultRemoteObservationManagerConfiguration
   }
 
   private ConfigurationSource getCfgSrc() {
-    try {
-      return componentManager.lookup(ConfigurationSource.class, "xwikiproperties");
-    } catch (ComponentLookupException exc) {
-      throw new IllegalArgumentException(exc);
+    ConfigurationSource cfgSrc = configSources.get("xwikiproperties");
+    if (cfgSrc == null) {
+      cfgSrc = configSources.get(ComponentRole.DEFAULT_HINT);
     }
+    return cfgSrc;
   }
 
 }
