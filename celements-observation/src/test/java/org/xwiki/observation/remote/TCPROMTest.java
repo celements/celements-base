@@ -37,11 +37,8 @@ public class TCPROMTest extends AbstractROMTestCase {
 
   private Mockery context = new Mockery();
 
-  @Override
   @Before
-  public void setUp() throws Exception {
-    super.setUp();
-
+  public void prepare() throws Exception {
     getConfigurationSource1().setProperty("observation.remote.channels", Arrays.asList("tcp1"));
     getComponentManager2().lookup(RemoteObservationManager.class).startChannel("tcp2");
   }

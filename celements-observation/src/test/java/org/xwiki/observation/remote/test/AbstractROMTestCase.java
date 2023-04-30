@@ -52,7 +52,9 @@ public abstract class AbstractROMTestCase {
   private ObservationManager observationManager2;
 
   @Before
-  public void setUp() throws Exception {
+  public final void prepareCMs() throws Exception {
+    System.setProperty("java.net.preferIPv4Stack", "true");
+
     this.initializer1.initializeContainer();
     this.initializer1.initializeConfigurationSource();
     this.initializer1.initializeExecution();
