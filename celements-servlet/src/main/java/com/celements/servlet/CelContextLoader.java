@@ -28,8 +28,10 @@ public class CelContextLoader extends ContextLoader {
   private static final Logger LOGGER = LoggerFactory.getLogger(CelContextLoader.class);
 
   public void initAppContext(ServletContext servletContext) {
-    initWebApplicationContext(servletContext);
-    initXWikiAppContext(servletContext);
+    WebApplicationContext context = initWebApplicationContext(servletContext);
+    context.getBean(ServletContainerInitializer.class)
+        .initializeApplicationContext(servletContext);
+    context.publishEvent(new CelementsLifecycleEvent(this, State.STARTED));
   }
 
   @Override
@@ -52,35 +54,19 @@ public class CelContextLoader extends ContextLoader {
     }
   }
 
-  private void initXWikiAppContext(ServletContext servletContext) {
-    ConfigurableApplicationContext context = getSpringContext(servletContext);
-    context.getBean(ServletContainerInitializer.class)
-        .initializeApplicationContext(servletContext);
-    context.publishEvent(new CelementsLifecycleEvent(this, State.STARTED));
-  }
-
   public void closeAppContext(ServletContext servletContext) {
     ConfigurableApplicationContext context = getSpringContext(servletContext);
     if (context != null) {
       try {
-        closeXWikiAppContext(context);
+        context.publishEvent(new CelementsLifecycleEvent(this, State.STOPPED));
+        context.getBean(ServletContainerInitializer.class)
+            .destroyApplicationContext();
       } catch (Exception exc) {
         LOGGER.error("contextDestroyed - failed closeXWikiAppContext", exc);
       } finally {
         context = null;
         closeWebApplicationContext(servletContext);
       }
-    }
-  }
-
-  private void closeXWikiAppContext(ConfigurableApplicationContext context) {
-    try {
-      context.publishEvent(new CelementsLifecycleEvent(this, State.STOPPED));
-    } catch (Exception exc) {
-      LOGGER.error("contextDestroyed - failed ApplicationStoppedEvent", exc);
-    } finally {
-      context.getBean(ServletContainerInitializer.class)
-          .destroyApplicationContext();
     }
   }
 
