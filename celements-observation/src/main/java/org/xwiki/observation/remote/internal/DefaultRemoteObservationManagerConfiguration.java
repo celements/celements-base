@@ -2,11 +2,13 @@ package org.xwiki.observation.remote.internal;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.descriptor.ComponentRole;
+import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 
@@ -21,32 +23,38 @@ public class DefaultRemoteObservationManagerConfiguration
     implements RemoteObservationManagerConfiguration {
 
   @Requirement
-  private Map<String, ConfigurationSource> configSources;
+  private ComponentManager componentManager;
 
   @Override
   public boolean isEnabled() {
-    Boolean enabled = getCfgSrc().getProperty("observation.remote.enabled", Boolean.class);
-    return (enabled != null) && enabled;
+    return getConfigSource()
+        .map(cfg -> cfg.getProperty("observation.remote.enabled", Boolean.class))
+        .filter(Objects::nonNull)
+        .orElse(false);
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public List<String> getChannels() {
-    List<String> channels = getCfgSrc().getProperty("observation.remote.channels", List.class);
-    return channels == null ? Collections.<String>emptyList() : channels;
+    return getConfigSource()
+        .map(cfg -> cfg.getProperty("observation.remote.channels", List.class))
+        .filter(Objects::nonNull)
+        .orElse(Collections.emptyList());
   }
 
   @Override
   public String getNetworkAdapter() {
-    return getCfgSrc().getProperty("observation.remote.networkadapter", "jgroups");
+    return getConfigSource()
+        .map(cfg -> cfg.getProperty("observation.remote.networkadapter", "jgroups"))
+        .orElse("jgroups");
   }
 
-  private ConfigurationSource getCfgSrc() {
-    ConfigurationSource cfgSrc = configSources.get("xwikiproperties");
-    if (cfgSrc == null) {
-      cfgSrc = configSources.get(ComponentRole.DEFAULT_HINT);
+  private Optional<ConfigurationSource> getConfigSource() {
+    try {
+      return Optional.of(componentManager.lookup(ConfigurationSource.class, "xwikiproperties"));
+    } catch (ComponentLookupException e) {
+      return Optional.empty();
     }
-    return cfgSrc;
   }
 
 }
