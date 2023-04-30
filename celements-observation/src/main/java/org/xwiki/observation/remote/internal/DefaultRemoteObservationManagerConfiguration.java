@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.component.manager.ComponentLookupException;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 
@@ -18,30 +20,33 @@ import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 public class DefaultRemoteObservationManagerConfiguration
     implements RemoteObservationManagerConfiguration {
 
-  /**
-   * USed to access configuration storage.
-   */
-  @Requirement("xwikiproperties")
-  private ConfigurationSource configurationSource;
+  @Requirement
+  private ComponentManager componentManager;
 
   @Override
   public boolean isEnabled() {
-    Boolean enabled = this.configurationSource.getProperty("observation.remote.enabled",
-        Boolean.class);
+    Boolean enabled = getCfgSrc().getProperty("observation.remote.enabled", Boolean.class);
     return (enabled != null) && enabled;
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public List<String> getChannels() {
-    List<String> channels = this.configurationSource.getProperty("observation.remote.channels",
-        List.class);
-
+    List<String> channels = getCfgSrc().getProperty("observation.remote.channels", List.class);
     return channels == null ? Collections.<String>emptyList() : channels;
   }
 
   @Override
   public String getNetworkAdapter() {
-    return this.configurationSource.getProperty("observation.remote.networkadapter", "jgroups");
+    return getCfgSrc().getProperty("observation.remote.networkadapter", "jgroups");
   }
+
+  private ConfigurationSource getCfgSrc() {
+    try {
+      return componentManager.lookup(ConfigurationSource.class, "xwikiproperties");
+    } catch (ComponentLookupException exc) {
+      throw new IllegalArgumentException(exc);
+    }
+  }
+
 }
