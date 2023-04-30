@@ -20,14 +20,15 @@
  */
 package org.xwiki.observation.remote.test;
 
-import java.awt.Container;
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.junit.Before;
-import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.AbstractResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.xwiki.component.descriptor.ComponentDescriptor;
+import org.xwiki.component.descriptor.DefaultComponentDescriptor;
 import org.xwiki.component.embed.EmbeddableComponentManager;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.remote.internal.jgroups.JGroupsNetworkAdapter;
@@ -60,26 +61,35 @@ public abstract class AbstractROMTestCase {
     this.initializer2.initializeConfigurationSource();
     this.initializer2.initializeExecution();
 
-    ApplicationContext applicationContext = new ApplicationContext() {
+    ResourceLoader resourceLoader = new ResourceLoader() {
 
-      public File getTemporaryDirectory() {
-        throw new RuntimeException("Not implemented");
-      }
+      @Override
+      public Resource getResource(String location) {
+        return new AbstractResource() {
 
-      public InputStream getResourceAsStream(String resourceName) {
-        return this.getClass().getClassLoader().getResourceAsStream(
-            resourceName
-                .substring(("/WEB-INF/" + JGroupsNetworkAdapter.CONFIGURATION_PATH).length()));
+          @Override
+          public InputStream getInputStream() throws IOException {
+            return getClassLoader().getResourceAsStream(location.substring(
+                ("/WEB-INF/" + JGroupsNetworkAdapter.CONFIGURATION_PATH).length()));
+          }
+
+          @Override
+          public String getDescription() {
+            return null;
+          }
+        };
       }
 
       @Override
-      public URL getResource(String resourceName) throws MalformedURLException {
-        throw new RuntimeException("Not implemented");
+      public ClassLoader getClassLoader() {
+        return this.getClass().getClassLoader();
       }
     };
 
-    getComponentManager1().lookup(Container.class).setApplicationContext(applicationContext);
-    getComponentManager2().lookup(Container.class).setApplicationContext(applicationContext);
+    ComponentDescriptor<ResourceLoader> descriptor = new DefaultComponentDescriptor<>(
+        ResourceLoader.class, "default", ResourceLoader.class);
+    getComponentManager1().registerComponent(descriptor, resourceLoader);
+    getComponentManager2().registerComponent(descriptor, resourceLoader);
 
     getConfigurationSource1().setProperty("observation.remote.enabled", Boolean.TRUE);
     getConfigurationSource2().setProperty("observation.remote.enabled", Boolean.TRUE);

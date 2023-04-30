@@ -39,6 +39,20 @@ public class DefaultComponentDescriptor<T> extends DefaultComponentRole<T>
 
   private List<ComponentDependency<?>> componentDependencies = new ArrayList<>();
 
+  @Deprecated
+  public DefaultComponentDescriptor() {
+    super();
+  }
+
+  public DefaultComponentDescriptor(Class<T> role, String hint) {
+    this(role, hint, null);
+  }
+
+  public DefaultComponentDescriptor(Class<T> role, String hint, Class<? extends T> implementation) {
+    super(role, hint);
+    setImplementation(implementation);
+  }
+
   public void setImplementation(Class<? extends T> implementation) {
     this.implementation = implementation;
   }
