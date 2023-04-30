@@ -3,14 +3,12 @@ package org.xwiki.observation;
 import java.util.Arrays;
 
 import org.jmock.Expectations;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.descriptor.DefaultComponentDescriptor;
-import org.xwiki.component.internal.StackingComponentEventManager;
 import org.xwiki.observation.event.Event;
 import org.xwiki.test.AbstractComponentTestCase;
-
-import junit.framework.Assert;
 
 /**
  * Unit tests for {@link ObservationManager}.
@@ -27,15 +25,12 @@ public class ObservationManagerEventListenerTest extends AbstractComponentTestCa
 
   private DefaultComponentDescriptor<EventListener> componentDescriptor;
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();
 
     this.manager = getComponentManager().lookup(ObservationManager.class);
-    StackingComponentEventManager componentEventManager = new StackingComponentEventManager();
-    componentEventManager.shouldStack(false);
-    componentEventManager.setObservationManager(this.manager);
-    getComponentManager().setComponentEventManager(componentEventManager);
 
     this.eventListenerMock = getMockery().mock(EventListener.class);
     this.eventMock = getMockery().mock(Event.class);
