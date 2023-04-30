@@ -30,10 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.descriptor.ComponentDescriptor;
-import org.xwiki.component.event.ComponentDescriptorAddedEvent;
-import org.xwiki.component.event.ComponentDescriptorEvent;
-import org.xwiki.component.event.ComponentDescriptorRemovedEvent;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.component.phase.Initializable;
@@ -69,8 +65,7 @@ public class DefaultObservationManager implements ObservationManager, Initializa
 
   /**
    * Registered listeners index by listener name. It makes it fast to perform operations on already
-   * registered
-   * listeners.
+   * registered listeners.
    */
   private Map<String, EventListener> listenersByName = new ConcurrentHashMap<>();
 
@@ -82,9 +77,8 @@ public class DefaultObservationManager implements ObservationManager, Initializa
 
   /**
    * Helper class to store the list of events of a given type associated with a given listener. We
-   * need this for
-   * performance reasons and also in order to be able to add events after a listener has been
-   * registered.
+   * need this for performance reasons and also in order to be able to add events after a listener
+   * has been registered.
    */
   private static class RegisteredListener {
 
@@ -103,12 +97,10 @@ public class DefaultObservationManager implements ObservationManager, Initializa
      *          the listener associated with the events.
      * @param event
      *          the first event to associate with the passed listener. More events are added by
-     *          calling
-     *          {@link #addEvent(Event)}
+     *          calling {@link #addEvent(Event)}
      */
     RegisteredListener(EventListener listener, Event event) {
       addEvent(event);
-
       this.listener = listener;
     }
 
@@ -147,11 +139,6 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObservationManager#addListener(EventListener)
-   */
   @Override
   public void addListener(EventListener eventListener) {
     // Register the listener by name. If already registered, override it.
@@ -191,11 +178,6 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObservationManager#removeListener(String)
-   */
   @Override
   public void removeListener(String listenerName) {
     this.listenersByName.remove(listenerName);
@@ -208,11 +190,6 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObservationManager#addEvent(String, Event)
-   */
   @Override
   public void addEvent(String listenerName, Event event) {
     Map<String, RegisteredListener> listeners = this.listenersByEvent.get(event.getClass());
@@ -222,11 +199,6 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObservationManager#removeEvent(String, Event)
-   */
   @Override
   public void removeEvent(String listenerName, Event event) {
     Map<String, RegisteredListener> listeners = this.listenersByEvent.get(event.getClass());
@@ -236,21 +208,11 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObservationManager#getListener(String)
-   */
   @Override
   public EventListener getListener(String listenerName) {
     return this.listenersByName.get(listenerName);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObservationManager#notify(org.xwiki.observation.event.Event, Object, Object)
-   */
   @Override
   public void notify(Event event, Object source, Object data) {
     // Find all listeners for this event
@@ -264,11 +226,6 @@ public class DefaultObservationManager implements ObservationManager, Initializa
         .get(AllEvent.class);
     if (allEventRegListeners != null) {
       notify(allEventRegListeners.values(), event, source, data);
-    }
-
-    // handle component added/removed
-    if (event instanceof ComponentDescriptorEvent) {
-      onComponentEvent((ComponentDescriptorEvent) event, (ComponentDescriptor<EventListener>) data);
     }
   }
 
@@ -299,7 +256,6 @@ public class DefaultObservationManager implements ObservationManager, Initializa
             LOGGER.error("Fail to send event [" + event + "] to listener [" + listener.listener
                 + "]", e);
           }
-
           // Only send the first matching event since the listener should only be called once per
           // event.
           break;
@@ -308,75 +264,9 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see ObservationManager#notify(org.xwiki.observation.event.Event, Object)
-   */
   @Override
   public void notify(Event event, Object source) {
     notify(event, source, null);
   }
 
-  /**
-   * A component as been modified.
-   *
-   * @param componentEvent
-   *          the event
-   * @param data
-   *          the descriptor of the modified component
-   */
-  private void onComponentEvent(ComponentDescriptorEvent componentEvent,
-      ComponentDescriptor<EventListener> data) {
-    if (componentEvent.getRole() == EventListener.class) {
-      if (componentEvent instanceof ComponentDescriptorAddedEvent) {
-        componentAdded((ComponentDescriptorAddedEvent) componentEvent,
-            data);
-      } else {
-        componentRemoved((ComponentDescriptorRemovedEvent) componentEvent,
-            data);
-      }
-    }
-  }
-
-  /**
-   * @param event
-   *          event object containing the new component descriptor
-   * @param descriptor
-   *          the component descriptor removed from component manager
-   */
-  private void componentAdded(ComponentDescriptorAddedEvent event,
-      ComponentDescriptor<EventListener> descriptor) {
-    try {
-      EventListener eventListener = this.componentManager.lookup(EventListener.class,
-          event.getRoleHint());
-
-      if (getListener(eventListener.getName()) != eventListener) {
-        addListener(eventListener);
-      }
-    } catch (ComponentLookupException e) {
-      LOGGER.error(
-          "Failed to lookup event listener corresponding to the component registration event", e);
-    }
-  }
-
-  /**
-   * @param event
-   *          event object containing the removed component descriptor
-   * @param descriptor
-   *          the component descriptor removed from component manager
-   */
-  private void componentRemoved(ComponentDescriptorRemovedEvent event,
-      ComponentDescriptor<?> descriptor) {
-    EventListener removedEventListener = null;
-    for (EventListener eventListener : this.listenersByName.values()) {
-      if (eventListener.getClass() == descriptor.getImplementation()) {
-        removedEventListener = eventListener;
-      }
-    }
-
-    if (removedEventListener != null) {
-      removeListener(removedEventListener.getName());
-    }
-  }
 }
