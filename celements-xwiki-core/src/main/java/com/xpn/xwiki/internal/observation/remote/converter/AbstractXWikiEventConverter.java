@@ -116,10 +116,9 @@ public abstract class AbstractXWikiEventConverter extends AbstractEventConverter
       xcontext.setDatabase((String) remoteDataMap.get(CONTEXT_WIKI));
       xcontext.setUser((String) remoteDataMap.get(CONTEXT_USER));
     } else {
-      getLogger().warn(
-          "Can't get a proper XWikiContext."
-              + " It generally mean that the wiki has never been fully initialized,"
-              + " i.e. has never been accesses at least once");
+      logger.warn("Can't get a proper XWikiContext."
+          + " It generally mean that the wiki has never been fully initialized,"
+          + " i.e. has never been accesses at least once");
     }
 
     return xcontext;
