@@ -7,6 +7,8 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Inject;
+
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
 import org.jgroups.JChannel;
@@ -45,7 +47,7 @@ public class JGroupsNetworkAdapter implements NetworkAdapter {
   /**
    * The container used to access configuration files.
    */
-  @Requirement
+  @Inject
   private ResourceLoader resourceLoader;
 
   /**
