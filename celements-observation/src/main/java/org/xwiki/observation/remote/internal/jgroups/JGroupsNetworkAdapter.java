@@ -1,11 +1,15 @@
 package org.xwiki.observation.remote.internal.jgroups;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.inject.Inject;
 
 import org.jgroups.Channel;
 import org.jgroups.ChannelException;
@@ -45,7 +49,7 @@ public class JGroupsNetworkAdapter implements NetworkAdapter {
   /**
    * The container used to access configuration files.
    */
-  @Requirement
+  @Inject
   private ResourceLoader resourceLoader;
 
   /**
@@ -171,5 +175,10 @@ public class JGroupsNetworkAdapter implements NetworkAdapter {
     }
     this.channels.clear();
     LOGGER.info("All channels stoped");
+  }
+
+  public void setResourceLoader(ResourceLoader resourceLoader) {
+    checkState(this.resourceLoader == null);
+    this.resourceLoader = checkNotNull(resourceLoader);
   }
 }
