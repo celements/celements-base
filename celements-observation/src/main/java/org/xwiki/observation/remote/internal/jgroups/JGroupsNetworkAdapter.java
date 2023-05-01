@@ -1,5 +1,7 @@
 package org.xwiki.observation.remote.internal.jgroups;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -173,5 +175,10 @@ public class JGroupsNetworkAdapter implements NetworkAdapter {
     }
     this.channels.clear();
     LOGGER.info("All channels stoped");
+  }
+
+  public void setResourceLoader(ResourceLoader resourceLoader) {
+    checkState(this.resourceLoader == null);
+    this.resourceLoader = checkNotNull(resourceLoader);
   }
 }

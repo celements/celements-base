@@ -31,6 +31,7 @@ import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.descriptor.DefaultComponentDescriptor;
 import org.xwiki.component.embed.EmbeddableComponentManager;
 import org.xwiki.observation.ObservationManager;
+import org.xwiki.observation.remote.NetworkAdapter;
 import org.xwiki.observation.remote.internal.jgroups.JGroupsNetworkAdapter;
 import org.xwiki.test.MockConfigurationSource;
 import org.xwiki.test.XWikiComponentInitializer;
@@ -91,7 +92,11 @@ public abstract class AbstractROMTestCase {
     ComponentDescriptor<ResourceLoader> descriptor = new DefaultComponentDescriptor<>(
         ResourceLoader.class, "default", ResourceLoader.class);
     getComponentManager1().registerComponent(descriptor, resourceLoader);
+    ((JGroupsNetworkAdapter) getComponentManager1().lookup(NetworkAdapter.class, "jgroups"))
+        .setResourceLoader(resourceLoader);
     getComponentManager2().registerComponent(descriptor, resourceLoader);
+    ((JGroupsNetworkAdapter) getComponentManager2().lookup(NetworkAdapter.class, "jgroups"))
+        .setResourceLoader(resourceLoader);
 
     getConfigurationSource1().setProperty("observation.remote.enabled", Boolean.TRUE);
     getConfigurationSource2().setProperty("observation.remote.enabled", Boolean.TRUE);
