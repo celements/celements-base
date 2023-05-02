@@ -23,7 +23,6 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.EventListener;
 import org.xwiki.observation.event.Event;
-import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
@@ -40,13 +39,6 @@ public class ReferenceProvider implements EventListener,
     ApplicationListener<ReferenceProvider.RefreshEvent> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceProvider.class);
-
-  static final String XWQL_WIKI = "select distinct doc.name "
-      + "from XWikiDocument as doc, BaseObject as obj "
-      + "where doc.space = 'XWiki' "
-      + "and doc.name <> 'XWikiServerClassTemplate' "
-      + "and obj.name=doc.fullName "
-      + "and obj.className='XWiki.XWikiServerClass'";
 
   private final QueryManager queryManager;
   private final AtomicReference<Try<ImmutableSet<WikiReference>, QueryException>> wikisCache;
@@ -72,7 +64,7 @@ public class ReferenceProvider implements EventListener,
 
   private ImmutableSet<WikiReference> queryWikis() throws QueryException {
     return StreamEx.of(XWikiConstant.MAIN_WIKI)
-        .append(queryManager.createQuery(XWQL_WIKI, Query.XWQL)
+        .append(queryManager.getNamedQuery("getAllWikis")
             .setWiki(XWikiConstant.MAIN_WIKI.getName())
             .<String>execute().stream()
             .map(name -> name.replaceFirst("^XWikiServer", ""))

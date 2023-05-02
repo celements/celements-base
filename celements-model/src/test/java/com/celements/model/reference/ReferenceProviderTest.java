@@ -14,7 +14,6 @@ import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
 import com.celements.common.test.AbstractComponentTest;
-import com.celements.model.reference.ReferenceProvider;
 import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.XWikiConstant;
 
@@ -53,7 +52,7 @@ public class ReferenceProviderTest extends AbstractComponentTest {
 
   @Test
   public void test_getAllWikis_QueryException() throws Exception {
-    expect(getMock(QueryManager.class).createQuery(ReferenceProvider.XWQL_WIKI, Query.XWQL))
+    expect(getMock(QueryManager.class).getNamedQuery("getAllWikis"))
         .andThrow(new QueryException("", null, null)).times(2);
     replayDefault();
     for (int i = 0; i < 2; i++) {
@@ -79,7 +78,7 @@ public class ReferenceProviderTest extends AbstractComponentTest {
 
   private void expectWikiQuery(List<String> result, int times) throws QueryException {
     Query queryMock = createDefaultMock(Query.class);
-    expect(getMock(QueryManager.class).createQuery(ReferenceProvider.XWQL_WIKI, Query.XWQL))
+    expect(getMock(QueryManager.class).getNamedQuery("getAllWikis"))
         .andReturn(queryMock).times(times);
     expect(queryMock.setWiki(XWikiConstant.MAIN_WIKI.getName())).andReturn(queryMock).times(times);
     expect(queryMock.<String>execute()).andReturn(result).times(times);
