@@ -67,9 +67,8 @@ public class ReferenceProvider implements EventListener,
         .append(queryManager.getNamedQuery("getAllWikis")
             .setWiki(XWikiConstant.MAIN_WIKI.getName())
             .<String>execute().stream()
-            .map(name -> name.replaceFirst("^XWikiServer", ""))
+            .map(name -> name.replace("XWikiServer", ""))
             .filter(not(String::isEmpty))
-            .map(String::toLowerCase)
             .map(WikiReference::new))
         .collect(toImmutableSet()); // keeps order
   }
