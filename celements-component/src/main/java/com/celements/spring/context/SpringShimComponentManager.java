@@ -1,5 +1,6 @@
 package com.celements.spring.context;
 
+import static com.celements.common.MoreObjectsCel.*;
 import static com.google.common.base.Predicates.*;
 import static java.util.stream.Collectors.*;
 
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Service;
 import org.xwiki.component.annotation.ComponentDescriptorFactory;
 import org.xwiki.component.descriptor.ComponentDescriptor;
@@ -31,6 +33,7 @@ import com.celements.common.MoreOptional;
 import com.google.common.base.Strings;
 
 import one.util.streamex.EntryStream;
+import one.util.streamex.StreamEx;
 
 /**
  * Shim implementation of the XWiki {@link ComponentManager} that converts all calls to
@@ -45,11 +48,15 @@ public class SpringShimComponentManager implements ComponentManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SpringShimComponentManager.class);
 
+  private final ConfigurableApplicationContext springContext;
   private final XWikiShimBeanFactory beanFactory;
   private final ComponentDescriptorFactory descriptorFactory;
 
   @Inject
-  public SpringShimComponentManager(XWikiShimBeanFactory beanFactory) {
+  public SpringShimComponentManager(
+      ConfigurableApplicationContext springContext,
+      XWikiShimBeanFactory beanFactory) {
+    this.springContext = springContext;
     this.beanFactory = beanFactory;
     this.descriptorFactory = new ComponentDescriptorFactory();
   }
@@ -63,7 +70,8 @@ public class SpringShimComponentManager implements ComponentManager {
   public <T> boolean hasComponent(Class<T> role, String hint) {
     ComponentRole<?> compRole = new DefaultComponentRole<>(role, hint);
     return Stream.of(beanFactory.getBeanNamesForType(role))
-        .anyMatch(name -> name.equals(hint) || name.equals(compRole.getBeanName()));
+        .anyMatch(name -> name.equals(hint) || name.equals(compRole.getBeanName()))
+        || role.isInstance(springContext); // context isn't in beanFactory
   }
 
   @Override
@@ -76,6 +84,8 @@ public class SpringShimComponentManager implements ComponentManager {
     ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
     try {
       return getBean(compRole)
+          .map(Optional::of) // replace with #or in Java9+
+          .orElseGet(() -> tryCast(springContext, role)) // context isn't in beanFactory
           .orElseThrow(() -> new NoSuchBeanDefinitionException(compRole.getBeanName()));
     } catch (BeansException exc) {
       throw new ComponentLookupException("lookup - [" + compRole + "] failed", exc);
@@ -120,7 +130,9 @@ public class SpringShimComponentManager implements ComponentManager {
       return EntryStream.of(beanFactory.getBeansOfType(role))
           .mapKeys(beanName -> ComponentRole.<T>fromBeanName(beanName)
               .orElseGet(() -> new DefaultComponentRole<>(role, beanName)))
-          .filterKeys(compRole -> compRole.getRole() == role);
+          .filterKeys(compRole -> compRole.getRole() == role)
+          .ifEmpty(StreamEx.of(tryCast(springContext, role)) // context isn't in beanFactory
+              .mapToEntry(ctx -> new DefaultComponentRole<>(role), ctx -> ctx));
     } catch (BeansException exc) {
       throw new ComponentLookupException("lookupEntries - failed for [" + role + "]", exc);
     }
