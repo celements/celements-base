@@ -59,9 +59,6 @@ import java.util.TimeZone;
 import java.util.Vector;
 import java.util.zip.ZipOutputStream;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -185,7 +182,6 @@ import com.xpn.xwiki.user.impl.xwiki.XWikiGroupServiceImpl;
 import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
 import com.xpn.xwiki.util.MenuSubstitution;
 import com.xpn.xwiki.util.Util;
-import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiEngineContext;
 import com.xpn.xwiki.web.XWikiMessageTool;
@@ -288,8 +284,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   private boolean isReadOnly = false;
 
-  public static final String CFG_ENV_NAME = "XWikiConfig";
-
   public static final String MACROS_FILE = "/templates/macros.txt";
 
   /**
@@ -301,12 +295,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * Property containing the version value in the {@link #VERSION_FILE} file.
    */
   private static final String VERSION_FILE_PROPERTY = "version";
-
-  /*
-   * i don't like using static variables like, but this avoid making a JNDI lookup with each request
-   * ...
-   */
-  private static String configPath = null;
 
   /*
    * Work directory
@@ -356,119 +344,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   private XWikiURLBuilder entityXWikiURLBuilder = Utils.getComponent(XWikiURLBuilder.class,
       "entity");
 
-  public static String getConfigPath() throws NamingException {
-    if (configPath == null) {
-      try {
-        Context envContext = (Context) new InitialContext().lookup("java:comp/env");
-        configPath = (String) envContext.lookup(CFG_ENV_NAME);
-      } catch (Exception e) {
-        configPath = "/WEB-INF/xwiki.cfg";
-        LOG.debug("The xwiki.cfg file will be read from [" + configPath + "] because "
-            + "its location couldn't be read from the JNDI [" + CFG_ENV_NAME + "] "
-            + "variable in [java:comp/env].");
-      }
-    }
-
-    return configPath;
-  }
-
-  public static XWiki getMainXWiki(XWikiContext context) throws XWikiException {
-    String xwikiname = "xwiki";
-    XWiki xwiki;
-    XWikiEngineContext econtext = context.getEngineContext();
-
-    context.setMainXWiki(xwikiname);
-
-    try {
-      xwiki = (XWiki) econtext.getAttribute(xwikiname);
-      if (xwiki == null) {
-        synchronized (XWiki.class) {
-          xwiki = (XWiki) econtext.getAttribute(xwikiname);
-          if (xwiki == null) {
-            InputStream xwikicfgis = XWiki.readXWikiConfiguration(getConfigPath(), econtext,
-                context);
-            xwiki = new XWiki(xwikicfgis, context, context.getEngineContext());
-            econtext.setAttribute(xwikiname, xwiki);
-          }
-        }
-
-        context.setWiki(xwiki);
-
-        // initialize stub context here instead of during Execution context initialization because
-        // during
-        // Execution context initialization, the XWikiContext is not fully initialized (does not
-        // contains XWiki
-        // object) which make it unusable
-        Utils.getComponent(XWikiStubContextProvider.class).initialize(context);
-      } else {
-        context.setWiki(xwiki);
-      }
-
-      xwiki.setDatabase(context.getDatabase());
-
-      return xwiki;
-    } catch (Exception e) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI, XWikiException.ERROR_XWIKI_INIT_FAILED,
-          "Could not initialize main XWiki context", e);
-    }
-  }
-
-  /**
-   * First try to find the configuration file pointed by the passed location as a file. If it does
-   * not exist or if the file cannot be read (for example if the security manager doesn't allow it),
-   * then try to load the file as a resource using the Servlet Context and failing that from teh
-   * classpath.
-   *
-   * @param configurationLocation
-   *          the location where the XWiki configuration file is located (either an absolute or
-   *          relative file path or a resource location)
-   * @return the stream containing the configuration data or null if not found
-   * @todo this code should be moved to a Configuration class proper
-   */
-  private static InputStream readXWikiConfiguration(String configurationLocation,
-      XWikiEngineContext econtext, XWikiContext context) {
-    InputStream xwikicfgis = null;
-
-    // First try loading from a file.
-    File f = new File(configurationLocation);
-    try {
-      if (f.exists()) {
-        xwikicfgis = new FileInputStream(f);
-      }
-    } catch (Exception e) {
-      // Error loading the file. Most likely, the Security Manager prevented it.
-      // We'll try loading it as a resource below.
-      LOG.debug("Failed to load the file [" + configurationLocation + "] using direct "
-          + "file access. The error was [" + e.getMessage() + "]. Trying to load it "
-          + "as a resource using the Servlet Context...");
-    }
-    // Second, try loading it as a resource using the Servlet Context
-    if (xwikicfgis == null) {
-      xwikicfgis = econtext.getResourceAsStream(configurationLocation);
-      LOG.debug("Failed to load the file [" + configurationLocation + "] as a resource "
-          + "using the Servlet Context. Trying to load it as classpath resource...");
-    }
-
-    // Third, try loading it from the classloader used to load this current class
-    if (xwikicfgis == null) {
-      // TODO: Verify if checking on MODE_GWT is correct. I think we should only check for
-      // the debug mode and even for that we need to find some better way of doing it so
-      // that we don't have hardcoded code only for development debugging purposes.
-      if ((context.getMode() == XWikiContext.MODE_GWT)
-          || (context.getMode() == XWikiContext.MODE_GWT_DEBUG)) {
-        xwikicfgis = XWiki.class.getClassLoader().getResourceAsStream("xwiki-gwt.cfg");
-      } else {
-        xwikicfgis = XWiki.class.getClassLoader().getResourceAsStream("xwiki.cfg");
-      }
-    }
-
-    LOG.debug("Failed to load the file [" + configurationLocation + "] using any method.");
-
-    // TODO: Should throw an exception instead of return null...
-
-    return xwikicfgis;
-  }
-
   /**
    * Return the XWiki object (as in "the Wiki API") corresponding to the requested wiki.
    *
@@ -480,7 +355,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    *           the storage
    */
   public static XWiki getXWiki(XWikiContext context) throws XWikiException {
-    XWiki xwiki = getMainXWiki(context);
+    XWiki xwiki = (XWiki) context.getEngineContext().getAttribute("xwiki");
     if (!xwiki.isVirtualMode()) {
       return xwiki;
     }
@@ -710,7 +585,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
           "xwiki.store.attachment.recyclebin.hint")));
     }
 
-    // Run migrations
+    // Run migrations TODO move out of here
     if ("1".equals(Param("xwiki.store.migration", "0"))) {
       if (LOG.isInfoEnabled()) {
         LOG.info("Running storage migrations");
@@ -739,7 +614,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Make sure these classes exists
     if (noupdate) {
       initializeMandatoryClasses(context);
-      getStatsService(context);
     }
 
     // Add a notification for notifications
@@ -756,12 +630,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Save the configured syntaxes
     String syntaxes = Param("xwiki.rendering.syntaxes", "xwiki/1.0");
     this.configuredSyntaxes = Arrays.asList(StringUtils.split(syntaxes, " ,"));
-
-    // Initialize all wiki macros.
-    // TODO: This is only a temporary work around, we need to use a component-based init mechanism
-    // instead. Note
-    // that we need DB access to be available (at component initialization) to make this possible.
-    registerWikiMacros();
 
     Utils.getComponent(ObservationManager.class).addListener(this);
   }
@@ -792,23 +660,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     if (context.getDatabase().equals(context.getMainXWiki()) && "1".equals(context.getWiki().Param(
         "xwiki.preferences.redirect"))) {
       getRedirectClass(context);
-    }
-  }
-
-  /**
-   * TODO: This is only a temporary work around, we need to use a component-based init mechanism
-   * instead. Note that we need DB access to be available (at component initialization) to make this
-   * possible.
-   * <p>
-   * This method is protected to be able to skip it in unit tests.
-   */
-  protected void registerWikiMacros() {
-    try {
-      WikiMacroInitializer wikiMacroInitializer = Utils.getComponentManager().lookup(
-          WikiMacroInitializer.class);
-      wikiMacroInitializer.registerExistingWikiMacros();
-    } catch (Exception ex) {
-      LOG.error("Error while registering wiki macros.", ex);
     }
   }
 
@@ -5027,36 +4878,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       synchronized (this.URLFACTORY_SERVICE_LOCK) {
         if (this.urlFactoryService == null) {
           LOG.info("Initializing URLFactory Service...");
-
-          XWikiURLFactoryService factoryService = null;
-
-          String urlFactoryServiceClass = Param("xwiki.urlfactory.serviceclass");
-          if (urlFactoryServiceClass != null) {
-            try {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Using custom URLFactory Service Class [" + urlFactoryServiceClass + "]");
-              }
-              factoryService = (XWikiURLFactoryService) Class.forName(
-                  urlFactoryServiceClass).getConstructor(
-                      XWiki.class)
-                  .newInstance(this);
-            } catch (Exception e) {
-              factoryService = null;
-              LOG.warn("Failed to initialize URLFactory Service [" + urlFactoryServiceClass + "]",
-                  e);
-            }
-          }
-          if (factoryService == null) {
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Using default URLFactory Service Class [" + urlFactoryServiceClass + "]");
-            }
-            factoryService = new XWikiURLFactoryServiceImpl(this);
-          }
-
-          // Set the urlFactoryService object in one assignment to prevent threading
-          // issues when checking for
-          // null above.
-          this.urlFactoryService = factoryService;
+          this.urlFactoryService = new XWikiURLFactoryServiceImpl();
         }
       }
     }

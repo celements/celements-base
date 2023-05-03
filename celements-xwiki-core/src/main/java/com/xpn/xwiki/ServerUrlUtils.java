@@ -33,7 +33,8 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
           if (protocol == null) {
             int iSecure = serverobject.getIntValue("secure", -1);
             // Check the request object if the "secure" property is undefined.
-            boolean secure = (iSecure == 1) || ((iSecure < 0) && context.getRequest().isSecure());
+            boolean secure = (iSecure > 0) || ((iSecure < 0) && (context.getRequest() != null)
+                && context.getRequest().isSecure());
             protocol = secure ? "https" : "http";
           }
           String host = serverobject.getStringValue("server");
