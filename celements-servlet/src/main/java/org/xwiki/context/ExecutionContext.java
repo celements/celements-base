@@ -23,6 +23,7 @@ package org.xwiki.context;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * Contains all state data related to the current user action. Note that the execution context is
@@ -43,6 +44,25 @@ public class ExecutionContext {
    */
   public Object getProperty(String key) {
     return properties.get(key);
+  }
+
+  public <T> T getProperty(String key, T defaultValue) {
+    T value = uncheckedCast(getProperty(key));
+    return (value != null) ? value : defaultValue;
+  }
+
+  public <T> T computeIfAbsent(String key, Supplier<T> defaultGetter) {
+    T value = uncheckedCast(getProperty(key));
+    if (value == null) {
+      value = defaultGetter.get();
+      setProperty(key, value);
+    }
+    return value;
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> T uncheckedCast(Object value) {
+    return (T) value;
   }
 
   /**

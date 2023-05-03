@@ -62,7 +62,7 @@ import com.xpn.xwiki.web.XWikiMessageTool;
  */
 public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
 
-  private static final String DOCWIKI = "Wiki";
+  private static final String DOCWIKI = "wiki";
 
   private static final String DOCSPACE = "Space";
 
@@ -1019,7 +1019,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
         getContext());
 
     // Test links
-    assertEquals("[[Wiki:Space.pageinsamespace]]", this.document.getContent());
+    assertEquals("[[wiki:Space.pageinsamespace]]", this.document.getContent());
     assertEquals("[[newwikiname:newspace.newpage]] " + "[[someName>>newwikiname:newspace.newpage]] "
         + "[[newwikiname:newspace.newpage]]", doc1.getContent());
     assertEquals("[[newspace.newpage]]", doc2.getContent());
