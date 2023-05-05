@@ -62,9 +62,9 @@ import org.apache.oro.text.regex.MatchResult;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.PatternMatcherInput;
 import org.apache.oro.text.regex.Perl5Matcher;
+import org.springframework.core.io.ResourceLoader;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xwiki.container.Container;
 import org.xwiki.xml.internal.XMLScriptService;
 
 import com.xpn.xwiki.XWikiContext;
@@ -809,11 +809,9 @@ public class Util {
       LOG.debug("Failed load resource [" + resource + "] using a file path");
     }
     try {
-      Container container = Utils.getComponent(Container.class);
-      InputStream res = container.getApplicationContext().getResourceAsStream(resource);
-      if (res != null) {
-        return res;
-      }
+      return Utils.getComponent(ResourceLoader.class)
+          .getResource(resource)
+          .getInputStream();
     } catch (Exception e) {
       LOG.debug("Failed to load resource [" + resource + "] using the application context");
     }

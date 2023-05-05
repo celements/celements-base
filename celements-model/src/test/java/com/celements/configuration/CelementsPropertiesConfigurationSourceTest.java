@@ -19,16 +19,17 @@
  */
 package com.celements.configuration;
 
-import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.xwiki.component.descriptor.DefaultComponentDescriptor;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.container.ApplicationContext;
-import org.xwiki.container.Container;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.common.test.ComponentList;
@@ -51,11 +52,12 @@ public class CelementsPropertiesConfigurationSourceTest extends AbstractComponen
 
   @Test
   public void test_initialize() throws Exception {
-    registerComponentMock(Container.class);
-    ApplicationContext contextMock = createMockAndAddToDefault(ApplicationContext.class);
-    expect(getMock(Container.class).getApplicationContext()).andReturn(contextMock).once();
+    registerComponentMock(ResourceLoader.class);
     String name = CelementsPropertiesConfigurationSource.CELEMENTS_PROPERTIES_FILE;
-    expect(contextMock.getResource(eq(name))).andReturn(null).once();
+    Resource resourceMock = createDefaultMock(Resource.class);
+    expect(getMock(ResourceLoader.class).getResource(eq(name))).andReturn(resourceMock);
+    expect(resourceMock.getURL()).andThrow(new IOException());
+
     replayDefault();
     assertSame(CelementsPropertiesConfigurationSource.class, Utils.getComponent(
         ConfigurationSource.class, "celementsproperties").getClass());

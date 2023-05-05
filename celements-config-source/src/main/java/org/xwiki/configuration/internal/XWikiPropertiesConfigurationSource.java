@@ -21,15 +21,17 @@ package org.xwiki.configuration.internal;
 
 import java.net.URL;
 
+import javax.inject.Inject;
+
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ResourceLoader;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
-import org.xwiki.container.Container;
 
 /**
  * Looks for configuration data in {@code /WEB-INF/xwiki.properties}.
@@ -46,11 +48,8 @@ public class XWikiPropertiesConfigurationSource extends CommonsConfigurationSour
 
   private static final String XWIKI_PROPERTIES_FILE = "/WEB-INF/xwiki.properties";
 
-  /**
-   * Injected by the Component Manager.
-   */
-  @Requirement
-  private Container container;
+  @Inject
+  private ResourceLoader resourceLoader;
 
   /**
    * {@inheritDoc}
@@ -59,22 +58,14 @@ public class XWikiPropertiesConfigurationSource extends CommonsConfigurationSour
    */
   @Override
   public void initialize() throws InitializationException {
-    // Register the Commons Properties Configuration, looking for a xwiki.properties file
-    // in the XWiki path somewhere.
-    URL xwikiPropertiesUrl;
+    Configuration config;
     try {
-      xwikiPropertiesUrl = this.container.getApplicationContext()
-          .getResource(XWIKI_PROPERTIES_FILE);
-      setConfiguration(new PropertiesConfiguration(xwikiPropertiesUrl));
-    } catch (Exception e) {
-      // Note: if we cannot read the configuration file we log a warning but continue since XWiki
-      // will use
-      // default values for all configurable elements.
-      LOGGER.warn("Failed to load configuration file [{}]. Using default configuration.",
-          XWIKI_PROPERTIES_FILE, e);
-      // Use a default Commons Configuration implementation since we couldn't use a Properties
-      // configuration.
-      setConfiguration(new BaseConfiguration());
+      URL propertiesURL = resourceLoader.getResource(XWIKI_PROPERTIES_FILE).getURL();
+      config = new PropertiesConfiguration(propertiesURL);
+    } catch (Exception exc) {
+      LOGGER.warn("Failed to load configuration file '{}'", XWIKI_PROPERTIES_FILE, exc);
+      config = new BaseConfiguration();
     }
+    setConfiguration(config);
   }
 }
