@@ -9,6 +9,8 @@ import static com.google.common.base.Strings.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
@@ -21,13 +23,12 @@ import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
-import org.xwiki.query.Query;
-import org.xwiki.query.QueryException;
-import org.xwiki.query.QueryManager;
 
 import com.celements.model.context.ModelContext;
 import com.celements.model.reference.RefBuilder;
+import com.celements.model.reference.ReferenceProvider;
 import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
 
@@ -44,6 +45,9 @@ public class DefaultModelUtils implements ModelUtils {
 
   @Requirement("explicit")
   private EntityReferenceResolver<String> resolver;
+
+  @Inject
+  private ReferenceProvider refProvider;
 
   private final XWiki getXWiki() {
     return context.getXWikiContext().getWiki();
@@ -117,66 +121,31 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
+  @Deprecated
   public WikiReference getMainWikiRef() {
-    return RefBuilder.create().wiki("xwiki").build(WikiReference.class);
+    return XWikiConstant.MAIN_WIKI;
   }
 
   @Override
   public Stream<WikiReference> getAllWikis() {
-    Stream<WikiReference> stream;
-    try {
-      String prefix = "XWikiServer";
-      String xwql = "select distinct doc.name from XWikiDocument as doc, BaseObject as obj "
-          + "where doc.space = 'XWiki' and doc.name <> 'XWikiServerClassTemplate' "
-          + "and obj.name=doc.fullName and obj.className='XWiki.XWikiServerClass'";
-      stream = getQueryManager().createQuery(xwql, Query.XWQL)
-          .setWiki(getMainWikiRef().getName())
-          .<String>execute().stream()
-          .filter(name -> name.startsWith(prefix) && (name.length() > prefix.length()))
-          .map(name -> name.substring(prefix.length()).toLowerCase())
-          .map(name -> RefBuilder.create().wiki(name).build(WikiReference.class));
-    } catch (QueryException exc) {
-      LOGGER.error("getAllWikis - failed", exc);
-      stream = Stream.of(context.getWikiRef());
-    }
-    return Stream.concat(Stream.of(getMainWikiRef()), stream).distinct();
+    return refProvider.getAllWikis().stream();
   }
 
   @Override
   public Stream<SpaceReference> getAllSpaces(WikiReference wikiRef) {
-    RefBuilder builder = RefBuilder.from(wikiRef);
-    try {
-      return getQueryManager().getNamedQuery("getSpaces")
-          .setWiki(wikiRef.getName())
-          .<String>execute().stream()
-          .map(name -> builder.space(name).build(SpaceReference.class))
-          .distinct();
-    } catch (QueryException exc) {
-      LOGGER.error("getAllSpaces - failed for [{}]", wikiRef, exc);
-      return Stream.of();
-    }
+    return refProvider.getAllSpaces(wikiRef).stream();
   }
 
   @Override
   public Stream<DocumentReference> getAllDocsForSpace(SpaceReference spaceRef) {
-    RefBuilder builder = RefBuilder.from(spaceRef);
-    try {
-      return getQueryManager().getNamedQuery("getSpaceDocsName")
-          .setWiki(spaceRef.getParent().getName())
-          .bindValue("space", spaceRef.getName())
-          .<String>execute().stream()
-          .map(name -> builder.doc(name).build(DocumentReference.class));
-    } catch (QueryException exc) {
-      LOGGER.error("getAllDocsForSpace - failed for [{}]", spaceRef, exc);
-      return Stream.of();
-    }
+    return refProvider.getAllDocsForSpace(spaceRef).stream();
   }
 
   @Override
   public String getDatabaseName(WikiReference wikiRef) {
     checkNotNull(wikiRef);
     String database = "";
-    if (getMainWikiRef().equals(wikiRef)) {
+    if (XWikiConstant.MAIN_WIKI.equals(wikiRef)) {
       database = getXWiki().Param("xwiki.db", "").trim();
     }
     if (database.isEmpty()) {
@@ -241,20 +210,9 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @Deprecated
   public <T> T computeExecPropIfAbsent(String key, Supplier<T> defaultGetter) {
-    T ret = (T) exec.getContext().getProperty(key);
-    if (ret == null) {
-      exec.getContext().setProperty(key, ret = defaultGetter.get());
-    }
-    return ret;
-  }
-
-  /**
-   * load lazy since it may cause an NPE if a unit tests requires ModelUtils
-   */
-  private QueryManager getQueryManager() {
-    return Utils.getComponent(QueryManager.class);
+    return exec.getContext().computeIfAbsent(key, defaultGetter);
   }
 
 }
