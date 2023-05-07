@@ -612,7 +612,7 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   @Deprecated
   public void endTransaction(XWikiContext context, boolean commit, boolean withTransaction) {
-    endTransaction(context, commit, false);
+    endTransaction(context, commit);
   }
 
   /**
