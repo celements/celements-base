@@ -35,8 +35,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
@@ -87,8 +85,6 @@ import com.xpn.xwiki.web.Utils;
 public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWikiStoreInterface {
 
   public static final String NAME = "xwikiHibernate";
-
-  private static final Log log = LogFactory.getLog(XWikiHibernateStore.class);
 
   private Map<String, String[]> validTypesMap = new HashMap<>();
 
@@ -251,29 +247,13 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
       Session session = getSession(context);
       Connection connection = session.connection();
       stmt = connection.createStatement();
-
       String schema = getSchemaFromWikiName(wikiName, context);
       String escapedSchema = escapeSchema(schema, context);
-
-      DatabaseProduct databaseProduct = getDatabaseProductName(context);
-      if (DatabaseProduct.ORACLE == databaseProduct) {
-        stmt.execute("create user " + escapedSchema + " identified by " + escapedSchema);
-        stmt.execute("grant resource to " + escapedSchema);
-      } else if (DatabaseProduct.DERBY == databaseProduct) {
-        stmt.execute("CREATE SCHEMA " + escapedSchema);
-      } else if (DatabaseProduct.HSQLDB == databaseProduct) {
-        stmt.execute("CREATE SCHEMA " + escapedSchema + " AUTHORIZATION DBA");
-      } else if (DatabaseProduct.DB2 == databaseProduct) {
-        stmt.execute("CREATE SCHEMA " + escapedSchema);
-      } else // TODO: find a proper java lib to convert from java encoding to mysql charset name and
-      // collation
-      if ((DatabaseProduct.MYSQL == databaseProduct)
-          && context.getWiki().getEncoding().equals("UTF-8")) {
+      if (context.getWiki().getEncoding().equals("UTF-8")) {
         stmt.execute("create database " + escapedSchema + " CHARACTER SET utf8 COLLATE utf8_bin");
       } else {
         stmt.execute("create database " + escapedSchema);
       }
-
       endTransaction(context, true);
     } catch (Exception e) {
       Object[] args = { wikiName };
@@ -312,22 +292,9 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
       Session session = getSession(context);
       Connection connection = session.connection();
       stmt = connection.createStatement();
-
       String schema = getSchemaFromWikiName(wikiName, context);
       String escapedSchema = escapeSchema(schema, context);
-
-      DatabaseProduct databaseProduct = getDatabaseProductName(context);
-      if (DatabaseProduct.ORACLE == databaseProduct) {
-        stmt.execute("DROP USER " + escapedSchema + " CASCADE");
-      } else if ((DatabaseProduct.DERBY == databaseProduct)
-          || (DatabaseProduct.HSQLDB == databaseProduct)) {
-        stmt.execute("DROP SCHEMA " + escapedSchema);
-      } else if (DatabaseProduct.DB2 == databaseProduct) {
-        stmt.execute("DROP SCHEMA " + escapedSchema + " RESTRICT");
-      } else if (DatabaseProduct.MYSQL == databaseProduct) {
-        stmt.execute("DROP DATABASE " + escapedSchema);
-      }
-
+      stmt.execute("DROP DATABASE " + escapedSchema);
       endTransaction(context, true);
     } catch (Exception e) {
       Object[] args = { wikiName };
@@ -638,12 +605,9 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           }
         }
       } catch (ObjectNotFoundException e) {
-        // Let's accept that there is no data in property tables
-        // but log it
-        if (log.isErrorEnabled()) {
-          log.error(
-              "No data for property " + property.getName() + " of object id " + property.getId());
-        }
+        // Let's accept that there is no data in property tables but log it
+        logger.error("No data for property {} of object id {}",
+            property.getName(), property.getId());
       }
 
       // TODO: understand why collections are lazy loaded
@@ -2074,14 +2038,14 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
       String propname = hibprop.getName();
       PropertyClass propclass = (PropertyClass) bclass.getField(propname);
       if (propclass == null) {
-        log.warn("Mapping contains invalid field name " + propname);
+        logger.warn("Mapping contains invalid field name {}", propname);
         return false;
       }
 
       boolean result = isValidColumnType(hibprop.getValue().getType().getName(),
           propclass.getClassName());
       if (!result) {
-        log.warn("Mapping contains invalid type in field " + propname);
+        logger.warn("Mapping contains invalid type in field {}", propname);
         return false;
       }
     }
