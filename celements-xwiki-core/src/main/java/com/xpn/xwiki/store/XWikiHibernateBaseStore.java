@@ -3,6 +3,8 @@ package com.xpn.xwiki.store;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -212,54 +214,26 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   public synchronized void updateSchema(XWikiContext context, boolean force)
       throws HibernateException {
-
     // We don't update the schema if the XWiki hibernate config parameter says not to update
     if ((!force) && (context.getWiki() != null)
         && ("0".equals(context.getWiki().Param("xwiki.store.hibernate.updateschema")))) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Schema update deactivated for wiki [" + context.getDatabase() + "]");
-      }
+      logger.debug("Schema update deactivated for wiki [{}]", context.getDatabase());
       return;
     }
-
-    if (logger.isInfoEnabled()) {
-      logger.info("Updating schema update for wiki [" + context.getDatabase() + "]...");
-    }
-
-    try {
-      String fullName = ((context != null) && (context.getWiki() != null)
-          && (context.getWiki().isMySQL()))
-              ? "concat(xwd_web,'.',xwd_name)"
-              : "xwd_fullname";
-      String[] schemaSQL = getSchemaUpdateScript(getConfiguration(), context);
-      String[] addSQL = {
-          // Make sure we have no null valued in integer fields
-          "update xwikidoc set xwd_translation=0 where xwd_translation is null",
-          "update xwikidoc set xwd_language='' where xwd_language is null",
-          "update xwikidoc set xwd_default_language='' where xwd_default_language is null",
-          "update xwikidoc set xwd_fullname=" + fullName + " where xwd_fullname is null",
-          "update xwikidoc set xwd_elements=3 where xwd_elements is null",
-          "delete from xwikiproperties where xwp_name like 'editbox_%' and xwp_classtype='com.xpn.xwiki.objects.LongProperty'",
-          "delete from xwikilongs where xwl_name like 'editbox_%'" };
-
-      int inb = (schemaSQL == null) ? 0 : schemaSQL.length;
-      int nb = inb + addSQL.length;
-      String[] sql = new String[nb];
-      if (schemaSQL != null) {
-        for (int i = 0; i < inb; i++) {
-          sql[i] = schemaSQL[i];
-        }
-      }
-      for (int i = 0; i < addSQL.length; i++) {
-        sql[i + inb] = addSQL[i];
-      }
-
-      updateSchema(sql, context);
-    } finally {
-      if (logger.isInfoEnabled()) {
-        logger.info("Schema update for wiki [" + context.getDatabase() + "] done");
-      }
-    }
+    logger.info("Updating schema update for wiki [{}]...", context.getDatabase());
+    String[] schemaSQL = getSchemaUpdateScript(getConfiguration(), context);
+    String[] addSQL = {
+        // Make sure we have no null valued in integer fields
+        "update xwikidoc set xwd_translation=0 where xwd_translation is null",
+        "update xwikidoc set xwd_language='' where xwd_language is null",
+        "update xwikidoc set xwd_default_language='' where xwd_default_language is null",
+        "update xwikidoc set xwd_fullname=concat(xwd_web,'.',xwd_name) where xwd_fullname is null",
+        "update xwikidoc set xwd_elements=3 where xwd_elements is null",
+        "delete from xwikiproperties where xwp_name like 'editbox_%' and xwp_classtype='com.xpn.xwiki.objects.LongProperty'",
+        "delete from xwikilongs where xwl_name like 'editbox_%'" };
+    updateSchema(Stream.concat(Arrays.stream(schemaSQL), Arrays.stream(addSQL))
+        .toArray(String[]::new), context);
+    logger.info("Schema update for wiki [{}] done", context.getDatabase());
   }
 
   /**
@@ -319,7 +293,7 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   public String[] getSchemaUpdateScript(Configuration config, XWikiContext context)
       throws HibernateException {
-    String[] schemaSQL = null;
+    String[] schemaSQL;
     Session session;
     Connection connection;
     DatabaseMetadata meta;
@@ -327,7 +301,7 @@ public class XWikiHibernateBaseStore implements Initializable {
     Dialect dialect = Dialect.getDialect(getConfiguration().getProperties());
     boolean bTransaction = true;
     try {
-      bTransaction = beginTransaction(false, context);
+      bTransaction = beginTransaction(context);
       session = getSession(context);
       connection = session.connection();
       setDatabase(session, context);
@@ -336,13 +310,14 @@ public class XWikiHibernateBaseStore implements Initializable {
       schemaSQL = config.generateSchemaUpdateScript(dialect, meta);
     } catch (Exception e) {
       logger.error("Failed creating schema update script", e);
+      schemaSQL = new String[0];
     } finally {
       try {
         if (stmt != null) {
           stmt.close();
         }
         if (bTransaction) {
-          endTransaction(context, false, false);
+          endTransaction(context, false);
         }
       } catch (Exception e) {}
     }
@@ -355,7 +330,7 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param createSQL
    * @param context
    */
-  public void updateSchema(String[] createSQL, XWikiContext context) {
+  private void updateSchema(String[] createSQL, XWikiContext context) {
     // Updating the schema for custom mappings
     Session session;
     Connection connection;
@@ -369,17 +344,12 @@ public class XWikiHibernateBaseStore implements Initializable {
       setDatabase(session, context);
       stmt = connection.createStatement();
       for (String element : createSQL) {
-        sql = element;
-        if (logger.isDebugEnabled()) {
-          logger.debug("Update Schema sql: [" + sql + "]");
-        }
-        stmt.executeUpdate(sql);
+        logger.debug("Update Schema sql: [{}]", element);
+        stmt.executeUpdate(element);
       }
       connection.commit();
     } catch (Exception e) {
-      if (logger.isErrorEnabled()) {
-        logger.error("Failed updating schema while executing query [" + sql + "]", e);
-      }
+      logger.error("Failed updating schema while executing query [{}]", sql, e);
     } finally {
       try {
         if (stmt != null) {
@@ -631,7 +601,6 @@ public class XWikiHibernateBaseStore implements Initializable {
       Transaction transaction = getTransaction(context);
       setSession(null, context);
       setTransaction(null, context);
-
       if (transaction != null) {
         logger.debug("Releasing hibernate transaction {}", transaction);
         if (commit) {
@@ -696,9 +665,7 @@ public class XWikiHibernateBaseStore implements Initializable {
     try {
       Session session = getSession(context);
       if (session != null) {
-        if (logger.isWarnEnabled()) {
-          logger.warn("Cleanup of session was needed: " + session);
-        }
+        logger.warn("Cleanup of session was needed: {}", session);
         endTransaction(context, false);
       }
     } catch (HibernateException e) {}
@@ -800,9 +767,7 @@ public class XWikiHibernateBaseStore implements Initializable {
           endTransaction(context, doCommit);
         }
       } catch (Exception e) {
-        if (logger.isErrorEnabled()) {
-          logger.error("Exeption while close transaction", e);
-        }
+        logger.error("Exeption while close transaction", e);
       }
     }
   }
