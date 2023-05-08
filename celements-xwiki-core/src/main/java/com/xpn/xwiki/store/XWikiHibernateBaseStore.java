@@ -1,16 +1,11 @@
 package com.xpn.xwiki.store;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -20,11 +15,9 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.impl.SessionFactoryImpl;
-import org.hibernate.jdbc.BorrowedConnectionProxy;
-import org.hibernate.jdbc.ConnectionManager;
-import org.hibernate.mapping.Table;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
-import org.springframework.util.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
@@ -33,19 +26,13 @@ import org.xwiki.context.Execution;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.monitor.api.MonitorPlugin;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
-import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
 
 public class XWikiHibernateBaseStore implements Initializable {
 
-  private static final Log log = LogFactory.getLog(XWikiHibernateBaseStore.class);
-
-  private Map<String, String> connections = new ConcurrentHashMap<>();
-
-  private int nbConnections = 0;
+  protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   @Requirement
   private HibernateSessionFactory sessionFactory;
@@ -69,7 +56,7 @@ public class XWikiHibernateBaseStore implements Initializable {
   @Deprecated
   public XWikiHibernateBaseStore(XWiki xwiki, XWikiContext context) {
     String path = xwiki.Param("xwiki.store.hibernate.path", "/WEB-INF/hibernate.cfg.xml");
-    log.debug("Hibernate configuration file: [" + path + "]");
+    logger.debug("Hibernate configuration file: [" + path + "]");
     setPath(path);
   }
 
@@ -118,47 +105,21 @@ public class XWikiHibernateBaseStore implements Initializable {
   }
 
   /**
-   * @return the database product name
-   */
-  public DatabaseProduct getDatabaseProductName(XWikiContext context) {
-    String productName;
-    try {
-      productName = getSession(context).connection().getMetaData().getDatabaseProductName();
-    } catch (Exception e) {
-      productName = "Unknown";
-    }
-    return DatabaseProduct.toProduct(productName);
-  }
-
-  /**
    * Allows to init the hibernate configuration
    *
    * @throws org.hibernate.HibernateException
    */
   private synchronized void initHibernate(XWikiContext context) throws HibernateException {
     getConfiguration().configure(getPath());
-
     XWiki wiki = context.getWiki();
     if ((wiki != null) && (wiki.Param("xwiki.db") != null) && !wiki.isVirtualMode()) {
-      // substitute default db name to configured.
-      // note, that we can't call getSchemaFromWikiName() here,
-      // because it ask getDatabaseProduct() which use connection
-      // which must be opened. But here (before connection init)
-      // we have no opened connections yet.
-      String schemaName = getSchemaFromWikiName(context.getDatabase(), null, context);
-
-      String dialect = getConfiguration().getProperty(Environment.DIALECT);
-      if ("org.hibernate.dialect.MySQLDialect".equals(dialect)) {
-        getConfiguration().setProperty(Environment.DEFAULT_CATALOG, schemaName);
-      } else {
-        getConfiguration().setProperty(Environment.DEFAULT_SCHEMA, schemaName);
-      }
+      String schemaName = getSchemaFromWikiName(context.getDatabase(), context);
+      getConfiguration().setProperty(Environment.DEFAULT_CATALOG, schemaName);
+      getConfiguration().setProperty(Environment.DEFAULT_SCHEMA, schemaName);
     }
     if (this.sessionFactory == null) {
-      this.sessionFactory = Utils
-          .getComponent(HibernateSessionFactory.class);
+      this.sessionFactory = Utils.getComponent(HibernateSessionFactory.class);
     }
-
     setSessionFactory(getConfiguration().buildSessionFactory());
   }
 
@@ -227,7 +188,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   public void shutdownHibernate(XWikiContext context) throws HibernateException {
     Session session = getSession(context);
-    preCloseSession(session);
     closeSession(session);
     if (getSessionFactory() != null) {
       ((SessionFactoryImpl) getSessionFactory()).getConnectionProvider().close();
@@ -254,102 +214,30 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   public synchronized void updateSchema(XWikiContext context, boolean force)
       throws HibernateException {
-
     // We don't update the schema if the XWiki hibernate config parameter says not to update
     if ((!force) && (context.getWiki() != null)
         && ("0".equals(context.getWiki().Param("xwiki.store.hibernate.updateschema")))) {
-      if (log.isDebugEnabled()) {
-        log.debug("Schema update deactivated for wiki [" + context.getDatabase() + "]");
-      }
+      logger.debug("Schema update deactivated for wiki [{}]", context.getDatabase());
       return;
     }
-
-    if (log.isInfoEnabled()) {
-      log.info("Updating schema update for wiki [" + context.getDatabase() + "]...");
-    }
-
-    try {
-      String fullName = ((context != null) && (context.getWiki() != null)
-          && (context.getWiki().isMySQL()))
-              ? "concat(xwd_web,'.',xwd_name)"
-              : "xwd_fullname";
-      String[] schemaSQL = getSchemaUpdateScript(getConfiguration(), context);
-      String[] addSQL = {
-          // Make sure we have no null valued in integer fields
-          "update xwikidoc set xwd_translation=0 where xwd_translation is null",
-          "update xwikidoc set xwd_language='' where xwd_language is null",
-          "update xwikidoc set xwd_default_language='' where xwd_default_language is null",
-          "update xwikidoc set xwd_fullname=" + fullName + " where xwd_fullname is null",
-          "update xwikidoc set xwd_elements=3 where xwd_elements is null",
-          "delete from xwikiproperties where xwp_name like 'editbox_%' and xwp_classtype='com.xpn.xwiki.objects.LongProperty'",
-          "delete from xwikilongs where xwl_name like 'editbox_%'" };
-
-      int inb = (schemaSQL == null) ? 0 : schemaSQL.length;
-      int nb = inb + addSQL.length;
-      String[] sql = new String[nb];
-      if (schemaSQL != null) {
-        for (int i = 0; i < inb; i++) {
-          sql[i] = schemaSQL[i];
-        }
-      }
-      for (int i = 0; i < addSQL.length; i++) {
-        sql[i + inb] = addSQL[i];
-      }
-
-      updateSchema(sql, context);
-    } finally {
-      if (log.isInfoEnabled()) {
-        log.info("Schema update for wiki [" + context.getDatabase() + "] done");
-      }
-    }
+    logger.info("Updating schema update for wiki [{}]...", context.getDatabase());
+    String[] schemaSQL = getSchemaUpdateScript(getConfiguration(), context);
+    String[] addSQL = {
+        // Make sure we have no null valued in integer fields
+        "update xwikidoc set xwd_translation=0 where xwd_translation is null",
+        "update xwikidoc set xwd_language='' where xwd_language is null",
+        "update xwikidoc set xwd_default_language='' where xwd_default_language is null",
+        "update xwikidoc set xwd_fullname=concat(xwd_web,'.',xwd_name) where xwd_fullname is null",
+        "update xwikidoc set xwd_elements=3 where xwd_elements is null",
+        "delete from xwikiproperties where xwp_name like 'editbox_%' and xwp_classtype='com.xpn.xwiki.objects.LongProperty'",
+        "delete from xwikilongs where xwl_name like 'editbox_%'" };
+    updateSchema(Stream.concat(Arrays.stream(schemaSQL), Arrays.stream(addSQL))
+        .toArray(String[]::new), context);
+    logger.info("Schema update for wiki [{}] done", context.getDatabase());
   }
 
   /**
    * Convert wiki name in database/schema name.
-   *
-   * @param wikiName
-   *          the wiki name to convert.
-   * @param databaseProduct
-   *          the database engine type.
-   * @param context
-   *          the XWiki context.
-   * @return the database/schema name.
-   * @since XWiki Core 1.1.2, XWiki Core 1.2M2
-   */
-  protected String getSchemaFromWikiName(String wikiName, DatabaseProduct databaseProduct,
-      XWikiContext context) {
-    if (wikiName == null) {
-      return null;
-    }
-
-    XWiki wiki = context.getWiki();
-
-    String schema;
-    if (context.isMainWiki(wikiName)) {
-      schema = wiki.Param("xwiki.db");
-      if (schema == null) {
-        if (databaseProduct == DatabaseProduct.DERBY) {
-          schema = "APP";
-        } else if (databaseProduct == DatabaseProduct.HSQLDB) {
-          schema = "PUBLIC";
-        } else {
-          schema = wikiName.replace('-', '_');
-        }
-      }
-    } else {
-      // virtual
-      schema = wikiName.replace('-', '_');
-    }
-
-    // Apply prefix
-    String prefix = wiki.Param("xwiki.db.prefix", "");
-    return prefix + schema;
-  }
-
-  /**
-   * Convert wiki name in database/schema name.
-   * <p>
-   * Need hibernate to be initialized.
    *
    * @param wikiName
    *          the wiki name to convert.
@@ -362,10 +250,21 @@ public class XWikiHibernateBaseStore implements Initializable {
     if (wikiName == null) {
       return null;
     }
+    XWiki wiki = context.getWiki();
+    String schema;
+    if (context.isMainWiki(wikiName)) {
+      schema = wiki.Param("xwiki.db");
+      if (schema == null) {
+        schema = wikiName.replace('-', '_');
+      }
+    } else {
+      // virtual
+      schema = wikiName.replace('-', '_');
+    }
 
-    DatabaseProduct databaseProduct = getDatabaseProductName(context);
-
-    return getSchemaFromWikiName(wikiName, databaseProduct, context);
+    // Apply prefix
+    String prefix = wiki.Param("xwiki.db.prefix", "");
+    return prefix + schema;
   }
 
   /**
@@ -394,58 +293,34 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   public String[] getSchemaUpdateScript(Configuration config, XWikiContext context)
       throws HibernateException {
-    String[] schemaSQL = null;
-
+    String[] schemaSQL;
     Session session;
     Connection connection;
     DatabaseMetadata meta;
     Statement stmt = null;
     Dialect dialect = Dialect.getDialect(getConfiguration().getProperties());
     boolean bTransaction = true;
-    String dschema = null;
-
     try {
-      bTransaction = beginTransaction(false, context);
+      bTransaction = beginTransaction(context);
       session = getSession(context);
       connection = session.connection();
       setDatabase(session, context);
-
-      String contextSchema = getSchemaFromWikiName(context);
-
-      DatabaseProduct databaseProduct = getDatabaseProductName(context);
-      if ((databaseProduct == DatabaseProduct.ORACLE) || (databaseProduct == DatabaseProduct.HSQLDB)
-          || (databaseProduct == DatabaseProduct.DERBY)
-          || (databaseProduct == DatabaseProduct.DB2)) {
-        dschema = config.getProperty(Environment.DEFAULT_SCHEMA);
-        config.setProperty(Environment.DEFAULT_SCHEMA, contextSchema);
-        Iterator iter = config.getTableMappings();
-        while (iter.hasNext()) {
-          Table table = (Table) iter.next();
-          table.setSchema(contextSchema);
-        }
-      }
-
       meta = new DatabaseMetadata(connection, dialect);
       stmt = connection.createStatement();
       schemaSQL = config.generateSchemaUpdateScript(dialect, meta);
     } catch (Exception e) {
-      if (log.isErrorEnabled()) {
-        log.error("Failed creating schema update script", e);
-      }
+      logger.error("Failed creating schema update script", e);
+      schemaSQL = new String[0];
     } finally {
       try {
         if (stmt != null) {
           stmt.close();
         }
         if (bTransaction) {
-          endTransaction(context, false, false);
-        }
-        if (dschema != null) {
-          config.setProperty(Environment.DEFAULT_SCHEMA, dschema);
+          endTransaction(context, false);
         }
       } catch (Exception e) {}
     }
-
     return schemaSQL;
   }
 
@@ -455,38 +330,26 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param createSQL
    * @param context
    */
-  public void updateSchema(String[] createSQL, XWikiContext context) {
+  private void updateSchema(String[] createSQL, XWikiContext context) {
     // Updating the schema for custom mappings
     Session session;
     Connection connection;
     Statement stmt = null;
     boolean bTransaction = true;
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     String sql = "";
-
     try {
       bTransaction = beginTransaction(context);
       session = getSession(context);
       connection = session.connection();
       setDatabase(session, context);
       stmt = connection.createStatement();
-
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("sqlupgrade");
-      }
       for (String element : createSQL) {
-        sql = element;
-        if (log.isDebugEnabled()) {
-          log.debug("Update Schema sql: [" + sql + "]");
-        }
-        stmt.executeUpdate(sql);
+        logger.debug("Update Schema sql: [{}]", element);
+        stmt.executeUpdate(element);
       }
       connection.commit();
     } catch (Exception e) {
-      if (log.isErrorEnabled()) {
-        log.error("Failed updating schema while executing query [" + sql + "]", e);
-      }
+      logger.error("Failed updating schema while executing query [{}]", sql, e);
     } finally {
       try {
         if (stmt != null) {
@@ -498,11 +361,6 @@ public class XWikiHibernateBaseStore implements Initializable {
           endTransaction(context, true);
         }
       } catch (Exception e) {}
-
-      // End monitoring timer
-      if (monitor != null) {
-        monitor.endTimer("sqlupgrade");
-      }
     }
   }
 
@@ -582,57 +440,33 @@ public class XWikiHibernateBaseStore implements Initializable {
   public void setDatabase(Session session, XWikiContext context) throws XWikiException {
     if (isVirtual(context)) {
       try {
-        if (log.isDebugEnabled()) {
-          log.debug("Switch database to: [" + context.getDatabase() + "]");
-        }
-
+        logger.debug("setDatabase - {}", context.getDatabase());
         if (context.getDatabase() != null) {
           String schemaName = getSchemaFromWikiName(context);
-          String escapedSchemaName = escapeSchema(schemaName, context);
-
-          DatabaseProduct databaseProduct = getDatabaseProductName(context);
-          if (DatabaseProduct.ORACLE == databaseProduct) {
-            Statement stmt = null;
-            try {
-              stmt = session.connection().createStatement();
-              stmt.execute("alter session set current_schema = " + escapedSchemaName);
-            } finally {
-              try {
-                if (stmt != null) {
-                  stmt.close();
-                }
-              } catch (Exception e) {}
-            }
-          } else if ((DatabaseProduct.DERBY == databaseProduct)
-              || (DatabaseProduct.HSQLDB == databaseProduct)
-              || (DatabaseProduct.DB2 == databaseProduct)) {
-            Statement stmt = null;
-            try {
-              stmt = session.connection().createStatement();
-              stmt.execute("SET SCHEMA " + escapedSchemaName);
-            } finally {
-              try {
-                if (stmt != null) {
-                  stmt.close();
-                }
-              } catch (Exception e) {}
-            }
-          } else {
-            String catalog = session.connection().getCatalog();
-            catalog = (catalog == null) ? null : catalog.replace('_', '-');
-            if (!schemaName.equals(catalog)) {
-              session.connection().setCatalog(schemaName);
-            }
+          Connection connection = session.connection();
+          if (!schemaName.equals(getCurrentSchema(connection))) {
+            connection.setCatalog(schemaName);
           }
           setCurrentDatabase(context, context.getDatabase());
         }
-      } catch (Exception e) {
+      } catch (HibernateException | SQLException e) {
         Object[] args = { context.getDatabase() };
         throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
             XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SWITCH_DATABASE,
             "Exception while switching to database {0}", e, args);
       }
     }
+  }
+
+  private String getCurrentSchema(Connection connection) {
+    String catalog = null;
+    try {
+      catalog = connection.getCatalog();
+      catalog = (catalog == null) ? null : catalog.replace('_', '-');
+    } catch (SQLException exc) {
+      logger.debug("getCurrentSchema - failed for inexistent schema", exc);
+    }
+    return catalog;
   }
 
   /**
@@ -660,7 +494,7 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @throws XWikiException
    */
   public boolean beginTransaction(XWikiContext context) throws XWikiException {
-    return beginTransaction(null, true, context);
+    return beginTransaction(null, context);
   }
 
   /**
@@ -670,23 +504,15 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    * @return
    * @throws XWikiException
+   *
+   * @Deprecated since 6.0 instead use
+   *             {@link #beginTransaction(XWikiContext)} or
+   *             {@link #beginTransaction(SessionFactory, XWikiContext)}
    */
+  @Deprecated
   public boolean beginTransaction(boolean withTransaction, XWikiContext context)
       throws XWikiException {
-    return beginTransaction(null, withTransaction, context);
-  }
-
-  /**
-   * Begins a transaction with a specific SessionFactory
-   *
-   * @param sfactory
-   * @param context
-   * @return
-   * @throws XWikiException
-   */
-  public boolean beginTransaction(SessionFactory sfactory, XWikiContext context)
-      throws XWikiException {
-    return beginTransaction(sfactory, true, context);
+    return beginTransaction(null, context);
   }
 
   /**
@@ -696,135 +522,67 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param withTransaction
    * @param context
    * @return
+   * @throws XWikiException
+   *
+   * @Deprecated since 6.0 instead use {@link #beginTransaction(SessionFactory, XWikiContext)}
+   */
+  @Deprecated
+  public boolean beginTransaction(SessionFactory sfactory, boolean withTransaction,
+      XWikiContext context) throws XWikiException {
+    return beginTransaction(sfactory, context);
+  }
+
+  /**
+   * Begins a transaction with a specific SessionFactory
+   *
+   * @param sfactory
+   * @param context
+   * @return
    * @throws HibernateException
    * @throws XWikiException
    */
-  public boolean beginTransaction(SessionFactory sfactory, boolean withTransaction,
-      XWikiContext context)
+  public boolean beginTransaction(SessionFactory sfactory, XWikiContext context)
       throws HibernateException, XWikiException {
-
     Transaction transaction = getTransaction(context);
     Session session = getSession(context);
-
     if ((session == null) == (transaction != null)) {
-      if (log.isWarnEnabled()) {
-        log.warn(
-            "Incompatible session (" + session + ") and transaction (" + transaction + ") status");
-      }
+      logger.warn("beginTransaction - incompatible session [{}] and transaction [{}] status",
+          session,
+          transaction);
       // TODO: Fix this problem, don't ignore it!
       return false;
     }
-
     if (session != null) {
-      if (log.isDebugEnabled()) {
-        log.debug("Taking session from context " + session);
-      }
-      if (log.isDebugEnabled()) {
-        log.debug("Taking transaction from context " + transaction);
-      }
+      logger.debug("beginTransaction - taking session [{}] and transaction [{}] from context",
+          session, transaction);
       return false;
     }
-
-    if (session == null) {
-      if (log.isDebugEnabled()) {
-        log.debug("Trying to get session from pool");
-      }
-      if (sfactory == null) {
-        session = getSessionFactory().openSession();
-      } else {
-        session = sfactory.openSession();
-      }
-
-      if (log.isDebugEnabled()) {
-        log.debug("Taken session from pool " + session);
-      }
-
-      if (log.isDebugEnabled()) {
-        addConnection(getRealConnection(session), context);
-      }
-
-      setSession(session, context);
-      setDatabase(session, context);
-
-      if (log.isDebugEnabled()) {
-        log.debug("Trying to open transaction");
-      }
-      transaction = session.beginTransaction();
-      if (log.isDebugEnabled()) {
-        log.debug("Opened transaction " + transaction);
-      }
-      setTransaction(transaction, context);
+    if (sfactory == null) {
+      session = getSessionFactory().openSession();
+    } else {
+      session = sfactory.openSession();
     }
+    logger.debug("beginTransaction - taking session from pool {}", session);
+    setSession(session, context);
+    setDatabase(session, context);
+    transaction = session.beginTransaction();
+    setTransaction(transaction, context);
+    logger.debug("Opened transaction {}", transaction);
     return true;
   }
 
   /**
-   * Adding a connection to the Monitor module
-   *
-   * @param connection
-   * @param context
-   * @todo This function is temporarily deactivated because of an error that causes memory leaks.
-   */
-  private synchronized void addConnection(Connection connection, XWikiContext context) {
-    // connection.equals(connection) = false for some strange reasons, so we're remembering the
-    // toString representation of each active connection. We also remember the stack trace (if
-    // debug logging is enabled) to help spotting what code causes connections to leak.
-    if (connection != null) {
-      try {
-        // Keep some statistics about session and connections
-        if (this.connections.containsKey(connection.toString())) {
-          log.info("Connection [" + connection.toString() + "] already in connection map for store "
-              + this.toString());
-        } else {
-          String value = "";
-          if (log.isDebugEnabled()) {
-            // No need to fill in the logging stack trace if debug is not enabled.
-            XWikiException stackException = new XWikiException();
-            stackException.fillInStackTrace();
-            value = stackException.getStackTraceAsString();
-          }
-          this.connections.put(connection.toString(), value);
-          this.nbConnections++;
-        }
-      } catch (Throwable e) {
-        // This should not happen
-        log.warn(e.getMessage(), e);
-      }
-    }
-  }
-
-  /**
-   * Remove a connection to the Monitor module
-   *
-   * @param connection
-   * @todo This function is temporarily deactivated because of an error that causes memory leaks.
-   */
-  private synchronized void removeConnection(Connection connection) {
-    if (connection != null) {
-      try {
-        // Keep some statistics about session and connections
-        if (this.connections.containsKey(connection.toString())) {
-          this.connections.remove(connection.toString());
-          this.nbConnections--;
-        } else {
-          log.info("Connection [" + connection.toString() + "] not in connection map");
-        }
-      } catch (Throwable e) {
-        // This should not happen
-        log.warn(e.getMessage(), e);
-      }
-    }
-  }
-
-  /**
    * Ends a transaction
    *
    * @param context
    * @param commit
    *          should we commit or not
+   *
+   * @Deprecated since 6.0 instead use {@link #endTransaction(XWikiContext, boolean)}
    */
-  public void endTransaction(XWikiContext context, boolean commit) {
-    endTransaction(context, commit, false);
+  @Deprecated
+  public void endTransaction(XWikiContext context, boolean commit, boolean withTransaction) {
+    endTransaction(context, commit);
   }
 
   /**
@@ -836,23 +594,15 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param withTransaction
    * @throws HibernateException
    */
-  public void endTransaction(XWikiContext context, boolean commit, boolean withTransaction)
-      throws HibernateException {
+  public void endTransaction(XWikiContext context, boolean commit) throws HibernateException {
     Session session = null;
     try {
       session = getSession(context);
       Transaction transaction = getTransaction(context);
       setSession(null, context);
       setTransaction(null, context);
-
       if (transaction != null) {
-        // We need to clean up our connection map first because the connection will
-        // be aggressively closed by hibernate 3.1 and more
-        preCloseSession(session);
-
-        if (log.isDebugEnabled()) {
-          log.debug("Releasing hibernate transaction " + transaction);
-        }
+        logger.debug("Releasing hibernate transaction {}", transaction);
         if (commit) {
           transaction.commit();
         } else {
@@ -907,46 +657,6 @@ public class XWikiHibernateBaseStore implements Initializable {
   }
 
   /**
-   * Closes the hibernate session
-   *
-   * @param session
-   * @throws HibernateException
-   */
-  private void preCloseSession(Session session) throws HibernateException {
-    if ((session != null) && log.isDebugEnabled()) {
-      // Remove the connection from the list of active connections, used for debugging.
-      log.debug("Releasing hibernate session " + session);
-      Connection connection = getRealConnection(session);
-      if ((connection != null)) {
-        removeConnection(connection);
-      }
-    }
-  }
-
-  /*
-   * Hack to get the real JDBC connection because hibernate 3.1 wraps the connection in a proxy and
-   * this creates a
-   * memory leak
-   */
-  private Connection getRealConnection(Session session) {
-    Connection conn = session.connection();
-    if (conn instanceof Proxy) {
-      Object bcp = Proxy.getInvocationHandler(conn);
-      if (bcp instanceof BorrowedConnectionProxy) {
-        try {
-          Field field = bcp.getClass().getDeclaredField("connectionManager");
-          ReflectionUtils.makeAccessible(field);
-          ConnectionManager cm = (ConnectionManager) field.get(bcp);
-          if (cm != null) {
-            return cm.getConnection();
-          }
-        } catch (ReflectiveOperationException e) {}
-      }
-    }
-    return conn;
-  }
-
-  /**
    * Cleanup all sessions Used at the shutdown time
    *
    * @param context
@@ -955,9 +665,7 @@ public class XWikiHibernateBaseStore implements Initializable {
     try {
       Session session = getSession(context);
       if (session != null) {
-        if (log.isWarnEnabled()) {
-          log.warn("Cleanup of session was needed: " + session);
-        }
+        logger.warn("Cleanup of session was needed: {}", session);
         endTransaction(context, false);
       }
     } catch (HibernateException e) {}
@@ -973,18 +681,6 @@ public class XWikiHibernateBaseStore implements Initializable {
 
   public Configuration getConfiguration() {
     return this.sessionFactory.getConfiguration();
-  }
-
-  public Map<String, String> getConnections() {
-    return this.connections;
-  }
-
-  public int getNbConnections() {
-    return this.nbConnections;
-  }
-
-  public void setNbConnections(int nbConnections) {
-    this.nbConnections = nbConnections;
   }
 
   protected Configuration makeMapping(String className, String custommapping1) {
@@ -1047,23 +743,15 @@ public class XWikiHibernateBaseStore implements Initializable {
   public <T> T execute(XWikiContext context, boolean bTransaction, boolean doCommit,
       HibernateCallback<T> cb)
       throws XWikiException {
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("hibernate");
-      }
-
       if (bTransaction) {
         checkHibernate(context);
         bTransaction = beginTransaction(context);
       }
-
       if ((context.getDatabase() != null)
           && !context.getDatabase().equals(getCurrentDatabase(context))) {
         setDatabase(getSession(context), context);
       }
-
       return cb.doInHibernate(getSession(context));
     } catch (Exception e) {
       doCommit = false;
@@ -1078,13 +766,8 @@ public class XWikiHibernateBaseStore implements Initializable {
         if (bTransaction) {
           endTransaction(context, doCommit);
         }
-        if (monitor != null) {
-          monitor.endTimer("hibernate");
-        }
       } catch (Exception e) {
-        if (log.isErrorEnabled()) {
-          log.error("Exeption while close transaction", e);
-        }
+        logger.error("Exeption while close transaction", e);
       }
     }
   }

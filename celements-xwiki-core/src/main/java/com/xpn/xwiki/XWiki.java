@@ -5161,11 +5161,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     if (getHibernateStore() == null) {
       return false;
     }
-
-    return "org.hibernate.dialect.MySQLDialect".equals(
-        getHibernateStore().getConfiguration().getProperties().get("dialect"))
-        || "net.sf.hibernate.dialect.MySQLDialect".equals(
-            getHibernateStore().getConfiguration().getProperties().get("dialect"));
+    return true;
   }
 
   public String getFullNameSQL() {

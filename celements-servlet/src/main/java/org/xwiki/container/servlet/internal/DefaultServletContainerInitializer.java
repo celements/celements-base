@@ -24,6 +24,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentManager;
@@ -43,6 +45,10 @@ import org.xwiki.context.ExecutionContextManager;
 
 @Component
 public class DefaultServletContainerInitializer implements ServletContainerInitializer {
+
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(DefaultServletContainerInitializer.class);
+
   // Implementation note: It's important that we don't use @Requirement annotations here
   // for RequestInitializerManager and ExecutionContextManager since we can have
   // RequestInitializer and ExecutionContextInitializer components which try to access
@@ -67,6 +73,7 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     ApplicationContext applicationContext = new ServletApplicationContext(servletContext);
     this.container.setApplicationContext(applicationContext);
     this.applicationContextListenerManager.initializeApplicationContext(applicationContext);
+    LOGGER.trace("initializeApplicationContext - done");
   }
 
   @Override
@@ -74,6 +81,7 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     ApplicationContext applicationContext = container.getApplicationContext();
     applicationContextListenerManager.destroyApplicationContext(applicationContext);
     container.setApplicationContext(null);
+    LOGGER.trace("destroyApplicationContext - done");
   }
 
   @Override
@@ -112,6 +120,7 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     } catch (Exception e) {
       throw new ServletContainerException("Failed to initialize Execution Context", e);
     }
+    LOGGER.trace("initializeRequest - done");
   }
 
   @Override
@@ -123,11 +132,13 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
   @Override
   public void initializeResponse(HttpServletResponse httpServletResponse) {
     this.container.setResponse(new ServletResponse(httpServletResponse));
+    LOGGER.trace("initializeResponse - done");
   }
 
   @Override
   public void initializeSession(HttpServletRequest httpServletRequest) {
     this.container.setSession(new ServletSession(httpServletRequest));
+    LOGGER.trace("initializeSession - done");
   }
 
   @Override
@@ -136,5 +147,6 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     container.removeResponse();
     container.removeSession();
     execution.removeContext();
+    LOGGER.trace("cleanupSession - done");
   }
 }
