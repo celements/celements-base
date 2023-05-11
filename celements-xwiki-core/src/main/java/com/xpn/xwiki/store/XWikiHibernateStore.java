@@ -1320,6 +1320,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, XWikiContext context)
       throws XWikiException {
     return search(sql, nb, start, (List) null, context);
@@ -1332,6 +1333,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, List<?> parameterValues,
       XWikiContext context)
       throws XWikiException {
@@ -1346,6 +1348,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, Object[][] whereParams,
       XWikiContext context)
       throws XWikiException {
@@ -1360,10 +1363,9 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      java.util.List, com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, Object[][] whereParams,
-      List<?> parameterValues,
-      XWikiContext context)
-      throws XWikiException {
+      List<?> parameterValues, XWikiContext context) throws XWikiException {
     boolean bTransaction = true;
 
     if (sql == null) {
@@ -1381,8 +1383,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
 
       Query query = session.createQuery(filterSQL(sql));
 
-      // Add values for provided HQL request containing "?" characters where to insert real
-      // values.
+      // Add values for provided HQL request containing "?" characters where to insert real values.
       int parameterId = injectParameterListToQuery(0, query, parameterValues);
 
       if (whereParams != null) {

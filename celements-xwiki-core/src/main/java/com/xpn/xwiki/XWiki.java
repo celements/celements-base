@@ -103,6 +103,7 @@ import org.xwiki.observation.EventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
 import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryExecutor;
 import org.xwiki.rendering.macro.wikibridge.WikiMacroInitializer;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.url.XWikiEntityURL;
@@ -1527,26 +1528,36 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return result;
   }
 
-  /*
-   * public String[] getClassList() throws XWikiException { List list = store.getClassList();
-   * String[] array = new String[list.size()]; for (int i=0;i<list.size();i++) array[i] =
-   * (String)list.get(i); return array; }
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
-
+  @Deprecated
   public <T> List<T> search(String sql, XWikiContext context) throws XWikiException {
     return getStore().search(sql, 0, 0, context);
   }
 
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
+   */
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, XWikiContext context)
       throws XWikiException {
     return getStore().search(sql, nb, start, context);
   }
 
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
+   */
+  @Deprecated
   public <T> List<T> search(String sql, Object[][] whereParams, XWikiContext context)
       throws XWikiException {
     return getStore().search(sql, 0, 0, whereParams, context);
   }
 
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
+   */
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, Object[][] whereParams,
       XWikiContext context) throws XWikiException {
     return getStore().search(sql, nb, start, whereParams, context);
