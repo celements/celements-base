@@ -441,27 +441,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.jackrabbit</groupId>
-      <artifactId>jackrabbit-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google</groupId>
-      <artifactId>googleapi</artifactId>
-      <classifier>xwiki</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.portals</groupId>
-      <artifactId>graffito-jcr-mapping</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.transaction</groupId>
-      <artifactId>jta</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.jcr</groupId>
-      <artifactId>jcr</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.novell.ldap</groupId>
       <artifactId>jldap</artifactId>
     </dependency>

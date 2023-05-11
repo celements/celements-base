@@ -516,8 +516,7 @@ public class XWiki extends Api {
 
   /**
    * Privileged API allowing to run a search on the database returning a list of data This search is
-   * send to the store
-   * engine (Hibernate HQL, JCR XPATH or other)
+   * send to the store engine (Hibernate HQL or XWQL)
    *
    * @param wheresql
    *          Query to be run (HQL, XPath)
@@ -564,8 +563,7 @@ public class XWiki extends Api {
 
   /**
    * Privileged API allowing to run a search on the database returning a list of data. This search
-   * is sent to the
-   * store engine (Hibernate HQL, JCR XPATH or other)
+   * is sent to the store engine (Hibernate HQL or XWQL)
    *
    * @param wheresql
    *          Query to be run (HQL, XPath)
