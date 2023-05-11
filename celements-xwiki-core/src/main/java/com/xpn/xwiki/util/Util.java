@@ -65,7 +65,6 @@ import org.xwiki.xml.internal.XMLScriptService;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.monitor.api.MonitorPlugin;
 import com.xpn.xwiki.render.WikiSubstitution;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiRequest;
@@ -550,18 +549,6 @@ public class Util {
     return "<a href=\"\" onclick=\"document.getElementById('xwikierror" + id
         + "').style.display='block'; return false;\">" + title + "</a><div id=\"xwikierror" + id
         + "\" style=\"display: none;\"><pre class=\"xwikierror\">\n" + text + "</pre></div>";
-  }
-
-  public static MonitorPlugin getMonitorPlugin(XWikiContext context) {
-    try {
-      if ((context == null) || (context.getWiki() == null)) {
-        return null;
-      }
-
-      return (MonitorPlugin) context.getWiki().getPlugin("monitor", context);
-    } catch (Exception e) {
-      return null;
-    }
   }
 
   /**
