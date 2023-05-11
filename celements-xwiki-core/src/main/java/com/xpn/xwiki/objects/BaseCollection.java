@@ -60,7 +60,6 @@ import com.xpn.xwiki.web.Utils;
  * <ul>
  * <li>an XClass definition (composed of XClass properties)</li>
  * <li>an XObject definition (composed of XObject properties)</li>
- * <li>an XWikiStats object (composed of stats properties)</li>
  * </ul>
  *
  * @version $Id$
@@ -617,9 +616,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
   }
 
   public void merge(BaseObject object) {
-    Iterator itfields = object.getPropertyList().iterator();
-    while (itfields.hasNext()) {
-      String name = (String) itfields.next();
+    for (String name : object.getPropertyList()) {
       if (safeget(name) == null) {
         safeput(name, (PropertyInterface) ((BaseElement) object.safeget(name)).clone());
       }
