@@ -20,9 +20,6 @@
  */
 package com.xpn.xwiki.web;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,47 +30,27 @@ public class XWikiURLFactoryServiceImpl implements XWikiURLFactoryService {
 
   private static final Logger LOG = LoggerFactory.getLogger(XWikiURLFactoryServiceImpl.class);
 
-  private Map<Integer, Class<?>> factoryMap;
+  public XWikiURLFactoryServiceImpl() {}
 
-  public XWikiURLFactoryServiceImpl(XWiki xwiki) {
-    init(xwiki);
-  }
+  @Deprecated
+  public XWikiURLFactoryServiceImpl(XWiki xwiki) {}
 
-  private void init(XWiki xwiki) {
-    factoryMap = new HashMap<>();
-    register(xwiki, XWikiContext.MODE_SERVLET, XWikiServletURLFactory.class,
-        "xwiki.urlfactory.servletclass");
-    register(xwiki, XWikiContext.MODE_GWT, XWikiServletURLFactory.class,
-        "xwiki.urlfactory.servletclass");
-    register(xwiki, XWikiContext.MODE_GWT_DEBUG, XWikiDebugGWTURLFactory.class,
-        "xwiki.urlfactory.servletclass");
-  }
-
-  protected void register(XWiki xwiki, int mode, Class<?> defaultImpl, String propertyName) {
-    Integer factoryMode = mode;
-    factoryMap.put(factoryMode, defaultImpl);
-    String urlFactoryClassName = xwiki.Param(propertyName);
-    if (urlFactoryClassName != null) {
-      try {
-        LOG.debug("Using custom url factory [" + urlFactoryClassName + "]");
-        Class<?> urlFactoryClass = Class.forName(urlFactoryClassName);
-        factoryMap.put(factoryMode, urlFactoryClass);
-      } catch (Exception e) {
-        LOG.error("Failed to load custom url factory class [" + urlFactoryClassName + "]");
-      }
-    }
+  @Deprecated
+  @Override
+  public XWikiURLFactory createURLFactory(int mode, XWikiContext context) {
+    return createURLFactory(context);
   }
 
   @Override
-  public XWikiURLFactory createURLFactory(int mode, XWikiContext context) {
+  public XWikiURLFactory createURLFactory(XWikiContext context) {
     XWikiURLFactory urlf = null;
     try {
-      Class<?> urlFactoryClass = factoryMap.get(mode);
-      urlf = (XWikiURLFactory) urlFactoryClass.newInstance();
+      urlf = new XWikiServletURLFactory();
       urlf.init(context);
     } catch (Exception e) {
       LOG.error("Failed to create url factory", e);
     }
     return urlf;
   }
+
 }

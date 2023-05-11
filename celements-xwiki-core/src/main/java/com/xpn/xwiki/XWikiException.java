@@ -123,28 +123,6 @@ public class XWikiException extends Exception {
   public static final int ERROR_XWIKI_STORE_HIBERNATE_DELETE_DATABASE = 3402;
   public static final int ERROR_XWIKI_STORE_HIBERNATE_CHECK_EXISTS_DATABASE = 3403;
 
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_DOC = 3501;
-  public static final int ERROR_XWIKI_STORE_JCR_READING_DOC = 3502;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_DOC = 3503;
-  public static final int ERROR_XWIKI_STORE_JCR_CANNOT_DELETE_UNLOADED_DOC = 3504;
-  public static final int ERROR_XWIKI_STORE_JCR_READING_REVISIONS = 3503;
-  public static final int ERROR_XWIKI_STORE_JCR_READING_VERSION = 3504;
-  public static final int ERROR_XWIKI_STORE_JCR_UNEXISTANT_VERSION = 3505;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_OBJECT = 3511;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_OBJECT = 3512;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_OBJECT = 3513;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_CLASS = 3521;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_CLASS = 3522;
-  public static final int ERROR_XWIKI_STORE_JCR_SEARCH = 3523;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_ATTACHMENT = 3531;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_ATTACHMENT = 3532;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_ATTACHMENT = 3533;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_ATTACHMENT_LIST = 3534;
-  public static final int ERROR_XWIKI_STORE_JCR_SEARCHING_ATTACHMENT = 3535;
-  public static final int ERROR_XWIKI_STORE_JCR_CHECK_EXISTS_DOC = 3536;
-  public static final int ERROR_XWIKI_STORE_JCR_SWITCH_DATABASE = 3601;
-  public static final int ERROR_XWIKI_STORE_JCR_CREATE_DATABASE = 3701;
-
   public static final int ERROR_XWIKI_RENDERING_VELOCITY_EXCEPTION = 4001;
   public static final int ERROR_XWIKI_RENDERING_GROOVY_EXCEPTION = 4002;
 

@@ -39,7 +39,6 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.ListProperty;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
-import com.xpn.xwiki.plugin.query.QueryPlugin;
 
 public class DBListClass extends ListClass {
 
@@ -96,11 +95,7 @@ public class DBListClass extends ListClass {
         list = new ArrayList<>();
       } else {
         try {
-          if ((xwiki.getHibernateStore() != null) && (!query.startsWith("/"))) {
-            list = makeList(xwiki.search(query, context));
-          } else {
-            list = makeList(((QueryPlugin) xwiki.getPlugin("query", context)).xpath(query).list());
-          }
+          list = makeList(xwiki.search(query, context));
         } catch (Exception e) {
           e.printStackTrace();
           list = new ArrayList<>();

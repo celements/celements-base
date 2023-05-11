@@ -36,7 +36,6 @@ import org.apache.commons.logging.LogFactory;
 import org.securityfilter.realm.SimplePrincipal;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -474,7 +473,9 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
 
     boolean isNewUser = userProfile.isNew();
 
-    syncUser(userProfile, searchAttributes, ldapDn, ldapUid, ldapUtils, context);
+    if (isNewUser) {
+      throw new UnsupportedOperationException("creating users via ldap not supported");
+    }
 
     // from now on we can enter the application
     if (local) {
@@ -515,73 +516,6 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
     }
 
     return attributeNameTable;
-  }
-
-  /**
-   * Update or create XWiki user base on LDAP.
-   *
-   * @param userName
-   *          the name of the user.
-   * @param userDN
-   *          the LDAP user DN.
-   * @param searchAttributeListIn
-   *          the attributes.
-   * @param ldapUtils
-   *          the LDAP communication tool.
-   * @param context
-   *          the XWiki context.
-   * @throws XWikiException
-   *           error when updating or creating XWiki user.
-   */
-  protected void syncUser(XWikiDocument userProfile,
-      List<XWikiLDAPSearchAttribute> searchAttributeListIn,
-      String ldapDn, String ldapUid, XWikiLDAPUtils ldapUtils, XWikiContext context)
-      throws XWikiException {
-    // check if we have to create the user
-    XWikiLDAPConfig config = XWikiLDAPConfig.getInstance();
-
-    if (userProfile.isNew() || config.getLDAPParam("ldap_update_user", "0", context).equals("1")) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("LDAP attributes will be used to update XWiki attributes.");
-      }
-
-      List<XWikiLDAPSearchAttribute> searchAttributeList = searchAttributeListIn;
-
-      // get attributes from LDAP if we don't already have them
-      if (searchAttributeList == null) {
-        // didn't get attributes before, so do it now
-        searchAttributeList = ldapUtils.getConnection().searchLDAP(ldapDn, null,
-            getAttributeNameTable(context),
-            LDAPConnection.SCOPE_BASE);
-
-        if ((searchAttributeList == null) && LOG.isDebugEnabled()) {
-          LOG.error("Can't find any attributes for user [" + ldapDn + "]");
-        }
-      }
-
-      if (userProfile.isNew()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Creating new XWiki user based on LDAP attribues located at [" + ldapDn + "]");
-        }
-
-        userProfile = createUserFromLDAP(userProfile, searchAttributeList, ldapDn, ldapUid,
-            context);
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("New XWiki user created: [" + userProfile.getDocumentReference() + "]");
-        }
-      } else {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Updating existing user with LDAP attribues located at " + ldapDn);
-        }
-
-        try {
-          updateUserFromLDAP(userProfile, searchAttributeList, ldapDn, ldapUid, context);
-        } catch (XWikiException e) {
-          LOG.error("Failed to synchronise user's informations", e);
-        }
-      }
-    }
   }
 
   /**
@@ -803,68 +737,6 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
       context.getWiki().saveDocument(userProfile, "Synchronized user profile with LDAP server",
           true, context);
     }
-  }
-
-  /**
-   * Create an XWiki user and set all mapped attributes from LDAP to XWiki attributes.
-   *
-   * @param userProfile
-   *          the XWiki user profile.
-   * @param searchAttributes
-   *          the attributes.
-   * @param ldapDN
-   *          the LDAP DN of the user.
-   * @param ldapUid
-   *          the LDAP unique id of the user.
-   * @param context
-   *          the XWiki context.
-   * @return the created user.
-   * @throws XWikiException
-   *           error when creating XWiki user.
-   */
-  protected XWikiDocument createUserFromLDAP(XWikiDocument userProfile,
-      List<XWikiLDAPSearchAttribute> searchAttributes, String ldapDN, String ldapUid,
-      XWikiContext context)
-      throws XWikiException {
-    XWikiLDAPConfig config = XWikiLDAPConfig.getInstance();
-
-    Map<String, String> userMappings = config.getUserMappings(null, context);
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Start synchronising LDAP profile [" + searchAttributes
-          + "] with user profile based on mapping "
-          + userMappings);
-    }
-
-    Map<String, String> map = new HashMap<>();
-    if (searchAttributes != null) {
-      for (XWikiLDAPSearchAttribute lattr : searchAttributes) {
-        String lval = lattr.value;
-        String xattr = userMappings.get(lattr.name.toLowerCase());
-
-        if (xattr == null) {
-          continue;
-        }
-
-        map.put(xattr, lval);
-      }
-    }
-
-    // Mark user active
-    map.put("active", "1");
-
-    context.getWiki().createUser(userProfile.getName(), map, context);
-
-    // Update ldap profile object
-    XWikiDocument createdUserProfile = context.getWiki()
-        .getDocument(userProfile.getDocumentReference(), context);
-    LDAPProfileXClass ldapXClass = new LDAPProfileXClass(context);
-
-    if (ldapXClass.updateLDAPObject(createdUserProfile, ldapDN, ldapUid)) {
-      context.getWiki().saveDocument(createdUserProfile, context);
-    }
-
-    return createdUserProfile;
   }
 
   protected XWikiDocument getUserProfileByUid(String validXWikiUserName, String ldapUid,

@@ -31,8 +31,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.diff.delta.Chunk;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -45,10 +45,6 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDeletedDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.meta.MetaClass;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
-import com.xpn.xwiki.plugin.query.XWikiQuery;
-import com.xpn.xwiki.stats.api.XWikiStatsService;
-import com.xpn.xwiki.stats.impl.DocumentStats;
 import com.xpn.xwiki.user.api.XWikiUser;
 import com.xpn.xwiki.util.Programming;
 import com.xpn.xwiki.web.Utils;
@@ -58,32 +54,17 @@ import com.xpn.xwiki.web.XWikiMessageTool;
 public class XWiki extends Api {
 
   /** Logging helper object. */
-  protected static final Log LOG = LogFactory.getLog(XWiki.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(XWiki.class);
 
   /** The internal object wrapped by this API. */
   private com.xpn.xwiki.XWiki xwiki;
 
-  /**
-   * @see #getStatsService()
-   */
-  private StatsService statsService;
-
-  /**
-   * @see #getCriteriaService()
-   */
   private CriteriaService criteriaService;
 
-  /**
-   * @see com.xpn.xwiki.internal.model.reference.CurrentMixedStringDocumentReferenceResolver
-   */
   @SuppressWarnings("unchecked")
   private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
-      .getComponent(
-          DocumentReferenceResolver.class, "currentmixed");
+      .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
-  /**
-   * @see org.xwiki.model.internal.reference.DefaultStringDocumentReferenceResolver
-   */
   @SuppressWarnings("unchecked")
   private DocumentReferenceResolver<String> defaultDocumentReferenceResolver = Utils
       .getComponent(DocumentReferenceResolver.class);
@@ -101,7 +82,6 @@ public class XWiki extends Api {
   public XWiki(com.xpn.xwiki.XWiki xwiki, XWikiContext context) {
     super(context);
     this.xwiki = xwiki;
-    this.statsService = new StatsService(context);
     this.criteriaService = new CriteriaService(context);
     this.util = new Util(xwiki, context);
   }
@@ -1582,19 +1562,6 @@ public class XWiki extends Api {
   }
 
   /**
-   * Priviledged API to add a user to the XWiki.XWikiAllGroup
-   *
-   * @param fullwikiname
-   *          user name to add
-   * @throws XWikiException
-   */
-  public void addToAllGroup(String fullwikiname) throws XWikiException {
-    if (hasProgrammingRights()) {
-      this.xwiki.setUserDefaultGroup(fullwikiname, getXWikiContext());
-    }
-  }
-
-  /**
    * Priviledged API to send a confirmation email to a user
    *
    * @param xwikiname
@@ -2131,104 +2098,6 @@ public class XWiki extends Api {
   public String getURL(String fullname, String action, String querystring, String anchor)
       throws XWikiException {
     return this.xwiki.getURL(fullname, action, querystring, anchor, getXWikiContext());
-  }
-
-  /**
-   * Privileged API to access an eXo Platform service from the Wiki Engine
-   *
-   * @param className
-   *          eXo classname to retrieve the service from
-   * @return A object representing the service or null if the user doesn't have programming rights
-   * @throws XWikiException
-   *           if the service cannot be loaded
-   * @since 1.1 Beta 1
-   */
-  public java.lang.Object getExoService(String className) throws XWikiException {
-    java.lang.Object service = null;
-
-    if (hasProgrammingRights()) {
-      service = this.xwiki.getExoService(className);
-    }
-
-    return service;
-  }
-
-  /**
-   * Privileged API to access an eXo Platform Portal service from the Wiki Engine
-   *
-   * @param className
-   *          eXo classname to retrieve the service from
-   * @return A object representing the service or null if the user doesn't have programming rights
-   * @throws XWikiException
-   *           if the service cannot be loaded
-   * @since 1.1 Beta 1
-   */
-  public java.lang.Object getExoPortalService(String className) throws XWikiException {
-    java.lang.Object portalService = null;
-
-    if (hasProgrammingRights()) {
-      portalService = this.xwiki.getExoPortalService(className);
-    }
-
-    return portalService;
-  }
-
-  /**
-   * API to access the current starts for the Wiki for a specific action It retrieves the number of
-   * times the action
-   * was performed for the whole wiki The statistics module need to be activated (xwiki.stats=1 in
-   * xwiki.cfg)
-   *
-   * @param action
-   *          action for which to retrieve statistics (view/save/download)
-   * @return A DocumentStats object with number of actions performed, unique visitors, number of
-   *         visits
-   * @deprecated use {@link #getStatsService()} instead
-   */
-  @Deprecated
-  public DocumentStats getCurrentMonthXWikiStats(String action) {
-    return getXWikiContext().getWiki().getStatsService(getXWikiContext())
-        .getDocMonthStats("", action, new Date(), getXWikiContext());
-  }
-
-  /**
-   * API to retrieve a viewable referer text for a referer Referers are URL where users have clicked
-   * on a link to an
-   * XWiki page Search engine referer URLs are transformed to a nicer view (Google: search query
-   * string) For other URL
-   * the http:// part is stripped
-   *
-   * @param referer
-   *          referer URL to transform
-   * @return A viewable string
-   */
-  public String getRefererText(String referer) {
-    try {
-      return this.xwiki.getRefererText(referer, getXWikiContext());
-    } catch (Exception e) {
-      return "";
-    }
-  }
-
-  /**
-   * API to retrieve a viewable referer text for a referer with a maximum length Referers are URL
-   * where users have
-   * clicked on a link to an XWiki page Search engine referer URLs are transformed to a nicer view
-   * (Google: search
-   * query string) For other URL the http:// part is stripped
-   *
-   * @param referer
-   *          referer URL to transform
-   * @param length
-   *          Maximum length. "..." is added to the end of the text
-   * @return A viewable string
-   */
-  public String getShortRefererText(String referer, int length) {
-    try {
-      return this.xwiki.getRefererText(referer, getXWikiContext()).substring(0, length);
-    } catch (Exception e) {
-      return this.xwiki.getRefererText(referer, getXWikiContext());
-    }
   }
 
   /**
@@ -2799,190 +2668,6 @@ public class XWiki extends Api {
   }
 
   /**
-   * API to display a select box for the list of available field for a specific class This field
-   * data can then be used
-   * to generate an XWiki Query showing a table with the relevant data
-   *
-   * @param className
-   *          XWiki Class Name to display the list of columns for
-   * @param query
-   *          Query to pre-select the currently selected columns
-   * @return text of the select field
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String displaySearchColumns(String className, XWikiQuery query) throws XWikiException {
-    return this.xwiki.displaySearchColumns(className, "", query, getXWikiContext());
-  }
-
-  /**
-   * API to display a select box for the list of available field for a specific class, optionally
-   * adding a prefix This
-   * field data can then be used to generate an XWiki Query showing a table with the relevant data
-   *
-   * @param className
-   *          XWiki Class Name to display the list of columns for
-   * @param prefix
-   *          Prefix to add to the field name
-   * @param query
-   *          Query to pre-select the currently selected columns
-   * @return text of the select field
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String displaySearchColumns(String className, String prefix, XWikiQuery query)
-      throws XWikiException {
-    return this.xwiki.displaySearchColumns(className, prefix, query, getXWikiContext());
-  }
-
-  /**
-   * API to display a select box for the list of available field for a specific class This field
-   * data can then be used
-   * to generate the order element of an XWiki Query showing a table with the relevant data
-   *
-   * @param className
-   *          XWiki Class Name to display the list of columns for
-   * @param query
-   *          Query to pre-select the currently selected columns
-   * @return text of the select field
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String displaySearchOrder(String className, XWikiQuery query) throws XWikiException {
-    return this.xwiki.displaySearchOrder(className, "", query, getXWikiContext());
-  }
-
-  /**
-   * API to display a select box for the list of available field for a specific class, optionally
-   * adding a prefix This
-   * field data can then be used to generate the order element of an XWiki Query showing a table
-   * with the relevant
-   * data
-   *
-   * @param className
-   *          XWiki Class Name to display the list of columns for
-   * @param prefix
-   *          Prefix to add to the field name
-   * @param query
-   *          Query to pre-select the currently selected columns
-   * @return text of the select field
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String displaySearchOrder(String className, String prefix, XWikiQuery query)
-      throws XWikiException {
-    return this.xwiki.displaySearchOrder(className, prefix, query, getXWikiContext());
-  }
-
-  /**
-   * API to display a field in search mode for a specific class without preselected values This
-   * field data can then be
-   * used to generate an XWiki Query showing a table with the relevant data
-   *
-   * @param fieldname
-   *          field name in the class
-   * @param className
-   *          class name to display the field from
-   * @return text of the select field
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String displaySearch(String fieldname, String className) throws XWikiException {
-    return this.xwiki.displaySearch(fieldname, className, getXWikiContext());
-  }
-
-  /**
-   * API to display a field in search mode for a specific class with preselected values This field
-   * data can then be
-   * used to generate an XWiki Query showing a table with the relevant data
-   *
-   * @param fieldname
-   *          field name in the class
-   * @param className
-   *          class name to display the field from
-   * @param criteria
-   *          XWikiCriteria object (usually the XWikiQuery object) to take the preselected values
-   *          from
-   * @return text of the select field
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String displaySearch(String fieldname, String className, XWikiCriteria criteria)
-      throws XWikiException {
-    return this.xwiki.displaySearch(fieldname, className, criteria, getXWikiContext());
-  }
-
-  /**
-   * API to display a field in search mode for a specific class with preselected values, optionally
-   * adding a prefix to
-   * the field name This field data can then be used to generate an XWiki Query showing a table with
-   * the relevant data
-   *
-   * @param fieldname
-   *          field name in the class
-   * @param className
-   *          class name to display the field from
-   * @param prefix
-   *          prefix to add to the field name
-   * @param criteria
-   *          XWikiCriteria object (usually the XWikiQuery object) to take the preselected values
-   *          from
-   * @return text of the select field
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String displaySearch(String fieldname, String className, String prefix,
-      XWikiCriteria criteria)
-      throws XWikiException {
-    return this.xwiki.displaySearch(fieldname, className, prefix, criteria, getXWikiContext());
-  }
-
-  /**
-   * API to run a search from an XWikiQuery Object An XWikiQuery object can be created from a
-   * request using the
-   * createQueryFromRequest function
-   *
-   * @param query
-   *          query to run the search for
-   * @return A list of document names matching the query
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public <T> List<T> search(XWikiQuery query) throws XWikiException {
-    return this.xwiki.search(query, getXWikiContext());
-  }
-
-  /**
-   * API to create a query from a request Object The request object is the result of a form created
-   * from the
-   * displaySearch() and displaySearchColumns() functions
-   *
-   * @param className
-   *          class name to create the query from
-   * @return an XWikiQuery object matching the selected values in the request object
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public XWikiQuery createQueryFromRequest(String className) throws XWikiException {
-    return this.xwiki.createQueryFromRequest(className, getXWikiContext());
-  }
-
-  /**
-   * API to run a search from an XWikiQuery Object and display it as a HTML table An XWikiQuery
-   * object can be created
-   * from a request using the createQueryFromRequest function
-   *
-   * @param query
-   *          query to run the search for
-   * @return An HTML table showing the result
-   * @throws XWikiException
-   *           exception is a failure occured
-   */
-  public String searchAsTable(XWikiQuery query) throws XWikiException {
-    return this.xwiki.searchAsTable(query, getXWikiContext());
-  }
-
-  /**
    * API to get the Property object from a class based on a property path A property path looks like
    * XWiki.ArticleClass_fieldname
    *
@@ -3137,15 +2822,6 @@ public class XWiki extends Api {
       throws XWikiException {
     return this.context.getWiki().getAuthService().checkAuth(username, password, rememberme,
         this.context);
-  }
-
-  /**
-   * Access statistics api
-   *
-   * @return a StatsService instance that can be used to retrieve different xwiki statistics
-   */
-  public StatsService getStatsService() {
-    return this.statsService;
   }
 
   /**
@@ -3489,24 +3165,6 @@ public class XWiki extends Api {
   }
 
   /**
-   * @see #getExoService(String)
-   * @deprecated use {@link #getExoService(String)} instead
-   */
-  @Deprecated
-  public java.lang.Object getService(String className) throws XWikiException {
-    return getExoService(className);
-  }
-
-  /**
-   * @see #getExoPortalService(String)
-   * @deprecated use {@link #getExoPortalService(String)} instead
-   */
-  @Deprecated
-  public java.lang.Object getPortalService(String className) throws XWikiException {
-    return getExoPortalService(className);
-  }
-
-  /**
    * Creates an Array List. This is useful from Velocity since you cannot
    * create Object from Velocity with our secure uberspector.
    *
@@ -3601,25 +3259,6 @@ public class XWiki extends Api {
   @Deprecated
   public void outputImage(BufferedImage image) throws IOException {
     this.util.outputImage(image);
-  }
-
-  /**
-   * Returns the recently visited pages for a specific action
-   *
-   * @param action
-   *          ("view" or "edit")
-   * @param size
-   *          how many recent actions to retrieve
-   * @return a ArrayList of document names
-   * @deprecated use {@link #getStatsService()} instead
-   */
-  @Deprecated
-  public java.util.Collection getRecentActions(String action, int size) {
-    XWikiStatsService stats = getXWikiContext().getWiki().getStatsService(getXWikiContext());
-    if (stats == null) {
-      return Collections.EMPTY_LIST;
-    }
-    return stats.getRecentActions(action, size, getXWikiContext());
   }
 
   /**

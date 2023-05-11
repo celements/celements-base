@@ -138,7 +138,6 @@ import com.xpn.xwiki.objects.classes.ListClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
 import com.xpn.xwiki.render.XWikiVelocityRenderer;
 import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
@@ -2816,21 +2815,6 @@ public class XWikiDocument implements DocumentModelBridge {
         if (is10Syntax(wrappingSyntaxId) && isInRenderingEngine) {
           result.append("{/pre}");
         }
-      } else if (type.equals("search")) {
-        // If the Syntax id is "xwiki/1.0" then use the old rendering subsystem and prevent wiki
-        // syntax
-        // rendering using the pre macro. In the new rendering system it's the XWiki Class itself
-        // that does the
-        // escaping. For example for a textarea check the TextAreaClass class.
-        if (is10Syntax(wrappingSyntaxId) && isInRenderingEngine) {
-          result.append("{pre}");
-        }
-        prefix = obj.getXClass(context).getName() + "_";
-        pclass.displaySearch(result, fieldname, prefix, (XWikiCriteria) context.get("query"),
-            context);
-        if (is10Syntax(wrappingSyntaxId) && isInRenderingEngine) {
-          result.append("{/pre}");
-        }
       } else {
         pclass.displayView(result, fieldname, prefix, obj, context);
       }
@@ -4774,12 +4758,6 @@ public class XWikiDocument implements DocumentModelBridge {
   public String displayHidden(PropertyClass pclass, String prefix, BaseCollection object,
       XWikiContext context) {
     return (pclass == null) ? "" : pclass.displayHidden(pclass.getName(), prefix, object, context);
-  }
-
-  public String displaySearch(PropertyClass pclass, String prefix, XWikiCriteria criteria,
-      XWikiContext context) {
-    return (pclass == null) ? ""
-        : pclass.displaySearch(pclass.getName(), prefix, criteria, context);
   }
 
   public XWikiAttachment getAttachment(String filename) {

@@ -22,8 +22,6 @@ package com.xpn.xwiki.criteria.impl;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import com.xpn.xwiki.stats.impl.xwiki.XWikiStatsReader;
-
 import junit.framework.TestCase;
 
 /**
