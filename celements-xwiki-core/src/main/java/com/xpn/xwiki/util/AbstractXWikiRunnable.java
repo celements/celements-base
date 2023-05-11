@@ -57,42 +57,28 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    *           error when try to initialize execution context
    */
   protected ExecutionContext initExecutionContext() throws ExecutionContextException {
-    ExecutionContextManager ecim = Utils.getComponent(ExecutionContextManager.class);
-    Execution execution = Utils.getComponent(Execution.class);
-    ExecutionContext ec = new ExecutionContext();
-    ecim.initialize(ec);
-    ec.setProperties(properties);
-    execution.setContext(ec);
-    return ec;
+    ExecutionContext executionContext = new ExecutionContext();
+    Utils.getComponent(ExecutionContextManager.class).initialize(executionContext);
+    executionContext.setProperties(properties);
+    Utils.getComponent(Execution.class).setContext(executionContext);
+    return executionContext;
   }
 
   protected void cleanupExecutionContext() {
-    Execution ech = Utils.getComponent(Execution.class);
     // We must ensure we clean the ThreadLocal variables located in the Execution
     // component as otherwise we will have a potential memory leak.
-    ech.removeContext();
+    Utils.getComponent(Execution.class).removeContext();
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see java.lang.Runnable#run()
-   */
   @Override
   public final void run() {
     try {
-      // initialize execution context
       initExecutionContext();
+      runInternal();
     } catch (Exception e) {
       logger.error("Failed to initialize execution context", e);
-      return;
-    }
-
-    try {
-      // call run
-      runInternal();
+      throw new RuntimeException(e);
     } finally {
-      // cleanup execution context
       cleanupExecutionContext();
     }
   }
