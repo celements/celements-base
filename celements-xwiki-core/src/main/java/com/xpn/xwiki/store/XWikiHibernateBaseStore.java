@@ -217,10 +217,10 @@ public class XWikiHibernateBaseStore implements Initializable {
     // We don't update the schema if the XWiki hibernate config parameter says not to update
     if ((!force) && (context.getWiki() != null)
         && ("0".equals(context.getWiki().Param("xwiki.store.hibernate.updateschema")))) {
-      logger.debug("Schema update deactivated for wiki [{}]", context.getDatabase());
+      logger.debug("updateSchema - deactivated for wiki [{}]", context.getDatabase());
       return;
     }
-    logger.info("Updating schema update for wiki [{}]...", context.getDatabase());
+    logger.info("updateSchema - for wiki [{}]...", context.getDatabase());
     String[] schemaSQL = getSchemaUpdateScript(getConfiguration(), context);
     String[] addSQL = {
         // Make sure we have no null valued in integer fields
@@ -233,7 +233,7 @@ public class XWikiHibernateBaseStore implements Initializable {
         "delete from xwikilongs where xwl_name like 'editbox_%'" };
     updateSchema(Stream.concat(Arrays.stream(schemaSQL), Arrays.stream(addSQL))
         .toArray(String[]::new), context);
-    logger.info("Schema update for wiki [{}] done", context.getDatabase());
+    logger.info("updateSchema - done {}", context.getDatabase());
   }
 
   /**
@@ -307,6 +307,7 @@ public class XWikiHibernateBaseStore implements Initializable {
       setDatabase(session, context);
       meta = new DatabaseMetadata(connection, dialect);
       stmt = connection.createStatement();
+      logger.trace("getSchemaUpdateScript - [{}] [{}]", context.getDatabase(), dialect);
       schemaSQL = config.generateSchemaUpdateScript(dialect, meta);
     } catch (Exception e) {
       logger.error("Failed creating schema update script", e);
