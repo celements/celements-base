@@ -95,7 +95,7 @@ public class ExecutionContext {
    *          the properties to add to the context
    */
   public void setProperties(Map<String, Object> properties) {
-    properties.putAll(properties);
+    this.properties.putAll(properties);
   }
 
 }

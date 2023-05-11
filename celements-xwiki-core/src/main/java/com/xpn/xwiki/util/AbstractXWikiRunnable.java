@@ -1,15 +1,15 @@
 package com.xpn.xwiki.util;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 
+import com.google.common.collect.ImmutableMap;
 import com.xpn.xwiki.web.Utils;
 
 /**
@@ -23,12 +23,12 @@ public abstract class AbstractXWikiRunnable implements Runnable {
   /**
    * Logging tools.
    */
-  private static final Log LOG = LogFactory.getLog(AbstractXWikiRunnable.class);
+  protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private Map<String, Object> properties = new HashMap<>();
+  private final Map<String, Object> properties;
 
   protected AbstractXWikiRunnable() {
-
+    properties = ImmutableMap.of();
   }
 
   /**
@@ -38,7 +38,7 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    *          the value of the property to put in the initialized context
    */
   protected AbstractXWikiRunnable(String propertyName, Object propertyValue) {
-    this.properties.put(propertyName, propertyValue);
+    properties = ImmutableMap.of(propertyName, propertyValue);
   }
 
   /**
@@ -46,7 +46,7 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    *          properties to put in the initialized context
    */
   protected AbstractXWikiRunnable(Map<String, Object> properties) {
-    this.properties.putAll(properties);
+    this.properties = ImmutableMap.copyOf(properties);
   }
 
   /**
@@ -59,15 +59,10 @@ public abstract class AbstractXWikiRunnable implements Runnable {
   protected ExecutionContext initExecutionContext() throws ExecutionContextException {
     ExecutionContextManager ecim = Utils.getComponent(ExecutionContextManager.class);
     Execution execution = Utils.getComponent(Execution.class);
-
     ExecutionContext ec = new ExecutionContext();
-
     ecim.initialize(ec);
-
-    ec.setProperties(this.properties);
-
+    ec.setProperties(properties);
     execution.setContext(ec);
-
     return ec;
   }
 
@@ -88,8 +83,8 @@ public abstract class AbstractXWikiRunnable implements Runnable {
     try {
       // initialize execution context
       initExecutionContext();
-    } catch (ExecutionContextException e) {
-      LOG.error("Failed to initialize execution context", e);
+    } catch (Exception e) {
+      logger.error("Failed to initialize execution context", e);
       return;
     }
 
