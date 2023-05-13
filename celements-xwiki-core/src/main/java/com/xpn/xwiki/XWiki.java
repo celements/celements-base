@@ -60,8 +60,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
@@ -185,7 +183,6 @@ import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiURLFactory;
 import com.xpn.xwiki.web.XWikiURLFactoryService;
 import com.xpn.xwiki.web.XWikiURLFactoryServiceImpl;
-import com.xpn.xwiki.web.includeservletasstring.IncludeServletAsString;
 
 public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
 
@@ -1749,27 +1746,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       LOG.error(ex.getMessage(), ex);
       return parseTemplate(template, context);
     }
-  }
-
-  /**
-   * Designed to include dynamic content, such as Servlets or JSPs, inside Velocity templates; works
-   * by creating a RequestDispatcher, buffering the output, then returning it as a string.
-   *
-   * @author LBlaze
-   */
-  public String invokeServletAndReturnAsString(String url, XWikiContext xwikiContext) {
-
-    HttpServletRequest servletRequest = xwikiContext.getRequest();
-    HttpServletResponse servletResponse = xwikiContext.getResponse();
-
-    try {
-      return IncludeServletAsString.invokeServletAndReturnAsString(url, servletRequest,
-          servletResponse);
-    } catch (Exception e) {
-      LOG.warn("Exception including url: " + url, e);
-      return "Exception including \"" + url + "\", see logs for details.";
-    }
-
   }
 
   /**
