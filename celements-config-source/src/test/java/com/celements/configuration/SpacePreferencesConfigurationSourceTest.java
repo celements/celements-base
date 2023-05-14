@@ -19,7 +19,6 @@
  */
 package com.celements.configuration;
 
-import static com.celements.common.test.CelementsSpringTestUtil.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 

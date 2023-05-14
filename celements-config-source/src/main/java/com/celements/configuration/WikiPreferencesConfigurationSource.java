@@ -35,8 +35,10 @@ import com.celements.model.reference.RefBuilder;
  * @version $Id$
  * @since 2.0M2
  */
-@Component("wiki")
+@Component(WikiPreferencesConfigurationSource.NAME)
 public class WikiPreferencesConfigurationSource extends AbstractDocumentConfigurationSource {
+
+  public static final String NAME = "wiki";
 
   private static final String SPACE_NAME = "XWiki";
   private static final String PAGE_NAME = "XWikiPreferences";

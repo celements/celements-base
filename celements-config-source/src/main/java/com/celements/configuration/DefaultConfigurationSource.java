@@ -23,7 +23,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
 
 import com.google.common.collect.ImmutableList;
@@ -41,16 +40,10 @@ import com.google.common.collect.ImmutableList;
 @Component
 public class DefaultConfigurationSource extends CompositeConfigurationSource {
 
-  @Requirement(FromWikiConfigurationSource.NAME)
-  ConfigurationSource fromWikiSource;
-
-  @Requirement("space")
-  ConfigurationSource spacePreferencesSource;
-
   @Inject
   public DefaultConfigurationSource(
       @Named(FromWikiConfigurationSource.NAME) ConfigurationSource fromWikiSrc,
-      @Named("space") ConfigurationSource spacePrefSrc) {
+      @Named(SpacePreferencesConfigurationSource.NAME) ConfigurationSource spacePrefSrc) {
     super(ImmutableList.of(spacePrefSrc, fromWikiSrc));
   }
 }

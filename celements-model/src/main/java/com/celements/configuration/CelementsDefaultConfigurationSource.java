@@ -19,10 +19,18 @@
  */
 package com.celements.configuration;
 
-import org.xwiki.configuration.internal.DefaultConfigurationSource;
+import org.xwiki.configuration.ConfigurationSource;
 
 /**
  * @deprecated since 6.0 instead use {@link DefaultConfigurationSource}
  */
 @Deprecated
-public class CelementsDefaultConfigurationSource extends DefaultConfigurationSource {}
+public class CelementsDefaultConfigurationSource extends DefaultConfigurationSource {
+
+  public CelementsDefaultConfigurationSource(
+      ConfigurationSource fromWikiSrc,
+      ConfigurationSource spacePrefSrc) {
+    super(fromWikiSrc, spacePrefSrc);
+  }
+
+}

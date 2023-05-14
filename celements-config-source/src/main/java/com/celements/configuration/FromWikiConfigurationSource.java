@@ -43,7 +43,7 @@ public class FromWikiConfigurationSource extends CompositeConfigurationSource {
 
   @Inject
   public FromWikiConfigurationSource(
-      @Named("wiki") ConfigurationSource wikiPrefSrc,
+      @Named(WikiPreferencesConfigurationSource.NAME) ConfigurationSource wikiPrefSrc,
       @Named(PropertiesConfigurationSource.NAME) ConfigurationSource propSrc) {
     super(ImmutableList.of(wikiPrefSrc, propSrc));
   }

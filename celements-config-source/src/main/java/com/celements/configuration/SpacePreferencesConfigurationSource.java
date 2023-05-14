@@ -35,8 +35,10 @@ import com.celements.model.reference.RefBuilder;
  * @version $Id$
  * @since 2.0M2
  */
-@Component("space")
+@Component(SpacePreferencesConfigurationSource.NAME)
 public class SpacePreferencesConfigurationSource extends AbstractDocumentConfigurationSource {
+
+  public static final String NAME = "space";
 
   private static final String DOCUMENT_NAME = "WebPreferences";
   private static final String CLASS_SPACE_NAME = "XWiki";

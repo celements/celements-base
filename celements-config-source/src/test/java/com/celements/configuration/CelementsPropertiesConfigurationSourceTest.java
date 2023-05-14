@@ -19,33 +19,17 @@
  */
 package com.celements.configuration;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import org.junit.Test;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.configuration.ConfigurationSource;
+import com.celements.common.test.AbstractBaseComponentTest;
 
-import com.google.common.collect.ImmutableList;
+public class CelementsPropertiesConfigurationSourceTest extends AbstractBaseComponentTest {
 
-/**
- * Composite Configuration Source that looks in the following sources in that order:
- * <ul>
- * <li>user preferences wiki page</li>
- * <li>space preferences wiki page</li>
- * <li>wiki preferences wiki page</li>
- * <li>properties files (xwiki/celements.properties)</li>
- * </ul>
- * Should be used when a configuration can be overridden by the user in his/her profile.
- */
-@Component(AllConfigurationSource.NAME)
-public class AllConfigurationSource extends CompositeConfigurationSource {
-
-  public static final String NAME = "all";
-
-  @Inject
-  public AllConfigurationSource(
-      ConfigurationSource defaultSrc,
-      @Named("user") ConfigurationSource userPrefSrc) {
-    super(ImmutableList.of(userPrefSrc, defaultSrc));
+  @Test
+  public void test() throws Exception {
+    replayDefault();
+    getSpringContext().getBean(CelementsPropertiesConfigurationSource.class);
+    verifyDefault();
   }
+
 }

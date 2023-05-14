@@ -19,34 +19,21 @@
  */
 package com.celements.configuration;
 
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.configuration.internal.CompositeConfigurationSource;
 
 /**
  * @deprecated since 6.0 instead use {@link PropertiesConfigurationSource}
  *
  */
 @Deprecated
-// TODO extend PropertiesConfigurationSource & move tests
-public class CelementsAllPropertiesConfigurationSource extends CompositeConfigurationSource
-    implements Initializable {
+public class CelementsAllPropertiesConfigurationSource extends PropertiesConfigurationSource {
 
-  public static final String NAME = "allproperties";
+  public static final String NAME = PropertiesConfigurationSource.NAME;
 
-  @Requirement("xwikiproperties")
-  ConfigurationSource xwikiPropertiesSource;
-
-  @Requirement(CelementsPropertiesConfigurationSource.NAME)
-  ConfigurationSource celementsPropertiesSource;
-
-  @Override
-  public void initialize() throws InitializationException {
-    // first source is looked up first when a property value is requested.
-    addConfigurationSource(this.celementsPropertiesSource);
-    addConfigurationSource(this.xwikiPropertiesSource);
+  public CelementsAllPropertiesConfigurationSource(
+      ConfigurationSource xwikiPropSrc,
+      ConfigurationSource celPropSrc) {
+    super(celPropSrc, xwikiPropSrc);
   }
 
 }
