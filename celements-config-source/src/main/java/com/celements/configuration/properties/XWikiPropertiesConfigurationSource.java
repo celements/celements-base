@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.configuration.internal;
+package com.celements.configuration.properties;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -26,8 +26,6 @@ import javax.validation.constraints.NotNull;
 import org.springframework.core.io.ResourceLoader;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.properties.ConverterManager;
-
-import com.celements.configuration.CommonsConfigurationSource;
 
 /**
  * Looks for configuration data in {@code /WEB-INF/xwiki.properties}.

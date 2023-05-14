@@ -1,4 +1,4 @@
-package com.celements.configuration;
+package com.celements.configuration.composite;
 
 import static org.junit.Assert.*;
 
@@ -7,17 +7,19 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.configuration.internal.XWikiPropertiesConfigurationSource;
 
 import com.celements.common.test.AbstractBaseComponentTest;
+import com.celements.configuration.composite.AllPropertiesConfigurationSource;
+import com.celements.configuration.properties.CelementsPropertiesConfigurationSource;
+import com.celements.configuration.properties.XWikiPropertiesConfigurationSource;
 
-public class PropertiesConfigurationSourceTest extends AbstractBaseComponentTest {
+public class AllPropertiesConfigurationSourceTest extends AbstractBaseComponentTest {
 
-  private PropertiesConfigurationSource cfgSrc;
+  private AllPropertiesConfigurationSource cfgSrc;
 
   @Before
   public void prepareTest() throws Exception {
-    cfgSrc = getSpringContext().getBean(PropertiesConfigurationSource.class);
+    cfgSrc = getSpringContext().getBean(AllPropertiesConfigurationSource.class);
   }
 
   @Test

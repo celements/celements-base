@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.celements.configuration;
+package com.celements.configuration.composite;
 
 import static java.util.stream.Collectors.*;
 
@@ -87,4 +87,5 @@ public class CompositeConfigurationSource implements ConfigurationSource {
   public boolean isEmpty() {
     return getSources().stream().allMatch(ConfigurationSource::isEmpty);
   }
+
 }

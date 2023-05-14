@@ -17,15 +17,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.celements.configuration;
+package com.celements.configuration.composite;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.configuration.internal.XWikiPropertiesConfigurationSource;
 
+import com.celements.configuration.properties.CelementsPropertiesConfigurationSource;
+import com.celements.configuration.properties.XWikiPropertiesConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -38,15 +39,16 @@ import com.google.common.collect.ImmutableList;
  * case {@link DefaultConfigurationSource} or {@link FromWikiConfigurationSource} should be
  * used.
  */
-@Component(PropertiesConfigurationSource.NAME)
-public class PropertiesConfigurationSource extends CompositeConfigurationSource {
+@Component(AllPropertiesConfigurationSource.NAME)
+public class AllPropertiesConfigurationSource extends CompositeConfigurationSource {
 
-  public static final String NAME = "properties";
+  public static final String NAME = "allproperties";
 
   @Inject
-  public PropertiesConfigurationSource(
+  public AllPropertiesConfigurationSource(
       @Named(XWikiPropertiesConfigurationSource.NAME) ConfigurationSource xwikiPropSrc,
       @Named(CelementsPropertiesConfigurationSource.NAME) ConfigurationSource celPropSrc) {
     super(ImmutableList.of(celPropSrc, xwikiPropSrc));
   }
+
 }

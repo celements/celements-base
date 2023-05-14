@@ -21,6 +21,8 @@ package com.celements.configuration;
 
 import org.xwiki.configuration.ConfigurationSource;
 
+import com.celements.configuration.composite.DefaultConfigurationSource;
+
 /**
  * @deprecated since 6.0 instead use {@link DefaultConfigurationSource}
  *

@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.celements.configuration;
+package com.celements.configuration.properties;
 
 import static java.util.stream.Collectors.*;
 import static org.junit.Assert.*;
@@ -34,7 +34,7 @@ import org.xwiki.configuration.ConversionException;
 import org.xwiki.properties.ConverterManager;
 
 import com.celements.common.test.AbstractBaseComponentTest;
-import com.celements.configuration.CommonsConfigurationSource;
+import com.celements.configuration.properties.CommonsConfigurationSource;
 
 /**
  * Unit tests for {@link CommonsConfigurationSource}.

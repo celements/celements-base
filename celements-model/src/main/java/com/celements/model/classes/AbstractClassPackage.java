@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
 
-import com.celements.configuration.CelementsPropertiesConfigurationSource;
 import com.celements.configuration.ConfigSourceUtils;
+import com.celements.configuration.properties.CelementsPropertiesConfigurationSource;
 import com.celements.model.context.ModelContext;
 
 public abstract class AbstractClassPackage implements ClassPackage {

@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.celements.configuration;
+package com.celements.configuration.document;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -31,7 +31,7 @@ import org.xwiki.model.reference.DocumentReference;
 import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
- * Unit tests for {@link com.celements.configuration.SpacePreferencesConfigurationSource}.
+ * Unit tests for {@link com.celements.configuration.document.SpacePreferencesConfigurationSource}.
  *
  * @version $Id$
  * @since 2.4M2

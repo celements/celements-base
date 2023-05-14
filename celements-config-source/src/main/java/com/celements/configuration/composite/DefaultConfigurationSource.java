@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.celements.configuration;
+package com.celements.configuration.composite;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,6 +25,7 @@ import javax.inject.Named;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.configuration.ConfigurationSource;
 
+import com.celements.configuration.document.SpacePreferencesConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -46,4 +47,5 @@ public class DefaultConfigurationSource extends CompositeConfigurationSource {
       @Named(SpacePreferencesConfigurationSource.NAME) ConfigurationSource spacePrefSrc) {
     super(ImmutableList.of(spacePrefSrc, fromWikiSrc));
   }
+
 }

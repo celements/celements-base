@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.celements.configuration;
+package com.celements.configuration.composite;
 
 import static org.junit.Assert.*;
 
@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.xwiki.properties.ConverterManager;
 
 import com.celements.common.test.AbstractBaseComponentTest;
+import com.celements.configuration.composite.CompositeConfigurationSource;
+import com.celements.configuration.properties.CommonsConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**

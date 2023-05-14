@@ -38,7 +38,7 @@ import org.xwiki.test.MockConfigurationSource;
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.common.test.ExceptionAsserter;
 import com.celements.configuration.CelementsFromWikiConfigurationSource;
-import com.celements.configuration.CelementsPropertiesConfigurationSource;
+import com.celements.configuration.properties.CelementsPropertiesConfigurationSource;
 import com.celements.model.access.ModelMock;
 import com.celements.model.access.ModelMock.DocRecord;
 import com.celements.model.classes.ClassDefinition;

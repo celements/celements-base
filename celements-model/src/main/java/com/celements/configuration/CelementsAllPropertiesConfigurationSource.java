@@ -21,14 +21,16 @@ package com.celements.configuration;
 
 import org.xwiki.configuration.ConfigurationSource;
 
+import com.celements.configuration.composite.AllPropertiesConfigurationSource;
+
 /**
- * @deprecated since 6.0 instead use {@link PropertiesConfigurationSource}
+ * @deprecated since 6.0 instead use {@link AllPropertiesConfigurationSource}
  *
  */
 @Deprecated
-public class CelementsAllPropertiesConfigurationSource extends PropertiesConfigurationSource {
+public class CelementsAllPropertiesConfigurationSource extends AllPropertiesConfigurationSource {
 
-  public static final String NAME = PropertiesConfigurationSource.NAME;
+  public static final String NAME = AllPropertiesConfigurationSource.NAME;
 
   public CelementsAllPropertiesConfigurationSource(
       ConfigurationSource xwikiPropSrc,

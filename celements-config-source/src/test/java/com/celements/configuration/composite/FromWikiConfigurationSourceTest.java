@@ -1,4 +1,4 @@
-package com.celements.configuration;
+package com.celements.configuration.composite;
 
 import static org.junit.Assert.*;
 
@@ -9,6 +9,9 @@ import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
 
 import com.celements.common.test.AbstractBaseComponentTest;
+import com.celements.configuration.composite.FromWikiConfigurationSource;
+import com.celements.configuration.composite.AllPropertiesConfigurationSource;
+import com.celements.configuration.document.WikiPreferencesConfigurationSource;
 
 public class FromWikiConfigurationSourceTest extends AbstractBaseComponentTest {
 
@@ -24,7 +27,7 @@ public class FromWikiConfigurationSourceTest extends AbstractBaseComponentTest {
     List<ConfigurationSource> sources = cfgSrc.getSources();
     assertEquals(2, sources.size());
     assertEquals(WikiPreferencesConfigurationSource.class, sources.get(0).getClass());
-    assertEquals(PropertiesConfigurationSource.class, sources.get(1).getClass());
+    assertEquals(AllPropertiesConfigurationSource.class, sources.get(1).getClass());
   }
 
 }
