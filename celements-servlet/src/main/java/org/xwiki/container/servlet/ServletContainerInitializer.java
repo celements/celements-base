@@ -29,6 +29,10 @@ import org.xwiki.component.annotation.ComponentRole;
 @ComponentRole
 public interface ServletContainerInitializer {
 
+  void initializeApplicationContext(ServletContext servletContext);
+
+  void destroyApplicationContext();
+
   void initializeRequest(HttpServletRequest request, Object xwikiContext)
       throws ServletContainerException;
 
@@ -39,5 +43,5 @@ public interface ServletContainerInitializer {
 
   void initializeSession(HttpServletRequest request);
 
-  void initializeApplicationContext(ServletContext servletContext);
+  void cleanupSession();
 }

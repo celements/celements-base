@@ -26,6 +26,7 @@ import org.xwiki.context.Execution;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.AbstractXWikiComponentTestCase;
 
+import com.celements.common.test.AbstractBaseComponentTest;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
@@ -38,7 +39,7 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  * @since 1.6M1
- * @deprecated use JUnit 4.x and {@link com.xpn.xwiki.test.AbstractBridgedComponentTestCase}
+ * @deprecated use JUnit 4+ and {@link AbstractBaseComponentTest}
  */
 @Deprecated
 public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWikiComponentTestCase {

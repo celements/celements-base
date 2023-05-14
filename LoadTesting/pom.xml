@@ -35,8 +35,8 @@
     <!-- Add here all your dependencies -->
   </dependencies>
   <scm>
-    <connection>scm:git:git@github.com:celements/celements-core.git</connection>
-    <developerConnection>scm:git:git@github.com:celements/celements-core.git</developerConnection>
-    <url>https://github.com/celements/celements-core</url>
+    <connection>scm:git:git@github.com:celements/celements-base.git</connection>
+    <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
+    <url>https://github.com/celements/celements-base/LoadTesting</url>
   </scm>
 </project>

@@ -19,8 +19,14 @@
  */
 package org.xwiki.model.internal.scripting;
 
+import static com.celements.model.util.EntityTypeUtil.*;
+
+import java.util.Arrays;
+
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentLookupException;
@@ -36,6 +42,7 @@ import org.xwiki.model.reference.ObjectPropertyReference;
 import org.xwiki.model.reference.ObjectReference;
 import org.xwiki.script.service.ScriptService;
 
+import com.celements.model.reference.RefBuilder;
 import com.google.common.base.Strings;
 
 /**
@@ -48,6 +55,8 @@ import com.google.common.base.Strings;
 @Singleton
 @Deprecated
 public class ModelScriptService implements ScriptService {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ModelScriptService.class);
 
   /**
    * The default hint used when resolving string references.
@@ -163,17 +172,9 @@ public class ModelScriptService implements ScriptService {
    * @return the typed Document Reference object or null if no Resolver with the passed hint could
    *         be found
    */
-  @SuppressWarnings("unchecked")
   public DocumentReference resolveDocument(String stringRepresentation, String hint,
       Object... parameters) {
-    try {
-      EntityReferenceResolver<String> resolver = this.componentManager
-          .lookup(EntityReferenceResolver.class, hint);
-      return new DocumentReference(
-          resolver.resolve(stringRepresentation, EntityType.DOCUMENT, parameters));
-    } catch (ComponentLookupException e) {
-      return null;
-    }
+    return resolve(DocumentReference.class, stringRepresentation, hint, parameters);
   }
 
   /**
@@ -203,17 +204,9 @@ public class ModelScriptService implements ScriptService {
    * @return the corresponding typed {@link AttachmentReference} object
    * @since 2.5M2
    */
-  @SuppressWarnings("unchecked")
   public AttachmentReference resolveAttachment(String stringRepresentation, String hint,
       Object... parameters) {
-    try {
-      EntityReferenceResolver<String> resolver = this.componentManager
-          .lookup(EntityReferenceResolver.class, hint);
-      return new AttachmentReference(
-          resolver.resolve(stringRepresentation, EntityType.ATTACHMENT, parameters));
-    } catch (ComponentLookupException e) {
-      return null;
-    }
+    return resolve(AttachmentReference.class, stringRepresentation, hint, parameters);
   }
 
   /**
@@ -243,17 +236,9 @@ public class ModelScriptService implements ScriptService {
    * @return the corresponding typed {@link ObjectReference} object
    * @since 3.2M3
    */
-  @SuppressWarnings("unchecked")
   public ObjectReference resolveObject(String stringRepresentation, String hint,
       Object... parameters) {
-    try {
-      EntityReferenceResolver<String> resolver = this.componentManager
-          .lookup(EntityReferenceResolver.class, hint);
-      return new ObjectReference(
-          resolver.resolve(stringRepresentation, EntityType.OBJECT, parameters));
-    } catch (ComponentLookupException e) {
-      return null;
-    }
+    return resolve(ObjectReference.class, stringRepresentation, hint, parameters);
   }
 
   /**
@@ -285,18 +270,25 @@ public class ModelScriptService implements ScriptService {
    * @return the corresponding typed {@link ObjectReference} object
    * @since 3.2M3
    */
-  @SuppressWarnings("unchecked")
   public ObjectPropertyReference resolveObjectProperty(String stringRepresentation, String hint,
       Object... parameters) {
+    return resolve(ObjectPropertyReference.class, stringRepresentation, hint, parameters);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends EntityReference> T resolve(Class<T> type, String stringRepresentation,
+      String hint, Object... parameters) {
     try {
-      EntityReferenceResolver<String> resolver = this.componentManager
-          .lookup(EntityReferenceResolver.class, hint);
-      return new ObjectPropertyReference(
-          resolver.resolve(stringRepresentation, EntityType.OBJECT_PROPERTY,
-              parameters));
-    } catch (ComponentLookupException e) {
-      return null;
+      if (determineEntityTypeFromName(stringRepresentation).orElse(null) != null) {
+        return RefBuilder.from(componentManager.lookup(EntityReferenceResolver.class, hint)
+            .resolve(stringRepresentation, getEntityTypeForClassOrThrow(type), parameters))
+            .build(type);
+      }
+    } catch (ComponentLookupException | IllegalArgumentException | ClassCastException exc) {
+      LOGGER.debug("resolve - failed for [{}], [{}], [{}], [{}]",
+          type, stringRepresentation, hint, Arrays.toString(parameters), exc);
     }
+    return null;
   }
 
   /**

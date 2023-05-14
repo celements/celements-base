@@ -24,47 +24,58 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>5.11-SNAPSHOT</version>
+    <version>6.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-xwiki-core</artifactId>
-  <version>5.9-SNAPSHOT</version>
+  <version>6.0-SNAPSHOT</version>
   <description>Celements XWiki</description>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>5.0</version>
+      <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>5.2</version>
+      <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>5.1</version>
+      <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>5.0</version>
+      <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source</artifactId>
-      <version>5.1</version>
+      <version>6.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-observation</artifactId>
+      <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>5.0-SNAPSHOT</version>
+      <version>6.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -72,6 +83,19 @@
       <artifactId>struts</artifactId>
     </dependency>
 
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Commons -->
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
@@ -97,16 +121,16 @@
       <artifactId>commons-fileupload</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-net</groupId>
@@ -155,27 +179,11 @@
     <!-- Other XWiki modules -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-local</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-remote</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-velocity</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-script</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-context</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -213,10 +221,6 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-csrf</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-url-default</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -309,6 +313,10 @@
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -352,6 +360,10 @@
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
@@ -583,16 +595,25 @@
       <version>4.3.1</version>
     </dependency>
 
-
-    <!-- TESTING -->
-
+    <!-- testing -->
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-base-tests</artifactId>
+      <version>6.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymock</artifactId>
       <scope>test</scope>
     </dependency>
 
-    <!-- Used to mock XWiki class -->
+    <!-- xwiki legacy testing -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-shared-tests</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>jmock</groupId>
       <artifactId>jmock</artifactId>
@@ -603,14 +624,6 @@
       <artifactId>jmock-legacy</artifactId>
       <scope>test</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-shared-tests</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Testing -->
     <dependency>
       <groupId>jmock</groupId>
       <artifactId>jmock-cglib</artifactId>
@@ -623,41 +636,12 @@
       <version>2.5.1</version>
       <scope>test</scope>
     </dependency>
-    
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-script</artifactId>
-      <version>2.7.2</version>
-      <type>test-jar</type>
-      <exclusions>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-api</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.xwiki.platform</groupId>
-          <artifactId>xwiki-core-component-observation</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Build tools -->
-    <!-- Needed for backward compatibility Aspects -->
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjrt</artifactId>
-    </dependency>
 
   </dependencies>
   <scm>
-    <connection>scm:git:git@github.com:celements/celements-xwiki.git</connection>
-    <developerConnection>scm:git:git@github.com:celements/celements-xwiki.git</developerConnection>
-    <url>https://github.com/celements/celements-xwiki</url>
+    <connection>scm:git:git@github.com:celements/celements-base.git</connection>
+    <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
+    <url>https://github.com/celements/celements-base/celements-xwiki-core</url>
     <tag>HEAD</tag>
   </scm>
   <build>

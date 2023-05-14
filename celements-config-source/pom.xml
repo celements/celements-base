@@ -11,7 +11,7 @@
   <description>Celements Configuration Source</description>
   <dependencies>
 
-    <!-- celements -->
+    <!-- Celements -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
@@ -33,7 +33,7 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>5.1</version>
+      <version>6.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -43,7 +43,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- xwiki -->
+    <!-- XWiki -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-bridge</artifactId>
@@ -60,6 +60,13 @@
       <scope>provided</scope>
     </dependency>
     
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -86,7 +93,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- testing -->
+    <!-- xwiki legacy testing -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
@@ -106,9 +113,9 @@
 
   </dependencies>
   <scm>
-    <connection>scm:git:git@github.com:celements/celements-xwiki.git</connection>
-    <developerConnection>scm:git:git@github.com:celements/celements-xwiki.git</developerConnection>
-    <url>https://github.com/celements/celements-xwiki</url>
+    <connection>scm:git:git@github.com:celements/celements-base.git</connection>
+    <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
+    <url>https://github.com/celements/celements-base/celements-config-source</url>
     <tag>HEAD</tag>
   </scm>
 </project>

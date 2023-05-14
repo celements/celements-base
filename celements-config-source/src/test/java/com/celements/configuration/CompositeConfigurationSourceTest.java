@@ -33,8 +33,6 @@ import org.junit.Test;
 import org.xwiki.properties.ConverterManager;
 
 import com.celements.common.test.AbstractBaseComponentTest;
-import com.celements.configuration.CommonsConfigurationSource;
-import com.celements.configuration.CompositeConfigurationSource;
 import com.google.common.collect.ImmutableList;
 
 /**

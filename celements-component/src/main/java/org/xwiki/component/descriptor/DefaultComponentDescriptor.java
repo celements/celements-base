@@ -39,6 +39,20 @@ public class DefaultComponentDescriptor<T> extends DefaultComponentRole<T>
 
   private List<ComponentDependency<?>> componentDependencies = new ArrayList<>();
 
+  @Deprecated
+  public DefaultComponentDescriptor() {
+    super();
+  }
+
+  public DefaultComponentDescriptor(Class<T> role, String hint) {
+    this(role, hint, null);
+  }
+
+  public DefaultComponentDescriptor(Class<T> role, String hint, Class<? extends T> implementation) {
+    super(role, hint);
+    setImplementation(implementation);
+  }
+
   public void setImplementation(Class<? extends T> implementation) {
     this.implementation = implementation;
   }
@@ -70,15 +84,13 @@ public class DefaultComponentDescriptor<T> extends DefaultComponentRole<T>
     DefaultComponentDependency<TT> componentDependency = new DefaultComponentDependency<>();
     componentDependency.setRole(role);
     componentDependency.setRoleHint(roleHint);
-
     this.componentDependencies.add(componentDependency);
   }
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(super.toString());
-    buffer.append(" implementation = [").append(getImplementation().getName()).append("]");
-    buffer.append(" instantiation = [").append(getInstantiationStrategy()).append("]");
-    return buffer.toString();
+    return super.toString()
+        + " implementation = [" + getImplementation() + "]"
+        + " instantiation = [" + getInstantiationStrategy() + "]";
   }
 }

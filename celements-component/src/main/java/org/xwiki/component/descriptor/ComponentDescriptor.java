@@ -20,7 +20,13 @@
  */
 package org.xwiki.component.descriptor;
 
+import static com.google.common.base.Preconditions.*;
+import static org.xwiki.component.descriptor.ComponentInstantiationStrategy.*;
+
 import java.util.Collection;
+
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 
 /**
  * Represent a component.
@@ -35,4 +41,16 @@ public interface ComponentDescriptor<T> extends ComponentRole<T> {
   ComponentInstantiationStrategy getInstantiationStrategy();
 
   Collection<ComponentDependency<?>> getComponentDependencies();
+
+  default BeanDefinition asBeanDefinition() {
+    return BeanDefinitionBuilder
+        .genericBeanDefinition(checkNotNull(getImplementation()))
+        .setLazyInit(true) // xwiki components are always lazy
+        .setPrimary(isDefault()) // default components are primary beans
+        .setScope(getInstantiationStrategy() == PER_LOOKUP
+            ? BeanDefinition.SCOPE_PROTOTYPE
+            : BeanDefinition.SCOPE_SINGLETON)
+        .getBeanDefinition();
+  }
+
 }

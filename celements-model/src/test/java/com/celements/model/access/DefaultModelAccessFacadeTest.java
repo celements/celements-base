@@ -29,6 +29,7 @@ import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.rendering.syntax.Syntax;
 
@@ -52,6 +53,7 @@ import com.celements.model.classes.fields.list.ListField;
 import com.celements.model.context.ModelContext;
 import com.celements.model.field.FieldAccessException;
 import com.celements.model.reference.RefBuilder;
+import com.celements.model.reference.ReferenceProvider;
 import com.celements.model.util.ClassFieldValue;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
@@ -84,7 +86,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     registerComponentMocks(XWikiRecycleBinStoreInterface.class, ObservationManager.class,
-        IRightsAccessFacadeRole.class, UserService.class);
+        IRightsAccessFacadeRole.class, UserService.class, ReferenceProvider.class);
     registerComponentMock(XWikiDocumentCreator.class, "default", new TestXWikiDocumentCreator());
     registerComponentMock(ConfigurationSource.class, "all", getConfigurationSource());
     registerComponentMock(ConfigurationSource.class, CelementsFromWikiConfigurationSource.NAME,
@@ -113,6 +115,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     getContext().setDatabase("db");
     getContext().setUser("user");
     modelAccess = (DefaultModelAccessFacade) Utils.getComponent(IModelAccessFacade.class);
+    expect(getMock(ReferenceProvider.class).getAllWikis()).andReturn(ImmutableList.of(
+        new WikiReference("db"))).anyTimes();
   }
 
   @Test

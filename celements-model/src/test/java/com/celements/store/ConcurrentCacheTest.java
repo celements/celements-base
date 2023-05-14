@@ -7,7 +7,6 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,7 +69,6 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
   private volatile Map<DocumentReference, List<BaseObject>> baseObjMap;
   private volatile Map<Long, List<String[]>> propertiesMap;
   private volatile DocumentReference testDocRef;
-  private static volatile Collection<Object> defaultMocks;
   private static volatile XWikiContext defaultContext;
   private final static AtomicBoolean fastFail = new AtomicBoolean();
 
@@ -390,7 +388,6 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
         DocumentCacheStore.COMPONENT_NAME);
     cacheStore.initalize(); // ensure cache is initialized
     cacheStore.getStore(); // ensure store is initialized
-    defaultMocks = Collections.unmodifiableCollection(getDefaultMocks());
   }
 
   private class LoadDocCheckResult {
@@ -442,7 +439,6 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
           hasNewContext = (getExecutionContext() == null);
           if (hasNewContext) {
             initExecutionContext();
-            getExecutionContext().setProperty(EXECUTIONCONTEXT_KEY_MOCKS, defaultMocks);
             getExecutionContext().setProperty(XWikiContext.EXECUTIONCONTEXT_KEY,
                 defaultContext.clone());
           }

@@ -28,8 +28,9 @@ public class CelementsFromWikiConfigurationSourceTest extends AbstractComponentT
     DefaultComponentDescriptor<ConfigurationSource> descriptor = new DefaultComponentDescriptor<>();
     descriptor.setRole(ConfigurationSource.class);
     descriptor.setRoleHint(hint);
+    descriptor.setImplementation(instance.getClass());
     Utils.getComponentManager().registerComponent(descriptor, instance);
-
+    descriptor.setImplementation(instance.getClass());
     cfgSrc = (CelementsFromWikiConfigurationSource) Utils.getComponent(ConfigurationSource.class,
         hint);
   }
