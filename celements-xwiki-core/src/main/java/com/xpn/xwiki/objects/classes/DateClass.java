@@ -25,11 +25,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ecs.xhtml.input;
 import org.dom4j.Element;
 
@@ -38,13 +35,8 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
-import com.xpn.xwiki.plugin.query.XWikiQuery;
-import com.xpn.xwiki.web.XWikiMessageTool;
 
 public class DateClass extends PropertyClass {
-
-  private static final Log LOG = LogFactory.getLog(DateClass.class);
 
   public DateClass(PropertyMetaClass wclass) {
     super("date", "Date", wclass);
@@ -140,15 +132,15 @@ public class DateClass extends PropertyClass {
     } catch (ParseException e) {
       SimpleDateFormat sdf2 = new SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.US);
       try {
-        if (LOG.isWarnEnabled()) {
-          LOG.warn("Failed to parse date [" + value + "] using format ["
+        if (logger.isWarnEnabled()) {
+          logger.warn("Failed to parse date [" + value + "] using format ["
               + sdf.toString() + "]. Trying again with format ["
               + sdf2.toString() + "]");
         }
         property.setValue(sdf2.parse(value));
       } catch (ParseException e2) {
-        if (LOG.isWarnEnabled()) {
-          LOG.warn("Failed to parse date [" + value + "] using format ["
+        if (logger.isWarnEnabled()) {
+          logger.warn("Failed to parse date [" + value + "] using format ["
               + sdf2.toString() + "]. Defaulting to the current date.");
         }
         property.setValue(new Date());
@@ -182,60 +174,4 @@ public class DateClass extends PropertyClass {
     buffer.append(input.toString());
   }
 
-  @Override
-  public void displaySearch(StringBuffer buffer, String name, String prefix, XWikiCriteria criteria,
-      XWikiContext context) {
-    input input1 = new input();
-    input1.setType("text");
-    input1.setName(prefix + name + "_morethan");
-    input1.setID(prefix + name);
-    input1.setSize(getSize());
-    String fieldFullName = getFieldFullName();
-
-    Date value = (Date) criteria.getParameter(fieldFullName + "_morethan");
-    if (value != null) {
-      DateProperty dprop = new DateProperty();
-      dprop.setValue(value);
-      input1.setValue(toFormString(dprop));
-    }
-
-    input input2 = new input();
-
-    input2.setType("text");
-    input2.setName(prefix + name + "_lessthan");
-    input2.setID(prefix + name);
-    input2.setSize(getSize());
-    value = (Date) criteria.getParameter(fieldFullName + "_lessthan");
-    if (value != null) {
-      DateProperty dprop = new DateProperty();
-      dprop.setValue(value);
-      input2.setValue(toFormString(dprop));
-    }
-
-    XWikiMessageTool msg = context.getMessageTool();
-    buffer.append((msg == null) ? "from" : msg.get("from"));
-    buffer.append(input1.toString());
-    buffer.append((msg == null) ? "from" : msg.get("to"));
-    buffer.append(input2.toString());
-  }
-
-  @Override
-  public void fromSearchMap(XWikiQuery query, Map<String, String[]> map) {
-    String[] data = map.get("");
-    if ((data != null) && (data.length == 1)) {
-      query.setParam(getObject().getName() + "_" + getName(), fromString(data[0]).getValue());
-    } else {
-      data = map.get("lessthan");
-      if ((data != null) && (data.length == 1)) {
-        query.setParam(getObject().getName() + "_" + getName() + "_lessthan",
-            fromString(data[0]).getValue());
-      }
-      data = map.get("morethan");
-      if ((data != null) && (data.length == 1)) {
-        query.setParam(getObject().getName() + "_" + getName() + "_morethan",
-            fromString(data[0]).getValue());
-      }
-
-    }
-  }
 }

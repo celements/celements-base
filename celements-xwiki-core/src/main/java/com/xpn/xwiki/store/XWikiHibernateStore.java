@@ -64,7 +64,6 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiLink;
 import com.xpn.xwiki.doc.XWikiLock;
-import com.xpn.xwiki.monitor.api.MonitorPlugin;
 import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseStringProperty;
@@ -73,7 +72,6 @@ import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.render.XWikiRenderer;
-import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
 
 /**
@@ -328,24 +326,12 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
   @Override
   public boolean exists(XWikiDocument doc, XWikiContext context) throws XWikiException {
     boolean bTransaction = true;
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
-
       checkHibernate(context);
-
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("hibernate");
-      }
-
       bTransaction = bTransaction && beginTransaction(false, context);
       Session session = getSession(context);
       String fullName = doc.getFullName();
-
       String sql = "select doc.fullName from XWikiDocument as doc where doc.fullName=:fullName";
-      if (monitor != null) {
-        monitor.setTimerDesc("hibernate", sql);
-      }
       Query query = session.createQuery(sql);
       query.setString("fullName", fullName);
       Iterator<String> it = query.list().iterator();
@@ -362,11 +348,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           "Exception while reading document {0}", e,
           args);
     } finally {
-      // End monitoring timer
-      if (monitor != null) {
-        monitor.endTimer("hibernate");
-      }
-
       try {
         if (bTransaction) {
           endTransaction(context, false, false);
@@ -394,12 +375,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
   @Override
   public void deleteXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     boolean bTransaction = true;
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("hibernate");
-      }
       checkHibernate(context);
       SessionFactory sfactory = injectCustomMappingsInSessionFactory(doc, context);
       bTransaction = bTransaction && beginTransaction(sfactory, context);
@@ -470,11 +446,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           endTransaction(context, false);
         }
       } catch (Exception e) {}
-
-      // End monitoring timer
-      if (monitor != null) {
-        monitor.endTimer("hibernate");
-      }
     }
   }
 
@@ -1349,6 +1320,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, XWikiContext context)
       throws XWikiException {
     return search(sql, nb, start, (List) null, context);
@@ -1361,6 +1333,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, List<?> parameterValues,
       XWikiContext context)
       throws XWikiException {
@@ -1375,6 +1348,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, Object[][] whereParams,
       XWikiContext context)
       throws XWikiException {
@@ -1389,22 +1363,16 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
    *      java.util.List, com.xpn.xwiki.XWikiContext)
    */
   @Override
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, Object[][] whereParams,
-      List<?> parameterValues,
-      XWikiContext context)
-      throws XWikiException {
+      List<?> parameterValues, XWikiContext context) throws XWikiException {
     boolean bTransaction = true;
 
     if (sql == null) {
       return null;
     }
 
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("hibernate");
-      }
       checkHibernate(context);
       bTransaction = beginTransaction(false, context);
       Session session = getSession(context);
@@ -1415,8 +1383,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
 
       Query query = session.createQuery(filterSQL(sql));
 
-      // Add values for provided HQL request containing "?" characters where to insert real
-      // values.
+      // Add values for provided HQL request containing "?" characters where to insert real values.
       int parameterId = injectParameterListToQuery(0, query, parameterValues);
 
       if (whereParams != null) {
@@ -1449,11 +1416,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           endTransaction(context, false, false);
         }
       } catch (Exception e) {}
-
-      // End monitoring timer
-      if (monitor != null) {
-        monitor.endTimer("hibernate");
-      }
     }
   }
 
@@ -1488,17 +1450,10 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
 
   public List search(Query query, int nb, int start, XWikiContext context) throws XWikiException {
     boolean bTransaction = true;
-
     if (query == null) {
       return null;
     }
-
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("hibernate", query.getQueryString());
-      }
       checkHibernate(context);
       bTransaction = beginTransaction(false, context);
       if (start != 0) {
@@ -1530,11 +1485,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           endTransaction(context, false, false);
         }
       } catch (Exception e) {}
-
-      // End monitoring timer
-      if (monitor != null) {
-        monitor.endTimer("hibernate");
-      }
     }
   }
 
@@ -1603,13 +1553,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
   private List<Object[]> searchGenericInternal(String sql, int nb, int start,
       List parameterValues, XWikiContext context) throws XWikiException {
     boolean bTransaction = false;
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("hibernate", sql);
-      }
-
       checkHibernate(context);
       bTransaction = beginTransaction(false, context);
       Session session = getSession(context);
@@ -1639,11 +1583,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           endTransaction(context, false, false);
         }
       } catch (Exception e) {}
-
-      // End monitoring timer
-      if (monitor != null) {
-        monitor.endTimer("hibernate");
-      }
     }
   }
 
@@ -1677,18 +1616,12 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     // Search documents
     List<Object[]> documentDatas = new ArrayList<>();
     boolean bTransaction = true;
-    MonitorPlugin monitor = Util.getMonitorPlugin(context);
     try {
       String sql;
       if (distinctbylanguage) {
         sql = createSQLQuery("select distinct doc.space, doc.name, doc.language", wheresql);
       } else {
         sql = createSQLQuery("select distinct doc.space, doc.name", wheresql);
-      }
-
-      // Start monitoring timer
-      if (monitor != null) {
-        monitor.startTimer("hibernate", sql);
       }
 
       checkHibernate(context);
@@ -1724,11 +1657,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           endTransaction(context, false, false);
         }
       } catch (Exception e) {}
-
-      // End monitoring timer
-      if (monitor != null) {
-        monitor.endTimer("hibernate");
-      }
     }
 
     // Resolve documents. We use two separated sessions because rights service could need to switch
