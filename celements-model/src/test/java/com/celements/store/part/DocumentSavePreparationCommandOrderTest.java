@@ -27,10 +27,10 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
 
   @Before
   public void prepareTest() throws Exception {
-    storeStrictMock = createMockAndAddToDefault(CelHibernateStore.class);
+    storeStrictMock = createDefaultMock(CelHibernateStore.class);
     resetToStrict(storeStrictMock);
     expect(getWikiMock().getStore()).andReturn(storeStrictMock).anyTimes();
-    sessionMock = createMockAndAddToDefault(Session.class);
+    sessionMock = createDefaultMock(Session.class);
     sessionMock.setFlushMode(FlushMode.COMMIT);
     expectLastCall().anyTimes();
   }
@@ -43,7 +43,7 @@ public class DocumentSavePreparationCommandOrderTest extends AbstractComponentTe
     expect(storeStrictMock.getDocKey(doc.getDocumentReference(), doc.getLanguage()))
         .andReturn("space.doc");
     storeStrictMock.checkHibernate(same(getContext()));
-    SessionFactory sfactoryMock = createMockAndAddToDefault(SessionFactory.class);
+    SessionFactory sfactoryMock = createDefaultMock(SessionFactory.class);
     expect(storeStrictMock.injectCustomMappingsInSessionFactory(same(doc), same(getContext())))
         .andReturn(sfactoryMock);
     expect(storeStrictMock.beginTransaction(same(sfactoryMock), same(getContext())))

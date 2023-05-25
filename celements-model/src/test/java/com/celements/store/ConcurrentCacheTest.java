@@ -94,10 +94,10 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
   @Before
   public void setUp_ConcurrentCacheTest() throws Exception {
     getContext().setDatabase(wikiName);
-    sessionFactoryMock = createMockAndAddToDefault(SessionFactory.class);
+    sessionFactoryMock = createDefaultMock(SessionFactory.class);
     Utils.getComponent(HibernateSessionFactory.class).setSessionFactory(sessionFactoryMock);
     testDocRef = new DocumentReference(wikiName, "TestSpace", "TestDoc");
-    configMock = createMockAndAddToDefault(XWikiConfig.class);
+    configMock = createDefaultMock(XWikiConfig.class);
     expect(getWikiMock().getConfig()).andReturn(configMock).anyTimes();
     expect(configMock.getProperty(eq("xwiki.store.hibernate.path"), eq(
         "/WEB-INF/hibernate.cfg.xml"))).andReturn("testhibernate.cfg.xml");
@@ -207,13 +207,13 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
   }
 
   private void setupTestMocks() {
-    Session sessionMock = createMockAndAddToDefault(Session.class);
+    Session sessionMock = createDefaultMock(Session.class);
     expect(sessionFactoryMock.openSession()).andReturn(sessionMock).anyTimes();
     sessionMock.setFlushMode(eq(FlushMode.COMMIT));
     expectLastCall().atLeastOnce();
     sessionMock.setFlushMode(eq(FlushMode.MANUAL));
     expectLastCall().atLeastOnce();
-    Transaction transactionMock = createMockAndAddToDefault(Transaction.class);
+    Transaction transactionMock = createDefaultMock(Transaction.class);
     expect(sessionMock.beginTransaction()).andReturn(transactionMock).anyTimes();
     transactionMock.rollback();
     expectLastCall().anyTimes();

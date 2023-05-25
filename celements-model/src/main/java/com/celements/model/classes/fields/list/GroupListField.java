@@ -7,7 +7,6 @@ import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.marshalling.ReferenceMarshaller;
-import com.celements.model.classes.fields.list.ListField.Builder;
 import com.xpn.xwiki.objects.classes.GroupsClass;
 
 @Immutable

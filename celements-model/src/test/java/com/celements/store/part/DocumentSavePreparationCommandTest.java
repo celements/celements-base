@@ -37,11 +37,11 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    storeMock = createMockAndAddToDefault(CelHibernateStore.class);
+    storeMock = createDefaultMock(CelHibernateStore.class);
     expect(getWikiMock().getStore()).andReturn(storeMock).anyTimes();
     expect(storeMock.getIdComputer()).andReturn(Utils.getComponent(CelementsIdComputer.class,
         UniqueHashIdComputer.NAME)).anyTimes();
-    sessionMock = createMockAndAddToDefault(Session.class);
+    sessionMock = createDefaultMock(Session.class);
     sessionMock.setFlushMode(FlushMode.COMMIT);
     expectLastCall().anyTimes();
     expect(storeMock.getSession(getContext())).andReturn(sessionMock).anyTimes();
@@ -72,7 +72,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
     storeMock.checkHibernate(same(getContext()));
     expectLastCall();
-    SessionFactory sfactoryMock = createMockAndAddToDefault(SessionFactory.class);
+    SessionFactory sfactoryMock = createDefaultMock(SessionFactory.class);
     expect(storeMock.injectCustomMappingsInSessionFactory(same(doc), same(getContext()))).andReturn(
         sfactoryMock);
     expect(storeMock.beginTransaction(same(sfactoryMock), same(getContext()))).andReturn(true);

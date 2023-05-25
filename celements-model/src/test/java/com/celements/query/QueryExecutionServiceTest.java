@@ -28,7 +28,7 @@ public class QueryExecutionServiceTest extends AbstractComponentTest {
   @Before
   public void setUp_CelementsWebScriptServiceTest() throws Exception {
     queryExecService = (QueryExecutionService) Utils.getComponent(IQueryExecutionServiceRole.class);
-    storeMock = createMockAndAddToDefault(XWikiHibernateStore.class);
+    storeMock = createDefaultMock(XWikiHibernateStore.class);
     expect(getWikiMock().getHibernateStore()).andReturn(storeMock).anyTimes();
   }
 

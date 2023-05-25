@@ -2,8 +2,6 @@ package com.celements.mandatory;
 
 import org.xwiki.component.annotation.Component;
 
-import com.celements.mandatory.AbstractMandatoryIndex;
-
 @Component(XWikiObjectUniqueConstraint.NAME)
 public class XWikiObjectUniqueConstraint extends AbstractMandatoryIndex {
 

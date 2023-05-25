@@ -98,12 +98,12 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     doc.setDefaultLanguage(getConfigurationSource().getProperty(ModelContext.CFG_KEY_DEFAULT_LANG));
     doc.setSyntax(Syntax.XWIKI_1_0);
     doc.setMetaDataDirty(false);
-    storeMock = createMockAndAddToDefault(XWikiStoreInterface.class);
+    storeMock = createDefaultMock(XWikiStoreInterface.class);
     doc.setStore(storeMock);
     doc.setNew(false);
     doc.setOriginalDocument(new XWikiDocument(doc.getDocumentReference()));
     doc.getOriginalDocument().setNew(false);
-    ModelAccessStore modelAccessStoreMock = createMockAndAddToDefault(ModelAccessStore.class);
+    ModelAccessStore modelAccessStoreMock = createDefaultMock(ModelAccessStore.class);
     registerComponentMock(XWikiStoreInterface.class, ModelAccessStore.NAME, modelAccessStoreMock);
     getConfigurationSource().setProperty("celements.store.main", ModelAccessStore.NAME);
     expect(modelAccessStoreMock.getBackingStore()).andReturn(storeMock).anyTimes();
