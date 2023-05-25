@@ -49,7 +49,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     rightsAccess = (DefaultRightsAccessFacade) Utils.getComponent(IRightsAccessFacadeRole.class);
     modelContext = Utils.getComponent(ModelContext.class);
     modelUtils = Utils.getComponent(ModelUtils.class);
-    groupSrvMock = createMockAndAddToDefault(XWikiGroupService.class);
+    groupSrvMock = createDefaultMock(XWikiGroupService.class);
     expect(xwiki.getGroupService(same(context))).andReturn(groupSrvMock).anyTimes();
     expect(xwiki.isVirtualMode()).andReturn(true).anyTimes();
     expect(xwiki.getWikiOwner(eq(context.getDatabase()), same(context))).andReturn(
@@ -184,7 +184,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     SpaceReference spaceRef = new SpaceReference("MySpace", modelContext.getWikiRef());
     DocumentReference docRef = new DocumentReference("untitled1", spaceRef);
     EAccessLevel level = EAccessLevel.EDIT;
-    IEntityReferenceRandomCompleterRole randomCompleterMock = createMockAndAddToDefault(
+    IEntityReferenceRandomCompleterRole randomCompleterMock = createDefaultMock(
         IEntityReferenceRandomCompleterRole.class);
     rightsAccess.randomCompleter = randomCompleterMock;
     expect(randomCompleterMock.randomCompleteSpaceRef(eq(spaceRef))).andReturn(docRef).once();
@@ -458,14 +458,14 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   }
 
   private XWikiRightService expectRightsServiceMock() {
-    XWikiRightService mock = createMockAndAddToDefault(XWikiRightService.class);
+    XWikiRightService mock = createDefaultMock(XWikiRightService.class);
     expect(xwiki.getRightService()).andReturn(mock).anyTimes();
     return mock;
   }
 
   private User expectUser(String accountName) throws UserInstantiationException {
     DocumentReference userDocRef = modelUtils.resolveRef(accountName, DocumentReference.class);
-    User user = createMockAndAddToDefault(User.class);
+    User user = createDefaultMock(User.class);
     expect(getMock(UserService.class).getUser(accountName)).andReturn(user).anyTimes();
     expect(user.getDocRef()).andReturn(userDocRef).anyTimes();
     return user;

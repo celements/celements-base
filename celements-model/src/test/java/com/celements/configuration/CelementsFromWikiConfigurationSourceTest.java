@@ -1,6 +1,5 @@
 package com.celements.configuration;
 
-import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -21,9 +20,9 @@ public class CelementsFromWikiConfigurationSourceTest extends AbstractComponentT
     String hint = CelementsFromWikiConfigurationSource.NAME;
     Utils.getComponentManager().unregisterComponent(ConfigurationSource.class, hint);
     CelementsFromWikiConfigurationSource instance = new CelementsFromWikiConfigurationSource();
-    instance.wikiPreferencesSource = createMockAndAddToDefault(ConfigurationSource.class);
-    instance.celementsPropertiesSource = createMockAndAddToDefault(ConfigurationSource.class);
-    instance.xwikiPropertiesSource = createMockAndAddToDefault(ConfigurationSource.class);
+    instance.wikiPreferencesSource = createDefaultMock(ConfigurationSource.class);
+    instance.celementsPropertiesSource = createDefaultMock(ConfigurationSource.class);
+    instance.xwikiPropertiesSource = createDefaultMock(ConfigurationSource.class);
     instance.initialize();
     DefaultComponentDescriptor<ConfigurationSource> descriptor = new DefaultComponentDescriptor<>();
     descriptor.setRole(ConfigurationSource.class);

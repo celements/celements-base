@@ -123,7 +123,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
     XWikiAttachment att3 = new XWikiAttachment(doc, name3);
     doc.getAttachmentList().add(att3);
     expect(getWikiMock().hasAttachmentRecycleBin(same(getContext()))).andReturn(false).anyTimes();
-    XWikiAttachmentStoreInterface store = createMockAndAddToDefault(
+    XWikiAttachmentStoreInterface store = createDefaultMock(
         XWikiAttachmentStoreInterface.class);
     expect(getWikiMock().getAttachmentStore()).andReturn(store).anyTimes();
     Capture<XWikiAttachment> attCaptures = newCapture(CaptureType.ALL);
@@ -186,7 +186,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
     XWikiAttachment att5 = new XWikiAttachment(doc, name5);
     doc.getAttachmentList().add(att5);
     expect(getWikiMock().hasAttachmentRecycleBin(same(getContext()))).andReturn(false).anyTimes();
-    XWikiAttachmentStoreInterface store = createMockAndAddToDefault(
+    XWikiAttachmentStoreInterface store = createDefaultMock(
         XWikiAttachmentStoreInterface.class);
     expect(getWikiMock().getAttachmentStore()).andReturn(store).anyTimes();
     Capture<XWikiAttachment> attCaptures = newCapture(CaptureType.ALL);
@@ -447,7 +447,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
     XWikiAttachment lastAtt = new XWikiAttachment(doc, "bli.gaga");
     List<XWikiAttachment> attList = Arrays.asList(firstAtt, imageAtt, lastAtt);
     doc.setAttachmentList(attList);
-    IAttFileNameMatcherRole mockMatcher = createMockAndAddToDefault(IAttFileNameMatcherRole.class);
+    IAttFileNameMatcherRole mockMatcher = createDefaultMock(IAttFileNameMatcherRole.class);
     expect(mockMatcher.getFileNamePattern()).andReturn(filename).anyTimes();
     expect(mockMatcher.accept(firstAtt)).andReturn(true).anyTimes();
     expect(mockMatcher.accept(imageAtt)).andReturn(true).anyTimes();
@@ -468,7 +468,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
     XWikiAttachment lastAtt = new XWikiAttachment(doc, "bli.gaga");
     List<XWikiAttachment> attList = Arrays.asList(firstAtt, imageAtt, lastAtt);
     doc.setAttachmentList(attList);
-    IAttFileNameMatcherRole mockMatcher = createMockAndAddToDefault(IAttFileNameMatcherRole.class);
+    IAttFileNameMatcherRole mockMatcher = createDefaultMock(IAttFileNameMatcherRole.class);
     expect(mockMatcher.getFileNamePattern()).andReturn(filename).anyTimes();
     expect(mockMatcher.accept(firstAtt)).andReturn(true).anyTimes();
     expect(mockMatcher.accept(imageAtt)).andReturn(true).anyTimes();
@@ -489,7 +489,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
     XWikiAttachment lastAtt = new XWikiAttachment(doc, "bli.gaga");
     List<XWikiAttachment> attList = Arrays.asList(firstAtt, imageAtt, lastAtt);
     doc.setAttachmentList(attList);
-    IAttFileNameMatcherRole mockMatcher = createMockAndAddToDefault(IAttFileNameMatcherRole.class);
+    IAttFileNameMatcherRole mockMatcher = createDefaultMock(IAttFileNameMatcherRole.class);
     expect(mockMatcher.getFileNamePattern()).andReturn(filename).anyTimes();
     expect(mockMatcher.accept(firstAtt)).andReturn(false).anyTimes();
     expect(mockMatcher.accept(imageAtt)).andReturn(false).anyTimes();
@@ -508,7 +508,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
     XWikiAttachment lastAtt = new XWikiAttachment(doc, "bli.gaga");
     List<XWikiAttachment> attList = Arrays.asList(firstAtt, imageAtt, lastAtt);
     doc.setAttachmentList(attList);
-    IAttachmentMatcher mockMatcher = createMockAndAddToDefault(IAttachmentMatcher.class);
+    IAttachmentMatcher mockMatcher = createDefaultMock(IAttachmentMatcher.class);
     expect(mockMatcher.accept(firstAtt)).andReturn(true).anyTimes();
     expect(mockMatcher.accept(imageAtt)).andReturn(true).anyTimes();
     expect(mockMatcher.accept(lastAtt)).andReturn(false).anyTimes();
@@ -531,7 +531,7 @@ public class AttachmentServiceTest extends AbstractComponentTest {
     XWikiAttachment lastAtt = new XWikiAttachment(doc, "bli.gaga");
     List<XWikiAttachment> attList = Arrays.asList(firstAtt, lastAtt);
     doc.setAttachmentList(attList);
-    IAttachmentMatcher mockMatcher = createMockAndAddToDefault(IAttachmentMatcher.class);
+    IAttachmentMatcher mockMatcher = createDefaultMock(IAttachmentMatcher.class);
     expect(mockMatcher.accept(firstAtt)).andReturn(false).anyTimes();
     expect(mockMatcher.accept(imageAtt)).andReturn(false).anyTimes();
     expect(mockMatcher.accept(lastAtt)).andReturn(false).anyTimes();

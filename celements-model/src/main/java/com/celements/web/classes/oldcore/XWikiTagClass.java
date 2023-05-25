@@ -18,7 +18,7 @@ import com.celements.model.classes.fields.list.StaticListField;
 public class XWikiTagClass extends AbstractClassDefinition implements IOldCoreClassDef {
 
   public static final String CLASS_NAME = "TagClass";
-  public static final String CLASS_FN = CLASS_SPACE + "." + CLASS_NAME;
+  public static final String CLASS_FN = IOldCoreClassDef.CLASS_SPACE + "." + CLASS_NAME;
   public static final String CLASS_DEF_HINT = CLASS_FN;
   public static final ClassReference CLASS_REF = new ClassReference(CLASS_SPACE, CLASS_NAME);
 

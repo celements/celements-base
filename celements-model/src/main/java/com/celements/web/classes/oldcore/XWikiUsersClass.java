@@ -20,7 +20,7 @@ public class XWikiUsersClass extends AbstractClassDefinition implements IOldCore
   }
 
   public static final String CLASS_NAME = "XWikiUsers";
-  public static final String CLASS_FN = CLASS_SPACE + "." + CLASS_NAME;
+  public static final String CLASS_FN = IOldCoreClassDef.CLASS_SPACE + "." + CLASS_NAME;
   public static final String CLASS_DEF_HINT = CLASS_FN;
   public static final ClassReference CLASS_REF = new ClassReference(CLASS_SPACE, CLASS_NAME);
 

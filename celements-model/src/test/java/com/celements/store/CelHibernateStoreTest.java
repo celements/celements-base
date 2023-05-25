@@ -47,8 +47,8 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     registerComponentMock(IModelAccessFacade.class);
-    sessionFactoryMock = createMockAndAddToDefault(SessionFactory.class);
-    primaryStoreMock = createMockAndAddToDefault(XWikiHibernateStore.class);
+    sessionFactoryMock = createDefaultMock(SessionFactory.class);
+    primaryStoreMock = createDefaultMock(XWikiHibernateStore.class);
     expect(getWikiMock().getStore()).andReturn(primaryStoreMock).anyTimes();
     expect(getWikiMock().getConfig()).andReturn(new XWikiConfig()).anyTimes();
     expect(getWikiMock().getPlugin("monitor", getContext())).andReturn(null).anyTimes();
@@ -264,7 +264,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   }
 
   private Session createSessionMock(XWikiDocument doc) {
-    Session sessionMock = createMockAndAddToDefault(Session.class);
+    Session sessionMock = createDefaultMock(Session.class);
     sessionMock.setFlushMode(anyObject(FlushMode.class));
     expectLastCall().anyTimes();
     sessionMock.flush();

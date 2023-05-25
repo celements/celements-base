@@ -47,8 +47,8 @@ public class ContextualiserTest extends AbstractComponentTest {
   @Test
   public void test_withDoc() {
     Consumer<XWikiDocument> asserter = d -> assertSame(d, getContext().getDoc());
-    XWikiDocument doc = createMockAndAddToDefault(XWikiDocument.class);
-    XWikiDocument docInner = createMockAndAddToDefault(XWikiDocument.class);
+    XWikiDocument doc = createDefaultMock(XWikiDocument.class);
+    XWikiDocument docInner = createDefaultMock(XWikiDocument.class);
     getContext().setDoc(doc);
     asserter.accept(doc);
     new Contextualiser()
