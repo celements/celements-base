@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.query.QueryExecutor;
 import org.xwiki.query.QueryManager;
 
 import com.xpn.xwiki.XWikiContext;
@@ -553,7 +554,10 @@ public interface XWikiStoreInterface {
    * @return a list of XWikiDocument.
    * @throws XWikiException
    *           in case of error while performing the query.
+   * 
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
+  @Deprecated
   <T> List<T> search(String sql, int nb, int start, XWikiContext context) throws XWikiException;
 
   /**
@@ -581,7 +585,10 @@ public interface XWikiStoreInterface {
    * @throws XWikiException
    *           in case of error while performing the query.
    * @since XWiki Core 1.1.2, XWiki Core 1.2M2
+   *
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
+  @Deprecated
   <T> List<T> search(String sql, int nb, int start, List<?> parameterValues, XWikiContext context)
       throws XWikiException;
 
@@ -603,7 +610,10 @@ public interface XWikiStoreInterface {
    * @return a list of XWikiDocument.
    * @throws XWikiException
    *           in case of error while performing the query.
+   *
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
+  @Deprecated
   <T> List<T> search(String sql, int nb, int start, Object[][] whereParams, XWikiContext context)
       throws XWikiException;
 
@@ -636,7 +646,10 @@ public interface XWikiStoreInterface {
    * @throws XWikiException
    *           in case of error while performing the query.
    * @since XWiki Core 1.1.2, XWiki Core 1.2M2
+   *
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
+  @Deprecated
   <T> List<T> search(String sql, int nb, int start, Object[][] whereParams, List<?> parameterValues,
       XWikiContext context)
       throws XWikiException;

@@ -1,5 +1,6 @@
 package com.celements.filebase.matcher;
 
+import static com.celements.common.test.CelementsTestUtils.*;
 import static org.junit.Assert.*;
 
 import java.util.regex.Pattern;
@@ -8,12 +9,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.celements.common.test.AbstractBridgedComponentTestCase;
+import com.celements.common.test.AbstractComponentTest;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.Utils;
 
-public class AttNameWithoutExtMatcherTest extends AbstractBridgedComponentTestCase {
+public class AttNameWithoutExtMatcherTest extends AbstractComponentTest {
 
   private AttNameWithoutExtMatcher attNameWOextMatcher;
 

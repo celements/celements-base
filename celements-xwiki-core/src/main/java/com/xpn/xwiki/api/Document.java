@@ -47,13 +47,7 @@ import org.xwiki.rendering.syntax.SyntaxFactory;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.criteria.impl.Period;
-import com.xpn.xwiki.criteria.impl.PeriodFactory;
-import com.xpn.xwiki.criteria.impl.Range;
-import com.xpn.xwiki.criteria.impl.RangeFactory;
 import com.xpn.xwiki.criteria.impl.RevisionCriteria;
-import com.xpn.xwiki.criteria.impl.Scope;
-import com.xpn.xwiki.criteria.impl.ScopeFactory;
 import com.xpn.xwiki.doc.AttachmentDiff;
 import com.xpn.xwiki.doc.MetaDataDiff;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -66,9 +60,6 @@ import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.ObjectDiff;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
-import com.xpn.xwiki.stats.api.XWikiStatsService;
-import com.xpn.xwiki.stats.impl.DocumentStats;
-import com.xpn.xwiki.stats.impl.RefererStats;
 import com.xpn.xwiki.util.TOCGenerator;
 import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
@@ -1491,64 +1482,6 @@ public class Document extends Api {
 
   public List<Delta> getLastChanges() throws XWikiException, DifferentiationFailedException {
     return this.doc.getLastChanges(getXWikiContext());
-  }
-
-  /**
-   * Get statistics about the number of request for the current page during the current month.
-   *
-   * @param action
-   *          the type of request for which to retrieve statistics: view, edit...
-   * @return the statistics object holding information for this document and the current month
-   */
-  public DocumentStats getCurrentMonthPageStats(String action) {
-    Scope scope = ScopeFactory.createPageScope(this.getFullName());
-    Range range = RangeFactory.ALL;
-    Period period = PeriodFactory.getCurrentMonth();
-    XWikiStatsService statisticsService = getXWikiContext().getWiki()
-        .getStatsService(getXWikiContext());
-    List<DocumentStats> stats = statisticsService.getDocumentStatistics(action, scope, period,
-        range, this.context);
-    if (stats.size() > 0) {
-      return stats.get(0);
-    }
-    return new DocumentStats();
-  }
-
-  /**
-   * Get statistics about the number of request for the current space during the current month.
-   *
-   * @param action
-   *          the type of request for which to retrieve statistics: view, edit...
-   * @return the statistics object holding information for the document's space and the current
-   *         month
-   */
-  public DocumentStats getCurrentMonthSpaceStats(String action) {
-    Scope scope = ScopeFactory.createSpaceScope(this.doc.getSpace(), false);
-    Range range = RangeFactory.ALL;
-    Period period = PeriodFactory.getCurrentMonth();
-    XWikiStatsService statisticsService = getXWikiContext().getWiki()
-        .getStatsService(getXWikiContext());
-    List<DocumentStats> stats = statisticsService.getDocumentStatistics(action, scope, period,
-        range, this.context);
-    if (stats.size() > 0) {
-      return stats.get(0);
-    }
-    return new DocumentStats();
-  }
-
-  /**
-   * Get referer statistics for the current document during the current month.
-   *
-   * @return a list of referer statistics for the document's space
-   */
-  public List<RefererStats> getCurrentMonthRefStats() {
-    Scope scope = ScopeFactory.createPageScope(this.getFullName());
-    Range range = RangeFactory.ALL;
-    Period period = PeriodFactory.getCurrentMonth();
-    XWikiStatsService statisticsService = getXWikiContext().getWiki()
-        .getStatsService(getXWikiContext());
-    return statisticsService.getRefererStatistics("", scope, period, range,
-        this.context);
   }
 
   public boolean checkAccess(String right) {

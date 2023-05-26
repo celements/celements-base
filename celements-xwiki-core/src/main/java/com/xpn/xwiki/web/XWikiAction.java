@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.MDC;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -39,6 +38,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.csrf.CSRFToken;
@@ -315,6 +315,7 @@ public abstract class XWikiAction extends Action {
     }
     // Add the form to the context
     context.setForm((XWikiForm) form);
+    MDC.put("url", context.getURL().toExternalForm());
     ServletContainerInitializer initializer = Utils.getComponent(ServletContainerInitializer.class);
     initializer.initializeRequest(request, context);
     initializer.initializeResponse(response);

@@ -21,6 +21,8 @@ package org.xwiki.model.reference;
 
 import org.xwiki.model.EntityType;
 
+import com.google.common.base.Strings;
+
 /**
  * Represents a reference to a wiki (wiki name). This is the topmost reference and it doesn't have a
  * parent reference.
@@ -51,6 +53,11 @@ public class WikiReference extends EntityReference {
    */
   public WikiReference(String wikiName) {
     super(wikiName, EntityType.WIKI);
+  }
+
+  @Override
+  protected void setName(String name) {
+    super.setName(Strings.nullToEmpty(name).toLowerCase());
   }
 
   /**

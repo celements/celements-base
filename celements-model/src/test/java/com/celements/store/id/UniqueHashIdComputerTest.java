@@ -131,7 +131,7 @@ public class UniqueHashIdComputerTest extends AbstractComponentTest {
     // // all ids from 0 to 2^BITS_COUNTS will be shifted to 0
     // long max = 1 << BITS_COUNTS;
     // List<Long> zeroIds = Arrays.asList(0L, max / 4, max / 2, (max / 4) * 3, max - 1);
-    // MessageDigest digestMock = createMockAndAddToDefault(MessageDigest.class);
+    // MessageDigest digestMock = createDefaultMock(MessageDigest.class);
     // idComputer.injectedDigest = digestMock;
     // digestMock.update(isA(byte[].class));
     // expectLastCall().times(zeroIds.size());

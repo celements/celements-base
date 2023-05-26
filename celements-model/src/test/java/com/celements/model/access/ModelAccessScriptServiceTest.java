@@ -29,12 +29,12 @@ public class ModelAccessScriptServiceTest extends AbstractComponentTest {
   public void prepareTest() {
     modelAccess = (ModelAccessScriptService) Utils.getComponent(ScriptService.class,
         ModelAccessScriptService.NAME);
-    modelAccess.modelAccess = createMockAndAddToDefault(IModelAccessFacade.class);
-    rightsAccessMock = createMockAndAddToDefault(IRightsAccessFacadeRole.class);
+    modelAccess.modelAccess = createDefaultMock(IModelAccessFacade.class);
+    rightsAccessMock = createDefaultMock(IRightsAccessFacadeRole.class);
     modelAccess.rightsAccess = rightsAccessMock;
     docRef = new DocumentReference("db", "space", "doc");
     doc = new XWikiDocument(docRef);
-    XWikiRightService rightServiceMock = createMockAndAddToDefault(XWikiRightService.class);
+    XWikiRightService rightServiceMock = createDefaultMock(XWikiRightService.class);
     expect(getWikiMock().getRightService()).andReturn(rightServiceMock).anyTimes();
     expect(rightServiceMock.hasProgrammingRights(same(getContext()))).andReturn(true).anyTimes();
   }

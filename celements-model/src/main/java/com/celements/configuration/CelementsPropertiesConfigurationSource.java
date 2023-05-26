@@ -21,18 +21,18 @@ package com.celements.configuration;
 
 import java.net.URL;
 
+import javax.inject.Inject;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ResourceLoader;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.configuration.internal.CommonsConfigurationSource;
-import org.xwiki.container.ApplicationContext;
-import org.xwiki.container.Container;
 
 @Component(CelementsPropertiesConfigurationSource.NAME)
 public class CelementsPropertiesConfigurationSource extends CommonsConfigurationSource implements
@@ -45,15 +45,14 @@ public class CelementsPropertiesConfigurationSource extends CommonsConfiguration
 
   static final String CELEMENTS_PROPERTIES_FILE = "/WEB-INF/celements.properties";
 
-  @Requirement
-  Container container;
+  @Inject
+  private ResourceLoader resourceLoader;
 
   @Override
   public void initialize() throws InitializationException {
     Configuration config;
     try {
-      ApplicationContext appContext = container.getApplicationContext();
-      URL propertiesURL = appContext.getResource(CELEMENTS_PROPERTIES_FILE);
+      URL propertiesURL = resourceLoader.getResource(CELEMENTS_PROPERTIES_FILE).getURL();
       config = new PropertiesConfiguration(propertiesURL);
     } catch (Exception exc) {
       LOGGER.warn("Failed to load configuration file '{}'", CELEMENTS_PROPERTIES_FILE, exc);

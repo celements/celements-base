@@ -34,6 +34,10 @@ public class DefaultComponentRole<T> implements ComponentRole<T> {
   @Deprecated
   public DefaultComponentRole() {}
 
+  public DefaultComponentRole(Class<T> role) {
+    this(role, DEFAULT_HINT);
+  }
+
   public DefaultComponentRole(Class<T> role, String hint) {
     setRole(role);
     setRoleHint(hint);

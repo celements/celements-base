@@ -14,10 +14,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.context.Execution;
 
-import com.celements.common.test.AbstractBridgedComponentTestCase;
+import com.celements.common.test.AbstractComponentTest;
 import com.xpn.xwiki.web.Utils;
 
-public class MandatoryDocumentCompositorTest extends AbstractBridgedComponentTestCase {
+public class MandatoryDocumentCompositorTest extends AbstractComponentTest {
 
   private MandatoryDocumentCompositor mdCompositor;
 
@@ -39,10 +39,10 @@ public class MandatoryDocumentCompositorTest extends AbstractBridgedComponentTes
   public void testGetMandatoryDocumentsList() {
     // use LinkedHashMap to preserve inserting order.
     mdCompositor.mandatoryDocumentsMap = new LinkedHashMap<>();
-    IMandatoryDocumentRole mockA_mandDoc = createMockAndAddToDefault(IMandatoryDocumentRole.class);
+    IMandatoryDocumentRole mockA_mandDoc = createDefaultMock(IMandatoryDocumentRole.class);
     expect(mockA_mandDoc.dependsOnMandatoryDocuments()).andReturn(
         Collections.<String>emptyList()).atLeastOnce();
-    IMandatoryDocumentRole mockB_mandDocDepA = createMockAndAddToDefault(
+    IMandatoryDocumentRole mockB_mandDocDepA = createDefaultMock(
         IMandatoryDocumentRole.class);
     expect(mockB_mandDocDepA.dependsOnMandatoryDocuments()).andReturn(Arrays.asList(
         "A_mandDoc")).atLeastOnce();

@@ -554,8 +554,8 @@ public class ObjectFetcherTest extends AbstractComponentTest {
 
   private static void assertEqualObjs(BaseObject expObj, BaseObject actObj) {
     assertNotSame("object not cloned", expObj, actObj);
-    assertClone(expObj.getDocumentReference(), actObj.getDocumentReference());
-    assertClone(expObj.getXClassReference(), actObj.getXClassReference());
+    assertEquals(expObj.getDocumentReference(), actObj.getDocumentReference());
+    assertEquals(expObj.getXClassReference(), actObj.getXClassReference());
     assertEquals(expObj.getNumber(), actObj.getNumber());
     assertEquals(expObj.getId(), actObj.getId());
     assertEquals("not same amount of fields set", expObj.getPropertyList().size(),
@@ -571,11 +571,6 @@ public class ObjectFetcherTest extends AbstractComponentTest {
         throw new RuntimeException(xwe);
       }
     }
-  }
-
-  private static void assertClone(Object expected, Object actual) {
-    assertNotSame(expected, actual);
-    assertEquals(expected, actual);
   }
 
 }

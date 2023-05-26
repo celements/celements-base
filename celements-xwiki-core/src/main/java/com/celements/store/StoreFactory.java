@@ -17,8 +17,8 @@ public final class StoreFactory {
 
   public static XWikiStoreInterface getMainStore() {
     try {
-      return getComponentManager().lookup(XWikiStoreInterface.class,
-          getConfigSource().getProperty("celements.store.main", "default"));
+      String hint = getConfigSource().getProperty("celements.store.main");
+      return getComponentManager().lookup(XWikiStoreInterface.class, hint);
     } catch (ComponentLookupException exc) {
       throw new IllegalStateException("failed looking up main store", exc);
     }

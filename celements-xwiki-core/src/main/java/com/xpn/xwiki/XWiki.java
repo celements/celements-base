@@ -28,8 +28,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -57,11 +55,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
-import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
@@ -103,6 +98,7 @@ import org.xwiki.observation.EventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
 import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryExecutor;
 import org.xwiki.rendering.macro.wikibridge.WikiMacroInitializer;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.url.XWikiEntityURL;
@@ -153,17 +149,11 @@ import com.xpn.xwiki.objects.classes.UsersClass;
 import com.xpn.xwiki.objects.meta.MetaClass;
 import com.xpn.xwiki.plugin.XWikiPluginInterface;
 import com.xpn.xwiki.plugin.XWikiPluginManager;
-import com.xpn.xwiki.plugin.query.QueryPlugin;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
-import com.xpn.xwiki.plugin.query.XWikiQuery;
 import com.xpn.xwiki.render.DefaultXWikiRenderingEngine;
 import com.xpn.xwiki.render.XWikiRenderingEngine;
 import com.xpn.xwiki.render.XWikiVelocityRenderer;
 import com.xpn.xwiki.render.groovy.XWikiGroovyRenderer;
 import com.xpn.xwiki.render.groovy.XWikiPageClassLoader;
-import com.xpn.xwiki.stats.api.XWikiStatsService;
-import com.xpn.xwiki.stats.impl.SearchEngineRule;
-import com.xpn.xwiki.stats.impl.XWikiStatsServiceImpl;
 import com.xpn.xwiki.store.AttachmentRecycleBinStore;
 import com.xpn.xwiki.store.AttachmentVersioningStore;
 import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
@@ -189,7 +179,6 @@ import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiURLFactory;
 import com.xpn.xwiki.web.XWikiURLFactoryService;
 import com.xpn.xwiki.web.XWikiURLFactoryServiceImpl;
-import com.xpn.xwiki.web.includeservletasstring.IncludeServletAsString;
 
 public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
 
@@ -237,8 +226,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   private XWikiRightService rightService;
 
   private XWikiGroupService groupService;
-
-  private XWikiStatsService statsService;
 
   private XWikiURLFactoryService urlFactoryService;
 
@@ -1398,26 +1385,36 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return result;
   }
 
-  /*
-   * public String[] getClassList() throws XWikiException { List list = store.getClassList();
-   * String[] array = new String[list.size()]; for (int i=0;i<list.size();i++) array[i] =
-   * (String)list.get(i); return array; }
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
-
+  @Deprecated
   public <T> List<T> search(String sql, XWikiContext context) throws XWikiException {
     return getStore().search(sql, 0, 0, context);
   }
 
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
+   */
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, XWikiContext context)
       throws XWikiException {
     return getStore().search(sql, nb, start, context);
   }
 
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
+   */
+  @Deprecated
   public <T> List<T> search(String sql, Object[][] whereParams, XWikiContext context)
       throws XWikiException {
     return getStore().search(sql, 0, 0, whereParams, context);
   }
 
+  /**
+   * @deprecated since 6.0, instead use {@link QueryExecutor}
+   */
+  @Deprecated
   public <T> List<T> search(String sql, int nb, int start, Object[][] whereParams,
       XWikiContext context) throws XWikiException {
     return getStore().search(sql, nb, start, whereParams, context);
@@ -1609,27 +1606,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       LOG.error(ex.getMessage(), ex);
       return parseTemplate(template, context);
     }
-  }
-
-  /**
-   * Designed to include dynamic content, such as Servlets or JSPs, inside Velocity templates; works
-   * by creating a RequestDispatcher, buffering the output, then returning it as a string.
-   *
-   * @author LBlaze
-   */
-  public String invokeServletAndReturnAsString(String url, XWikiContext xwikiContext) {
-
-    HttpServletRequest servletRequest = xwikiContext.getRequest();
-    HttpServletResponse servletResponse = xwikiContext.getResponse();
-
-    try {
-      return IncludeServletAsString.invokeServletAndReturnAsString(url, servletRequest,
-          servletResponse);
-    } catch (Exception e) {
-      LOG.warn("Exception including url: " + url, e);
-      return "Exception including \"" + url + "\", see logs for details.";
-    }
-
   }
 
   /**
@@ -2892,28 +2868,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     needsUpdate |= bclass.addTextField("documentBundles", "Internationalization Document Bundles",
         60);
 
-    // Only used by LDAP authentication service
-
-    needsUpdate |= bclass.addBooleanField("ldap", "Ldap", "yesno");
-    needsUpdate |= bclass.addTextField("ldap_server", "Ldap server adress", 60);
-    needsUpdate |= bclass.addTextField("ldap_port", "Ldap server port", 60);
-    needsUpdate |= bclass.addTextField("ldap_bind_DN", "Ldap login matching", 60);
-    needsUpdate |= bclass.addTextField("ldap_bind_pass", "Ldap password matching", 60);
-    needsUpdate |= bclass.addBooleanField("ldap_validate_password", "Validate Ldap user/password",
-        "yesno");
-    needsUpdate |= bclass.addTextField("ldap_user_group", "Ldap group filter", 60);
-    needsUpdate |= bclass.addTextField("ldap_exclude_group", "Ldap group to exclude", 60);
-    needsUpdate |= bclass.addTextField("ldap_base_DN", "Ldap base DN", 60);
-    needsUpdate |= bclass.addTextField("ldap_UID_attr", "Ldap UID attribute name", 60);
-    needsUpdate |= bclass.addTextField("ldap_fields_mapping", "Ldap user fiels mapping", 60);
-    needsUpdate |= bclass.addBooleanField("ldap_update_user", "Update user from LDAP", "yesno");
-    needsUpdate |= bclass.addTextAreaField("ldap_group_mapping", "Ldap groups mapping", 60, 5);
-    needsUpdate |= bclass.addTextField("ldap_groupcache_expiration", "LDAP groups members cache",
-        60);
-    needsUpdate |= bclass.addStaticListField("ldap_mode_group_sync", "LDAP groups sync mode",
-        "|always|create");
-    needsUpdate |= bclass.addBooleanField("ldap_trylocal", "Try local login", "yesno");
-
     if (((BooleanClass) bclass.get("showLeftPanels")).getDisplayType().equals("checkbox")) {
       ((BooleanClass) bclass.get("showLeftPanels")).setDisplayType("yesno");
       ((BooleanClass) bclass.get("showRightPanels")).setDisplayType("yesno");
@@ -3369,75 +3323,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return generateRandomString(size);
   }
 
-  /**
-   * @deprecated since Celements 3.1, instead use UserService#createNewUser
-   * @throws UnsupportedOperationException
-   */
-  @Deprecated
-  public int createUser(String userName, Map<String, ?> map, XWikiContext context)
-      throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @deprecated since Celements 3.1, instead use UserService#createNewUser
-   * @throws UnsupportedOperationException
-   */
-  @Deprecated
-  public int createUser(String userName, Map<String, ?> map, String userRights,
-      XWikiContext context) throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @deprecated since Celements 3.1, instead use UserService#createNewUser
-   * @throws UnsupportedOperationException
-   */
-  @Deprecated
-  public int createUser(String userName, Map<String, ?> map, String parent, String content,
-      String syntaxId, String userRights, XWikiContext context) throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @deprecated since Celements 3.1, instead use UserService#createNewUser
-   * @throws UnsupportedOperationException
-   */
-  @Deprecated
-  public int createUser(String userName, Map<String, ?> map, EntityReference parentReference,
-      String content, Syntax syntax, String userRights, XWikiContext context)
-      throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @deprecated since Celements 3.1, instead use UserService#createNewUser
-   * @throws UnsupportedOperationException
-   */
-  @Deprecated
-  public int createUser(String xwikiname, Map map, String parent, String content, String userRights,
-      XWikiContext context) throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @deprecated since Celements 3.1
-   * @throws UnsupportedOperationException
-   */
-  @Deprecated
-  public void setUserDefaultGroup(String fullwikiname, XWikiContext context) throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @deprecated since Celements 3.1
-   * @throws UnsupportedOperationException
-   */
-  @Deprecated
-  public void SetUserDefaultGroup(XWikiContext context, String fullwikiname) throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
   public void protectUserPage(String userName, String userRights, XWikiDocument doc,
       XWikiContext context) throws XWikiException {
     BaseClass rclass = getRightsClass(context);
@@ -3768,34 +3653,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void setDatabase(String database) {
     this.database = database;
-  }
-
-  public void gc() {
-    System.gc();
-  }
-
-  public long freeMemory() {
-    return Runtime.getRuntime().freeMemory();
-  }
-
-  public long totalMemory() {
-    return Runtime.getRuntime().totalMemory();
-  }
-
-  public long maxMemory() {
-    return Runtime.getRuntime().maxMemory();
-  }
-
-  public String[] split(String str, String sep) {
-    return StringUtils.split(str, sep);
-  }
-
-  public String printStrackTrace(Throwable e) {
-    StringWriter strwriter = new StringWriter();
-    PrintWriter writer = new PrintWriter(strwriter);
-    e.printStackTrace(writer);
-
-    return strwriter.toString();
   }
 
   /**
@@ -4541,55 +4398,48 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   public DocumentReference getDocumentReference(XWikiRequest request, XWikiContext context) {
     DocumentReference reference;
-    if (context.getMode() == XWikiContext.MODE_PORTLET) {
-      throw new UnsupportedOperationException();
-    } else if (context.getMode() == XWikiContext.MODE_XMLRPC) {
-      throw new UnsupportedOperationException();
+    String action = context.getAction();
+    if ((request.getParameter("topic") != null) && (action.equals("edit") || action.equals(
+        "inline"))) {
+      reference = this.currentMixedDocumentReferenceResolver.resolve(request.getParameter(
+          "topic"));
     } else {
-      String action = context.getAction();
-      if ((request.getParameter("topic") != null) && (action.equals("edit") || action.equals(
-          "inline"))) {
-        reference = this.currentMixedDocumentReferenceResolver.resolve(request.getParameter(
-            "topic"));
-      } else {
-        // TODO: Introduce a XWikiURL class in charge of getting the information relevant
-        // to XWiki from a request URL (action, space, document name, file, etc)
+      // TODO: Introduce a XWikiURL class in charge of getting the information relevant
+      // to XWiki from a request URL (action, space, document name, file, etc)
 
-        // Important: We cannot use getPathInfo() as the container encodes it and different
-        // containers encode it differently, depending on their internal behavior and how
-        // they are configured. Thus to make this container-proof we use the
-        // getRequestURI() which isn't modified by the container and is thus only
-        // URL-encoded.
+      // Important: We cannot use getPathInfo() as the container encodes it and different
+      // containers encode it differently, depending on their internal behavior and how
+      // they are configured. Thus to make this container-proof we use the
+      // getRequestURI() which isn't modified by the container and is thus only
+      // URL-encoded.
 
-        // Note: Ideally we should modify the getDocumentNameFromPath method but in order
-        // not to introduce any new bug right now we're reconstructing a path info that we
-        // pass to it using the following algorithm:
-        // path info = requestURI - (contextPath + servletPath)
+      // Note: Ideally we should modify the getDocumentNameFromPath method but in order
+      // not to introduce any new bug right now we're reconstructing a path info that we
+      // pass to it using the following algorithm:
+      // path info = requestURI - (contextPath + servletPath)
 
-        String path = request.getRequestURI();
+      String path = request.getRequestURI();
 
-        // Remove the (eventual) context path from the URI, usually /xwiki
-        path = stripSegmentFromPath(path, request.getContextPath());
+      // Remove the (eventual) context path from the URI, usually /xwiki
+      path = stripSegmentFromPath(path, request.getContextPath());
 
-        // Remove the (eventual) servlet path from the URI, usually /bin
-        String servletPath = request.getServletPath();
-        path = stripSegmentFromPath(path, servletPath);
+      // Remove the (eventual) servlet path from the URI, usually /bin
+      String servletPath = request.getServletPath();
+      path = stripSegmentFromPath(path, servletPath);
 
-        // We need to get rid of the wiki name in case of a XEM in usepath mode
-        if ("1".equals(Param("xwiki.virtual.usepath", "0")) && servletPath.equals("/" + Param(
-            "xwiki.virtual.usepath.servletpath", "wiki"))) {
-          // Virtual mode, skip the wiki name
-          path = path.substring(path.indexOf('/', 1));
-        }
-
-        // Fix error in some containers, which don't hide the jsessionid parameter from the URL
-        if (path.indexOf(";jsessionid=") != -1) {
-          path = path.substring(0, path.indexOf(";jsessionid="));
-        }
-        reference = getDocumentReferenceFromPath(path, context);
+      // We need to get rid of the wiki name in case of a XEM in usepath mode
+      if ("1".equals(Param("xwiki.virtual.usepath", "0")) && servletPath.equals("/" + Param(
+          "xwiki.virtual.usepath.servletpath", "wiki"))) {
+        // Virtual mode, skip the wiki name
+        path = path.substring(path.indexOf('/', 1));
       }
-    }
 
+      // Fix error in some containers, which don't hide the jsessionid parameter from the URL
+      if (path.indexOf(";jsessionid=") != -1) {
+        path = path.substring(0, path.indexOf(";jsessionid="));
+      }
+      reference = getDocumentReferenceFromPath(path, context);
+    }
     return reference;
   }
 
@@ -4854,25 +4704,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
   }
 
-  public XWikiStatsService getStatsService(XWikiContext context) {
-    synchronized (this.STATS_SERVICE_LOCK) {
-      if ((this.statsService == null) && "1".equals(Param("xwiki.stats", "1"))) {
-        String storeClass = Param("xwiki.stats.class",
-            "com.xpn.xwiki.stats.impl.XWikiStatsServiceImpl");
-        try {
-          this.statsService = (XWikiStatsService) Class.forName(storeClass).newInstance();
-        } catch (Exception e) {
-          e.printStackTrace();
-          this.statsService = new XWikiStatsServiceImpl();
-        }
-
-        this.statsService.init(context);
-      }
-
-      return this.statsService;
-    }
-  }
-
   public XWikiURLFactoryService getURLFactoryService() {
     if (this.urlFactoryService == null) {
       synchronized (this.URLFACTORY_SERVICE_LOCK) {
@@ -4890,104 +4721,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return this.criteriaService;
   }
 
-  /**
-   * @see #getExoService(String)
-   * @deprecated use {@link #getExoService(String)} instead
-   */
-  @Deprecated
-  public Object getService(String className) throws XWikiException {
-    return getExoService(className);
-  }
-
-  /**
-   * Privileged API to access an eXo Platform service from the Wiki Engine
-   *
-   * @param className
-   *          eXo classname to retrieve the service from
-   * @return A object representing the service
-   * @throws XWikiException
-   *           if the service cannot be loaded
-   * @since 1.1 Beta 1
-   */
-  public Object getExoService(String className) throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @see #getExoPortalService(String)
-   * @deprecated use {@link #getExoPortalService(String)} instead
-   */
-  @Deprecated
-  public Object getPortalService(String className) throws XWikiException {
-    return getExoPortalService(className);
-  }
-
-  /**
-   * Privileged API to access an eXo Platform Portal service from the Wiki Engine
-   *
-   * @param className
-   *          eXo classname to retrieve the service from
-   * @return A object representing the service
-   * @throws XWikiException
-   *           if the service cannot be loaded
-   * @since 1.1 Beta 1
-   */
-  public Object getExoPortalService(String className) throws XWikiException {
-    throw new UnsupportedOperationException();
-  }
-
-  public ZipOutputStream getZipOutputStream(XWikiContext context) throws IOException {
-    return new ZipOutputStream(context.getResponse().getOutputStream());
-  }
-
-  private Map<String, SearchEngineRule> getSearchEngineRules(XWikiContext context) {
-    // We currently hardcode the rules
-    // We will put them in the preferences soon
-    Map<String, SearchEngineRule> map = new HashMap<>();
-    map.put("Google", new SearchEngineRule("google.", "s/(^|.*&)q=(.*?)(&.*|$)/$2/"));
-    map.put("MSN", new SearchEngineRule("search.msn.", "s/(^|.*&)q=(.*?)(&.*|$)/$2/"));
-    map.put("Yahoo", new SearchEngineRule("search.yahoo.", "s/(^|.*&)p=(.*?)(&.*|$)/$2/"));
-    map.put("Voila", new SearchEngineRule("voila.fr", "s/(^|.*&)kw=(.*?)(&.*|$)/$2/"));
-
-    return map;
-  }
-
-  public String getRefererText(String referer, XWikiContext context) {
-    try {
-      URL url = new URL(referer);
-      Map<String, SearchEngineRule> searchengines = getSearchEngineRules(context);
-      if (searchengines != null) {
-        for (SearchEngineRule senginerule : searchengines.values()) {
-          String host = url.getHost();
-          int i1 = host.indexOf(senginerule.getHost());
-          if (i1 != -1) {
-            String query = context.getUtil().substitute(senginerule.getRegEx(), url.getQuery());
-            if ((query != null) && (!query.equals(""))) {
-              // We return the query text instead of the full referer
-              return host.substring(i1) + ":" + query;
-            }
-          }
-        }
-      }
-    } catch (Exception e) {}
-
-    String result = referer.substring(referer.indexOf("://") + 3);
-    if (result.endsWith("/")) {
-      return result.substring(0, result.length() - 1);
-    } else {
-      return result;
-    }
-  }
-
   public boolean isMySQL() {
     if (getHibernateStore() == null) {
       return false;
     }
-
-    return "org.hibernate.dialect.MySQLDialect".equals(
-        getHibernateStore().getConfiguration().getProperties().get("dialect"))
-        || "net.sf.hibernate.dialect.MySQLDialect".equals(
-            getHibernateStore().getConfiguration().getProperties().get("dialect"));
+    return true;
   }
 
   public String getFullNameSQL() {
@@ -5906,127 +5644,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
 
     return pageName;
-  }
-
-  public String displaySearch(String fieldname, String className, XWikiCriteria criteria,
-      XWikiContext context) throws XWikiException {
-    return displaySearch(fieldname, className, "", criteria, context);
-  }
-
-  public String displaySearch(String fieldname, String className, XWikiContext context)
-      throws XWikiException {
-    return displaySearch(fieldname, className, "", new XWikiCriteria(), context);
-  }
-
-  public String displaySearch(String fieldname, String className, String prefix,
-      XWikiCriteria criteria, XWikiContext context) throws XWikiException {
-    BaseClass bclass = getDocument(className, context).getXClass();
-    PropertyClass pclass = (PropertyClass) bclass.get(fieldname);
-    if (criteria == null) {
-      criteria = new XWikiCriteria();
-    }
-
-    if (pclass == null) {
-      return "";
-    } else {
-      return pclass.displaySearch(fieldname, prefix + className + "_", criteria, context);
-    }
-  }
-
-  public String displaySearchColumns(String className, XWikiQuery query, XWikiContext context)
-      throws XWikiException {
-    return displaySearchColumns(className, "", query, context);
-  }
-
-  public String displaySearchColumns(String className, String prefix, XWikiQuery query,
-      XWikiContext context) throws XWikiException {
-    BaseClass bclass = getDocument(className, context).getXClass();
-
-    if (query == null) {
-      query = new XWikiQuery();
-    }
-
-    return bclass.displaySearchColumns(className + "_" + prefix, query, context);
-  }
-
-  public String displaySearchOrder(String className, XWikiQuery query, XWikiContext context)
-      throws XWikiException {
-    return displaySearchOrder(className, "", query, context);
-  }
-
-  public String displaySearchOrder(String className, String prefix, XWikiQuery query,
-      XWikiContext context) throws XWikiException {
-    BaseClass bclass = getDocument(className, context).getXClass();
-
-    if (query == null) {
-      query = new XWikiQuery();
-    }
-
-    return bclass.displaySearchOrder(className + "_" + prefix, query, context);
-  }
-
-  public <T> List<T> search(XWikiQuery query, XWikiContext context) throws XWikiException {
-    QueryPlugin qp = (QueryPlugin) getPlugin("query", context);
-    if (qp == null) {
-      return null;
-    }
-
-    return qp.search(query);
-  }
-
-  public XWikiQuery createQueryFromRequest(String className, XWikiContext context)
-      throws XWikiException {
-    return new XWikiQuery(context.getRequest(), className, context);
-  }
-
-  public String searchAsTable(XWikiQuery query, XWikiContext context) throws XWikiException {
-    QueryPlugin qp = (QueryPlugin) getPlugin("query", context);
-    if (qp == null) {
-      return null;
-    }
-
-    List<String> list = qp.search(query);
-    String result = "{table}\r\n";
-    List<String> headerColumns = new ArrayList<>();
-    List<String> displayProperties = query.getDisplayProperties();
-    for (String propname : displayProperties) {
-      PropertyClass pclass = getPropertyClassFromName(propname, context);
-      if (pclass != null) {
-        headerColumns.add(pclass.getPrettyName());
-      } else {
-        if (propname.startsWith("doc.")) {
-          propname = propname.substring(4);
-          headerColumns.add(XWikiDocument.getInternalPropertyName(propname, context));
-        } else {
-          headerColumns.add(propname);
-        }
-
-      }
-    }
-
-    result += StringUtils.join(headerColumns.toArray(), " | ") + "\r\n";
-    for (String docname : list) {
-      List<String> rowColumns = new ArrayList<>();
-      XWikiDocument doc = getDocument(docname, context);
-      for (String propname : displayProperties) {
-        PropertyClass pclass = getPropertyClassFromName(propname, context);
-        if (pclass == null) {
-          if (propname.startsWith("doc.")) {
-            propname = propname.substring(4);
-          }
-          String value = doc.getInternalProperty(propname);
-          rowColumns.add((value == null) ? " " : value);
-        } else {
-          BaseObject bobj = doc.getObject(pclass.getObject().getName());
-          rowColumns.add(doc.display(pclass.getName(), "view", bobj, context));
-        }
-      }
-      result += StringUtils.join(rowColumns.toArray(), " | ") + "\r\n";
-    }
-
-    result += "{table}\r\n";
-
-    return result;
   }
 
   public PropertyClass getPropertyClassFromName(String propPath, XWikiContext context) {

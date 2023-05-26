@@ -157,7 +157,7 @@ public class CelHibernateStoreDocumentPart {
     try {
       store.checkHibernate(context);
       SessionFactory sfactory = store.injectCustomMappingsInSessionFactory(doc, context);
-      bTransaction = bTransaction && store.beginTransaction(sfactory, false, context);
+      bTransaction = store.beginTransaction(sfactory, false, context);
       Session session = store.getSession(context);
       session.setFlushMode(FlushMode.MANUAL);
 

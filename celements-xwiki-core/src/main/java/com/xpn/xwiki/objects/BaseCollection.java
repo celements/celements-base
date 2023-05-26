@@ -40,8 +40,6 @@ import org.dom4j.Element;
 import org.dom4j.dom.DOMDocument;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -60,14 +58,11 @@ import com.xpn.xwiki.web.Utils;
  * <ul>
  * <li>an XClass definition (composed of XClass properties)</li>
  * <li>an XObject definition (composed of XObject properties)</li>
- * <li>an XWikiStats object (composed of stats properties)</li>
  * </ul>
  *
  * @version $Id$
  */
 public abstract class BaseCollection extends BaseElement implements ObjectInterface, Cloneable {
-
-  protected static final Logger LOG = LoggerFactory.getLogger(BaseCollection.class);
 
   /**
    * The meaning of this reference fields depends on the element represented. Examples:
@@ -291,7 +286,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
       try {
         baseClass = context.getWiki().getXClass(classReference, context);
       } catch (Exception e) {
-        LOG.error("Failed to get class [" + classReference + "]", e);
+        logger.error("Failed to get class [" + classReference + "]", e);
       }
     }
 
@@ -617,9 +612,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
   }
 
   public void merge(BaseObject object) {
-    Iterator itfields = object.getPropertyList().iterator();
-    while (itfields.hasNext()) {
-      String name = (String) itfields.next();
+    for (String name : object.getPropertyList()) {
       if (safeget(name) == null) {
         safeput(name, (PropertyInterface) ((BaseElement) object.safeget(name)).clone());
       }

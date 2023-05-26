@@ -47,7 +47,7 @@ public class DefaultRightsAccessFacade_SpaceTest extends AbstractComponentTest {
     modelUtils = Utils.getComponent(ModelUtils.class);
     XWikiRightService xwikiRightsService = new XWikiRightServiceImpl();
     expect(xwiki.getRightService()).andReturn(xwikiRightsService).anyTimes();
-    groupSrvMock = createMockAndAddToDefault(XWikiGroupService.class);
+    groupSrvMock = createDefaultMock(XWikiGroupService.class);
     expect(xwiki.getGroupService(same(context))).andReturn(groupSrvMock).anyTimes();
     expect(xwiki.isVirtualMode()).andReturn(true).anyTimes();
     expect(xwiki.getWikiOwner(eq(context.getDatabase()), same(context))).andReturn(

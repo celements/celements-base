@@ -24,8 +24,6 @@ package com.xpn.xwiki.objects.classes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ecs.xhtml.input;
 
 import com.xpn.xwiki.XWikiContext;
@@ -36,8 +34,6 @@ import com.xpn.xwiki.objects.meta.PasswordMetaClass;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
 
 public class PasswordClass extends StringClass {
-
-  protected static Log log = LogFactory.getLog(PasswordClass.class);
 
   protected static final String DEFAULT_STORAGE = PasswordMetaClass.HASH;
 
@@ -208,7 +204,7 @@ public class PasswordClass extends StringClass {
 
   public String getPasswordHash(String password, String algorithmName) {
     try {
-      log.debug("Hashing password");
+      logger.debug("Hashing password");
       MessageDigest hashAlgorithm = MessageDigest.getInstance(algorithmName);
       hashAlgorithm.update(password.getBytes());
       byte[] digest = hashAlgorithm.digest();
@@ -222,10 +218,10 @@ public class PasswordClass extends StringClass {
       }
       return sb.toString();
     } catch (NoSuchAlgorithmException ex) {
-      log.error("Wrong hash algorithm [" + algorithmName + "] in [" + getXClassReference() + "]",
+      logger.error("Wrong hash algorithm [" + algorithmName + "] in [" + getXClassReference() + "]",
           ex);
     } catch (NullPointerException ex) {
-      log.error("Error hashing password", ex);
+      logger.error("Error hashing password", ex);
     }
     return password;
   }

@@ -34,7 +34,7 @@ public class DefaultModelContextTest extends AbstractComponentTest {
     registerComponentMock(IModelAccessFacade.class);
     registerComponentMock(ConfigurationSource.class, CelementsFromWikiConfigurationSource.NAME);
     modelContext = (DefaultModelContext) Utils.getComponent(ModelContext.class);
-    modelContext.defaultConfigSrc = createMockAndAddToDefault(ConfigurationSource.class);
+    modelContext.defaultConfigSrc = createDefaultMock(ConfigurationSource.class);
   }
 
   @Test
@@ -186,7 +186,7 @@ public class DefaultModelContextTest extends AbstractComponentTest {
   }
 
   private HttpServletRequest expectRequest() {
-    HttpServletRequest httpRequestMock = createMockAndAddToDefault(HttpServletRequest.class);
+    HttpServletRequest httpRequestMock = createDefaultMock(HttpServletRequest.class);
     getContext().setRequest(new XWikiServletRequest(httpRequestMock));
     expect(httpRequestMock.getCharacterEncoding()).andReturn("").anyTimes();
     return httpRequestMock;
