@@ -2868,6 +2868,7 @@ public class XWiki extends Api {
    *
    * @return The servlet path
    */
+  @Deprecated
   public String getWebAppPath() {
     return this.xwiki.getWebAppPath(this.context);
   }

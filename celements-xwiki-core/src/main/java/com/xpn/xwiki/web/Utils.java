@@ -48,6 +48,7 @@ import org.xwiki.xml.internal.XMLScriptService;
 
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
@@ -386,7 +387,7 @@ public class Utils {
     context.setRequest(request);
     context.setResponse(response);
     context.setAction(action);
-    context.setDatabase("xwiki");
+    context.setDatabase(XWikiConstant.MAIN_WIKI.getName());
     context.setMode(XWikiContext.MODE_SERVLET);
     return context;
   }

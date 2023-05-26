@@ -21,6 +21,7 @@ package com.xpn.xwiki;
 
 import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static com.google.common.base.Preconditions.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -182,7 +183,6 @@ import com.xpn.xwiki.web.XWikiURLFactoryServiceImpl;
 
 public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
 
-  /** Logging helper object. */
   protected static final Logger LOG = LoggerFactory.getLogger(XWiki.class);
 
   /** Frequently used Document reference, the class which holds virtual wiki definitions. */
@@ -307,16 +307,14 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   @SuppressWarnings("unchecked")
   private EntityReferenceSerializer<String> localStringEntityReferenceSerializer = Utils
-      .getComponent(
-          EntityReferenceSerializer.class, "local");
+      .getComponent(EntityReferenceSerializer.class, "local");
 
   private EntityReferenceValueProvider defaultEntityReferenceValueProvider = Utils.getComponent(
       EntityReferenceValueProvider.class);
 
   @SuppressWarnings("unchecked")
   private EntityReferenceSerializer<EntityReference> localReferenceEntityReferenceSerializer = Utils
-      .getComponent(
-          EntityReferenceSerializer.class, "local/reference");
+      .getComponent(EntityReferenceSerializer.class, "local/reference");
 
   /**
    * Used to resolve a string into a proper Document Reference using the current document's
@@ -325,8 +323,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   @SuppressWarnings("unchecked")
   private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
-      .getComponent(
-          DocumentReferenceResolver.class, "currentmixed");
+      .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
   private XWikiURLBuilder entityXWikiURLBuilder = Utils.getComponent(XWikiURLBuilder.class,
       "entity");
@@ -342,10 +339,14 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    *           the storage
    */
   public static XWiki getXWiki(XWikiContext context) throws XWikiException {
-    XWiki xwiki = (XWiki) context.getEngineContext().getAttribute("xwiki");
+    XWiki xwiki = (XWiki) context.getEngineContext().getAttribute(XWikiEngineContext.XWIKI_KEY);
+    checkState(xwiki != null, "XWiki not initialised"); // initialised by XWikiBootstrap
+
     if (!xwiki.isVirtualMode()) {
       return xwiki;
     }
+
+    // TODO what about this following shit? needed in every getXWiki?
 
     // Host is full.host.name in DNS-based multiwiki, and wikiname in path-based multiwiki.
     String host = "";
@@ -4232,25 +4233,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return servletPath;
   }
 
+  @Deprecated
   public String getWebAppPath(XWikiContext context) {
-    String path = context.getURL().getPath();
-    String contextPath = Param("xwiki.webapppath", "");
-    if (contextPath.equals("")) {
-      try {
-        contextPath = context.getRequest().getContextPath();
-        // TODO We're using URL parts in a wrong way, since contextPath and servletPath are
-        // returned with a leading /, while we need a trailing /. This code moves the / from
-        // the beginning to the end.
-        // If the app is deployed as the ROOT ap, then there's no need to move the /.
-        if (contextPath.length() > 0) {
-          contextPath = contextPath.substring(1) + "/";
-        }
-      } catch (Exception e) {
-        contextPath = path.substring(0, path.indexOf('/', 1) + 1);
-      }
-    }
-
-    return contextPath;
+    return "/"; // Celements must always be the ROOT app
   }
 
   /**

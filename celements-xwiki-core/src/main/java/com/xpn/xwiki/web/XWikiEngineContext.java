@@ -27,6 +27,8 @@ import java.net.URL;
 
 public interface XWikiEngineContext {
 
+  String XWIKI_KEY = "xwiki";
+
   Object getAttribute(String name);
 
   void setAttribute(String name, Object value);
