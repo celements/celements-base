@@ -72,7 +72,7 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
         new WikiReference(context.getDatabase()));
     XWikiDocument serverDoc = context.getWiki().getDocument(serverDocRef, context);
     BaseObject serverObj = null;
-    if (context.getURL().getHost() != null) {
+    if ((context.getURL() != null) && (context.getURL().getHost() != null)) {
       serverObj = serverDoc.getXObject(XWiki.VIRTUAL_WIKI_DEFINITION_CLASS_REFERENCE, "server",
           context.getURL().getHost().replaceFirst(context.getDatabase(), wikiName));
     }
