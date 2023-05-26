@@ -357,32 +357,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // wiki with a XWiki.XWikiServerClass object attached to it
     DocumentReference wikiDefinition;
 
-    XWikiRequest request = context.getRequest();
-    try {
-      URL requestURL = context.getURL();
-      host = requestURL.getHost();
-    } catch (Exception e) {}
-
-    // In path-based multi-wiki, the wiki name is an element of the request path.
-    // The url is in the form /xwiki (app name)/wiki (servlet name)/wikiname/
-    if ("1".equals(xwiki.Param("xwiki.virtual.usepath", "0"))) {
-      String uri = request.getRequestURI();
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Request uri is: " + uri);
-      }
-      // Remove the (eventual) context path from the URI, usually /xwiki
-      uri = stripSegmentFromPath(uri, request.getContextPath());
-      // Remove the (eventual) servlet path from the URI, usually /wiki
-      String servletPath = request.getServletPath();
-      uri = stripSegmentFromPath(uri, servletPath);
-
-      if (servletPath.equals("/" + xwiki.Param("xwiki.virtual.usepath.servletpath", "wiki"))) {
-        // Requested path corresponds to a path-based wiki, now the wiki name is between the first
-        // and
-        // second "/"
-        host = StringUtils.substringBefore(StringUtils.removeStart(uri, "/"), "/");
-      }
-    }
+    host = context.getURL().getHost();
 
     if (StringUtils.isEmpty(host) || host.equals(context.getMainXWiki())) {
       // Can't find any wiki name, return the main wiki
@@ -4200,27 +4175,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public String getServletPath(String wikiName, XWikiContext context) {
-    // unless we are in virtual wiki path mode we should return null
-    if (!context.getMainXWiki().equalsIgnoreCase(wikiName) && "1".equals(Param(
-        "xwiki.virtual.usepath", "0"))) {
-      String database = context.getDatabase();
-      try {
-        context.setDatabase(context.getMainXWiki());
-        XWikiDocument doc = getDocument(getServerWikiPage(wikiName), context);
-        BaseObject serverobject = doc.getXObject(VIRTUAL_WIKI_DEFINITION_CLASS_REFERENCE);
-        if (serverobject != null) {
-          String server = serverobject.getStringValue("server");
-          return "wiki/" + server + "/";
-        }
-      } catch (XWikiException e) {
-        LOG.error("Failed to get URL for provided wiki [" + wikiName + "]", e);
-      } finally {
-        context.setDatabase(database);
-      }
-    }
-
     String servletPath = Param("xwiki.servletpath", "");
-
     if ((context.getRequest() != null) && StringUtils.isEmpty(servletPath)) {
       String currentServletpath = context.getRequest().getServletPath();
       if ((currentServletpath != null) && currentServletpath.startsWith("/bin")) {
@@ -4229,7 +4184,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         servletPath = Param("xwiki.defaultservletpath", "bin/");
       }
     }
-
     return servletPath;
   }
 
@@ -4411,13 +4365,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       // Remove the (eventual) servlet path from the URI, usually /bin
       String servletPath = request.getServletPath();
       path = stripSegmentFromPath(path, servletPath);
-
-      // We need to get rid of the wiki name in case of a XEM in usepath mode
-      if ("1".equals(Param("xwiki.virtual.usepath", "0")) && servletPath.equals("/" + Param(
-          "xwiki.virtual.usepath.servletpath", "wiki"))) {
-        // Virtual mode, skip the wiki name
-        path = path.substring(path.indexOf('/', 1));
-      }
 
       // Fix error in some containers, which don't hide the jsessionid parameter from the URL
       if (path.indexOf(";jsessionid=") != -1) {

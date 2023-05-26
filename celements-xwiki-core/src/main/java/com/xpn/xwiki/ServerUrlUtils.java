@@ -2,6 +2,7 @@ package com.xpn.xwiki;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.function.BinaryOperator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,30 +24,26 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
   private DocumentReferenceResolver<String> docRefResolver;
 
   @Override
-  public URL getServerURL(XWikiConfig cfg) throws MalformedURLException {
-    String protocol = cfg.getProperty("xwiki.url.protocol", "http");
-    String host = cfg.getProperty("xwiki.url.host");
+  public URL getServerURL(BinaryOperator<String> cfg) throws MalformedURLException {
+    String protocol = cfg.apply("xwiki.url.protocol", "http");
+    String host = cfg.apply("xwiki.url.host", "");
     return new URL(protocol, host, -1, "/");
   }
 
   @Override
   public URL getServerURL(String wikiName, XWikiContext context) throws MalformedURLException {
-    URL serverUrl = null;
-    // In virtual wiki path mode the server is the standard one
-    if ("0".equals(context.getWiki().Param("xwiki.virtual.usepath", "0"))) {
-      try {
-        BaseObject serverObj = getServerObject(wikiName, context);
-        if (serverObj != null) {
-          String protocol = getProtocol(serverObj, context);
-          String host = serverObj.getStringValue("server");
-          int port = getUrlPort(context);
-          serverUrl = new URL(protocol, host, port, "/");
-        }
-      } catch (XWikiException exc) {
-        LOGGER.error("getServerURL - failed for: " + wikiName, exc);
+    try {
+      BaseObject serverObj = getServerObject(wikiName, context);
+      if (serverObj != null) {
+        String protocol = getProtocol(serverObj, context);
+        String host = serverObj.getStringValue("server");
+        int port = getUrlPort(context);
+        return new URL(protocol, host, port, "/");
       }
+    } catch (XWikiException exc) {
+      LOGGER.error("getServerURL - failed for: " + wikiName, exc);
     }
-    return serverUrl;
+    return getServerURL(context.getWiki()::Param);
   }
 
   private String getProtocol(BaseObject serverObj, XWikiContext context) {

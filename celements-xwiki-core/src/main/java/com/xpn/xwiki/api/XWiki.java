@@ -2838,9 +2838,7 @@ public class XWiki extends Api {
   }
 
   /**
-   * API to get the Servlet path for a given wiki. In mono wiki this is "bin/" or "xwiki/". In
-   * virtual mode and if
-   * <tt>xwiki.virtual.usepath</tt> is enabled in xwiki.cfg, it is "wiki/wikiname/".
+   * API to get the Servlet path for a given wiki. In mono wiki this is "bin/" or "xwiki/".
    *
    * @param wikiName
    *          wiki for which to get the path
@@ -2851,9 +2849,7 @@ public class XWiki extends Api {
   }
 
   /**
-   * API to get the Servlet path for the current wiki. In mono wiki this is "bin/" or "xwiki/". In
-   * virtual mode and if
-   * <tt>xwiki.virtual.usepath</tt> is enabled in xwiki.cfg, it is "wiki/wikiname/".
+   * API to get the Servlet path for the current wiki. In mono wiki this is "bin/" or "xwiki/".
    *
    * @return The servlet path
    */

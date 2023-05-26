@@ -79,7 +79,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     ctx.setEngineContext(new XWikiServletContext(servletContext));
     ctx.setMainXWiki(wikiName);
     ctx.setDatabase(wikiName);
-    ctx.setURL(serverUrlUtils.getServerURL(xwikiCfg));
+    ctx.setURL(serverUrlUtils.getServerURL(xwikiCfg::getProperty));
     return ctx;
   }
 

@@ -49,7 +49,6 @@ public class XWikiTest extends AbstractBridgedComponentTestCase {
     configWikiDoc.addXObject(serverCfgObj);
     expect(wikiMock.getDatabase()).andReturn(mainDatabase).anyTimes();
     expect(wikiMock.getDocument(eq(docRef), same(getContext()))).andReturn(configWikiDoc);
-    expect(wikiMock.Param(eq("xwiki.virtual.usepath"), eq("0"))).andReturn("0");
     expect(wikiMock.Param(eq("xwiki.url.protocol"), (String) isNull())).andReturn("http");
     replay(wikiMock);
     getContext().setURL(null);

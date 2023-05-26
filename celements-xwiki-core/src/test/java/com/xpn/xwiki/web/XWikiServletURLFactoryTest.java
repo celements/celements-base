@@ -113,11 +113,6 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
       public String getXWikiPreference(String prefname, String defaultValue, XWikiContext context) {
         return defaultValue;
       }
-
-      @Override
-      protected void registerWikiMacros() {
-
-      }
     };
     xwiki.setConfig((this.config = new XWikiConfig()));
     xwiki.setDatabase(getContext().getDatabase());
