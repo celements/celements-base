@@ -56,6 +56,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
+import java.util.function.Supplier;
 
 import javax.servlet.http.Cookie;
 
@@ -92,7 +93,6 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
-import org.xwiki.model.reference.EntityReferenceValueProvider;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.EventListener;
@@ -302,18 +302,15 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * Used to convert a proper Document Reference to string (standard form).
    */
   @SuppressWarnings("unchecked")
-  private EntityReferenceSerializer<String> defaultEntityReferenceSerializer = Utils.getComponent(
-      EntityReferenceSerializer.class);
+  private static final Supplier<EntityReferenceSerializer<String>> defaultEntityReferenceSerializer = () -> Utils
+      .getComponent(EntityReferenceSerializer.class);
 
   @SuppressWarnings("unchecked")
-  private EntityReferenceSerializer<String> localStringEntityReferenceSerializer = Utils
+  private static final Supplier<EntityReferenceSerializer<String>> localStringEntityReferenceSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class, "local");
 
-  private EntityReferenceValueProvider defaultEntityReferenceValueProvider = Utils.getComponent(
-      EntityReferenceValueProvider.class);
-
   @SuppressWarnings("unchecked")
-  private EntityReferenceSerializer<EntityReference> localReferenceEntityReferenceSerializer = Utils
+  private static final Supplier<EntityReferenceSerializer<EntityReference>> localReferenceEntityReferenceSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class, "local/reference");
 
   /**
@@ -322,11 +319,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * instead.
    */
   @SuppressWarnings("unchecked")
-  private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
+  private static final Supplier<DocumentReferenceResolver<String>> currentMixedDocumentReferenceResolver = () -> Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
-  private XWikiURLBuilder entityXWikiURLBuilder = Utils.getComponent(XWikiURLBuilder.class,
-      "entity");
+  private static final Supplier<XWikiURLBuilder> entityXWikiURLBuilder = () -> Utils
+      .getComponent(XWikiURLBuilder.class, "entity");
 
   /**
    * Return the XWiki object (as in "the Wiki API") corresponding to the requested wiki.
@@ -1101,8 +1098,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       }
     } catch (Exception ex) {
       LOG.error("Failed to send document save notification for document ["
-          + this.defaultEntityReferenceSerializer.serialize(doc.getDocumentReference()) + "]",
-          ex);
+          + defaultEntityReferenceSerializer.get().serialize(doc.getDocumentReference()) + "]", ex);
     }
   }
 
@@ -1198,8 +1194,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       segments.remove(0);
     }
 
-    XWikiEntityURL entityURL = (XWikiEntityURL) this.entityXWikiURLBuilder.build(new WikiReference(
-        context.getDatabase()), segments);
+    XWikiEntityURL entityURL = (XWikiEntityURL) entityXWikiURLBuilder.get()
+        .build(new WikiReference(context.getDatabase()), segments);
 
     return new DocumentReference(entityURL.getEntityReference().extractReference(
         EntityType.DOCUMENT));
@@ -1210,8 +1206,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   @Deprecated
   public String getDocumentNameFromPath(String path, XWikiContext context) {
-    return this.localStringEntityReferenceSerializer.serialize(getDocumentReferenceFromPath(path,
-        context));
+    return localStringEntityReferenceSerializer.get()
+        .serialize(getDocumentReferenceFromPath(path, context));
   }
 
   /**
@@ -1220,8 +1216,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public XWikiDeletedDocument[] getDeletedDocuments(String fullname, String lang,
       XWikiContext context) throws XWikiException {
     if (hasRecycleBin(context)) {
-      XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-          fullname));
+      XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+          .resolve(fullname));
       doc.setLanguage(lang);
       return getRecycleBinStore().getAllDeletedDocuments(doc, context, true);
     } else {
@@ -1235,8 +1231,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public XWikiDeletedDocument getDeletedDocument(String fullname, String lang, int index,
       XWikiContext context) throws XWikiException {
     if (hasRecycleBin(context)) {
-      XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-          fullname));
+      XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+          .resolve(fullname));
       doc.setLanguage(lang);
       return getRecycleBinStore().getDeletedDocument(doc, index, context, true);
     } else {
@@ -1262,8 +1258,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public List<DeletedAttachment> getDeletedAttachments(String docName, XWikiContext context)
       throws XWikiException {
     if (hasAttachmentRecycleBin(context)) {
-      XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-          docName));
+      XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+          .resolve(docName));
       return getAttachmentRecycleBinStore().getAllDeletedAttachments(doc, context, true);
     }
     return null;
@@ -1293,8 +1289,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public List<DeletedAttachment> getDeletedAttachments(String docName, String filename,
       XWikiContext context) throws XWikiException {
     if (hasAttachmentRecycleBin(context)) {
-      XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-          docName));
+      XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+          .resolve(docName));
       XWikiAttachment attachment = new XWikiAttachment(doc, filename);
       return getAttachmentRecycleBinStore().getAllDeletedAttachments(attachment, context, true);
     }
@@ -3309,8 +3305,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       XWikiContext context) throws XWikiException {
     BaseClass rclass = getRightsClass(context);
 
-    EntityReference rightClassReference = this.localReferenceEntityReferenceSerializer.serialize(
-        rclass.getDocumentReference());
+    EntityReference rightClassReference = localReferenceEntityReferenceSerializer.get()
+        .serialize(rclass.getDocumentReference());
 
     // Add protection to the page
     BaseObject newrightsobject = doc.newXObject(rightClassReference, context);
@@ -3956,13 +3952,13 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public boolean copyDocument(String docname, String targetdocname, String sourceWiki,
       String targetWiki, String wikilanguage, boolean reset, boolean force,
       boolean resetCreationData, XWikiContext context) throws XWikiException {
-    DocumentReference sourceDocumentReference = this.currentMixedDocumentReferenceResolver
+    DocumentReference sourceDocumentReference = currentMixedDocumentReferenceResolver.get()
         .resolve(docname);
     if (!StringUtils.isEmpty(sourceWiki)) {
       sourceDocumentReference = RefBuilder.from(sourceDocumentReference).wiki(sourceWiki)
           .build(DocumentReference.class);
     }
-    DocumentReference targetDocumentReference = this.currentMixedDocumentReferenceResolver
+    DocumentReference targetDocumentReference = currentMixedDocumentReferenceResolver.get()
         .resolve(targetdocname);
     if (!StringUtils.isEmpty(targetWiki)) {
       targetDocumentReference = RefBuilder.from(targetDocumentReference).wiki(targetWiki)
@@ -4217,8 +4213,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   @Deprecated
   public String getURL(String fullname, String action, String queryString, String anchor,
       XWikiContext context) {
-    XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-        fullname));
+    XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+        .resolve(fullname));
 
     URL url = context.getURLFactory().createURL(doc.getSpace(), doc.getName(), action, queryString,
         anchor, doc.getDatabase(), context);
@@ -4246,8 +4242,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public String getExternalURL(String fullname, String action, XWikiContext context)
       throws XWikiException {
-    XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-        fullname));
+    XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+        .resolve(fullname));
 
     URL url = context.getURLFactory().createExternalURL(doc.getSpace(), doc.getName(), action, null,
         null, doc.getDatabase(), context);
@@ -4256,8 +4252,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public String getExternalURL(String fullname, String action, String querystring,
       XWikiContext context) throws XWikiException {
-    XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-        fullname));
+    XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+        .resolve(fullname));
 
     URL url = context.getURLFactory().createExternalURL(doc.getSpace(), doc.getName(), action,
         querystring, null, doc.getDatabase(), context);
@@ -4274,8 +4270,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   public String getAttachmentURL(String fullname, String filename, String queryString,
       XWikiContext context) throws XWikiException {
-    XWikiDocument doc = new XWikiDocument(this.currentMixedDocumentReferenceResolver.resolve(
-        fullname));
+    XWikiDocument doc = new XWikiDocument(currentMixedDocumentReferenceResolver.get()
+        .resolve(fullname));
     return doc.getAttachmentURL(filename, "download", queryString, context);
   }
 
@@ -4346,8 +4342,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     String action = context.getAction();
     if ((request.getParameter("topic") != null) && (action.equals("edit") || action.equals(
         "inline"))) {
-      reference = this.currentMixedDocumentReferenceResolver.resolve(request.getParameter(
-          "topic"));
+      reference = currentMixedDocumentReferenceResolver.get()
+          .resolve(request.getParameter("topic"));
     } else {
       // TODO: Introduce a XWikiURL class in charge of getting the information relevant
       // to XWiki from a request URL (action, space, document name, file, etc)
@@ -4386,8 +4382,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   @Deprecated
   public String getDocumentName(XWikiRequest request, XWikiContext context) {
-    return this.localStringEntityReferenceSerializer.serialize(getDocumentReference(request,
-        context));
+    return localStringEntityReferenceSerializer.get()
+        .serialize(getDocumentReference(request, context));
   }
 
   /**
@@ -4532,7 +4528,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   @Deprecated
   public void setPhonyDocument(String docName, XWikiContext context, VelocityContext vcontext) {
-    setPhonyDocument(this.currentMixedDocumentReferenceResolver.resolve(docName), context,
+    setPhonyDocument(currentMixedDocumentReferenceResolver.get().resolve(docName), context,
         vcontext);
   }
 
@@ -5323,7 +5319,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   public BaseClass getClass(String fullName, XWikiContext context) throws XWikiException {
     DocumentReference reference = null;
     if (!StringUtils.isEmpty(fullName)) {
-      reference = this.currentMixedDocumentReferenceResolver.resolve(fullName);
+      reference = currentMixedDocumentReferenceResolver.get().resolve(fullName);
     }
     return getXClass(reference, context);
   }
@@ -6114,7 +6110,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     XWikiContext context = (XWikiContext) data;
 
     ObservationManager om = Utils.getComponent(ObservationManager.class);
-    String reference = this.defaultEntityReferenceSerializer.serialize(doc.getDocumentReference());
+    String reference = defaultEntityReferenceSerializer.get().serialize(doc.getDocumentReference());
 
     try {
       for (List<ObjectDiff> objectChanges : doc.getObjectDiff(originalDoc, doc, context)) {

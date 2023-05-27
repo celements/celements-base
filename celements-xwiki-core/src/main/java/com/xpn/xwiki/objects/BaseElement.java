@@ -23,11 +23,15 @@ package com.xpn.xwiki.objects;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 
 import com.celements.store.id.IdVersion;
@@ -44,26 +48,50 @@ import com.xpn.xwiki.web.Utils;
  */
 public abstract class BaseElement implements ElementInterface, Serializable {
 
-  protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+  protected final transient Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Used to convert a Document Reference to string (compact form without the wiki part if it
    * matches the current wiki).
    */
-  protected final EntityReferenceSerializer<String> compactWikiEntityReferenceSerializer = Utils
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<EntityReferenceSerializer<String>> compactWikiEntityReferenceSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class, "compactwiki");
 
   /**
    * Used to convert a proper Document Reference to a string but without the wiki name.
    */
-  protected final EntityReferenceSerializer<String> localEntityReferenceSerializer = Utils
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<EntityReferenceSerializer<String>> localEntityReferenceSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class, "local");
+
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<EntityReferenceSerializer<EntityReference>> localReferenceEntityReferenceSerializer = () -> Utils
+      .getComponent(EntityReferenceSerializer.class, "local/reference");
 
   /**
    * Used to convert a proper Document Reference to a string but with the wiki name.
    */
-  protected final EntityReferenceSerializer<String> entityReferenceSerializer = Utils
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<EntityReferenceSerializer<String>> entityReferenceSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class);
+
+  /**
+   * Used to resolve a reference into a proper Document Reference using the current document's
+   * reference to fill the blanks, except for the page name for which the default page name is used
+   * instead and for the wiki name for which the current wiki is used instead of the current
+   * document reference's wiki.
+   */
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<DocumentReferenceResolver<EntityReference>> currentMixedDocRefResolver = () -> Utils
+      .getComponent(DocumentReferenceResolver.class, "currentmixed/reference");
+
+  /**
+   * Used here to merge setName() and setWiki() calls into the DocumentReference.
+   */
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<EntityReferenceResolver<String>> relativeEntityRefResolver = () -> Utils
+      .getComponent(EntityReferenceResolver.class, "relative");
 
   /**
    * Reference to the document in which this element is defined (for elements where this make sense,
@@ -145,7 +173,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
   public String getName() {
     // If the name is null then serialize the reference as a string.
     if ((this.name == null) && (this.reference != null)) {
-      this.name = this.localEntityReferenceSerializer.serialize(this.reference);
+      this.name = localEntityReferenceSerializer.get().serialize(this.reference);
     }
     return this.name;
   }
@@ -319,7 +347,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
       syntaxId = getDocument(context).getSyntaxId();
     } catch (Exception e) {
       logger.warn("Error while getting the syntax corresponding to object ["
-          + this.compactWikiEntityReferenceSerializer.serialize(getDocumentReference())
+          + compactWikiEntityReferenceSerializer.get().serialize(getDocumentReference())
           + "]. Defaulting to using XWiki 1.0 syntax. Internal error [" + e.getMessage() + "]");
       syntaxId = "xwiki/1.0";
     }
@@ -341,7 +369,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
       }
     }
     if (reference != null) {
-      ret.append(entityReferenceSerializer.serialize(reference));
+      ret.append(entityReferenceSerializer.get().serialize(reference));
     } else if ((name != null) && !name.isEmpty()) {
       ret.append(name);
     } else {
