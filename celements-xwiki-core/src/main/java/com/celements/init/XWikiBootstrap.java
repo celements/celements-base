@@ -10,7 +10,6 @@ import javax.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
@@ -27,7 +26,6 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.web.XWikiEngineContext;
 import com.xpn.xwiki.web.XWikiServletContext;
 
-@Lazy
 @Component
 public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent> {
 

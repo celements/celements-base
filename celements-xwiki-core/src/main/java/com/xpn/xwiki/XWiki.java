@@ -339,14 +339,19 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    *           the storage
    */
   public static XWiki getXWiki(XWikiContext context) throws XWikiException {
+    if (context.getWiki() != null) {
+      return context.getWiki();
+    }
+
     XWiki xwiki = (XWiki) context.getEngineContext().getAttribute(XWikiEngineContext.XWIKI_KEY);
     checkState(xwiki != null, "XWiki not initialised"); // initialised by XWikiBootstrap
+    context.setWiki(xwiki);
+
+    // TODO what about this following shit? needed in every getXWiki?
 
     if (!xwiki.isVirtualMode()) {
       return xwiki;
     }
-
-    // TODO what about this following shit? needed in every getXWiki?
 
     // Host is full.host.name in DNS-based multiwiki, and wikiname in path-based multiwiki.
     String host = "";
@@ -410,6 +415,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       // Just report it, hopefully the database is in a good enough state
       LOG.error("Failed to upgrade database: " + wikiName, ex);
     }
+
     return xwiki;
   }
 
