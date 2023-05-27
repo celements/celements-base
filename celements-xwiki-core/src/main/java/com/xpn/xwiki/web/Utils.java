@@ -20,6 +20,8 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -31,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -71,7 +74,7 @@ public class Utils {
    * {@link #getComponent(Class, String)}. It is useful
    * for any non component code that need to initialize/access components.
    */
-  private static ComponentManager componentManager;
+  private static final AtomicReference<ComponentManager> COMPONENT_MANAGER = new AtomicReference<>();
 
   /**
    * Generate the response by parsing a velocity template and printing the result to the
@@ -637,7 +640,7 @@ public class Utils {
    *          {@link #getComponent(Class, String)}
    */
   public static void setComponentManager(ComponentManager componentManager) {
-    Utils.componentManager = componentManager;
+    COMPONENT_MANAGER.set(componentManager);
   }
 
   /**
@@ -645,6 +648,8 @@ public class Utils {
    *         {@link #getComponent(Class, String)}
    */
   public static ComponentManager getComponentManager() {
+    ComponentManager componentManager = COMPONENT_MANAGER.get();
+    checkState(componentManager != null);
     return componentManager;
   }
 
@@ -661,21 +666,13 @@ public class Utils {
    *           initialized
    */
   public static <T> T getComponent(Class<T> role, String hint) {
-    T component = null;
-    if (componentManager != null) {
-      try {
-        component = componentManager.lookup(role, hint);
-      } catch (ComponentLookupException e) {
-        throw new RuntimeException(
-            "Failed to load component [" + role.getName() + "] for hint [" + hint + "]",
-            e);
-      }
-    } else {
-      throw new RuntimeException("Component manager has not been initialized before lookup for ["
-          + role.getName() + "] for hint [" + hint + "]");
+    try {
+      return getComponentManager().lookup(role, hint);
+    } catch (ComponentLookupException e) {
+      throw new RuntimeException(
+          "Failed to load component [" + role.getName() + "] for hint [" + hint + "]",
+          e);
     }
-
-    return component;
   }
 
   /**
@@ -704,21 +701,12 @@ public class Utils {
    * @since 2.0M3
    */
   public static <T> List<T> getComponentList(Class<T> role) {
-    List<T> components;
-    if (componentManager != null) {
-      try {
-        components = componentManager.lookupList(role);
-      } catch (ComponentLookupException e) {
-        throw new RuntimeException("Failed to load components with role [" + role.getName() + "]",
-            e);
-      }
-    } else {
-      throw new RuntimeException(
-          "Component manager has not been initialized before lookup for role ["
-              + role.getName() + "]");
+    try {
+      return getComponentManager().lookupList(role);
+    } catch (ComponentLookupException e) {
+      throw new RuntimeException("Failed to load components with role [" + role.getName() + "]",
+          e);
     }
-
-    return components;
   }
 
   /**

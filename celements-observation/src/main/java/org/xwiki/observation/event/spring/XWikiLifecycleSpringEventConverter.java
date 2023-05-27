@@ -4,6 +4,7 @@ import javax.inject.Inject;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ApplicationStartedEvent;
@@ -15,7 +16,7 @@ import com.celements.servlet.CelementsLifecycleEvent;
 @Component
 @Lazy // otherwise ObservationManager will be eagerly initialised causing issues
 public class XWikiLifecycleSpringEventConverter
-    implements ApplicationListener<CelementsLifecycleEvent> {
+    implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
 
   private final ObservationManager observationManager;
 
@@ -30,6 +31,11 @@ public class XWikiLifecycleSpringEventConverter
         ? new ApplicationStartedEvent()
         : new ApplicationStoppedEvent();
     observationManager.notify(xwikiEvent, this);
+  }
+
+  @Override
+  public int getOrder() {
+    return 0; // default
   }
 
 }

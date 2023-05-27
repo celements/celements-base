@@ -10,7 +10,9 @@ import javax.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
+import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
@@ -23,11 +25,12 @@ import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiEngineContext;
 import com.xpn.xwiki.web.XWikiServletContext;
 
 @Component
-public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent> {
+public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(XWikiBootstrap.class);
 
@@ -35,17 +38,25 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private final ServerUrlUtilsRole serverUrlUtils;
   private final Execution execution;
   private final ExecutionContextManager executionManager;
+  private final ComponentManager componentManager;
 
   @Inject
   public XWikiBootstrap(
       ServletContext servletContext,
       ServerUrlUtilsRole serverUrlUtils,
       Execution execution,
-      ExecutionContextManager executionManager) {
+      ExecutionContextManager executionManager,
+      ComponentManager componentManager) {
     this.servletContext = servletContext;
     this.serverUrlUtils = serverUrlUtils;
     this.execution = execution;
     this.executionManager = executionManager;
+    this.componentManager = componentManager;
+  }
+
+  @Override
+  public int getOrder() {
+    return Ordered.HIGHEST_PRECEDENCE;
   }
 
   @Override
@@ -64,6 +75,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     XWikiConfig xwikiCfg = loadXWikiConfig();
     XWikiContext xwikiContext = createInitialXWikiContext(wikiName, xwikiCfg);
     initExecutionContext(xwikiContext);
+    Utils.setComponentManager(componentManager);
     XWiki xwiki = createXWiki(xwikiCfg, xwikiContext);
     // TODO requires XWiki ? Cfg should suffice
     xwikiContext.setURLFactory(xwiki.getURLFactoryService().createURLFactory(xwikiContext));
