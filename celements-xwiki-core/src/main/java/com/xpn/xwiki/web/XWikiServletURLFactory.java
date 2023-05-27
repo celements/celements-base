@@ -150,14 +150,12 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
     if ((xwikidb == null) || xwikidb.equals(context.getOriginalDatabase())) {
       return this.serverURL;
     }
-
     if (context.isMainWiki(xwikidb)) {
       String surl = context.getWiki().Param("xwiki.home", null);
       if (!StringUtils.isEmpty(surl)) {
         return new URL(surl);
       }
     }
-
     URL url = context.getWiki().getServerURL(xwikidb, context);
     return url == null ? this.serverURL : url;
   }
@@ -184,8 +182,7 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
    */
   @Override
   public URL createURL(String web, String name, String action, String querystring, String anchor,
-      String xwikidb,
-      XWikiContext context) {
+      String xwikidb, XWikiContext context) {
     // Action and Query String transformers
     if (("view".equals(action)) && (context.getLinksAction() != null)) {
       action = context.getLinksAction();
@@ -219,7 +216,7 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
       return new URL(getServerURL(xwikidb, context), newpath.toString());
     } catch (MalformedURLException e) {
       // This should not happen
-      return null;
+      throw new IllegalArgumentException(e);
     }
   }
 

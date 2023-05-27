@@ -4181,7 +4181,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       if ((currentServletpath != null) && currentServletpath.startsWith("/bin")) {
         servletPath = "bin/";
       } else {
-        servletPath = Param("xwiki.defaultservletpath", "bin/");
+        servletPath = Param("xwiki.defaultservletpath", "");
       }
     }
     return servletPath;

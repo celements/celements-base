@@ -48,7 +48,7 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
 
   private String getProtocol(BaseObject serverObj, XWikiContext context) {
     String protocol = context.getWiki().Param("xwiki.url.protocol", "");
-    if (!protocol.isEmpty()) {
+    if (protocol.isEmpty()) {
       int iSecure = serverObj.getIntValue("secure", -1);
       boolean secure = (iSecure > 0) || ((iSecure < 0) && (context.getRequest() != null)
           && context.getRequest().isSecure());

@@ -1,13 +1,15 @@
 package com.xpn.xwiki.web;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jmock.Mock;
-import org.jmock.core.Invocation;
-import org.jmock.core.stub.CustomStub;
+import org.junit.Before;
+import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
@@ -17,9 +19,9 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractBridgedComponentTest;
 
-public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTestCase {
+public class XWikiServletURLFactoryTest extends AbstractBridgedComponentTest {
 
   private static final String MAIN_WIKI_NAME = "xwiki";
 
@@ -28,25 +30,6 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
   private XWikiServletURLFactory urlFactory = new XWikiServletURLFactory();
 
   private Map<String, Map<String, XWikiDocument>> databases = new HashMap<>();
-
-  /**
-   * Flag indicating if the request is secure. A request is secure if either its URL uses the HTTPS
-   * scheme or the
-   * receiving web application is behind a secure reverse proxy (e.g. the request was send to the
-   * reverse proxy
-   * through HTTPS).
-   * <p>
-   * Tests can set this flag to control the value returned by {@link XWikiRequest#isSecure()}.
-   */
-  private boolean secure;
-
-  /**
-   * The map of HTTP headers.
-   * <p>
-   * Tests can add values to this map to control the value returned by
-   * {@link XWikiRequest#getHeader(String)}.
-   */
-  private final Map<String, String> httpHeaders = new HashMap<>();
 
   private Map<String, XWikiDocument> getDocuments(String database, boolean create)
       throws XWikiException {
@@ -82,15 +65,8 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
     database.put(document.getFullName(), document);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see junit.framework.TestCase#setUp()
-   */
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
+  @Before
+  public void setUp() throws Exception {
     this.databases.put(MAIN_WIKI_NAME, new HashMap<String, XWikiDocument>());
 
     XWiki xwiki = new XWiki() {
@@ -98,9 +74,8 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
       @Override
       public XWikiDocument getDocument(String fullname, XWikiContext context)
           throws XWikiException {
-        return XWikiServletURLFactoryTest.this
-            .getDocument(Utils.getComponent(DocumentReferenceResolver.class,
-                "currentmixed").resolve(fullname));
+        return XWikiServletURLFactoryTest.this.getDocument(Utils
+            .getComponent(DocumentReferenceResolver.class, "currentmixed").resolve(fullname));
       }
 
       @Override
@@ -117,38 +92,17 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
     xwiki.setConfig((this.config = new XWikiConfig()));
     xwiki.setDatabase(getContext().getDatabase());
 
-    Mock mockXWikiRequest = mock(XWikiRequest.class, new Class[] {}, new Object[] {});
-    mockXWikiRequest.stubs().method("getScheme").will(returnValue("http"));
-    mockXWikiRequest.stubs().method("isSecure")
-        .will(new CustomStub("Implements ServletRequest.isSecure") {
-
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            return secure;
-          }
-        });
-    mockXWikiRequest.stubs().method("getServletPath").will(returnValue(""));
-    mockXWikiRequest.stubs().method("getContextPath").will(returnValue("/xwiki"));
-    mockXWikiRequest.stubs().method("getHeader")
-        .will(new CustomStub("Implements HttpServletRequest.getHeader") {
-
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            String headerName = (String) invocation.parameterValues.get(0);
-            return httpHeaders.get(headerName);
-          }
-        });
-
+    XWikiRequest requestMock = createDefaultMock(XWikiRequest.class);
+    expect(requestMock.getScheme()).andReturn("http").anyTimes();
+    expect(requestMock.getServletPath()).andReturn("").anyTimes();
     getContext().setWiki(xwiki);
-    getContext().setRequest((XWikiRequest) mockXWikiRequest.proxy());
+    getContext().setRequest(requestMock);
 
     // Create sub-wikis.
     createWiki("wiki1");
     createWiki("wiki2");
 
-    getContext().setURL(new URL("http://127.0.0.1/xwiki/view/InitialSpace/InitialPage"));
-
-    this.urlFactory.init(getContext());
+    getContext().setURL(new URL("http://celements.com/view/InitialSpace/InitialPage"));
   }
 
   /**
@@ -165,58 +119,48 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
     XWikiDocument wikiDoc = getDocument(
         new DocumentReference(MAIN_WIKI_NAME, "XWiki", wikiDocName));
     BaseObject wikiObj = wikiDoc.newObject("XWiki.XWikiServerClass", getContext());
-    wikiObj.setStringValue("server", wikiName + "server");
+    wikiObj.setStringValue("server", wikiName + ".celements.com");
     saveDocument(wikiDoc);
   }
 
+  @Test
   public void testCreateURLOnMainWiki() throws MalformedURLException {
-    URL url = this.urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "xwiki",
+    expect(getContext().getRequest().isSecure()).andReturn(false).anyTimes();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn(null);
+
+    replayDefault();
+    urlFactory.init(getContext());
+    URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "xwiki",
         getContext());
-    assertEquals(new URL("http://127.0.0.1/xwiki/bin/view/Space/Page?param1=1#anchor"), url);
+    assertEquals(new URL("http://celements.com/view/Space/Page?param1=1#anchor"), url);
+    verifyDefault();
   }
 
+  @Test
   public void testCreateURLOnSubWiki() throws MalformedURLException {
-    URL url = this.urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
+    expect(getContext().getRequest().isSecure()).andReturn(false).atLeastOnce();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn(null);
+
+    replayDefault();
+    urlFactory.init(getContext());
+    URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
         getContext());
-    assertEquals(new URL("http://wiki1server/xwiki/bin/view/Space/Page?param1=1#anchor"), url);
+    assertEquals(new URL("http://wiki1.celements.com/view/Space/Page?param1=1#anchor"), url);
+    verifyDefault();
   }
 
+  @Test
   public void testCreateURLOnSubWikiInVirtualMode() throws MalformedURLException {
     this.config.setProperty("xwiki.virtual", "1");
+    expect(getContext().getRequest().isSecure()).andReturn(false).atLeastOnce();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn(null);
 
-    URL url = this.urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
-        getContext());
-    assertEquals(new URL("http://wiki1server/xwiki/bin/view/Space/Page?param1=1#anchor"), url);
-  }
-
-  public void testCreateURLOnMainWikiInPathMode() throws MalformedURLException {
-    URL url = this.urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "xwiki",
-        getContext());
-    assertEquals(new URL("http://127.0.0.1/bin/view/Space/Page?param1=1#anchor"), url);
-  }
-
-  public void testCreateURLOnSubWikiInPathMode() throws MalformedURLException {
-    URL url = this.urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
-        getContext());
-    assertEquals(new URL("http://127.0.0.1/wiki/wiki1server/view/Space/Page?param1=1#anchor"),
-        url);
-  }
-
-  public void testCreateURLOnSubWikiInVirtualModeInPathMode() throws MalformedURLException {
-    this.config.setProperty("xwiki.virtual", "1");
-    secure = true;
-    // Change the context URL to include a port number and to use HTTPS.
-    getContext().setURL(new URL("https://localhost:8080/xwiki/view/Main/"));
-    // Reinitialize the URL factory to take into account the new context URL.
+    replayDefault();
     urlFactory.init(getContext());
-
-    URL url = this.urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
+    URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
         getContext());
-    assertEquals(
-        new URL("https://localhost:8080/wiki/wiki1server/view/Space/Page?param1=1#anchor"),
-        url);
-    assertEquals("/xwiki/wiki/wiki1server/view/Space/Page?param1=1#anchor",
-        urlFactory.getURL(url, getContext()));
+    assertEquals(new URL("http://wiki1.celements.com/view/Space/Page?param1=1#anchor"), url);
+    verifyDefault();
   }
 
   /**
@@ -225,92 +169,67 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
    * @throws MalformedURLException
    *           shouldn't happen
    */
+  @Test
   public void testCreateURLOnMainWikiInReverseProxyMode() throws MalformedURLException {
-    secure = true;
-    httpHeaders.put("x-forwarded-host", "www.xwiki.org");
-    // Reinitialize the URL factory to take into account the new security level and HTTP headers.
-    urlFactory.init(getContext());
+    expect(getContext().getRequest().isSecure()).andReturn(true).atLeastOnce();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn("www.xwiki.org");
 
+    replayDefault();
+    urlFactory.init(getContext());
     URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "xwiki",
         getContext());
-    assertEquals(new URL("https://www.xwiki.org/xwiki/bin/view/Space/Page?param1=1#anchor"), url);
-    assertEquals("/xwiki/bin/view/Space/Page?param1=1#anchor",
+    assertEquals(new URL("https://www.xwiki.org/view/Space/Page?param1=1#anchor"), url);
+    assertEquals("/view/Space/Page?param1=1#anchor",
         urlFactory.getURL(url, getContext()));
+    verifyDefault();
   }
 
+  @Test
   public void testCreateURLOnSubWikiInReverseProxyMode() throws MalformedURLException {
-    httpHeaders.put("x-forwarded-host", "www.xwiki.org");
-    // Reinitialize the URL factory to take into account the new HTTP headers.
-    urlFactory.init(getContext());
+    expect(getContext().getRequest().isSecure()).andReturn(false).atLeastOnce();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn("www.xwiki.org");
 
+    replayDefault();
+    urlFactory.init(getContext());
     URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
         getContext());
-    assertEquals(new URL("http://wiki1server/xwiki/bin/view/Space/Page?param1=1#anchor"), url);
+    assertEquals(new URL("http://wiki1.celements.com/view/Space/Page?param1=1#anchor"), url);
     // The URL remains absolute in this case.
-    assertEquals("http://wiki1server/xwiki/bin/view/Space/Page?param1=1#anchor",
-        urlFactory.getURL(url,
-            getContext()));
+    assertEquals("http://wiki1.celements.com/view/Space/Page?param1=1#anchor",
+        urlFactory.getURL(url, getContext()));
+    verifyDefault();
   }
 
+  @Test
   public void testCreateURLOnSubWikiInVirtualModeInReverseProxyMode() throws MalformedURLException {
-    secure = true;
-    httpHeaders.put("x-forwarded-host", "www.xwiki.org");
-    // Reinitialize the URL factory to take into account the new security level and HTTP headers.
-    urlFactory.init(getContext());
-
     config.setProperty("xwiki.virtual", "1");
+    expect(getContext().getRequest().isSecure()).andReturn(true).atLeastOnce();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn("www.xwiki.org");
 
+    replayDefault();
+    urlFactory.init(getContext());
     URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
         getContext());
-    assertEquals(new URL("https://wiki1server/xwiki/bin/view/Space/Page?param1=1#anchor"), url);
+    assertEquals(new URL("https://wiki1.celements.com/view/Space/Page?param1=1#anchor"), url);
     // The URL remains absolute in this case.
-    assertEquals("https://wiki1server/xwiki/bin/view/Space/Page?param1=1#anchor",
-        urlFactory.getURL(url,
-            getContext()));
+    assertEquals("https://wiki1.celements.com/view/Space/Page?param1=1#anchor",
+        urlFactory.getURL(url, getContext()));
+    verifyDefault();
   }
 
+  @Test
   public void testCreateURLOnMainWikiInPathModeInReverseProxyMode() throws MalformedURLException {
-    httpHeaders.put("x-forwarded-host", "www.xwiki.org");
-    // Reinitialize the URL factory to take into account the new HTTP headers.
-    urlFactory.init(getContext());
+    expect(getContext().getRequest().isSecure()).andReturn(false).atLeastOnce();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn("www.xwiki.org");
 
+    replayDefault();
+    urlFactory.init(getContext());
     URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "xwiki",
         getContext());
-    assertEquals(new URL("http://www.xwiki.org/bin/view/Space/Page?param1=1#anchor"), url);
-    assertEquals("/xwiki/bin/view/Space/Page?param1=1#anchor",
+    assertEquals(new URL("http://www.xwiki.org/view/Space/Page?param1=1#anchor"), url);
+    assertEquals("/view/Space/Page?param1=1#anchor",
         urlFactory.getURL(url, getContext()));
-  }
-
-  public void testCreateURLOnSubWikiInPathModeInReverseProxyMode() throws MalformedURLException {
-    secure = true;
-    httpHeaders.put("x-forwarded-host", "www.xwiki.org");
-    // Reinitialize the URL factory to take into account the new security level and HTTP headers.
-    urlFactory.init(getContext());
-
-    URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
-        getContext());
-    assertEquals(
-        new URL("https://www.xwiki.org/wiki/wiki1server/view/Space/Page?param1=1#anchor"),
-        url);
-    assertEquals("/xwiki/wiki/wiki1server/view/Space/Page?param1=1#anchor",
-        urlFactory.getURL(url, getContext()));
-  }
-
-  public void testCreateURLOnSubWikiInVirtualModeInPathModeInReverseProxyMode()
-      throws MalformedURLException {
-    httpHeaders.put("x-forwarded-host", "www.xwiki.org:8080");
-    // Reinitialize the URL factory to take into account the new HTTP headers.
-    urlFactory.init(getContext());
-
-    config.setProperty("xwiki.virtual", "1");
-
-    URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
-        getContext());
-    assertEquals(
-        new URL("http://www.xwiki.org:8080/wiki/wiki1server/view/Space/Page?param1=1#anchor"),
-        url);
-    assertEquals("/xwiki/wiki/wiki1server/view/Space/Page?param1=1#anchor",
-        urlFactory.getURL(url, getContext()));
+    verifyDefault();
   }
 
   /**
@@ -318,18 +237,21 @@ public class XWikiServletURLFactoryTest extends AbstractBridgedXWikiComponentTes
    * context wiki (explicitly
    * set from code on the XWiki context) are different.
    */
+  @Test
   public void testGetURLWhenRequestWikiAndContextWikiAreDifferent() throws MalformedURLException {
-    getContext().setURL(new URL("http://wiki1server/xwiki/view/InitialSpace/InitialPage"));
-    // Reinitialize the URL factory to take into account the new request URL.
-    urlFactory.init(getContext());
-
+    expect(getContext().getRequest().isSecure()).andReturn(false).atLeastOnce();
+    expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn(null);
+    getContext().setURL(new URL("http://wiki1.celements.com/view/InitialSpace/InitialPage"));
     getContext().setDatabase("wiki2");
 
-    String url = urlFactory.getURL(new URL("http://wiki1server/xwiki/bin/view/Space/Page"),
+    replayDefault();
+    urlFactory.init(getContext());
+    String url = urlFactory.getURL(new URL("http://wiki1.celements.com/view/Space/Page"),
         getContext());
-    assertEquals("/xwiki/bin/view/Space/Page", url);
+    assertEquals("/view/Space/Page", url);
 
-    url = urlFactory.getURL(new URL("http://wiki2server/xwiki/bin/view/Space/Page"), getContext());
-    assertEquals("http://wiki2server/xwiki/bin/view/Space/Page", url);
+    url = urlFactory.getURL(new URL("http://wiki2.celements.com/view/Space/Page"), getContext());
+    assertEquals("http://wiki2.celements.com/view/Space/Page", url);
+    verifyDefault();
   }
 }

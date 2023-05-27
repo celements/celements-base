@@ -19,42 +19,44 @@
  */
 package com.xpn.xwiki.test;
 
-import org.jmock.Mock;
+import static org.easymock.EasyMock.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.springframework.mock.web.MockServletContext;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.Container;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.rendering.syntax.Syntax;
-import org.xwiki.test.AbstractXWikiComponentTestCase;
 
+import com.celements.common.test.AbstractBaseComponentTest;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
 
 /**
- * Extension of {@link org.xwiki.test.AbstractXWikiComponentTestCase} that sets up a bridge between
- * the new Execution Context and the old XWikiContext. This allows code that uses XWikiContext to be
- * tested using this Test Case class.
+ * Same as {@link com.xpn.xwiki.test.AbstractBridgedComponentTestCase} but for EasyMock.
  *
- * @version $Id$
- * @since 1.6M1
- * @deprecated use JUnit 4+ and {@link AbstractBridgedComponentTest}
  */
-@Deprecated
-public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWikiComponentTestCase {
+public abstract class AbstractBridgedComponentTest extends AbstractBaseComponentTest {
 
   private XWikiContext context;
 
   @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  protected void beforeSpringContextRefresh() {
+    getBeanFactory().registerSingleton(MockServletContext.class.getName(),
+        new MockServletContext(getSpringContext()));
+  }
 
+  @Before
+  public final void setUpXWiki() throws Exception {
     // Statically store the component manager in {@link Utils} to be able to access it without
     // the context.
     Utils.setComponentManager(getComponentManager());
 
     this.context = new XWikiContext();
-
     this.context.setDatabase("xwiki");
     this.context.setMainXWiki("xwiki");
 
@@ -62,23 +64,23 @@ public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWik
     getContext().put(ComponentManager.class.getName(), getComponentManager());
 
     // Bridge with old XWiki Context, required for old code.
-    Execution execution = getComponentManager().lookup(Execution.class);
-    execution.getContext().setProperty("xwikicontext", this.context);
+    ExecutionContext execCtx = new ExecutionContext();
+    getComponentManager().lookup(Execution.class).setContext(execCtx);
+    execCtx.setProperty("xwikicontext", this.context);
     getComponentManager().lookup(XWikiStubContextProvider.class).initialize(this.context);
 
     // Set a simple application context, as some components fail to start without one.
-    Container c = getComponentManager().lookup(Container.class);
-    c.setApplicationContext(new TestApplicationContext());
+    getComponentManager().lookup(Container.class)
+        .setApplicationContext(new TestApplicationContext());
 
-    Mock mockCoreConfiguration = registerMockComponent(CoreConfiguration.class);
-    mockCoreConfiguration.stubs().method("getDefaultDocumentSyntax")
-        .will(returnValue(Syntax.XWIKI_1_0));
+    final CoreConfiguration mockCoreConfiguration = registerComponentMock(CoreConfiguration.class);
+    expect(mockCoreConfiguration.getDefaultDocumentSyntax())
+        .andReturn(Syntax.XWIKI_1_0).anyTimes();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDownXWiki() throws Exception {
     Utils.setComponentManager(null);
-    super.tearDown();
   }
 
   public XWikiContext getContext() {

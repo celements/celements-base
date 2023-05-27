@@ -30,7 +30,6 @@ import org.xwiki.context.Execution;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.AbstractComponentTestCase;
 
-import com.celements.common.test.AbstractBaseComponentTest;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
@@ -42,7 +41,7 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  * @since 2.2M2
- * @deprecated instead use {@link AbstractBaseComponentTest}
+ * @deprecated instead use {@link AbstractBridgedComponentTest}
  */
 @Deprecated
 public abstract class AbstractBridgedComponentTestCase extends AbstractComponentTestCase {
