@@ -55,26 +55,38 @@ public abstract class BaseElement implements ElementInterface, Serializable {
    * matches the current wiki).
    */
   @SuppressWarnings("unchecked")
-  protected static final Supplier<EntityReferenceSerializer<String>> compactWikiEntityReferenceSerializer = () -> Utils
+  protected static final Supplier<EntityReferenceSerializer<String>> compactWikiEntityRefSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class, "compactwiki");
 
   /**
    * Used to convert a proper Document Reference to a string but without the wiki name.
    */
   @SuppressWarnings("unchecked")
-  protected static final Supplier<EntityReferenceSerializer<String>> localEntityReferenceSerializer = () -> Utils
+  protected static final Supplier<EntityReferenceSerializer<String>> localEntityRefSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class, "local");
 
   @SuppressWarnings("unchecked")
-  protected static final Supplier<EntityReferenceSerializer<EntityReference>> localReferenceEntityReferenceSerializer = () -> Utils
+  protected static final Supplier<EntityReferenceSerializer<EntityReference>> localRefEntityRefSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class, "local/reference");
 
   /**
    * Used to convert a proper Document Reference to a string but with the wiki name.
    */
   @SuppressWarnings("unchecked")
-  protected static final Supplier<EntityReferenceSerializer<String>> entityReferenceSerializer = () -> Utils
+  protected static final Supplier<EntityReferenceSerializer<String>> entityRefSerializer = () -> Utils
       .getComponent(EntityReferenceSerializer.class);
+
+  /**
+   * Used to resolve XClass references in the way they are stored externally (database, xml, etc),
+   * ie relative or absolute.
+   */
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<EntityReferenceResolver<String>> relativeEntityRefResolver = () -> Utils
+      .getComponent(EntityReferenceResolver.class, "relative");
+
+  @SuppressWarnings("unchecked")
+  protected static final Supplier<DocumentReferenceResolver<EntityReference>> currentRefDocRefResolver = () -> Utils
+      .getComponent(DocumentReferenceResolver.class, "current/reference");
 
   /**
    * Used to resolve a reference into a proper Document Reference using the current document's
@@ -85,13 +97,6 @@ public abstract class BaseElement implements ElementInterface, Serializable {
   @SuppressWarnings("unchecked")
   protected static final Supplier<DocumentReferenceResolver<EntityReference>> currentMixedDocRefResolver = () -> Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed/reference");
-
-  /**
-   * Used here to merge setName() and setWiki() calls into the DocumentReference.
-   */
-  @SuppressWarnings("unchecked")
-  protected static final Supplier<EntityReferenceResolver<String>> relativeEntityRefResolver = () -> Utils
-      .getComponent(EntityReferenceResolver.class, "relative");
 
   /**
    * Reference to the document in which this element is defined (for elements where this make sense,
@@ -173,7 +178,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
   public String getName() {
     // If the name is null then serialize the reference as a string.
     if ((this.name == null) && (this.reference != null)) {
-      this.name = localEntityReferenceSerializer.get().serialize(this.reference);
+      this.name = localEntityRefSerializer.get().serialize(this.reference);
     }
     return this.name;
   }
@@ -347,7 +352,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
       syntaxId = getDocument(context).getSyntaxId();
     } catch (Exception e) {
       logger.warn("Error while getting the syntax corresponding to object ["
-          + compactWikiEntityReferenceSerializer.get().serialize(getDocumentReference())
+          + compactWikiEntityRefSerializer.get().serialize(getDocumentReference())
           + "]. Defaulting to using XWiki 1.0 syntax. Internal error [" + e.getMessage() + "]");
       syntaxId = "xwiki/1.0";
     }
@@ -369,7 +374,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
       }
     }
     if (reference != null) {
-      ret.append(entityReferenceSerializer.get().serialize(reference));
+      ret.append(entityRefSerializer.get().serialize(reference));
     } else if ((name != null) && !name.isEmpty()) {
       ret.append(name);
     } else {

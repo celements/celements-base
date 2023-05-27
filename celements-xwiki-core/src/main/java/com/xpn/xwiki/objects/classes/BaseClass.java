@@ -312,7 +312,7 @@ public class BaseClass extends BaseCollection implements ClassInterface {
   @Deprecated
   public BaseCollection newObject(XWikiContext context) throws XWikiException {
     BaseObject bobj = newCustomClassInstance(context);
-    bobj.setXClassReference(localReferenceEntityReferenceSerializer.get()
+    bobj.setXClassReference(localRefEntityRefSerializer.get()
         .serialize(getDocumentReference()));
     return bobj;
   }
