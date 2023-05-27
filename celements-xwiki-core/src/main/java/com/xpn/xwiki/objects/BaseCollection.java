@@ -33,7 +33,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
@@ -64,18 +63,6 @@ import com.xpn.xwiki.web.Utils;
  * @version $Id$
  */
 public abstract class BaseCollection extends BaseElement implements ObjectInterface, Cloneable {
-
-  @SuppressWarnings("unchecked")
-  protected final Supplier<EntityReferenceSerializer<EntityReference>> localReferenceEntityReferenceSerializer = () -> Utils
-      .getComponent(EntityReferenceSerializer.class, "local/reference");
-
-  @SuppressWarnings("unchecked")
-  protected final Supplier<DocumentReferenceResolver<EntityReference>> currentMixedDocRefResolver = () -> Utils
-      .getComponent(DocumentReferenceResolver.class, "currentmixed/reference");
-
-  @SuppressWarnings("unchecked")
-  protected final Supplier<EntityReferenceResolver<String>> relativeEntityRefResolver = () -> Utils
-      .getComponent(EntityReferenceResolver.class, "relative");
 
   /**
    * The meaning of this reference fields depends on the element represented. Examples:
