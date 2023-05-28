@@ -38,7 +38,7 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  * @since 1.6M1
- * @deprecated use JUnit 4+ and {@link AbstractBridgedComponentTest}
+ * @deprecated use JUnit 4+ and {@link AbstractComponentTest}
  */
 @Deprecated
 public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWikiComponentTestCase {

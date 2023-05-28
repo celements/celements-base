@@ -19,9 +19,9 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.test.AbstractBridgedComponentTest;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
-public class XWikiServletURLFactoryTest extends AbstractBridgedComponentTest {
+public class XWikiServletURLFactoryTest extends AbstractComponentTest {
 
   private static final String MAIN_WIKI_NAME = "xwiki";
 

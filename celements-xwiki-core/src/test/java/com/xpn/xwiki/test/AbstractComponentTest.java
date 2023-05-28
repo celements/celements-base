@@ -32,6 +32,7 @@ import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.common.test.AbstractBaseComponentTest;
 import com.xpn.xwiki.CoreConfiguration;
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
@@ -40,7 +41,7 @@ import com.xpn.xwiki.web.Utils;
  * Same as {@link com.xpn.xwiki.test.AbstractBridgedComponentTestCase} but for EasyMock.
  *
  */
-public abstract class AbstractBridgedComponentTest extends AbstractBaseComponentTest {
+public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
 
   private XWikiContext context;
 
@@ -56,9 +57,10 @@ public abstract class AbstractBridgedComponentTest extends AbstractBaseComponent
     // the context.
     Utils.setComponentManager(getComponentManager());
 
-    this.context = new XWikiContext();
-    this.context.setDatabase("xwiki");
-    this.context.setMainXWiki("xwiki");
+    context = new XWikiContext();
+    context.setDatabase("xwiki");
+    context.setMainXWiki("xwiki");
+    context.setWiki(createDefaultMock(XWiki.class));
 
     // We need to initialize the Component Manager so that the components can be looked up
     getContext().put(ComponentManager.class.getName(), getComponentManager());
@@ -66,7 +68,7 @@ public abstract class AbstractBridgedComponentTest extends AbstractBaseComponent
     // Bridge with old XWiki Context, required for old code.
     ExecutionContext execCtx = new ExecutionContext();
     getComponentManager().lookup(Execution.class).setContext(execCtx);
-    execCtx.setProperty("xwikicontext", this.context);
+    execCtx.setProperty("xwikicontext", context);
     getComponentManager().lookup(XWikiStubContextProvider.class).initialize(this.context);
 
     // Set a simple application context, as some components fail to start without one.
@@ -84,6 +86,11 @@ public abstract class AbstractBridgedComponentTest extends AbstractBaseComponent
   }
 
   public XWikiContext getContext() {
-    return this.context;
+    return context;
   }
+
+  public XWiki getWikiMock() {
+    return context.getWiki();
+  }
+
 }

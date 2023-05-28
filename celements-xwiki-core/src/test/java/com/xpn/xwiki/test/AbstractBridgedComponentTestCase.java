@@ -41,7 +41,7 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  * @since 2.2M2
- * @deprecated instead use {@link AbstractBridgedComponentTest}
+ * @deprecated instead use {@link AbstractComponentTest}
  */
 @Deprecated
 public abstract class AbstractBridgedComponentTestCase extends AbstractComponentTestCase {

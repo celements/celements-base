@@ -111,10 +111,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private XWikiURLFactory URLFactory;
 
-  private String wikiOwner;
-
-  private XWikiDocument wikiServer;
-
   private int cacheDuration = 0;
 
   private int classCacheSize = 20;
@@ -390,22 +386,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public void setFinished(boolean finished) {
     this.finished = finished;
-  }
-
-  public void setWikiOwner(String wikiOwner) {
-    this.wikiOwner = wikiOwner;
-  }
-
-  public String getWikiOwner() {
-    return this.wikiOwner;
-  }
-
-  public void setWikiServer(XWikiDocument doc) {
-    this.wikiServer = doc;
-  }
-
-  public XWikiDocument getWikiServer() {
-    return this.wikiServer;
   }
 
   public int getCacheDuration() {

@@ -230,32 +230,6 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     verifyDefault();
   }
 
-  @Test
-  public void test_getSchemaFromWikiName_virtual() {
-    expect(getWikiMock().isVirtualMode()).andReturn(true).anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
-    replayDefault();
-    CelHibernateStore store = getStore(null);
-    assertNull(store.getSchemaFromWikiName(null, getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("as5df", getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("AS5DF", getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("a$s5(DF)", getContext()));
-    assertEquals("pref_as5df_suf", store.getSchemaFromWikiName("AS5DF-SUF", getContext()));
-    verifyDefault();
-  }
-
-  @Test
-  public void test_getSchemaFromWikiName_main() {
-    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
-    expect(getWikiMock().Param("xwiki.db", "")).andReturn("main").anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
-    replayDefault();
-    CelHibernateStore store = getStore(null);
-    assertNull(store.getSchemaFromWikiName(null, getContext()));
-    assertEquals("pref_main", store.getSchemaFromWikiName("as5df", getContext()));
-    verifyDefault();
-  }
-
   private CelHibernateStore getStore(Session session) {
     CelHibernateStore store = (CelHibernateStore) Utils.getComponent(XWikiStoreInterface.class);
     store.setSessionFactory(sessionFactoryMock);
