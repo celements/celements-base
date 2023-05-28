@@ -409,31 +409,4 @@ public class CelHibernateStore extends XWikiHibernateStore {
     return available;
   }
 
-  /**
-   * Convert wiki name in database/schema name.
-   *
-   * @param wikiName
-   *          the wiki name to convert.
-   * @param context
-   *          the XWiki context.
-   * @return the database/schema name.
-   */
-  @Override
-  protected String getSchemaFromWikiName(String wikiName, XWikiContext context) {
-    if (wikiName == null) {
-      return null;
-    }
-    String schemaName = null;
-    if (context.isMainWiki(wikiName)) {
-      schemaName = context.getWiki().Param("xwiki.db");
-    }
-    if (schemaName == null) {
-      schemaName = wikiName;
-    }
-    return (context.getWiki().Param("xwiki.db.prefix", "") + schemaName)
-        .toLowerCase()
-        .replace('-', '_')
-        .replaceAll("[^a-z0-9_]", "");
-  }
-
 }

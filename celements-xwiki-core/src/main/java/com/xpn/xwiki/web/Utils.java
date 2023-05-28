@@ -390,6 +390,7 @@ public class Utils {
     context.setRequest(request);
     context.setResponse(response);
     context.setAction(action);
+    context.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
     context.setDatabase(XWikiConstant.MAIN_WIKI.getName());
     context.setMode(XWikiContext.MODE_SERVLET);
     return context;

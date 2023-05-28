@@ -21,27 +21,19 @@
 
 package com.xpn.xwiki;
 
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 
-import javax.servlet.ServletException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.velocity.exception.MethodInvocationException;
-import org.hibernate.JDBCException;
-
 public class XWikiException extends Exception {
 
-  private static final Log log = LogFactory.getLog(XWikiException.class);
+  private static final long serialVersionUID = 1L;
 
-  private int module;
-  private int code;
-  private Throwable exception;
-  private Object[] args;
-  private String message;
+  private final int module;
+  private final int code;
+  private final Throwable exception;
+  private final Object[] args;
+  private final String message;
 
   // Module list
   public static final int MODULE_XWIKI = 0;
@@ -208,14 +200,12 @@ public class XWikiException extends Exception {
   public static final int ERROR_XWIKI_CONTENT_LINK_INVALID_URI = 22001;
 
   public XWikiException(int module, int code, String message, Throwable e, Object[] args) {
-    setModule(module);
-    setCode(code);
-    setException(e);
-    setArgs(args);
-    setMessage(message);
-    if (log.isTraceEnabled()) {
-      log.trace(getMessage(), e);
-    }
+    super(e);
+    this.module = module;
+    this.code = code;
+    this.exception = e;
+    this.args = args;
+    this.message = message;
   }
 
   public XWikiException(int module, int code, String message, Throwable e) {
@@ -226,7 +216,9 @@ public class XWikiException extends Exception {
     this(module, code, message, null, null);
   }
 
-  public XWikiException() {}
+  public XWikiException() {
+    this(0, 0, null);
+  }
 
   public int getModule() {
     return module;
@@ -236,36 +228,16 @@ public class XWikiException extends Exception {
     return "" + module;
   }
 
-  public void setModule(int module) {
-    this.module = module;
-  }
-
   public int getCode() {
     return code;
-  }
-
-  public void setCode(int code) {
-    this.code = code;
   }
 
   public Throwable getException() {
     return exception;
   }
 
-  public void setException(Throwable exception) {
-    this.exception = exception;
-  }
-
   public Object[] getArgs() {
     return args;
-  }
-
-  public void setArgs(Object[] args) {
-    this.args = args;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
   }
 
   @Override
@@ -311,56 +283,10 @@ public class XWikiException extends Exception {
     return buffer.toString();
   }
 
-  @Override
-  public void printStackTrace(PrintWriter s) {
-    super.printStackTrace(s);
-    if (exception != null) {
-      s.write("\n\nWrapped Exception:\n\n");
-      if (exception.getCause() != null) {
-        exception.getCause().printStackTrace(s);
-      } else if (exception instanceof org.hibernate.JDBCException) {
-        (((JDBCException) exception).getSQLException()).printStackTrace(s);
-      } else if (exception instanceof MethodInvocationException) {
-        (((MethodInvocationException) exception).getWrappedThrowable()).printStackTrace(s);
-      } else if (exception instanceof ServletException) {
-        (((ServletException) exception).getRootCause()).printStackTrace(s);
-      } else {
-        exception.printStackTrace(s);
-      }
-    }
-  }
-
-  @Override
-  public void printStackTrace(PrintStream s) {
-    super.printStackTrace(s);
-    if (exception != null) {
-      s.print("\n\nWrapped Exception:\n\n");
-      if (exception.getCause() != null) {
-        exception.getCause().printStackTrace(s);
-      } else if (exception instanceof org.hibernate.JDBCException) {
-        (((JDBCException) exception).getSQLException()).printStackTrace(s);
-      } else if (exception instanceof MethodInvocationException) {
-        (((MethodInvocationException) exception).getWrappedThrowable()).printStackTrace(s);
-      } else if (exception instanceof ServletException) {
-        (((ServletException) exception).getRootCause()).printStackTrace(s);
-      } else {
-        exception.printStackTrace(s);
-      }
-    }
-  }
-
   public String getStackTraceAsString() {
     StringWriter swriter = new StringWriter();
     PrintWriter pwriter = new PrintWriter(swriter);
     printStackTrace(pwriter);
-    pwriter.flush();
-    return swriter.getBuffer().toString();
-  }
-
-  public String getStackTraceAsString(Throwable e) {
-    StringWriter swriter = new StringWriter();
-    PrintWriter pwriter = new PrintWriter(swriter);
-    e.printStackTrace(pwriter);
     pwriter.flush();
     return swriter.getBuffer().toString();
   }

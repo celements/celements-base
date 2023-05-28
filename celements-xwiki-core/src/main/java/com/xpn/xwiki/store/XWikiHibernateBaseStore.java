@@ -23,6 +23,7 @@ import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.context.Execution;
 
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -244,27 +245,24 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    *          the XWiki context.
    * @return the database/schema name.
-   * @since XWiki Core 1.1.2, XWiki Core 1.2M2
    */
-  protected String getSchemaFromWikiName(String wikiName, XWikiContext context) {
-    if (wikiName == null) {
+  public String getSchemaFromWikiName(String wikiName, XWikiContext context) {
+    if (Strings.isNullOrEmpty(wikiName)) {
       return null;
     }
-    XWiki wiki = context.getWiki();
-    String schema;
+    String schemaName = "";
     if (context.isMainWiki(wikiName)) {
-      schema = wiki.Param("xwiki.db");
-      if (schema == null) {
-        schema = wikiName.replace('-', '_');
-      }
-    } else {
-      // virtual
-      schema = wikiName.replace('-', '_');
+      schemaName = context.getWiki().Param("xwiki.db", "").trim();
     }
-
-    // Apply prefix
-    String prefix = wiki.Param("xwiki.db.prefix", "");
-    return prefix + schema;
+    if (schemaName.isEmpty()) {
+      schemaName = wikiName;
+    }
+    logger.trace("getSchemaFromWikiName {} - {} - {}",
+        wikiName, context.getMainXWiki(), schemaName);
+    return (context.getWiki().Param("xwiki.db.prefix", "") + schemaName)
+        .toLowerCase()
+        .replace('-', '_')
+        .replaceAll("[^a-z0-9_]", "");
   }
 
   /**
@@ -554,7 +552,7 @@ public class XWikiHibernateBaseStore implements Initializable {
       return false;
     }
     if (session != null) {
-      logger.debug("beginTransaction - taking session [{}] and transaction [{}] from context",
+      logger.trace("beginTransaction - taking session [{}] and transaction [{}] from context",
           session, transaction);
       return false;
     }
@@ -563,12 +561,12 @@ public class XWikiHibernateBaseStore implements Initializable {
     } else {
       session = sfactory.openSession();
     }
-    logger.debug("beginTransaction - taking session from pool {}", session);
+    logger.trace("beginTransaction - taking session from pool {}", session);
     setSession(session, context);
     setDatabase(session, context);
     transaction = session.beginTransaction();
     setTransaction(transaction, context);
-    logger.debug("Opened transaction {}", transaction);
+    logger.debug("opened transaction {}", transaction);
     return true;
   }
 

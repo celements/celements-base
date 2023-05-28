@@ -247,7 +247,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   @Test
   public void test_getSchemaFromWikiName_main() {
     expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
-    expect(getWikiMock().Param("xwiki.db")).andReturn("main").anyTimes();
+    expect(getWikiMock().Param("xwiki.db", "")).andReturn("main").anyTimes();
     expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
     replayDefault();
     CelHibernateStore store = getStore(null);
