@@ -34,7 +34,7 @@ public class ModelUtilsTest extends AbstractComponentTest {
 
   @Test
   public void test_getMainWikiRef() {
-    assertEquals("xwiki", modelUtils.getMainWikiRef().getName());
+    assertEquals("main", modelUtils.getMainWikiRef().getName());
   }
 
   @Test
