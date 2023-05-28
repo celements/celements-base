@@ -25,6 +25,7 @@ import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiEngineContext;
 import com.xpn.xwiki.web.XWikiServletContext;
@@ -39,6 +40,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private final Execution execution;
   private final ExecutionContextManager executionManager;
   private final ComponentManager componentManager;
+  private final XWikiStubContextProvider stubContextProvider;
 
   @Inject
   public XWikiBootstrap(
@@ -46,12 +48,14 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
       ServerUrlUtilsRole serverUrlUtils,
       Execution execution,
       ExecutionContextManager executionManager,
-      ComponentManager componentManager) {
+      ComponentManager componentManager,
+      XWikiStubContextProvider stubContextProvider) {
     this.servletContext = servletContext;
     this.serverUrlUtils = serverUrlUtils;
     this.execution = execution;
     this.executionManager = executionManager;
     this.componentManager = componentManager;
+    this.stubContextProvider = stubContextProvider;
   }
 
   @Override
@@ -71,26 +75,24 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   }
 
   private void bootstrapXWiki() throws XWikiException, IOException, ExecutionContextException {
-    String wikiName = XWikiConstant.MAIN_WIKI.getName();
     XWikiConfig xwikiCfg = loadXWikiConfig();
-    XWikiContext xwikiContext = createInitialXWikiContext(wikiName, xwikiCfg);
+    XWikiContext xwikiContext = createInitialXWikiContext(xwikiCfg);
     initExecutionContext(xwikiContext);
     Utils.setComponentManager(componentManager);
     XWiki xwiki = createXWiki(xwikiCfg, xwikiContext);
     // TODO requires XWiki ? Cfg should suffice
     xwikiContext.setURLFactory(xwiki.getURLFactoryService().createURLFactory(xwikiContext));
-    // TODO needed ?
-    // Utils.getComponent(XWikiStubContextProvider.class).initialize(xwikiContext);
+    stubContextProvider.initialize(xwikiContext);
     publishXWikiInstance(xwiki);
   }
 
-  private XWikiContext createInitialXWikiContext(String wikiName, XWikiConfig xwikiCfg)
+  private XWikiContext createInitialXWikiContext(XWikiConfig xwikiCfg)
       throws MalformedURLException {
     XWikiContext ctx = new XWikiContext();
     ctx.setMode(XWikiContext.MODE_SERVLET);
     ctx.setEngineContext(new XWikiServletContext(servletContext));
-    ctx.setMainXWiki(wikiName);
-    ctx.setDatabase(wikiName);
+    ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
+    ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
     ctx.setURL(serverUrlUtils.getServerURL(xwikiCfg::getProperty));
     return ctx;
   }
