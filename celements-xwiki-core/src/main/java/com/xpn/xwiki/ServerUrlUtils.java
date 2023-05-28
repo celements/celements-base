@@ -12,6 +12,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.WikiReference;
 
+import com.google.common.primitives.Ints;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
@@ -26,8 +27,13 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
   @Override
   public URL getServerURL(BinaryOperator<String> cfg) throws MalformedURLException {
     String protocol = cfg.apply("xwiki.url.protocol", "http");
-    String host = cfg.apply("xwiki.url.host", "");
-    return new URL(protocol, host, -1, "/");
+    String host = cfg.apply("xwiki.url.host", "localhost");
+    Integer port = Ints.tryParse(cfg.apply("xwiki.url.port", ""));
+    String maindb = cfg.apply("xwiki.db", "");
+    if (!host.isEmpty() && !maindb.isEmpty() && !host.startsWith(maindb + ".")) {
+      host = maindb + "." + host;
+    }
+    return new URL(protocol, host, (port != null) ? port : -1, "/");
   }
 
   @Override
