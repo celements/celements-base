@@ -31,6 +31,7 @@ import org.xwiki.test.MockConfigurationSource;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
@@ -79,7 +80,10 @@ public class DefaultXWikiRenderingEngineTest extends AbstractBridgedXWikiCompone
     XWikiServletContext engineContext = new XWikiServletContext(
         (ServletContext) mockServletContext.proxy());
 
-    xwiki = new XWiki(config, getContext(), engineContext, false) {
+    xwiki = new XWiki(config, getContext(), engineContext) {
+
+      @Override
+      protected void initializeMandatoryClasses(XWikiContext context) throws XWikiException {}
 
       @Override
       public String getSkin(XWikiContext context) {

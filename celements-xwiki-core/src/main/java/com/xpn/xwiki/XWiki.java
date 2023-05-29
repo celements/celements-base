@@ -404,7 +404,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   /**
    * Initialize all xwiki subsystems.
    */
-  private void initXWiki(XWikiConfig config, XWikiContext context, XWikiEngineContext engineContext)
+  protected void initXWiki(XWikiConfig config, XWikiContext context,
+      XWikiEngineContext engineContext)
       throws XWikiException {
     setEngineContext(engineContext);
     context.setWiki(this);
@@ -448,8 +449,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
     // Make sure these classes exists
     // TODO needed here on every startup?
-    // TODO initializeMandatoryClasses(context);
-    getPrefsClass(context);
+    initializeMandatoryClasses(context);
 
     // Add a notification for notifications
     getNotificationManager().addGeneralRule(new XWikiActionRule(new XWikiPageNotification()));
@@ -474,8 +474,11 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * if they don't exist.
    */
   // TODO merge with ClassesCompositor
-  private void initializeMandatoryClasses(XWikiContext context) throws XWikiException {
+  protected void initializeMandatoryClasses(XWikiContext context) throws XWikiException {
     getPrefsClass(context);
+    if (true) {
+      return; // TODO
+    }
     getUserClass(context);
     getTagClass(context);
     getGroupClass(context);
