@@ -24,8 +24,6 @@ import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -158,7 +156,6 @@ import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.store.XWikiVersioningStoreInterface;
-import com.xpn.xwiki.store.migration.AbstractXWikiMigrationManager;
 import com.xpn.xwiki.user.api.XWikiAuthService;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 import com.xpn.xwiki.user.api.XWikiRightService;
@@ -399,55 +396,17 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   }
 
-  public XWiki(XWikiConfig config, XWikiContext context) throws XWikiException {
-    this(config, context, null, false);
-  }
-
-  public XWiki(XWikiConfig config, XWikiContext context, XWikiEngineContext engine_context,
-      boolean noupdate) throws XWikiException {
-    initXWiki(config, context, engine_context, noupdate);
-  }
-
-  /**
-   * @deprecated use {@link #XWiki(XWikiConfig, XWikiContext)} instead
-   */
-  @Deprecated
-  public XWiki(String xwikicfgpath, XWikiContext context) throws XWikiException {
-    this(xwikicfgpath, context, null, false);
-  }
-
-  /**
-   * @deprecated use {@link #XWiki(XWikiConfig, XWikiContext, XWikiEngineContext, boolean)} instead
-   */
-  @Deprecated
-  public XWiki(String xwikicfgpath, XWikiContext context, XWikiEngineContext engine_context,
-      boolean noupdate) throws XWikiException {
-    try {
-      initXWiki(new XWikiConfig(new FileInputStream(xwikicfgpath)), context, engine_context,
-          noupdate);
-    } catch (FileNotFoundException e) {
-      Object[] args = { xwikicfgpath };
-      throw new XWikiException(XWikiException.MODULE_XWIKI_CONFIG,
-          XWikiException.ERROR_XWIKI_CONFIG_FILENOTFOUND, "Configuration file {0} not found", e,
-          args);
-    }
-  }
-
-  /**
-   * @deprecated use {@link #XWiki(XWikiConfig, XWikiContext, XWikiEngineContext, boolean)} instead
-   */
-  @Deprecated
-  public XWiki(InputStream is, XWikiContext context, XWikiEngineContext engine_context)
+  public XWiki(XWikiConfig config, XWikiContext context, XWikiEngineContext engineContext)
       throws XWikiException {
-    initXWiki(new XWikiConfig(is), context, engine_context, true);
+    initXWiki(config, context, engineContext);
   }
 
   /**
    * Initialize all xwiki subsystems.
    */
-  public void initXWiki(XWikiConfig config, XWikiContext context, XWikiEngineContext engine_context,
-      boolean noupdate) throws XWikiException {
-    setEngineContext(engine_context);
+  private void initXWiki(XWikiConfig config, XWikiContext context, XWikiEngineContext engineContext)
+      throws XWikiException {
+    setEngineContext(engineContext);
     context.setWiki(this);
 
     // Create the notification manager
@@ -478,23 +437,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
           "xwiki.store.attachment.recyclebin.hint")));
     }
 
-    // Run migrations TODO move out of here
-    if ("1".equals(Param("xwiki.store.migration", "0"))) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Running storage migrations");
-      }
-      AbstractXWikiMigrationManager manager = (AbstractXWikiMigrationManager) createClassFromConfig(
-          "xwiki.store.migration.manager.class",
-          "com.xpn.xwiki.store.migration.hibernate.XWikiHibernateMigrationManager", context);
-      manager.startMigrations(context);
-      if ("1".equals(Param("xwiki.store.migration.exitAfterEnd", "0"))) {
-        if (LOG.isErrorEnabled()) {
-          LOG.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
-        }
-        System.exit(0);
-      }
-    }
-
     resetRenderingEngine(context);
 
     // Prepare the Plugin Engine
@@ -505,9 +447,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         "XWiki.XWikiPreferences", "plugin"));
 
     // Make sure these classes exists
-    if (noupdate) {
-      initializeMandatoryClasses(context);
-    }
+    // TODO needed here on every startup?
+    // TODO initializeMandatoryClasses(context);
+    getPrefsClass(context);
 
     // Add a notification for notifications
     getNotificationManager().addGeneralRule(new XWikiActionRule(new XWikiPageNotification()));
@@ -531,6 +473,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * Ensure that mandatory classes (ie classes XWiki needs to work properly) exist and create them
    * if they don't exist.
    */
+  // TODO merge with ClassesCompositor
   private void initializeMandatoryClasses(XWikiContext context) throws XWikiException {
     getPrefsClass(context);
     getUserClass(context);
@@ -603,7 +546,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * @deprecated since 4.4 no replacement
    * @return a cached list of all active virtual wikis (i.e. wikis who have been hit by a user
    *         request). To get a full list of all virtual wikis database names use
-   *         {@link #getVirtualWikisDatabaseNames(XWikiContext)}.
+   *         {@link WikiProvider#getAllWikis()}.
    */
   @Deprecated
   public List<String> getVirtualWikiList() {
@@ -611,7 +554,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   /**
-   * @deprecated since 4.4 instead use ModelUtils#getAllWikis
+   * @deprecated since 4.4 instead use {@link WikiProvider#getAllWikis()}
    * @return the full list of all database names of all defined virtual wikis. The database names
    *         are computed from the names of documents having a XWiki.XWikiServerClass object
    *         attached to them by removing the "XWiki.XWikiServer" prefix and making it lower case.
@@ -663,7 +606,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
   }
 
-  protected Object createClassFromConfig(String param, String defClass, XWikiContext context)
+  private Object createClassFromConfig(String param, String defClass, XWikiContext context)
       throws XWikiException {
     String storeclass = Param(param, defClass);
     try {
@@ -2643,8 +2586,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       needsUpdate = true;
     }
 
+    LOG.error("getPrefsClass - would save {}", needsUpdate);
     if (needsUpdate) {
-      saveDocument(doc, context);
+      // saveDocument(doc, context);
     }
     return bclass;
   }

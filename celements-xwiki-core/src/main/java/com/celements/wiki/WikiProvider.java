@@ -26,7 +26,6 @@ import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
 import com.celements.common.lambda.Try;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -72,12 +71,12 @@ public class WikiProvider implements EventListener, ApplicationListener<WikiProv
   private ImmutableMap<String, WikiReference> queryWikisByHost() throws QueryException {
     return StreamEx.of(queryManager.getNamedQuery("getWikisByHost")
         .setWiki(XWikiConstant.MAIN_WIKI.getName())
-        .<String[]>execute())
+        .<Object[]>execute())
         .mapToEntry(
-            row -> row[0],
-            row -> row[1].replace("XWikiServer", ""))
-        .filterKeys(not(Strings::isNullOrEmpty))
-        .filterValues(not(Strings::isNullOrEmpty))
+            row -> row[0].toString(),
+            row -> row[1].toString().replace("XWikiServer", ""))
+        .filterKeys(not(String::isEmpty))
+        .filterValues(not(String::isEmpty))
         .distinctKeys()
         .mapValues(WikiReference::new)
         .collect(toImmutableMap(Entry::getKey, Entry::getValue));
