@@ -143,7 +143,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private void updateDatabases(XWikiContext context) throws XWikiException {
     try {
       if (context.getWiki().isVirtualMode()) {
-        wikiService.getAllWikis().stream()
+        wikiService.streamAllWikis()
             .forEach(wikiUpdater::updateAsync);
       }
       if ("1".equals(context.getWiki().Param("xwiki.store.migration", "0"))) {

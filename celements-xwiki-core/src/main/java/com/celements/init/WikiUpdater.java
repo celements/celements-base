@@ -20,7 +20,6 @@ import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.migration.XWikiMigrationManagerInterface;
@@ -52,18 +51,14 @@ public class WikiUpdater {
     return wikiUpdates.values().stream();
   }
 
+  // TODO make entire run configurable -> move cfg to properties
   public CompletableFuture<Void> updateAsync(WikiReference wikiRef) {
     checkNotNull(wikiRef);
     checkState(!executor.isShutdown());
-    CompletableFuture<Void> updateFuture = wikiUpdates.compute(wikiRef,
+    return wikiUpdates.compute(wikiRef,
         (wiki, future) -> (future == null) || future.isDone()
             ? CompletableFuture.runAsync(new WikiUpdateRunnable(wikiRef, getContext()), executor)
             : future);
-    boolean isMain = false; // TODO
-    if (isMain) {
-      wikiUpdates.put(XWikiConstant.MAIN_WIKI, updateFuture);
-    }
-    return updateFuture;
   }
 
   // TODO start migration per wiki within updateAsync

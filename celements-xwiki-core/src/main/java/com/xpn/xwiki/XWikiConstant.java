@@ -5,6 +5,7 @@ import org.xwiki.model.reference.WikiReference;
 public final class XWikiConstant {
 
   public static final WikiReference MAIN_WIKI = new WikiReference("xwiki");
+  public static final WikiReference CENTRAL_WIKI = new WikiReference("celements2web");
 
   public static final String XWIKI_SPACE = "XWiki";
   public static final String WEB_PREF_DOC_NAME = "WebPreferences";

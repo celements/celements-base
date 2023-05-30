@@ -36,7 +36,7 @@ public class ReferenceProvider {
 
   @NotNull
   public Collection<WikiReference> getAllWikis() {
-    return wikiService.getAllWikis();
+    return wikiService.streamAllWikis().collect(toImmutableSet());
   }
 
   @NotNull
