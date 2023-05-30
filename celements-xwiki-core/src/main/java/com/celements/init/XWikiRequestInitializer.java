@@ -79,7 +79,7 @@ public class XWikiRequestInitializer {
     awaitWikiUpdate(wikiRef);
     context.setDatabase(wikiRef.getName());
     context.setOriginalDatabase(wikiRef.getName());
-    XWiki xwiki = xwikiProvider.get();
+    XWiki xwiki = xwikiProvider.get(); // blocking on bootstrap
     xwiki.prepareResources(context);
     LOGGER.debug("request initialized");
     return context;
@@ -90,7 +90,8 @@ public class XWikiRequestInitializer {
     if (!xwikiCfg.isVirtualMode() || host.filter(LOCAL_HOSTS::contains).isPresent()) {
       return XWikiConstant.MAIN_WIKI;
     }
-    WikiReference wikiRef = host.map(wikiService::getWikiForHost)
+    WikiReference wikiRef = host.flatMap(wikiService::getWikiForHost)
+        .map(Optional::of) // replace with #or in Java9+
         // no wiki found based on the full host name, try to use the first part as the wiki name
         .orElseGet(() -> host.filter(h -> h.indexOf(".") > 0)
             .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
@@ -105,7 +106,7 @@ public class XWikiRequestInitializer {
     wikiUpdater.getFuture(wikiRef).ifPresent(rethrow(future -> {
       try {
         LOGGER.trace("awaitWikiUpdate - on {}", wikiRef);
-        future.get(1, TimeUnit.HOURS); // TODO use tomcat connectionTimeout
+        future.get(1, TimeUnit.HOURS);
       } catch (ExecutionException | TimeoutException exc) {
         throw new XWikiException(XWikiException.MODULE_XWIKI,
             XWikiException.ERROR_XWIKI_INIT_FAILED, "Could not initialize main XWiki context", exc);

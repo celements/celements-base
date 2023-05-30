@@ -170,7 +170,6 @@ import com.xpn.xwiki.web.XWikiMessageTool;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiURLFactory;
 import com.xpn.xwiki.web.XWikiURLFactoryService;
-import com.xpn.xwiki.web.XWikiURLFactoryServiceImpl;
 
 public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
 
@@ -218,8 +217,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   private XWikiGroupService groupService;
 
-  private XWikiURLFactoryService urlFactoryService;
-
   private XWikiCriteriaService criteriaService;
 
   /** Lock object used for the lazy initialization of the authentication service. */
@@ -230,9 +227,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   /** Lock object used for the lazy initialization of the group management service. */
   private final Object GROUP_SERVICE_LOCK = new Object();
-
-  /** Lock object used for the lazy initialization of the URL Factory service. */
-  private final Object URLFACTORY_SERVICE_LOCK = new Object();
 
   private MetaClass metaclass = MetaClass.getMetaClass();
 
@@ -399,9 +393,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
 
     resetRenderingEngine(context);
-
-    // Prepare the Plugin Engine
-    preparePlugins(context);
 
     // Add a notification rule if the preference property plugin is modified
     getNotificationManager().addNamedRule("XWiki.XWikiPreferences", new PropertyChangedRule(this,
@@ -588,7 +579,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     setRenderingEngine(new DefaultXWikiRenderingEngine(this, context));
   }
 
-  private void preparePlugins(XWikiContext context) {
+  public void loadPlugins(XWikiContext context) {
     setPluginManager(new XWikiPluginManager(getXWikiPreference("plugins", context), context));
     String plugins = Param("xwiki.plugins", "");
     if (!plugins.equals("")) {
@@ -693,7 +684,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   @Deprecated
   public XWikiConfig getConfig() {
-    return (config != null) ? config
+    return (config != null)
+        ? config
         : Utils.getComponent(XWikiConfigSource.class).getXWikiConfig();
   }
 
@@ -2263,7 +2255,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       // change in the XWikiPreferences document but we should definitely not reinitialize all
       // plugins like
       // this.
-      preparePlugins(context);
+      loadPlugins(context);
     }
   }
 
@@ -4200,17 +4192,12 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
   }
 
+  /**
+   * @deprecated instead use component manager
+   */
+  @Deprecated
   public XWikiURLFactoryService getURLFactoryService() {
-    if (this.urlFactoryService == null) {
-      synchronized (this.URLFACTORY_SERVICE_LOCK) {
-        if (this.urlFactoryService == null) {
-          LOG.info("Initializing URLFactory Service...");
-          this.urlFactoryService = new XWikiURLFactoryServiceImpl();
-        }
-      }
-    }
-
-    return this.urlFactoryService;
+    return Utils.getComponent(XWikiURLFactoryService.class);
   }
 
   public XWikiCriteriaService getCriteriaService(XWikiContext context) {

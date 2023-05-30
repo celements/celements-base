@@ -22,10 +22,12 @@ package com.xpn.xwiki.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 
+@Component
 public class XWikiURLFactoryServiceImpl implements XWikiURLFactoryService {
 
   private static final Logger LOG = LoggerFactory.getLogger(XWikiURLFactoryServiceImpl.class);
@@ -45,8 +47,7 @@ public class XWikiURLFactoryServiceImpl implements XWikiURLFactoryService {
   public XWikiURLFactory createURLFactory(XWikiContext context) {
     XWikiURLFactory urlf = null;
     try {
-      urlf = new XWikiServletURLFactory();
-      urlf.init(context);
+      urlf = new XWikiServletURLFactory(context);
     } catch (Exception e) {
       LOG.error("Failed to create url factory", e);
     }

@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.jmock.Mock;
 
 import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
@@ -40,11 +41,12 @@ public class ExportURLFactoryTest extends AbstractBridgedXWikiComponentTestCase 
   private File tmpDir;
 
   /** The tested instance. */
-  private ExportURLFactory urlFactory = new ExportURLFactory();
+  private ExportURLFactory urlFactory;
 
   @Override
   protected void setUp() throws Exception {
     super.setUp();
+    urlFactory = new ExportURLFactory(new XWikiConfig());
 
     this.mockXWiki = mock(XWiki.class);
     this.mockXWiki.stubs().method("getWebAppPath").will(returnValue("/xwiki"));

@@ -55,7 +55,7 @@ public class XWikiProvider {
   private XWiki awaitXWikiBootstrap() throws XWikiException {
     try {
       LOGGER.trace("awaitXWikiBootstrap");
-      return getXWikiServletFuture().get(1, TimeUnit.HOURS); // TODO use tomcat connectionTimeout
+      return getXWikiServletFuture().get(1, TimeUnit.HOURS);
     } catch (ExecutionException | TimeoutException exc) {
       throw new XWikiException(XWikiException.MODULE_XWIKI, XWikiException.ERROR_XWIKI_INIT_FAILED,
           "Could not initialize main XWiki context", exc);

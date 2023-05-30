@@ -32,6 +32,10 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiServletContext;
+import com.xpn.xwiki.web.XWikiServletRequest;
+import com.xpn.xwiki.web.XWikiServletRequestStub;
+import com.xpn.xwiki.web.XWikiServletResponseStub;
+import com.xpn.xwiki.web.XWikiURLFactoryService;
 
 @Component
 public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
@@ -51,6 +55,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiConfigSource xwikiCfg;
+  private final XWikiURLFactoryService urlFactoryService;
 
   @Inject
   public XWikiBootstrap(
@@ -62,7 +67,8 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
       XWikiStubContextProvider stubContextProvider,
       WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiConfigSource xwikiCfg) {
+      XWikiConfigSource xwikiCfg,
+      XWikiURLFactoryService urlFactoryService) {
     this.servletContext = servletContext;
     this.serverUrlUtils = serverUrlUtils;
     this.execution = execution;
@@ -72,6 +78,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiCfg = xwikiCfg;
+    this.urlFactoryService = urlFactoryService;
   }
 
   @Override
@@ -99,13 +106,12 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
 
   private XWiki bootstrapXWiki() throws XWikiException, IOException, ExecutionContextException {
     checkState(!initialised.getAndSet(true), "already initialised");
-    XWikiContext xwikiContext = createMainXWikiContext();
     Utils.setComponentManager(componentManager);
-    initExecutionContext(xwikiContext);
-    XWiki xwiki = createXWikiInstance(xwikiContext);
-    // TODO requires XWiki ? Cfg should suffice
-    xwikiContext.setURLFactory(xwiki.getURLFactoryService().createURLFactory(xwikiContext));
-    stubContextProvider.initialize(xwikiContext);
+    XWikiContext context = createMainXWikiContext();
+    initExecutionContext(context);
+    XWiki xwiki = createXWikiInstance(context);
+    stubContextProvider.initialize(context);
+    xwiki.loadPlugins(context);
     updateDatabases();
     return xwiki;
   }
@@ -118,6 +124,12 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
     ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
     ctx.setURL(serverUrlUtils.getServerURL());
+    ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
+    XWikiServletRequestStub requestStub = new XWikiServletRequestStub();
+    requestStub.setHost(ctx.getURL().getHost());
+    requestStub.setScheme(ctx.getURL().getProtocol());
+    ctx.setRequest(new XWikiServletRequest(requestStub));
+    ctx.setResponse(new XWikiServletResponseStub());
     return ctx;
   }
 

@@ -27,7 +27,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
 
   private XWikiConfig config;
 
-  private XWikiServletURLFactory urlFactory = new XWikiServletURLFactory();
+  private XWikiServletURLFactory urlFactory;
 
   private Map<String, Map<String, XWikiDocument>> databases = new HashMap<>();
 
@@ -68,6 +68,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
   @Before
   public void setUp() throws Exception {
     this.databases.put(MAIN_WIKI_NAME, new HashMap<String, XWikiDocument>());
+    urlFactory = new XWikiServletURLFactory();
 
     XWiki xwiki = new XWiki() {
 
