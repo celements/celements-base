@@ -99,11 +99,11 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     XWikiConfig xwikiCfg = loadXWikiConfig();
     XWikiContext xwikiContext = createMainXWikiContext(xwikiCfg);
     Utils.setComponentManager(componentManager);
+    initExecutionContext(xwikiContext);
     XWiki xwiki = createXWikiInstance(xwikiCfg, xwikiContext);
     // TODO requires XWiki ? Cfg should suffice
     xwikiContext.setURLFactory(xwiki.getURLFactoryService().createURLFactory(xwikiContext));
     stubContextProvider.initialize(xwikiContext);
-    initExecutionContext(xwikiContext);
     updateDatabases(xwikiContext);
     return xwiki;
   }
@@ -140,17 +140,21 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   }
 
   private void updateDatabases(XWikiContext context) throws XWikiException {
-    if (context.getWiki().isVirtualMode()) {
-      // TODO skip main ? ordered?
-      wikiProvider.getAllWikis().stream()
-          .forEach(wikiUpdater::updateAsync);
-    }
-    if ("1".equals(context.getWiki().Param("xwiki.store.migration", "0"))) {
-      wikiUpdater.runMigrationsSync();
-      if ("1".equals(context.getWiki().Param("xwiki.store.migration.exitAfterEnd", "0"))) {
-        LOGGER.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
-        System.exit(0); // TODO throw exception instead ?
+    try {
+      if (context.getWiki().isVirtualMode()) {
+        // TODO skip main ? ordered?
+        wikiProvider.getAllWikis().stream()
+            .forEach(wikiUpdater::updateAsync);
       }
+      if ("1".equals(context.getWiki().Param("xwiki.store.migration", "0"))) {
+        wikiUpdater.runMigrationsSync();
+        if ("1".equals(context.getWiki().Param("xwiki.store.migration.exitAfterEnd", "0"))) {
+          LOGGER.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
+          System.exit(0); // TODO throw exception instead ?
+        }
+      }
+    } finally {
+      wikiUpdater.shutdown();
     }
   }
 

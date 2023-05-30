@@ -684,7 +684,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     setPluginManager(new XWikiPluginManager(getXWikiPreference("plugins", context), context));
     String plugins = Param("xwiki.plugins", "");
     if (!plugins.equals("")) {
-      getPluginManager().addPlugins(StringUtils.split(plugins, " ,"), context);
+      // getPluginManager().addPlugins(StringUtils.split(plugins, " ,"), context); TODO
     }
   }
 
@@ -2636,9 +2636,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       needsUpdate = true;
     }
 
-    LOG.error("getPrefsClass - would save {}", needsUpdate);
+    LOG.error("getPrefsClass - would save {} - new {} - context {}", needsUpdate, doc.isNew(),
+        context);
     if (needsUpdate) {
-      // saveDocument(doc, context);
+      // saveDocument(doc, context); TODO
     }
     return bclass;
   }

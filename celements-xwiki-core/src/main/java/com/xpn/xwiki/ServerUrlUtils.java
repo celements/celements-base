@@ -33,7 +33,9 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
     if (!host.isEmpty() && !maindb.isEmpty() && !host.startsWith(maindb + ".")) {
       host = maindb + "." + host;
     }
-    return new URL(protocol, host, (port != null) ? port : -1, "/");
+    URL url = new URL(protocol, host, (port != null) ? port : -1, "/");
+    LOGGER.warn("getServerURL - {}", url); // TODO reduce
+    return url;
   }
 
   @Override
@@ -44,7 +46,9 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
         String protocol = getProtocol(serverObj, context);
         String host = serverObj.getStringValue("server");
         int port = getUrlPort(context);
-        return new URL(protocol, host, port, "/");
+        URL url = new URL(protocol, host, port, "/");
+        LOGGER.debug("getServerURL - {}", url);
+        return url;
       }
     } catch (XWikiException exc) {
       LOGGER.error("getServerURL - failed for: " + wikiName, exc);

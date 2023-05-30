@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -38,7 +39,8 @@ public class WikiUpdater {
   @Inject
   public WikiUpdater(Execution execution) {
     this.execution = execution;
-    this.executor = Executors.newFixedThreadPool(THREAD_COUNT);
+    this.executor = Executors.newFixedThreadPool(THREAD_COUNT, new ThreadFactoryBuilder()
+        .setNameFormat("cel-wiki-updater-%d").build());
     this.wikiUpdates = new ConcurrentHashMap<>();
   }
 
@@ -52,6 +54,7 @@ public class WikiUpdater {
 
   public CompletableFuture<Void> updateAsync(WikiReference wikiRef) {
     checkNotNull(wikiRef);
+    checkState(!executor.isShutdown());
     CompletableFuture<Void> updateFuture = wikiUpdates.compute(wikiRef,
         (wiki, future) -> (future == null) || future.isDone()
             ? CompletableFuture.runAsync(new WikiUpdateRunnable(wikiRef, getContext()), executor)
