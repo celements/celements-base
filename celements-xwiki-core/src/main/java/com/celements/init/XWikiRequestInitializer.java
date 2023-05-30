@@ -34,9 +34,9 @@ import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiServletResponse;
 
 @Component
-public class XWikiSessionInitialiser {
+public class XWikiRequestInitializer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(XWikiSessionInitialiser.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(XWikiRequestInitializer.class);
 
   private final ServletContext servletContext;
   private final ServletContainerInitializer initializer;
@@ -45,7 +45,7 @@ public class XWikiSessionInitialiser {
   private final XWikiProvider xwikiProvider;
 
   @Inject
-  public XWikiSessionInitialiser(
+  public XWikiRequestInitializer(
       ServletContext servletContext,
       ServletContainerInitializer initializer,
       WikiService wikiService,
@@ -116,7 +116,7 @@ public class XWikiSessionInitialiser {
     }));
   }
 
-  public void cleanupSession() {
+  public void cleanup() {
     initializer.cleanupSession();
     MDC.remove("url");
   }
