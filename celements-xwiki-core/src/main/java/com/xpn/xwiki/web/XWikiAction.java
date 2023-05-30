@@ -20,10 +20,10 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Vector;
 
 import javax.servlet.ServletException;
@@ -38,14 +38,12 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.xwiki.container.servlet.ServletContainerException;
-import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.csrf.CSRFToken;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
 import org.xwiki.velocity.VelocityManager;
 
+import com.celements.init.XWikiSessionInitialiser;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -116,47 +114,30 @@ public abstract class XWikiAction extends Action {
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest req,
       HttpServletResponse resp) throws Exception {
-    ActionForward actionForward;
     XWikiContext context = null;
-
+    XWikiSessionInitialiser sessionInitialiser = Utils.getComponent(XWikiSessionInitialiser.class);
     try {
       // Initialize the XWiki Context which is the main object used to pass information across
       // classes/methods. It's also wrapping the request, response, and all container objects
       // in general.
-      context = initializeXWikiContext(mapping, form, req, resp);
-
-      // From this line forward all information can be found in the XWiki Context.
-      actionForward = execute(context);
-    } finally {
-      if (context != null) {
-        cleanupComponents();
+      context = sessionInitialiser.init(mapping.getName(), req, resp);
+      if (form != null) {
+        form.reset(mapping, context.getRequest());
+        context.setForm((XWikiForm) form);
       }
+      // From this line forward all information can be found in the XWiki Context.
+      return execute(context);
+    } finally {
+      sessionInitialiser.cleanupSession();
     }
-
-    return actionForward;
   }
 
   public ActionForward execute(XWikiContext context) throws Exception {
     FileUploadPlugin fileupload = null;
     String docName = "";
     try {
-      // Verify that the requested wiki exists
-      XWiki xwiki;
-      try {
-        xwiki = XWiki.getXWiki(context);
-      } catch (XWikiException e) {
-        // We're checking if there are any redirects when the wiki asked by the user doesn't exist
-        // because we want the ability to redirect somewhere when the wiki asked doesn't exist
-        // (like for example going to a special error page).
-        if (e.getCode() == XWikiException.ERROR_XWIKI_DOES_NOT_EXIST) {
-          if (!sendGlobalRedirect(context.getResponse(), context.getURL().toString(), context)) {
-            context.getResponse().sendRedirect(context.getWiki().Param("xwiki.virtual.redirect"));
-          }
-          return null;
-        } else {
-          throw e;
-        }
-      }
+      XWiki xwiki = context.getWiki();
+      checkNotNull(xwiki);
       // Send global redirection (if any)
       if (sendGlobalRedirect(context.getResponse(), context.getURL().toString(), context)) {
         return null;
@@ -292,40 +273,7 @@ public abstract class XWikiAction extends Action {
       if ((context != null) && (fileupload != null)) {
         fileupload.cleanFileList(context);
       }
-      MDC.remove("url");
     }
-  }
-
-  protected XWikiContext initializeXWikiContext(ActionMapping mapping, ActionForm form,
-      HttpServletRequest request, HttpServletResponse response)
-      throws MalformedURLException, ServletContainerException {
-    String action = mapping.getName();
-    XWikiContext context = Utils.prepareContext(action,
-        new XWikiServletRequest(request),
-        new XWikiServletResponse(response),
-        new XWikiServletContext(servlet.getServletContext()));
-    // This code is already called by struts. However struts will also set all the parameters of the
-    // form data directly from the request objects. However because of bug
-    // http://jira.xwiki.org/jira/browse/XWIKI-2422 we need to perform encoding of windows-1252
-    // chars in ISO mode so we need to make sure this code is called
-    // TODO: completely get rid of struts so that we control this part of the code and can reduce
-    // drastically the number of calls
-    if (form != null) {
-      form.reset(mapping, context.getRequest());
-    }
-    // Add the form to the context
-    context.setForm((XWikiForm) form);
-    MDC.put("url", context.getURL().toExternalForm());
-    ServletContainerInitializer initializer = Utils.getComponent(ServletContainerInitializer.class);
-    initializer.initializeRequest(request, context);
-    initializer.initializeResponse(response);
-    initializer.initializeSession(request);
-    return context;
-  }
-
-  protected void cleanupComponents() {
-    Utils.getComponent(ServletContainerInitializer.class)
-        .cleanupSession();
   }
 
   public String getRealPath(String path) {

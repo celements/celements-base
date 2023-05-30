@@ -23,7 +23,7 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 
 import com.celements.servlet.CelementsLifecycleEvent;
-import com.celements.wiki.WikiProvider;
+import com.celements.wiki.WikiService;
 import com.xpn.xwiki.ServerUrlUtilsRole;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
@@ -32,11 +32,12 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
-import com.xpn.xwiki.web.XWikiEngineContext;
 import com.xpn.xwiki.web.XWikiServletContext;
 
 @Component
 public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
+
+  public static final String XWIKI_SERVLET_CTX_KEY = "xwiki";
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(XWikiBootstrap.class);
 
@@ -48,7 +49,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private final ComponentManager componentManager;
   private final ServerUrlUtilsRole serverUrlUtils;
   private final XWikiStubContextProvider stubContextProvider;
-  private final WikiProvider wikiProvider;
+  private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
 
   @Inject
@@ -59,7 +60,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
       ComponentManager componentManager,
       ServerUrlUtilsRole serverUrlUtils,
       XWikiStubContextProvider stubContextProvider,
-      WikiProvider wikiProvider,
+      WikiService wikiService,
       WikiUpdater wikiUpdater) {
     this.servletContext = servletContext;
     this.serverUrlUtils = serverUrlUtils;
@@ -67,7 +68,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     this.executionManager = executionManager;
     this.componentManager = componentManager;
     this.stubContextProvider = stubContextProvider;
-    this.wikiProvider = wikiProvider;
+    this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
   }
 
@@ -79,9 +80,9 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   @Override
   public synchronized void onApplicationEvent(CelementsLifecycleEvent event) {
     if (event.getType() == CelementsLifecycleEvent.State.STARTED) {
-      checkState(servletContext.getAttribute(XWikiEngineContext.XWIKI_KEY) == null);
+      checkState(servletContext.getAttribute(XWIKI_SERVLET_CTX_KEY) == null);
       CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
-      servletContext.setAttribute(XWikiEngineContext.XWIKI_KEY, xwikiFuture);
+      servletContext.setAttribute(XWIKI_SERVLET_CTX_KEY, xwikiFuture);
       try {
         XWiki xwiki = bootstrapXWiki();
         // make XWiki available to all requests via servlet context, see {@link XWiki#getXWiki}
@@ -142,8 +143,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private void updateDatabases(XWikiContext context) throws XWikiException {
     try {
       if (context.getWiki().isVirtualMode()) {
-        // TODO skip main ? ordered?
-        wikiProvider.getAllWikis().stream()
+        wikiService.getAllWikis().stream()
             .forEach(wikiUpdater::updateAsync);
       }
       if ("1".equals(context.getWiki().Param("xwiki.store.migration", "0"))) {

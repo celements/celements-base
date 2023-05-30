@@ -12,20 +12,20 @@ import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
-import com.celements.wiki.WikiProvider;
+import com.celements.wiki.WikiService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.test.AbstractComponentTest;
 
-public class WikiProviderTest extends AbstractComponentTest {
+public class WikiServiceTest extends AbstractComponentTest {
 
-  WikiProvider provider;
+  WikiService service;
 
   @Before
   public void setUp() throws Exception {
     registerComponentMock(QueryManager.class);
-    provider = getSpringContext().getBean(WikiProvider.class);
+    service = getSpringContext().getBean(WikiService.class);
     getContext().setDatabase("test");
   }
 
@@ -41,7 +41,7 @@ public class WikiProviderTest extends AbstractComponentTest {
         "a1.host", new WikiReference("atest"),
         "b1.host", new WikiReference("btest"),
         "a2.host", new WikiReference("atest")),
-        provider.getWikisByHost());
+        service.getWikisByHost());
     verifyDefault();
   }
 
@@ -50,7 +50,7 @@ public class WikiProviderTest extends AbstractComponentTest {
     expectWikiQuery(ImmutableList.of(), 1);
     replayDefault();
     for (int i = 0; i < 5; i++) {
-      assertEquals(ImmutableMap.of(), provider.getWikisByHost());
+      assertEquals(ImmutableMap.of(), service.getWikisByHost());
     }
     verifyDefault();
   }
@@ -61,7 +61,7 @@ public class WikiProviderTest extends AbstractComponentTest {
         .andThrow(new QueryException("", null, null)).times(2);
     replayDefault();
     for (int i = 0; i < 2; i++) {
-      assertEquals(ImmutableMap.of(), provider.getWikisByHost());
+      assertEquals(ImmutableMap.of(), service.getWikisByHost());
     }
     verifyDefault();
   }
@@ -71,8 +71,8 @@ public class WikiProviderTest extends AbstractComponentTest {
     expectWikiQuery(ImmutableList.of(), 3);
     replayDefault();
     for (int i = 0; i < 3; i++) {
-      assertEquals(ImmutableMap.of(), provider.getWikisByHost());
-      provider.refresh();
+      assertEquals(ImmutableMap.of(), service.getWikisByHost());
+      service.refresh();
     }
     verifyDefault();
   }

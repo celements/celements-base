@@ -27,13 +27,6 @@ import java.net.URL;
 
 public interface XWikiEngineContext {
 
-  String XWIKI_KEY = "xwiki";
-
-  @SuppressWarnings("unchecked")
-  default <T> T get(String name) {
-    return (T) getAttribute(name);
-  }
-
   Object getAttribute(String name);
 
   void setAttribute(String name, Object value);
