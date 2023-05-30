@@ -61,7 +61,9 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
     } catch (XWikiException exc) {
       LOGGER.error("getServerURL - failed for: {}", wikiRef, exc);
     }
-    return Optional.empty();
+    return XWikiConstant.MAIN_WIKI.equals(wikiRef)
+        ? Optional.of(getServerURL())
+        : Optional.empty();
   }
 
   private String getProtocol(BaseObject serverObj) {

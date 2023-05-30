@@ -110,7 +110,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     XWikiContext context = createMainXWikiContext();
     initExecutionContext(context);
     XWiki xwiki = createXWikiInstance(context);
-    stubContextProvider.initialize(context);
+    stubContextProvider.initialize(context); // make the context available for stub creations
     xwiki.loadPlugins(context);
     updateDatabases();
     return xwiki;

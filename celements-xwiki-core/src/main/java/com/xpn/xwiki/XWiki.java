@@ -307,6 +307,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public static String getServerWikiPage(String servername) {
     Validate.isTrue(StringUtils.trimToEmpty(servername).length() > 1);
+    if (servername.equals(XWikiConstant.MAIN_WIKI.getName())) {
+      servername = Utils.getComponent(XWikiConfigSource.class).getProperty("xwiki.db", servername);
+    }
     return "XWiki.XWikiServer" + StringUtils.capitalize(servername);
   }
 

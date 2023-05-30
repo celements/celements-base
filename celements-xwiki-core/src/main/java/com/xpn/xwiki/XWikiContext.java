@@ -47,6 +47,7 @@ import com.xpn.xwiki.web.XWikiForm;
 import com.xpn.xwiki.web.XWikiMessageTool;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiResponse;
+import com.xpn.xwiki.web.XWikiServletRequestStub;
 import com.xpn.xwiki.web.XWikiURLFactory;
 
 public class XWikiContext extends Hashtable<Object, Object> {
@@ -169,6 +170,12 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public XWikiRequest getRequest() {
     return this.request;
+  }
+
+  public boolean hasRequest() {
+    return (request != null) && !(request instanceof XWikiServletRequestStub)
+        && (request.getHttpServletRequest() != null)
+        && !(request.getHttpServletRequest() instanceof XWikiServletRequestStub);
   }
 
   public void setRequest(XWikiRequest request) {
