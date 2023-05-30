@@ -20,6 +20,7 @@ import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.migration.XWikiMigrationManagerInterface;
@@ -31,12 +32,14 @@ public class WikiUpdater {
   private static final Logger LOGGER = LoggerFactory.getLogger(WikiUpdater.class);
   private static final int THREAD_COUNT = 10;
 
+  private final XWikiConfigSource xwikiCfg;
   private final Execution execution;
   private final ExecutorService executor;
   private final ConcurrentHashMap<WikiReference, CompletableFuture<Void>> wikiUpdates;
 
   @Inject
-  public WikiUpdater(Execution execution) {
+  public WikiUpdater(XWikiConfigSource xwikiCfg, Execution execution) {
+    this.xwikiCfg = xwikiCfg;
     this.execution = execution;
     this.executor = Executors.newFixedThreadPool(THREAD_COUNT, new ThreadFactoryBuilder()
         .setNameFormat("cel-wiki-updater-%d").build());
@@ -72,7 +75,7 @@ public class WikiUpdater {
   // TODO refactor to component
   private XWikiMigrationManagerInterface getMigrationManager(XWikiContext context)
       throws XWikiException {
-    String storeClass = context.getWiki().Param("xwiki.store.migration.manager.class");
+    String storeClass = xwikiCfg.getProperty("xwiki.store.migration.manager.class");
     try {
       return (XWikiMigrationManagerInterface) Class.forName(storeClass)
           .getConstructor(XWikiContext.class)

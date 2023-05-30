@@ -28,6 +28,7 @@ import org.jmock.core.Invocation;
 import org.jmock.core.stub.CustomStub;
 
 import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.render.XWikiRenderingEngine;
@@ -49,6 +50,7 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
     getContext().setDoc(new XWikiDocument());
 
     XWiki xwiki = new XWiki();
+    xwiki.setConfig(new XWikiConfig());
 
     Mock mockXWikiStore = mock(XWikiHibernateStore.class,
         new Class[] { XWiki.class, XWikiContext.class }, new Object[] { xwiki,

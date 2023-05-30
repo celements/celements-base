@@ -12,20 +12,19 @@ import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
-import com.celements.wiki.WikiService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.test.AbstractComponentTest;
 
-public class WikiServiceTest extends AbstractComponentTest {
+public class QueryWikiServiceTest extends AbstractComponentTest {
 
-  WikiService service;
+  QueryWikiService service;
 
   @Before
   public void setUp() throws Exception {
     registerComponentMock(QueryManager.class);
-    service = getSpringContext().getBean(WikiService.class);
+    service = getSpringContext().getBean(QueryWikiService.class);
     getContext().setDatabase("test");
   }
 

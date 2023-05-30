@@ -101,6 +101,7 @@ import org.xwiki.xml.internal.XMLScriptService;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.StoreFactory;
 import com.celements.wiki.WikiService;
+import com.google.common.base.Strings;
 import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.api.User;
@@ -360,16 +361,14 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   }
 
-  public XWiki(XWikiConfig config, XWikiContext context, XWikiEngineContext engineContext)
-      throws XWikiException {
-    initXWiki(config, context, engineContext);
+  public XWiki(XWikiContext context, XWikiEngineContext engineContext) throws XWikiException {
+    initXWiki(context, engineContext);
   }
 
   /**
    * Initialize all xwiki subsystems.
    */
-  protected void initXWiki(XWikiConfig config, XWikiContext context,
-      XWikiEngineContext engineContext)
+  protected void initXWiki(XWikiContext context, XWikiEngineContext engineContext)
       throws XWikiException {
     setEngineContext(engineContext);
     context.setWiki(this);
@@ -377,10 +376,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Create the notification manager
     setNotificationManager(new XWikiNotificationManager());
 
-    // Prepare the store
-    setConfig(config);
-
-    setStore(StoreFactory.getMainStore());
+    // setStore(StoreFactory.getMainStore());
 
     setCriteriaService((XWikiCriteriaService) createClassFromConfig("xwiki.criteria.class",
         "com.xpn.xwiki.criteria.impl.XWikiCriteriaServiceImpl", context));
@@ -692,14 +688,23 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return false;
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConfigSource}
+   */
+  @Deprecated
   public XWikiConfig getConfig() {
-    return this.config;
+    return (config != null) ? config
+        : Utils.getComponent(XWikiConfigSource.class).getXWikiConfig();
   }
 
   public String getRealPath(String path) {
     return getEngineContext().getRealPath(path);
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConfigSource}
+   */
+  @Deprecated
   public String Param(String key) {
     return Param(key, null);
   }
@@ -743,6 +748,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return null;
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConfigSource}
+   */
+  @Deprecated
   public String Param(String key, String default_value) {
     if (getConfig() != null) {
       return getConfig().getProperty(key, default_value);
@@ -750,11 +759,19 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return default_value;
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConfigSource}
+   */
+  @Deprecated
   public long ParamAsLong(String key) {
     String param = Param(key);
     return Long.parseLong(param);
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConfigSource}
+   */
+  @Deprecated
   public long ParamAsLong(String key, long default_value) {
     try {
       return ParamAsLong(key);
@@ -2187,6 +2204,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     this.pluginManager = pluginManager;
   }
 
+  @Deprecated
   public void setConfig(XWikiConfig config) {
     this.config = config;
   }
@@ -3705,8 +3723,17 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return Param("xwiki.encoding", "UTF-8");
   }
 
+  /**
+   * @deprecated use {@link ServerUrlUtilsRole#getServerURL(String)}
+   */
+  @Deprecated
   public URL getServerURL(String wikiName, XWikiContext context) throws MalformedURLException {
-    return Utils.getComponent(ServerUrlUtilsRole.class).getServerURL(wikiName, context);
+    if (!Strings.isNullOrEmpty(wikiName)) {
+      return Utils.getComponent(ServerUrlUtilsRole.class)
+          .getServerURL(new WikiReference(wikiName))
+          .orElse(null);
+    }
+    return null;
   }
 
   public String getServletPath(String wikiName, XWikiContext context) {
@@ -3829,7 +3856,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   /**
    * @return true for multi-wiki/false for mono-wiki
+   * @deprecated instead use {@link XWikiConfigSource#isVirtualMode()}
    */
+  @Deprecated
   public boolean isVirtualMode() {
     return "1".equals(Param("xwiki.virtual"));
   }

@@ -80,10 +80,15 @@ public class DefaultXWikiRenderingEngineTest extends AbstractBridgedXWikiCompone
     XWikiServletContext engineContext = new XWikiServletContext(
         (ServletContext) mockServletContext.proxy());
 
-    xwiki = new XWiki(config, getContext(), engineContext) {
+    xwiki = new XWiki(getContext(), engineContext) {
 
       @Override
       protected void initializeMandatoryClasses(XWikiContext context) throws XWikiException {}
+
+      @Override
+      public XWikiConfig getConfig() {
+        return config;
+      }
 
       @Override
       public String getSkin(XWikiContext context) {

@@ -2,12 +2,14 @@ package com.xpn.xwiki;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.function.BinaryOperator;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
+import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.WikiReference;
@@ -24,12 +26,18 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
   @Requirement
   private DocumentReferenceResolver<String> docRefResolver;
 
+  @Requirement(XWikiConfigSource.NAME)
+  private ConfigurationSource xwikiCfg;
+
+  @Requirement
+  private Execution execution;
+
   @Override
-  public URL getServerURL(BinaryOperator<String> cfg) throws MalformedURLException {
-    String protocol = cfg.apply("xwiki.url.protocol", "http");
-    String host = cfg.apply("xwiki.url.host", "localhost");
-    Integer port = Ints.tryParse(cfg.apply("xwiki.url.port", ""));
-    String maindb = cfg.apply("xwiki.db", "");
+  public URL getServerURL() throws MalformedURLException {
+    String protocol = xwikiCfg.getProperty("xwiki.url.protocol", "http");
+    String host = xwikiCfg.getProperty("xwiki.url.host", "localhost");
+    Integer port = Ints.tryParse(xwikiCfg.getProperty("xwiki.url.port", ""));
+    String maindb = xwikiCfg.getProperty("xwiki.db", "");
     if (!host.isEmpty() && !maindb.isEmpty() && !host.startsWith(maindb + ".")) {
       host = maindb + "." + host;
     }
@@ -39,37 +47,37 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
   }
 
   @Override
-  public URL getServerURL(String wikiName, XWikiContext context) throws MalformedURLException {
+  public Optional<URL> getServerURL(WikiReference wikiRef) throws MalformedURLException {
     try {
-      BaseObject serverObj = getServerObject(wikiName, context);
+      BaseObject serverObj = getServerObject(wikiRef.getName());
       if (serverObj != null) {
-        String protocol = getProtocol(serverObj, context);
+        String protocol = getProtocol(serverObj);
         String host = serverObj.getStringValue("server");
-        int port = getUrlPort(context);
+        int port = getUrlPort();
         URL url = new URL(protocol, host, port, "/");
         LOGGER.debug("getServerURL - {}", url);
-        return url;
+        return Optional.of(url);
       }
     } catch (XWikiException exc) {
-      LOGGER.error("getServerURL - failed for: " + wikiName, exc);
+      LOGGER.error("getServerURL - failed for: {}", wikiRef, exc);
     }
-    return getServerURL(context.getWiki()::Param);
+    return Optional.empty();
   }
 
-  private String getProtocol(BaseObject serverObj, XWikiContext context) {
-    String protocol = context.getWiki().Param("xwiki.url.protocol", "");
+  private String getProtocol(BaseObject serverObj) {
+    String protocol = xwikiCfg.getProperty("xwiki.url.protocol", "");
     if (protocol.isEmpty()) {
       int iSecure = serverObj.getIntValue("secure", -1);
-      boolean secure = (iSecure > 0) || ((iSecure < 0) && (context.getRequest() != null)
-          && context.getRequest().isSecure());
+      boolean secure = (iSecure > 0) || ((iSecure < 0) && (getContext().getRequest() != null)
+          && getContext().getRequest().isSecure());
       protocol = secure ? "https" : "http";
     }
     return protocol;
   }
 
-  private int getUrlPort(XWikiContext context) {
-    if (context.getURL() != null) {
-      int port = context.getURL().getPort();
+  private int getUrlPort() {
+    if (getContext().getURL() != null) {
+      int port = getContext().getURL().getPort();
       if ((port != 80) && (port != 443)) {
         return port;
       }
@@ -77,19 +85,23 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
     return -1; // use default port
   }
 
-  BaseObject getServerObject(String wikiName, XWikiContext context) throws XWikiException {
+  BaseObject getServerObject(String wikiName) throws XWikiException {
     DocumentReference serverDocRef = docRefResolver.resolve(XWiki.getServerWikiPage(wikiName),
-        new WikiReference(context.getDatabase()));
-    XWikiDocument serverDoc = context.getWiki().getDocument(serverDocRef, context);
+        new WikiReference(getContext().getDatabase()));
+    XWikiDocument serverDoc = getContext().getWiki().getDocument(serverDocRef, getContext());
     BaseObject serverObj = null;
-    if ((context.getURL() != null) && (context.getURL().getHost() != null)) {
+    if ((getContext().getURL() != null) && (getContext().getURL().getHost() != null)) {
       serverObj = serverDoc.getXObject(XWiki.VIRTUAL_WIKI_DEFINITION_CLASS_REFERENCE, "server",
-          context.getURL().getHost().replaceFirst(context.getDatabase(), wikiName));
+          getContext().getURL().getHost().replaceFirst(getContext().getDatabase(), wikiName));
     }
     if (serverObj == null) {
       serverObj = serverDoc.getXObject(XWiki.VIRTUAL_WIKI_DEFINITION_CLASS_REFERENCE);
     }
     return serverObj;
+  }
+
+  private XWikiContext getContext() {
+    return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
   }
 
 }

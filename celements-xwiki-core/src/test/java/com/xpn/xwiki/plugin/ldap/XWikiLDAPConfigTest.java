@@ -163,16 +163,19 @@ public class XWikiLDAPConfigTest extends AbstractBridgedXWikiComponentTestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-
     this.prefContext = new XWikiContext();
-
-    new XWiki(new XWikiConfig(), this.prefContext, null) {
+    XWikiConfig cfg = new XWikiConfig();
+    new XWiki(this.prefContext, null) {
 
       @Override
-      protected void initXWiki(XWikiConfig config, XWikiContext context,
-          XWikiEngineContext engineContext) throws XWikiException {
+      protected void initXWiki(XWikiContext context, XWikiEngineContext engineContext)
+          throws XWikiException {
         context.setWiki(this);
-        setConfig(config);
+      }
+
+      @Override
+      public XWikiConfig getConfig() {
+        return cfg;
       }
 
       @Override
@@ -183,14 +186,17 @@ public class XWikiLDAPConfigTest extends AbstractBridgedXWikiComponentTestCase {
     };
 
     this.cfgContext = new XWikiContext();
-
-    new XWiki(CONFIG, this.cfgContext, null) {
+    new XWiki(this.cfgContext, null) {
 
       @Override
-      protected void initXWiki(XWikiConfig config, XWikiContext context,
-          XWikiEngineContext engineContext) throws XWikiException {
+      protected void initXWiki(XWikiContext context, XWikiEngineContext engineContext)
+          throws XWikiException {
         context.setWiki(this);
-        setConfig(config);
+      }
+
+      @Override
+      public XWikiConfig getConfig() {
+        return CONFIG;
       }
 
       @Override
