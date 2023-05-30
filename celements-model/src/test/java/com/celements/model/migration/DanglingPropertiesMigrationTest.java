@@ -25,7 +25,7 @@ import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.reference.ReferenceProvider;
 import com.celements.model.util.ModelUtils;
 import com.celements.query.IQueryExecutionServiceRole;
-import com.celements.wiki.WikiProvider;
+import com.celements.wiki.WikiService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.xpn.xwiki.XWikiException;
@@ -46,7 +46,7 @@ public class DanglingPropertiesMigrationTest extends AbstractComponentTest {
     queryExecMock = registerComponentMock(IQueryExecutionServiceRole.class);
     hibCfgMock = createDefaultMock(Configuration.class);
     registerComponentMocks(HibernateSessionFactory.class, IModelAccessFacade.class,
-        ReferenceProvider.class, WikiProvider.class);
+        ReferenceProvider.class, WikiService.class);
     expect(getMock(HibernateSessionFactory.class).getConfiguration()).andReturn(
         hibCfgMock).anyTimes();
     expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("").anyTimes();

@@ -17,7 +17,7 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
-import com.celements.wiki.WikiProvider;
+import com.celements.wiki.WikiService;
 import com.google.common.collect.ImmutableSet;
 
 @Component
@@ -26,17 +26,17 @@ public class ReferenceProvider {
   private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceProvider.class);
 
   private final QueryManager queryManager;
-  private final WikiProvider wikiProvider;
+  private final WikiService wikiService;
 
   @Inject
-  public ReferenceProvider(QueryManager queryManager, WikiProvider wikiProvider) {
+  public ReferenceProvider(QueryManager queryManager, WikiService wikiService) {
     this.queryManager = queryManager;
-    this.wikiProvider = wikiProvider;
+    this.wikiService = wikiService;
   }
 
   @NotNull
   public Collection<WikiReference> getAllWikis() {
-    return wikiProvider.getAllWikis();
+    return wikiService.getAllWikis();
   }
 
   @NotNull

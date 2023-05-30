@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
@@ -16,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.xwiki.bridge.event.WikiCreatedEvent;
 import org.xwiki.bridge.event.WikiDeletedEvent;
 import org.xwiki.model.reference.WikiReference;
@@ -26,6 +27,7 @@ import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
 import com.celements.common.lambda.Try;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -33,19 +35,23 @@ import com.xpn.xwiki.XWikiConstant;
 
 import one.util.streamex.StreamEx;
 
-@Component
-public class WikiProvider implements EventListener, ApplicationListener<WikiProvider.RefreshEvent> {
+@Service // TODO add interface
+public class WikiService implements EventListener, ApplicationListener<WikiService.RefreshEvent> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WikiProvider.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WikiService.class);
 
   private final QueryManager queryManager;
   private final AtomicReference<Try<ImmutableMap<String, WikiReference>, QueryException>> cache;
 
   @Inject
-  public WikiProvider(QueryManager queryManager) {
+  public WikiService(QueryManager queryManager) {
     this.queryManager = queryManager;
     this.cache = new AtomicReference<>();
   }
+
+  // TODO main db consistency:
+  // convert main -> xwiki for output
+  // convert xwiki -> main for input
 
   public boolean hasWiki(WikiReference wikiRef) {
     return XWikiConstant.MAIN_WIKI.equals(wikiRef)
@@ -54,10 +60,17 @@ public class WikiProvider implements EventListener, ApplicationListener<WikiProv
 
   @NotNull
   public Collection<WikiReference> getAllWikis() {
+    // TODO ordered: main,celements2web,rest
     Collection<WikiReference> wikis = getWikisByHost().values();
     return wikis.isEmpty()
         ? ImmutableSet.of(XWikiConstant.MAIN_WIKI)
         : ImmutableSet.copyOf(wikis);
+  }
+
+  @NotNull
+  public Optional<WikiReference> getWikiForHost(String host) {
+    return Optional.ofNullable(getWikisByHost()
+        .get(Strings.nullToEmpty(host).trim()));
   }
 
   @NotNull

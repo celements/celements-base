@@ -12,7 +12,7 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryManager;
 
 import com.celements.common.test.AbstractComponentTest;
-import com.celements.wiki.WikiProvider;
+import com.celements.wiki.WikiService;
 import com.google.common.collect.ImmutableList;
 
 public class ReferenceProviderTest extends AbstractComponentTest {
@@ -21,7 +21,7 @@ public class ReferenceProviderTest extends AbstractComponentTest {
 
   @Before
   public void setUp() throws Exception {
-    registerComponentMocks(QueryManager.class, WikiProvider.class);
+    registerComponentMocks(QueryManager.class, WikiService.class);
     provider = getSpringContext().getBean(ReferenceProvider.class);
     getContext().setDatabase("test");
   }
@@ -31,7 +31,7 @@ public class ReferenceProviderTest extends AbstractComponentTest {
     List<WikiReference> wikis = ImmutableList.of(
         new WikiReference("atest"),
         new WikiReference("btest"));
-    expect(getMock(WikiProvider.class).getAllWikis()).andReturn(wikis);
+    expect(getMock(WikiService.class).getAllWikis()).andReturn(wikis);
     replayDefault();
     assertEquals(wikis, provider.getAllWikis());
     verifyDefault();
