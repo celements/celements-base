@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.xwiki.bridge.event.WikiCreatedEvent;
 import org.xwiki.bridge.event.WikiDeletedEvent;
@@ -39,8 +38,7 @@ import com.xpn.xwiki.XWikiConstant;
 
 import one.util.streamex.StreamEx;
 
-@Primary
-@Service("query")
+@Service
 public class QueryWikiService implements WikiService,
     EventListener, ApplicationListener<QueryWikiService.RefreshEvent> {
 

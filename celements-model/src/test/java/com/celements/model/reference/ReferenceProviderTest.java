@@ -31,7 +31,7 @@ public class ReferenceProviderTest extends AbstractComponentTest {
     List<WikiReference> wikis = ImmutableList.of(
         new WikiReference("atest"),
         new WikiReference("btest"));
-    expect(getMock(WikiService.class).getAllWikis()).andReturn(wikis);
+    expect(getMock(WikiService.class).streamAllWikis()).andAnswer(wikis::stream);
     replayDefault();
     assertEquals(wikis, provider.getAllWikis());
     verifyDefault();
