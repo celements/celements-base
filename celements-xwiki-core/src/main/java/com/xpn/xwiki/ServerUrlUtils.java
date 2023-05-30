@@ -34,7 +34,7 @@ public class ServerUrlUtils implements ServerUrlUtilsRole {
       host = maindb + "." + host;
     }
     URL url = new URL(protocol, host, (port != null) ? port : -1, "/");
-    LOGGER.warn("getServerURL - {}", url); // TODO reduce
+    LOGGER.debug("getServerURL - {}", url);
     return url;
   }
 

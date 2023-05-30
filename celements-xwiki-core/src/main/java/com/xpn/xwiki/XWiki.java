@@ -523,9 +523,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   // TODO merge with ClassesCompositor
   protected void initializeMandatoryClasses(XWikiContext context) throws XWikiException {
     getPrefsClass(context);
-    if (true) {
-      return; // TODO
-    }
     getUserClass(context);
     getTagClass(context);
     getGroupClass(context);
@@ -642,9 +639,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       context.setDatabase(context.getMainXWiki());
       XWikiDocument doc = getDocument(serverwikipage, context);
       if (doc.isNew()) {
-        throw new XWikiException(XWikiException.MODULE_XWIKI,
-            XWikiException.ERROR_XWIKI_DOES_NOT_EXIST, "The wiki " + servername
-                + " does not exist");
+        return "";
       }
       String wikiOwner = doc.getStringValue(VIRTUAL_WIKI_DEFINITION_CLASS_REFERENCE, "owner");
       if (wikiOwner.indexOf(":") == -1) {
@@ -684,7 +679,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     setPluginManager(new XWikiPluginManager(getXWikiPreference("plugins", context), context));
     String plugins = Param("xwiki.plugins", "");
     if (!plugins.equals("")) {
-      // getPluginManager().addPlugins(StringUtils.split(plugins, " ,"), context); TODO
+      getPluginManager().addPlugins(StringUtils.split(plugins, " ,"), context);
     }
   }
 
@@ -2636,10 +2631,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       needsUpdate = true;
     }
 
-    LOG.error("getPrefsClass - would save {} - new {} - context {}", needsUpdate, doc.isNew(),
-        context);
     if (needsUpdate) {
-      // saveDocument(doc, context); TODO
+      saveDocument(doc, context);
     }
     return bclass;
   }
