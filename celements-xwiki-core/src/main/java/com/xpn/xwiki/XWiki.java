@@ -376,7 +376,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Create the notification manager
     setNotificationManager(new XWikiNotificationManager());
 
-    // setStore(StoreFactory.getMainStore());
+    setStore(StoreFactory.getMainStore());
 
     setCriteriaService((XWikiCriteriaService) createClassFromConfig("xwiki.criteria.class",
         "com.xpn.xwiki.criteria.impl.XWikiCriteriaServiceImpl", context));

@@ -20,11 +20,12 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
-import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.wiki.WikiService;
+import com.google.common.collect.ImmutableSet;
 import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -38,11 +39,15 @@ public class XWikiRequestInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XWikiRequestInitializer.class);
 
+  private static final ImmutableSet<String> LOCAL_HOSTS = ImmutableSet.of(
+      "localhost", "127.0.0.1", "::1");
+
   private final ServletContext servletContext;
   private final ServletContainerInitializer initializer;
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiProvider xwikiProvider;
+  private final XWikiConfigSource xwikiCfg;
 
   @Inject
   public XWikiRequestInitializer(
@@ -50,12 +55,14 @@ public class XWikiRequestInitializer {
       ServletContainerInitializer initializer,
       WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiProvider xwikiProvider) {
+      XWikiProvider xwikiProvider,
+      XWikiConfigSource xwikiCfg) {
     this.servletContext = servletContext;
     this.initializer = initializer;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
+    this.xwikiCfg = xwikiCfg;
   }
 
   public XWikiContext init(String action, HttpServletRequest request, HttpServletResponse response)
@@ -74,31 +81,24 @@ public class XWikiRequestInitializer {
     context.setOriginalDatabase(wikiRef.getName());
     XWiki xwiki = xwikiProvider.get();
     xwiki.prepareResources(context);
-    DocumentReference requestDocRef = xwiki.getDocumentReference(context.getRequest(), context);
-    context.setDatabase(requestDocRef.getWikiReference().getName());
+    LOGGER.debug("request initialized");
     return context;
   }
 
   private WikiReference determineWiki(XWikiContext context) throws XWikiException {
-    String host = Optional.ofNullable(context.getURL()).map(URL::getHost).orElse("");
-    if (host.equals("localhost") || host.equals("127.0.0.1")) {
+    Optional<String> host = Optional.ofNullable(context.getURL()).map(URL::getHost);
+    if (!xwikiCfg.isVirtualMode() || host.filter(LOCAL_HOSTS::contains).isPresent()) {
       return XWikiConstant.MAIN_WIKI;
     }
-    WikiReference wikiRef = wikiService.getWikiForHost(host).orElseGet(() -> {
-      if (host.indexOf(".") > 0) {
+    WikiReference wikiRef = host.map(wikiService::getWikiForHost)
         // no wiki found based on the full host name, try to use the first part as the wiki name
-        WikiReference subDomainWikiRef = new WikiReference(host.substring(0, host.indexOf(".")));
-        if (wikiService.hasWiki(subDomainWikiRef)) {
-          return subDomainWikiRef;
-        }
-      }
-      return null;
-    });
-    // TODO virtual mode -> always main
-    LOGGER.debug("determineWiki - {}", wikiRef);
-    return Optional.ofNullable(wikiRef)
+        .orElseGet(() -> host.filter(h -> h.indexOf(".") > 0)
+            .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
+            .filter(wikiService::hasWiki))
         .orElseThrow(() -> new XWikiException(XWikiException.MODULE_XWIKI,
             XWikiException.ERROR_XWIKI_DOES_NOT_EXIST, "The wiki " + host + " does not exist"));
+    LOGGER.debug("determineWiki - {}", wikiRef);
+    return wikiRef;
   }
 
   private void awaitWikiUpdate(WikiReference wikiRef) throws XWikiException {
