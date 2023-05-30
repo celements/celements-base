@@ -1,5 +1,7 @@
 package com.celements.init;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.migration.XWikiMigrationManagerInterface;
@@ -48,9 +51,16 @@ public class WikiUpdater {
   }
 
   public CompletableFuture<Void> updateAsync(WikiReference wikiRef) {
-    return wikiUpdates.compute(wikiRef, (wiki, future) -> (future == null) || future.isDone()
-        ? CompletableFuture.runAsync(new WikiUpdateRunnable(wikiRef, getContext()), executor)
-        : future);
+    checkNotNull(wikiRef);
+    CompletableFuture<Void> updateFuture = wikiUpdates.compute(wikiRef,
+        (wiki, future) -> (future == null) || future.isDone()
+            ? CompletableFuture.runAsync(new WikiUpdateRunnable(wikiRef, getContext()), executor)
+            : future);
+    boolean isMain = false; // TODO
+    if (isMain) {
+      wikiUpdates.put(XWikiConstant.MAIN_WIKI, updateFuture);
+    }
+    return updateFuture;
   }
 
   // TODO start migration per wiki within updateAsync
@@ -96,9 +106,10 @@ public class WikiUpdater {
 
     @Override
     protected void runInternal() {
-      LOGGER.warn("updateWiki - {}", wikiRef.getName());
+      LOGGER.warn("updateWiki - {}", wikiRef.getName()); // TODO reduce
       try {
         // TODO getContext().getWiki().updateDatabase(wikiRef.getName(), false, getContext());
+        wikiUpdates.remove(wikiRef);
       } catch (HibernateException /* | XWikiException */ exc) {
         throw new DatabaseUpdateException(exc);
       }

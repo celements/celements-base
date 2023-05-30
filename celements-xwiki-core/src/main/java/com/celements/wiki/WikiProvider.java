@@ -47,6 +47,11 @@ public class WikiProvider implements EventListener, ApplicationListener<WikiProv
     this.cache = new AtomicReference<>();
   }
 
+  public boolean hasWiki(WikiReference wikiRef) {
+    return XWikiConstant.MAIN_WIKI.equals(wikiRef)
+        || getWikisByHost().containsValue(wikiRef);
+  }
+
   @NotNull
   public Collection<WikiReference> getAllWikis() {
     Collection<WikiReference> wikis = getWikisByHost().values();

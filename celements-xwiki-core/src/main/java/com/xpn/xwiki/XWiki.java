@@ -50,10 +50,15 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import javax.servlet.http.Cookie;
@@ -99,10 +104,10 @@ import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
+import com.celements.init.WikiUpdater;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.StoreFactory;
 import com.celements.wiki.WikiProvider;
-import com.google.common.base.Strings;
 import com.xpn.xwiki.api.Api;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.api.User;
@@ -232,9 +237,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   /** Lock object used for the lazy initialization of the group management service. */
   private final Object GROUP_SERVICE_LOCK = new Object();
 
-  /** Lock object used for the lazy initialization of the statistics service. */
-  private final Object STATS_SERVICE_LOCK = new Object();
-
   /** Lock object used for the lazy initialization of the URL Factory service. */
   private final Object URLFACTORY_SERVICE_LOCK = new Object();
 
@@ -323,21 +325,66 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     if (context.getWiki() != null) {
       return context.getWiki();
     }
-    XWiki xwiki = (XWiki) context.getEngineContext().getAttribute(XWikiEngineContext.XWIKI_KEY);
-    checkState(xwiki != null, "XWiki not initialised"); // initialised by XWikiBootstrap
+    WikiReference wikiRef = determineWiki(context);
+    awaitWikiUpdate(wikiRef);
+    XWiki xwiki = awaitXWikiBootstrap(context);
+    checkNotNull(xwiki);
     context.setWiki(xwiki);
-    if (!xwiki.isVirtualMode()) {
-      return xwiki;
-    }
-    String host = context.getURL().getHost();
-    if (Strings.isNullOrEmpty(host)) {
-      return xwiki;
-    }
-    WikiReference wikiRef = Utils.getComponent(WikiProvider.class).getWikisByHost().get(host);
-    checkState(wikiRef != null, "wiki doesn't exist");
     context.setDatabase(wikiRef.getName());
     context.setOriginalDatabase(wikiRef.getName());
     return xwiki;
+  }
+
+  private static WikiReference determineWiki(XWikiContext context) throws XWikiException {
+    String host = Optional.ofNullable(context.getURL()).map(URL::getHost).orElse("");
+    if (host.equals("localhost") || host.equals("127.0.0.1")) {
+      return XWikiConstant.MAIN_WIKI;
+    }
+    WikiProvider wikiProvider = Utils.getComponent(WikiProvider.class);
+    WikiReference wikiRef = wikiProvider.getWikisByHost().get(host);
+    if ((wikiRef == null) && (host.indexOf(".") > 0)) {
+      // no wiki found based on the full host name, try to use the first part as the wiki name
+      WikiReference subDomainWikiRef = new WikiReference(host.substring(0, host.indexOf(".")));
+      if (wikiProvider.hasWiki(subDomainWikiRef)) {
+        wikiRef = subDomainWikiRef;
+      }
+    }
+    // TODO virtual mode -> always main
+    LOG.warn("determineWiki - {}", wikiRef); // TODO reduce
+    return Optional.ofNullable(wikiRef)
+        .orElseThrow(() -> new XWikiException(XWikiException.MODULE_XWIKI,
+            XWikiException.ERROR_XWIKI_DOES_NOT_EXIST, "The wiki " + host + " does not exist"));
+  }
+
+  private static void awaitWikiUpdate(WikiReference wikiRef) throws XWikiException {
+    Utils.getComponent(WikiUpdater.class).getFuture(wikiRef).ifPresent(rethrow(future -> {
+      try {
+        LOG.warn("getXWiki - waiting for wiki update on {}", wikiRef); // TODO reduce
+        future.get(1, TimeUnit.HOURS); // TODO use tomcat connectionTimeout
+      } catch (ExecutionException | TimeoutException exc) {
+        throw new XWikiException(XWikiException.MODULE_XWIKI,
+            XWikiException.ERROR_XWIKI_INIT_FAILED, "Could not initialize main XWiki context", exc);
+      } catch (InterruptedException iexc) {
+        LOG.warn("getXWiki - interrupted", iexc);
+        Thread.currentThread().interrupt();
+      }
+    }));
+  }
+
+  private static XWiki awaitXWikiBootstrap(XWikiContext context) throws XWikiException {
+    try {
+      CompletableFuture<XWiki> xwikiFuture = context.getEngineContext()
+          .get(XWikiEngineContext.XWIKI_KEY);
+      checkState(xwikiFuture != null, "should not happen, before ApplicationStartedEvent");
+      return xwikiFuture.get(1, TimeUnit.HOURS); // TODO use tomcat connectionTimeout
+    } catch (ExecutionException | TimeoutException exc) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI, XWikiException.ERROR_XWIKI_INIT_FAILED,
+          "Could not initialize main XWiki context", exc);
+    } catch (InterruptedException iexc) {
+      LOG.warn("getXWiki - interrupted", iexc);
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException();
+    }
   }
 
   public static String getFormEncoded(String content) {

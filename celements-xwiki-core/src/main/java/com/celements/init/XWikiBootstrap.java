@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
@@ -76,29 +77,35 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   }
 
   @Override
-  public void onApplicationEvent(CelementsLifecycleEvent event) {
+  public synchronized void onApplicationEvent(CelementsLifecycleEvent event) {
     if (event.getType() == CelementsLifecycleEvent.State.STARTED) {
+      checkState(servletContext.getAttribute(XWikiEngineContext.XWIKI_KEY) == null);
+      CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
+      servletContext.setAttribute(XWikiEngineContext.XWIKI_KEY, xwikiFuture);
       try {
-        bootstrapXWiki();
+        XWiki xwiki = bootstrapXWiki();
+        // make XWiki available to all requests via servlet context, see {@link XWiki#getXWiki}
+        xwikiFuture.complete(xwiki);
+        LOGGER.warn("XWiki published"); // TODO reduce
       } catch (Exception exc) {
+        xwikiFuture.completeExceptionally(exc);
         throw new XWikiBootstrapException(exc);
       }
     }
   }
 
-  private synchronized void bootstrapXWiki()
-      throws XWikiException, IOException, ExecutionContextException {
+  private XWiki bootstrapXWiki() throws XWikiException, IOException, ExecutionContextException {
     checkState(!initialised.getAndSet(true), "already initialised");
     XWikiConfig xwikiCfg = loadXWikiConfig();
-    XWikiContext xwikiContext = createInitialXWikiContext(xwikiCfg);
+    XWikiContext xwikiContext = createMainXWikiContext(xwikiCfg);
     Utils.setComponentManager(componentManager);
-    XWiki xwiki = createXWiki(xwikiCfg, xwikiContext);
+    XWiki xwiki = createXWikiInstance(xwikiCfg, xwikiContext);
     // TODO requires XWiki ? Cfg should suffice
     xwikiContext.setURLFactory(xwiki.getURLFactoryService().createURLFactory(xwikiContext));
     stubContextProvider.initialize(xwikiContext);
     initExecutionContext(xwikiContext);
     updateDatabases(xwikiContext);
-    publishXWikiInstance(xwiki);
+    return xwiki;
   }
 
   private XWikiConfig loadXWikiConfig() throws IOException, XWikiException {
@@ -107,7 +114,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     }
   }
 
-  private XWikiContext createInitialXWikiContext(XWikiConfig xwikiCfg)
+  private XWikiContext createMainXWikiContext(XWikiConfig xwikiCfg)
       throws MalformedURLException {
     XWikiContext ctx = new XWikiContext();
     ctx.setMode(XWikiContext.MODE_SERVLET);
@@ -118,7 +125,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     return ctx;
   }
 
-  private XWiki createXWiki(XWikiConfig cfg, XWikiContext context) throws XWikiException {
+  private XWiki createXWikiInstance(XWikiConfig cfg, XWikiContext context) throws XWikiException {
     XWiki xwiki = new XWiki(cfg, context, context.getEngineContext());
     xwiki.setDatabase(context.getDatabase());
     context.setWiki(xwiki);
@@ -145,14 +152,6 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
         System.exit(0); // TODO throw exception instead ?
       }
     }
-  }
-
-  /**
-   * make XWiki available to all requests, see {@link XWiki#getXWiki(XWikiContext)}.
-   */
-  private void publishXWikiInstance(XWiki xwiki) {
-    servletContext.setAttribute(XWikiEngineContext.XWIKI_KEY, xwiki);
-    LOGGER.info("XWiki published");
   }
 
   public class XWikiBootstrapException extends RuntimeException {
