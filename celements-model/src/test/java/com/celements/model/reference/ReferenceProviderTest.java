@@ -4,8 +4,6 @@ import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.WikiReference;
@@ -13,7 +11,7 @@ import org.xwiki.query.QueryManager;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.wiki.WikiService;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class ReferenceProviderTest extends AbstractComponentTest {
 
@@ -28,7 +26,7 @@ public class ReferenceProviderTest extends AbstractComponentTest {
 
   @Test
   public void test_getAllWikis() throws Exception {
-    List<WikiReference> wikis = ImmutableList.of(
+    ImmutableSet<WikiReference> wikis = ImmutableSet.of(
         new WikiReference("atest"),
         new WikiReference("btest"));
     expect(getMock(WikiService.class).streamAllWikis()).andAnswer(wikis::stream);
