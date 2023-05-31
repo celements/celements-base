@@ -57,4 +57,10 @@ public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
       beanFactory.registerBeanDefinition(descriptor.getBeanName(), beanDef);
     });
   }
+
+  @Override
+  public void close() {
+    LOGGER.error("closed", new Exception()); // TODO remove
+    super.close();
+  }
 }
