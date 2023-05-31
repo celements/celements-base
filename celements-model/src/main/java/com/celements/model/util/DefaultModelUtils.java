@@ -27,6 +27,7 @@ import org.xwiki.model.reference.WikiReference;
 import com.celements.model.context.ModelContext;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.reference.ReferenceProvider;
+import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.util.Util;
@@ -48,6 +49,11 @@ public class DefaultModelUtils implements ModelUtils {
 
   @Inject
   private ReferenceProvider refProvider;
+
+  private final Supplier<WikiReference> mainWikiRef = Suppliers
+      .memoize(() -> RefBuilder.from(XWikiConstant.MAIN_WIKI)
+          .wiki(getXWiki().Param("xwiki.db"))
+          .build(WikiReference.class));
 
   private final XWiki getXWiki() {
     return context.getXWikiContext().getWiki();
@@ -121,9 +127,14 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  @Deprecated
   public WikiReference getMainWikiRef() {
-    return XWikiConstant.MAIN_WIKI;
+    return mainWikiRef.get();
+  }
+
+  @Override
+  public boolean isMainWiki(WikiReference wikiRef) {
+    return XWikiConstant.MAIN_WIKI.equals(wikiRef)
+        || getMainWikiRef().equals(wikiRef);
   }
 
   @Override
