@@ -17,17 +17,14 @@ import org.xwiki.model.reference.WikiReference;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.reference.ReferenceProvider;
 import com.google.common.base.Optional;
-import com.xpn.xwiki.XWikiConstant;
 
 @ComponentRole
 public interface ModelUtils {
 
-  /**
-   * @deprecated since 6.0 instead use {@link XWikiConstant#MAIN_WIKI}
-   */
-  @Deprecated
   @NotNull
   WikiReference getMainWikiRef();
+
+  boolean isMainWiki(@Nullable WikiReference wikiRef);
 
   /**
    * @deprecated since 6.0 instead use {@link ReferenceProvider#getAllWikis}
