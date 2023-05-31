@@ -50,16 +50,16 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
 
   @Override
   public void checkAllMandatoryDocuments() {
-    LOGGER.info("checkAllMandatoryDocuments for wiki [" + getContext().getDatabase() + "].");
+    LOGGER.info("checkAllMandatoryDocuments for wiki [{}] ", getContext().getDatabase());
     for (String mandatoryDocKey : getMandatoryDocumentsList()) {
       IMandatoryDocumentRole mandatoryDoc = mandatoryDocumentsMap.get(mandatoryDocKey);
       try {
-        LOGGER.trace("checkDocuments with [" + mandatoryDoc.getClass() + "].");
+        LOGGER.trace("checkDocuments with [{}]", mandatoryDoc.getClass());
         mandatoryDoc.checkDocuments();
-        LOGGER.trace("end checkDocuments with [" + mandatoryDoc.getClass() + "].");
+        LOGGER.trace("end checkDocuments with [{}]", mandatoryDoc.getClass());
       } catch (Exception exp) {
-        LOGGER.error("Exception checking mandatory documents for component "
-            + mandatoryDoc.getClass(), exp);
+        LOGGER.error("Exception checking mandatory documents for component ["
+            + mandatoryDoc.getClass() + "] and wiki [" + getContext().getDatabase() + "]", exp);
       }
     }
   }
