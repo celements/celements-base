@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiContext;
@@ -54,7 +55,6 @@ public class WikiUpdater {
     return wikiUpdates.values().stream();
   }
 
-  // TODO make entire run configurable -> move cfg to properties
   public CompletableFuture<Void> updateAsync(WikiReference wikiRef) {
     checkNotNull(wikiRef);
     checkState(!executor.isShutdown());
@@ -107,11 +107,13 @@ public class WikiUpdater {
 
     @Override
     protected void runInternal() {
-      LOGGER.warn("updateWiki - {}", wikiRef.getName()); // TODO reduce
       try {
-        // TODO getContext().getWiki().updateDatabase(wikiRef.getName(), false, getContext());
+        LOGGER.debug("updateWiki - starting [{}]", wikiRef.getName());
+        Stopwatch t = Stopwatch.createStarted();
+        getContext().getWiki().updateDatabase(wikiRef.getName(), false, getContext());
         wikiUpdates.remove(wikiRef);
-      } catch (HibernateException /* | XWikiException */ exc) {
+        LOGGER.info("updateWiki - done [{}], took {}", wikiRef.getName(), t.elapsed());
+      } catch (HibernateException | XWikiException exc) {
         throw new DatabaseUpdateException(exc);
       }
     }

@@ -1,6 +1,7 @@
 package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static com.xpn.xwiki.XWikiException.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,6 +24,7 @@ import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.wiki.WikiService;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
@@ -81,7 +83,7 @@ public class XWikiRequestInitializer {
     context.setOriginalDatabase(wikiRef.getName());
     XWiki xwiki = xwikiProvider.get(); // blocking on bootstrap
     xwiki.prepareResources(context);
-    LOGGER.debug("request initialized");
+    LOGGER.info("request initialized");
     return context;
   }
 
@@ -96,8 +98,8 @@ public class XWikiRequestInitializer {
         .orElseGet(() -> host.filter(h -> h.indexOf(".") > 0)
             .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
             .filter(wikiService::hasWiki))
-        .orElseThrow(() -> new XWikiException(XWikiException.MODULE_XWIKI,
-            XWikiException.ERROR_XWIKI_DOES_NOT_EXIST, "The wiki " + host + " does not exist"));
+        .orElseThrow(() -> new XWikiException(MODULE_XWIKI, ERROR_XWIKI_DOES_NOT_EXIST,
+            "The wiki " + host + " does not exist"));
     LOGGER.debug("determineWiki - {}", wikiRef);
     return wikiRef;
   }
@@ -105,11 +107,13 @@ public class XWikiRequestInitializer {
   private void awaitWikiUpdate(WikiReference wikiRef) throws XWikiException {
     wikiUpdater.getFuture(wikiRef).ifPresent(rethrow(future -> {
       try {
-        LOGGER.trace("awaitWikiUpdate - on {}", wikiRef);
+        LOGGER.trace("awaitWikiUpdate - [{}]", wikiRef);
+        Stopwatch t = Stopwatch.createStarted();
         future.get(1, TimeUnit.HOURS);
+        LOGGER.debug("awaitWikiUpdate - done [{}], took {}", wikiRef.getName(), t.elapsed());
       } catch (ExecutionException | TimeoutException exc) {
-        throw new XWikiException(XWikiException.MODULE_XWIKI,
-            XWikiException.ERROR_XWIKI_INIT_FAILED, "Could not initialize main XWiki context", exc);
+        throw new XWikiException(MODULE_XWIKI, ERROR_XWIKI_INIT_FAILED,
+            "Could not initialize main XWiki context", exc);
       } catch (InterruptedException iexc) {
         LOGGER.warn("getXWiki - interrupted", iexc);
         Thread.currentThread().interrupt();
