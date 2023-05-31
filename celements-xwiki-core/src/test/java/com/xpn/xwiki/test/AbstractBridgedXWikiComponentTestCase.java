@@ -47,24 +47,21 @@ public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWik
 
   @Override
   protected void setUp() throws Exception {
+    this.context = new XWikiContext();
+    this.context.setDatabase("xwiki");
+    this.context.setMainXWiki("xwiki");
     super.setUp();
 
     // Statically store the component manager in {@link Utils} to be able to access it without
     // the context.
     Utils.setComponentManager(getComponentManager());
 
-    this.context = new XWikiContext();
-
-    this.context.setDatabase("xwiki");
-    this.context.setMainXWiki("xwiki");
-
     // We need to initialize the Component Manager so that the components can be looked up
     getContext().put(ComponentManager.class.getName(), getComponentManager());
 
     // Bridge with old XWiki Context, required for old code.
     Execution execution = getComponentManager().lookup(Execution.class);
-    execution.getContext().setProperty("xwikicontext", this.context);
-    getComponentManager().lookup(XWikiStubContextProvider.class).initialize(this.context);
+    execution.getContext().setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, context);
 
     // Set a simple application context, as some components fail to start without one.
     Container c = getComponentManager().lookup(Container.class);
@@ -73,6 +70,13 @@ public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWik
     Mock mockCoreConfiguration = registerMockComponent(CoreConfiguration.class);
     mockCoreConfiguration.stubs().method("getDefaultDocumentSyntax")
         .will(returnValue(Syntax.XWIKI_1_0));
+  }
+
+  @Override
+  protected void registerComponents() throws Exception {
+    Mock ctxProviderMock = registerMockComponent(XWikiStubContextProvider.class, "default");
+    ctxProviderMock.stubs().method("createStubContext")
+        .will(returnValue(context));
   }
 
   @Override

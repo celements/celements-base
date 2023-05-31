@@ -20,7 +20,6 @@ com.xpn.xwiki.internal.DefaultWikiMacroFactory
 com.xpn.xwiki.internal.DefaultWikiMacroInitializer
 com.xpn.xwiki.internal.WikiMacroExecutionEventListener
 com.xpn.xwiki.internal.XWikiStubContextInitializer
-com.xpn.xwiki.internal.DefaultXWikiStubContextProvider
 com.xpn.xwiki.internal.model.reference.CompactStringEntityReferenceSerializer
 com.xpn.xwiki.internal.model.reference.CompactWikiStringEntityReferenceSerializer
 com.xpn.xwiki.internal.model.reference.CurrentEntityReferenceValueProvider

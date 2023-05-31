@@ -19,28 +19,26 @@
  */
 package com.xpn.xwiki.internal;
 
+import static org.junit.Assert.*;
+
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
-import com.xpn.xwiki.util.XWikiStubContextProvider;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Validate XWikiStubContextInitializer and DefaultXWikiStubContextProvider.
  *
  * @version $Id$
  */
-public class XWikiStubContextInitializerTest extends AbstractBridgedXWikiComponentTestCase {
+public class XWikiStubContextInitializerTest extends AbstractComponentTest {
 
   private ExecutionContextManager executionContextManager;
 
-  @Override
   protected void setUp() throws Exception {
-    super.setUp();
-
     this.executionContextManager = getComponentManager().lookup(ExecutionContextManager.class);
   }
 
@@ -51,8 +49,6 @@ public class XWikiStubContextInitializerTest extends AbstractBridgedXWikiCompone
 
     ExecutionContext context = new ExecutionContext();
     context.setProperty("xwikicontext", xcontext);
-
-    getComponentManager().lookup(XWikiStubContextProvider.class).initialize(xcontext);
 
     final ExecutionContext daemonContext = new ExecutionContext();
 

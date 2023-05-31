@@ -24,7 +24,7 @@ import java.net.MalformedURLException;
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 
-import org.xwiki.component.annotation.Component;
+import org.springframework.stereotype.Component;
 
 import com.xpn.xwiki.ServerUrlUtilsRole;
 import com.xpn.xwiki.XWikiConstant;

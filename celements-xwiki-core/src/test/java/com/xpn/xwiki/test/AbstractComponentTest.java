@@ -68,8 +68,10 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
     // Bridge with old XWiki Context, required for old code.
     ExecutionContext execCtx = new ExecutionContext();
     getComponentManager().lookup(Execution.class).setContext(execCtx);
-    execCtx.setProperty("xwikicontext", context);
-    getComponentManager().lookup(XWikiStubContextProvider.class).initialize(this.context);
+    execCtx.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, context);
+    XWikiStubContextProvider ctxProviderMock = registerComponentMock(
+        XWikiStubContextProvider.class);
+    expect(ctxProviderMock.createStubContext()).andReturn(context).anyTimes();
 
     // Set a simple application context, as some components fail to start without one.
     getComponentManager().lookup(Container.class)
