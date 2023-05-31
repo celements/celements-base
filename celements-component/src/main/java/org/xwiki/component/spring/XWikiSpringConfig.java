@@ -1,11 +1,8 @@
 package org.xwiki.component.spring;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -19,26 +16,13 @@ import org.xwiki.component.descriptor.ComponentDescriptor;
     "com.xpn.xwiki" })
 public class XWikiSpringConfig {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(XWikiSpringConfig.class);
-
-  public final void registerXWikiComponents(
-      ResourceLoader resourceLoader,
-      BeanDefinitionRegistry beanFactory)
-      throws ApplicationContextException {
+  public static final List<ComponentDescriptor<?>> loadXWikiDescriptors(
+      ResourceLoader resourceLoader) throws ApplicationContextException {
     try {
-      new ComponentAnnotationLoader()
-          .loadDeclaredDescriptors(resourceLoader.getClassLoader())
-          .stream()
-          .forEach(descriptor -> register(beanFactory, descriptor));
+      return new ComponentAnnotationLoader().loadDeclaredDescriptors(
+          resourceLoader.getClassLoader());
     } catch (ClassNotFoundException | IOException exc) {
       throw new ApplicationContextException("failed to scan XWiki components", exc);
     }
   }
-
-  private void register(BeanDefinitionRegistry beanFactory, ComponentDescriptor<?> descriptor) {
-    BeanDefinition beanDef = descriptor.asBeanDefinition();
-    LOGGER.debug("registerXWikiComponents: xwiki component {} as bean {}", descriptor, beanDef);
-    beanFactory.registerBeanDefinition(descriptor.getBeanName(), beanDef);
-  }
-
 }

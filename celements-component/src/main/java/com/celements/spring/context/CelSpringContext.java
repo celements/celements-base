@@ -1,6 +1,6 @@
 package com.celements.spring.context;
 
-import static com.celements.common.MoreObjectsCel.*;
+import static org.xwiki.component.spring.XWikiSpringConfig.*;
 
 import java.util.List;
 
@@ -8,9 +8,11 @@ import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
+import org.xwiki.component.descriptor.ComponentDescriptor;
 import org.xwiki.component.spring.XWikiSpringConfig;
 
 import com.celements.spring.CelSpringConfig;
@@ -40,11 +42,14 @@ public class CelSpringContext extends AnnotationConfigApplicationContext {
       @NotNull List<Class<?>> configs) {
     super(new XWikiShimBeanFactory());
     setBeanNameGenerator(beanNameGenerator);
-    if (!configs.isEmpty()) {
-      register(configs.toArray(new Class[configs.size()]));
-    }
-    configs.stream().flatMap(tryCast(XWikiSpringConfig.class)).findFirst()
-        .ifPresent(cfg -> cfg.registerXWikiComponents(this, this));
+    register(configs.toArray(new Class[configs.size()]));
+    loadXWikiDescriptors(this).forEach(this::registerXWikiComponent);
     LOGGER.info("initializing configs: {}", configs);
+  }
+
+  private void registerXWikiComponent(ComponentDescriptor<?> descriptor) {
+    BeanDefinition beanDef = descriptor.asBeanDefinition();
+    LOGGER.debug("loadBeanDefinitions: {} as {}", descriptor, beanDef);
+    registerBeanDefinition(descriptor.getBeanName(), beanDef);
   }
 }
