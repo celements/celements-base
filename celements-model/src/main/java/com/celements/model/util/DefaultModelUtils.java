@@ -28,7 +28,7 @@ import com.celements.model.context.ModelContext;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.reference.ReferenceProvider;
 import com.google.common.base.Suppliers;
-import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
@@ -50,14 +50,13 @@ public class DefaultModelUtils implements ModelUtils {
   @Inject
   private ReferenceProvider refProvider;
 
+  @Inject
+  private XWikiConfigSource xwikiCfg;
+
   private final Supplier<WikiReference> mainWikiRef = Suppliers
       .memoize(() -> RefBuilder.from(XWikiConstant.MAIN_WIKI)
-          .wiki(getXWiki().Param("xwiki.db"))
+          .wiki(xwikiCfg.getProperty("xwiki.db"))
           .build(WikiReference.class));
-
-  private final XWiki getXWiki() {
-    return context.getXWikiContext().getWiki();
-  }
 
   @Override
   @Deprecated
@@ -157,12 +156,12 @@ public class DefaultModelUtils implements ModelUtils {
     checkNotNull(wikiRef);
     String database = "";
     if (XWikiConstant.MAIN_WIKI.equals(wikiRef)) {
-      database = getXWiki().Param("xwiki.db", "").trim();
+      database = xwikiCfg.getProperty("xwiki.db", "").trim();
     }
     if (database.isEmpty()) {
       database = wikiRef.getName().replace('-', '_');
     }
-    return getXWiki().Param("xwiki.db.prefix", "") + database.replace('-', '_');
+    return xwikiCfg.getProperty("xwiki.db.prefix", "") + database.replace('-', '_');
   }
 
   @Override
