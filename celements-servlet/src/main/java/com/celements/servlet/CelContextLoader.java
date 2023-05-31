@@ -67,7 +67,7 @@ public class CelContextLoader extends ContextLoader {
         tryCast(context, CelSpringWebContext.class)
             .map(c -> c.firstClosingStackTrace.get())
             .ifPresent(stackTrace -> LOGGER.error("contextDestroyed - spring app context "
-                + "was closed prematurely by closed by:", stackTrace));
+                + "was closed prematurely by:", stackTrace));
       } finally {
         context = null;
         closeWebApplicationContext(servletContext);

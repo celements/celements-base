@@ -54,9 +54,10 @@ public class DefaultModelUtils implements ModelUtils {
   private XWikiConfigSource xwikiCfg;
 
   private final Supplier<WikiReference> mainWikiRef = Suppliers
-      .memoize(() -> RefBuilder.from(XWikiConstant.MAIN_WIKI)
+      .memoize(() -> RefBuilder.create()
           .wiki(xwikiCfg.getProperty("xwiki.db"))
-          .build(WikiReference.class));
+          .buildOpt(WikiReference.class)
+          .orElse(XWikiConstant.MAIN_WIKI));
 
   @Override
   @Deprecated
