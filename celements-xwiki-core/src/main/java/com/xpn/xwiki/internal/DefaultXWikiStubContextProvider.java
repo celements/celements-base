@@ -19,15 +19,23 @@
  */
 package com.xpn.xwiki.internal;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.net.MalformedURLException;
+
+import javax.inject.Inject;
+import javax.servlet.ServletContext;
+
 import org.xwiki.component.annotation.Component;
 
+import com.xpn.xwiki.ServerUrlUtilsRole;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
+import com.xpn.xwiki.web.XWikiServletContext;
 import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiServletRequestStub;
+import com.xpn.xwiki.web.XWikiServletResponseStub;
+import com.xpn.xwiki.web.XWikiURLFactoryService;
 
 /**
  * Default implementation of XWikiStubContextProvider.
@@ -37,36 +45,40 @@ import com.xpn.xwiki.web.XWikiServletRequestStub;
 @Component
 public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider {
 
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(DefaultXWikiStubContextProvider.class);
+  private final ServletContext servletContext;
+  private final ServerUrlUtilsRole serverUrlUtils;
+  private final XWikiURLFactoryService urlFactoryService;
 
-  private XWikiContext stubContext;
-
-  @Override
-  public void initialize(XWikiContext context) {
-    this.stubContext = (XWikiContext) context.clone();
-    XWikiServletRequestStub dummy = new XWikiServletRequestStub();
-    if (context.hasRequest()) {
-      dummy.setHost(context.getRequest().getHeader("x-forwarded-host"));
-      dummy.setScheme(context.getRequest().getScheme());
-    } else if (context.getURL() != null) {
-      dummy.setHost(context.getURL().getHost());
-      dummy.setScheme(context.getURL().getProtocol());
-    }
-    XWikiServletRequest request = new XWikiServletRequest(dummy);
-    this.stubContext.setRequest(request);
-    this.stubContext.setCacheDuration(0);
-    this.stubContext.setUser(null);
-    this.stubContext.setLanguage(null);
-    this.stubContext.setDatabase(context.getMainXWiki());
-    this.stubContext.setDoc(new XWikiDocument());
-    this.stubContext.flushClassCache();
-    this.stubContext.flushArchiveCache();
-    LOGGER.debug("Stub context initialized.");
+  @Inject
+  public DefaultXWikiStubContextProvider(
+      ServletContext servletContext,
+      ServerUrlUtilsRole serverUrlUtils,
+      XWikiURLFactoryService urlFactoryService) {
+    this.servletContext = servletContext;
+    this.serverUrlUtils = serverUrlUtils;
+    this.urlFactoryService = urlFactoryService;
   }
 
   @Override
   public XWikiContext createStubContext() {
-    return this.stubContext == null ? null : (XWikiContext) this.stubContext.clone();
+    try {
+      XWikiContext ctx = new XWikiContext();
+      ctx.setMode(XWikiContext.MODE_SERVLET);
+      ctx.setEngineContext(new XWikiServletContext(servletContext));
+      ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
+      ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
+      ctx.setURL(serverUrlUtils.getServerURL());
+      ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
+      XWikiServletRequestStub requestStub = new XWikiServletRequestStub();
+      requestStub.setHost(ctx.getURL().getHost());
+      requestStub.setScheme(ctx.getURL().getProtocol());
+      ctx.setRequest(new XWikiServletRequest(requestStub));
+      ctx.setResponse(new XWikiServletResponseStub());
+      ctx.setDoc(new XWikiDocument());
+      return ctx;
+    } catch (MalformedURLException exc) {
+      throw new IllegalStateException("failing to create initial xwiki context", exc);
+    }
   }
+
 }

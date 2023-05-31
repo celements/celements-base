@@ -2,6 +2,9 @@ package com.celements.init;
 
 import static com.google.common.base.Preconditions.*;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -36,26 +39,38 @@ public class XWikiProvider {
     this.execution = execution;
   }
 
-  /**
-   * @return the XWiki object (as in "the XWiki API") initialised by {@link XWikiBootstrap}.
-   * @throws XWikiException
-   *           if there was error in the bootstrap
-   */
+  public boolean has() {
+    CompletableFuture<XWiki> future = getXWikiServletFuture();
+    return future.isDone() && !future.isCompletedExceptionally();
+  }
+
   @NotNull
-  public XWiki get() throws XWikiException {
+  public Optional<XWiki> get() {
+    return has() ? Optional.of(getXWikiServletFuture().join()) : Optional.empty();
+  }
+
+  @NotNull
+  public XWiki getNow() throws XWikiException {
+    return get(null);
+  }
+
+  @NotNull
+  public XWiki get(Duration awaitDuration) throws XWikiException {
     if (getContext().getWiki() != null) {
       return getContext().getWiki();
     }
-    XWiki xwiki = awaitXWikiBootstrap();
-    checkNotNull(xwiki);
+    XWiki xwiki = awaitXWikiBootstrap(awaitDuration)
+        .orElseThrow(IllegalStateException::new);
     getContext().setWiki(xwiki);
     return xwiki;
   }
 
-  private XWiki awaitXWikiBootstrap() throws XWikiException {
+  private Optional<XWiki> awaitXWikiBootstrap(Duration awaitDuration) throws XWikiException {
     try {
       LOGGER.trace("awaitXWikiBootstrap");
-      return getXWikiServletFuture().get(1, TimeUnit.HOURS);
+      return Optional.ofNullable(((awaitDuration == null) || awaitDuration.isNegative())
+          ? getXWikiServletFuture().getNow(null)
+          : getXWikiServletFuture().get(awaitDuration.get(ChronoUnit.SECONDS), TimeUnit.SECONDS));
     } catch (ExecutionException | TimeoutException exc) {
       throw new XWikiException(XWikiException.MODULE_XWIKI, XWikiException.ERROR_XWIKI_INIT_FAILED,
           "Could not initialize main XWiki context", exc);

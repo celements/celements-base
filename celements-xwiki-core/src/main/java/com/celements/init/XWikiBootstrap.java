@@ -2,8 +2,6 @@ package com.celements.init;
 
 import static com.google.common.base.Preconditions.*;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,19 +21,12 @@ import org.xwiki.context.ExecutionContextManager;
 
 import com.celements.servlet.CelementsLifecycleEvent;
 import com.celements.wiki.WikiService;
-import com.xpn.xwiki.ServerUrlUtilsRole;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
-import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
-import com.xpn.xwiki.web.XWikiServletContext;
-import com.xpn.xwiki.web.XWikiServletRequest;
-import com.xpn.xwiki.web.XWikiServletRequestStub;
-import com.xpn.xwiki.web.XWikiServletResponseStub;
-import com.xpn.xwiki.web.XWikiURLFactoryService;
 
 @Component
 public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
@@ -50,12 +41,10 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private final Execution execution;
   private final ExecutionContextManager executionManager;
   private final ComponentManager componentManager;
-  private final ServerUrlUtilsRole serverUrlUtils;
   private final XWikiStubContextProvider stubContextProvider;
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiConfigSource xwikiCfg;
-  private final XWikiURLFactoryService urlFactoryService;
 
   @Inject
   public XWikiBootstrap(
@@ -63,14 +52,11 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
       Execution execution,
       ExecutionContextManager executionManager,
       ComponentManager componentManager,
-      ServerUrlUtilsRole serverUrlUtils,
       XWikiStubContextProvider stubContextProvider,
       WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiConfigSource xwikiCfg,
-      XWikiURLFactoryService urlFactoryService) {
+      XWikiConfigSource xwikiCfg) {
     this.servletContext = servletContext;
-    this.serverUrlUtils = serverUrlUtils;
     this.execution = execution;
     this.executionManager = executionManager;
     this.componentManager = componentManager;
@@ -78,7 +64,6 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiCfg = xwikiCfg;
-    this.urlFactoryService = urlFactoryService;
   }
 
   @Override
@@ -89,12 +74,13 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   @Override
   public synchronized void onApplicationEvent(CelementsLifecycleEvent event) {
     if (event.getType() == CelementsLifecycleEvent.State.STARTED) {
+      checkState(!initialised.getAndSet(true), "already initialised");
       checkState(servletContext.getAttribute(XWIKI_SERVLET_CTX_KEY) == null);
       CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
       servletContext.setAttribute(XWIKI_SERVLET_CTX_KEY, xwikiFuture);
       try {
         XWiki xwiki = bootstrapXWiki();
-        // make XWiki available to all requests via servlet context, see {@link XWiki#getXWiki}
+        // make XWiki available to all requests via servlet context, see {@link XWikiProvider}
         xwikiFuture.complete(xwiki);
         LOGGER.info("XWiki published");
       } catch (Exception exc) {
@@ -104,39 +90,13 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     }
   }
 
-  private XWiki bootstrapXWiki() throws XWikiException, IOException, ExecutionContextException {
-    checkState(!initialised.getAndSet(true), "already initialised");
+  private XWiki bootstrapXWiki() throws XWikiException, ExecutionContextException {
     Utils.setComponentManager(componentManager);
-    XWikiContext context = createMainXWikiContext();
+    XWikiContext context = stubContextProvider.createStubContext();
     initExecutionContext(context);
     XWiki xwiki = createXWikiInstance(context);
-    stubContextProvider.initialize(context); // make the context available for stub creations
     xwiki.loadPlugins(context);
     updateDatabases();
-    return xwiki;
-  }
-
-  private XWikiContext createMainXWikiContext()
-      throws MalformedURLException {
-    XWikiContext ctx = new XWikiContext();
-    ctx.setMode(XWikiContext.MODE_SERVLET);
-    ctx.setEngineContext(new XWikiServletContext(servletContext));
-    ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
-    ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
-    ctx.setURL(serverUrlUtils.getServerURL());
-    ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
-    XWikiServletRequestStub requestStub = new XWikiServletRequestStub();
-    requestStub.setHost(ctx.getURL().getHost());
-    requestStub.setScheme(ctx.getURL().getProtocol());
-    ctx.setRequest(new XWikiServletRequest(requestStub));
-    ctx.setResponse(new XWikiServletResponseStub());
-    return ctx;
-  }
-
-  private XWiki createXWikiInstance(XWikiContext context) throws XWikiException {
-    XWiki xwiki = new XWiki(context, context.getEngineContext());
-    xwiki.setDatabase(context.getDatabase());
-    context.setWiki(xwiki);
     return xwiki;
   }
 
@@ -145,6 +105,13 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     execution.setContext(executionCtx);
     executionManager.initialize(executionCtx);
     executionCtx.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, xwikiContext);
+  }
+
+  private XWiki createXWikiInstance(XWikiContext context) throws XWikiException {
+    XWiki xwiki = new XWiki(context, context.getEngineContext());
+    xwiki.setDatabase(context.getDatabase());
+    context.setWiki(xwiki);
+    return xwiki;
   }
 
   private void updateDatabases() throws XWikiException {

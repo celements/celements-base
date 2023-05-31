@@ -25,8 +25,6 @@ import static com.google.common.base.Preconditions.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,9 +47,7 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.xml.internal.XMLScriptService;
 
-import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
@@ -375,25 +371,6 @@ public class Utils {
     }
 
     return null;
-  }
-
-  public static XWikiContext prepareContext(String action,
-      XWikiRequest request, XWikiResponse response, XWikiEngineContext engineContext)
-      throws MalformedURLException {
-    XWikiContext context = new XWikiContext();
-    String requestURL = request.getRequestURL().toString();
-    if (!Strings.nullToEmpty(request.getQueryString()).isEmpty()) {
-      requestURL += "?" + request.getQueryString();
-    }
-    context.setURL(new URL(requestURL));
-    context.setEngineContext(engineContext);
-    context.setRequest(request);
-    context.setResponse(response);
-    context.setAction(action);
-    context.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
-    context.setDatabase(XWikiConstant.MAIN_WIKI.getName());
-    context.setMode(XWikiContext.MODE_SERVLET);
-    return context;
   }
 
   /**

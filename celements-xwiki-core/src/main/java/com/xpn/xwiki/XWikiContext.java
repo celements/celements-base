@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
+import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiDocumentArchive;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -141,10 +142,20 @@ public class XWikiContext extends Hashtable<Object, Object> {
   private static final Supplier<DocumentReferenceResolver<String>> currentMixedDocumentReferenceResolver = () -> Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
+  private static final Supplier<XWikiProvider> xwikiProvider = () -> Utils
+      .getComponent(XWikiProvider.class);
+
   public XWikiContext() {}
 
+  /**
+   * @deprecated instead use {@link XWikiProvider}
+   */
+  @Deprecated
   public XWiki getWiki() {
-    return this.wiki;
+    if (wiki == null) {
+      wiki = xwikiProvider.get().get().orElse(null);
+    }
+    return wiki;
   }
 
   public Util getUtil() {

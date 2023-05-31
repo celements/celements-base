@@ -21,8 +21,13 @@
 
 package com.xpn.xwiki.web;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+
+import com.google.common.base.Strings;
 
 public interface XWikiRequest extends HttpServletRequest {
 
@@ -31,4 +36,13 @@ public interface XWikiRequest extends HttpServletRequest {
   HttpServletRequest getHttpServletRequest();
 
   Cookie getCookie(String cookieName);
+
+  default URL getURL() throws MalformedURLException {
+    String requestURL = getRequestURL().toString();
+    if (!Strings.isNullOrEmpty(getQueryString())) {
+      requestURL += "?" + getQueryString();
+    }
+    return new URL(requestURL);
+  }
+
 }

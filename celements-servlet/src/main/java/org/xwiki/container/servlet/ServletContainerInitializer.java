@@ -23,8 +23,10 @@ package org.xwiki.container.servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
+import org.xwiki.context.ExecutionContext;
 
 @ComponentRole
 public interface ServletContainerInitializer {
@@ -33,15 +35,14 @@ public interface ServletContainerInitializer {
 
   void destroyApplicationContext();
 
-  void initializeRequest(HttpServletRequest request, Object xwikiContext)
-      throws ServletContainerException;
-
-  void initializeRequest(HttpServletRequest request)
+  @NotNull
+  ExecutionContext initializeRequest(@NotNull HttpServletRequest request)
       throws ServletContainerException;
 
   void initializeResponse(HttpServletResponse response);
 
   void initializeSession(HttpServletRequest request);
 
-  void cleanupSession();
+  void cleanup();
+
 }
