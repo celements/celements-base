@@ -45,7 +45,7 @@ public class XWikiStubContextInitializerTest extends AbstractComponentTest {
   public void testWithAndWithoutXWikiContext() throws Exception {
     XWikiContext xcontext = new XWikiContext();
     xcontext.put("key", "value");
-    xcontext.setWiki(new XWiki());
+    xcontext.setWiki(new XWiki(false));
 
     ExecutionContext context = new ExecutionContext();
     context.setProperty("xwikicontext", xcontext);

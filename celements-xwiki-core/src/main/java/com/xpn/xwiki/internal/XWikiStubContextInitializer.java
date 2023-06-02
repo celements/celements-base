@@ -1,11 +1,17 @@
 package com.xpn.xwiki.internal;
 
+import java.util.Optional;
+
+import javax.inject.Inject;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextInitializer;
 
+import com.celements.init.XWikiProvider;
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 
@@ -19,11 +25,11 @@ import com.xpn.xwiki.util.XWikiStubContextProvider;
 @Component("XWikiStubContextInitializer")
 public class XWikiStubContextInitializer implements ExecutionContextInitializer {
 
-  /**
-   * Generate stub XWikiContext.
-   */
   @Requirement
   private XWikiStubContextProvider stubContextProvider;
+
+  @Inject
+  private XWikiProvider wikiProvider;
 
   @Override
   public void initialize(ExecutionContext context) throws ExecutionContextException {
@@ -32,5 +38,8 @@ public class XWikiStubContextInitializer implements ExecutionContextInitializer 
       XWikiContext stubContext = stubContextProvider.createStubContext();
       context.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, stubContext);
     }
+    Optional.ofNullable(wikiProvider)
+        .flatMap(XWikiProvider::get)
+        .ifPresent(xwiki -> context.setProperty(XWiki.EXECUTION_CONTEXT_KEY, xwiki));
   }
 }

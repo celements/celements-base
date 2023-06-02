@@ -1,5 +1,6 @@
 package com.celements.init;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.time.Duration;
@@ -18,9 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 
 @Component
@@ -39,37 +40,37 @@ public class XWikiProvider {
     this.execution = execution;
   }
 
-  public boolean has() {
-    CompletableFuture<XWiki> future = getXWikiServletFuture();
-    return future.isDone() && !future.isCompletedExceptionally();
-  }
-
   @NotNull
   public Optional<XWiki> get() {
-    return has() ? Optional.of(getXWikiServletFuture().join()) : Optional.empty();
+    return getFromEContext()
+        .map(Optional::of) // replace with #or in Java9+
+        .orElseGet(this::getFromSContext);
   }
 
   @NotNull
-  public XWiki getNow() throws XWikiException {
-    return get(null);
-  }
-
-  @NotNull
-  public XWiki get(Duration awaitDuration) throws XWikiException {
-    if (getContext().getWiki() != null) {
-      return getContext().getWiki();
-    }
-    XWiki xwiki = awaitXWikiBootstrap(awaitDuration)
+  public XWiki await(Duration awaitDuration) throws XWikiException {
+    return getFromEContext()
+        .map(Optional::of) // replace with #or in Java9+
+        .orElseGet(rethrow(() -> getFromSContext(awaitDuration)))
         .orElseThrow(IllegalStateException::new);
-    getContext().setWiki(xwiki);
-    return xwiki;
   }
 
-  private Optional<XWiki> awaitXWikiBootstrap(Duration awaitDuration) throws XWikiException {
+  private Optional<XWiki> getFromEContext() {
+    return Optional.ofNullable((XWiki) getEContext()
+        .getProperty(XWiki.EXECUTION_CONTEXT_KEY));
+  }
+
+  private Optional<XWiki> getFromSContext() {
+    return Optional.ofNullable(getXWikiServletFuture())
+        .filter(future -> future.isDone() && !future.isCompletedExceptionally())
+        .map(CompletableFuture::join);
+  }
+
+  private Optional<XWiki> getFromSContext(Duration awaitDuration) throws XWikiException {
     try {
       LOGGER.trace("awaitXWikiBootstrap");
       return Optional.ofNullable(((awaitDuration == null) || awaitDuration.isNegative())
-          ? getXWikiServletFuture().getNow(null)
+          ? getXWikiServletFuture().join()
           : getXWikiServletFuture().get(awaitDuration.get(ChronoUnit.SECONDS), TimeUnit.SECONDS));
     } catch (ExecutionException | TimeoutException exc) {
       throw new XWikiException(XWikiException.MODULE_XWIKI, XWikiException.ERROR_XWIKI_INIT_FAILED,
@@ -89,8 +90,8 @@ public class XWikiProvider {
     return future;
   }
 
-  private XWikiContext getContext() {
-    return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+  private ExecutionContext getEContext() {
+    return execution.getContext();
   }
 
 }

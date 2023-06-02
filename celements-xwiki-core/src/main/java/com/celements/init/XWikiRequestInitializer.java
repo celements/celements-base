@@ -119,7 +119,7 @@ public class XWikiRequestInitializer {
       awaitWikiUpdate(future, awaitDuration);
       LOGGER.debug("awaitWikiUpdate - done [{}], took {}", wikiRef.getName(), timer.elapsed());
     }));
-    return xwikiProvider.get(awaitDuration.minus(timer.elapsed()));
+    return xwikiProvider.await(awaitDuration.minus(timer.elapsed()));
   }
 
   private void awaitWikiUpdate(CompletableFuture<Void> future, Duration awaitDuration)

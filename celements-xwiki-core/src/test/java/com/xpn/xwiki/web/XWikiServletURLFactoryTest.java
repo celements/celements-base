@@ -70,7 +70,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
     this.databases.put(MAIN_WIKI_NAME, new HashMap<String, XWikiDocument>());
     urlFactory = new XWikiServletURLFactory();
 
-    XWiki xwiki = new XWiki() {
+    XWiki xwiki = new XWiki(false) {
 
       @Override
       public XWikiDocument getDocument(String fullname, XWikiContext context)
@@ -91,7 +91,6 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
       }
     };
     xwiki.setConfig((this.config = new XWikiConfig()));
-    xwiki.setDatabase(getContext().getDatabase());
 
     XWikiRequest requestMock = createDefaultMock(XWikiRequest.class);
     expect(requestMock.getScheme()).andReturn("http").anyTimes();

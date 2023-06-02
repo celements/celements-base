@@ -76,7 +76,7 @@ public class ImportTest extends AbstractBridgedXWikiComponentTestCase {
     super.setUp();
 
     this.pack = new Package();
-    this.xwiki = new XWiki();
+    this.xwiki = new XWiki(false);
     getContext().setWiki(this.xwiki);
     this.xwiki.setConfig(new XWikiConfig());
     this.xwiki.setNotificationManager(new XWikiNotificationManager());

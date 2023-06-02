@@ -49,7 +49,7 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
 
     getContext().setDoc(new XWikiDocument());
 
-    XWiki xwiki = new XWiki();
+    XWiki xwiki = new XWiki(false);
     xwiki.setConfig(new XWikiConfig());
 
     Mock mockXWikiStore = mock(XWikiHibernateStore.class,
