@@ -102,7 +102,7 @@ public class WikiUpdater {
   }
 
   private XWikiContext getContext() {
-    return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXEC_CONTEXT_KEY);
   }
 
   @PreDestroy
@@ -117,7 +117,7 @@ public class WikiUpdater {
     WikiUpdateRunnable(WikiReference wikiRef, XWiki xwiki) {
       // make XWiki available in the runnable's execution context since it's not necessarily
       // already available in the servlet context, see XWikiProvider
-      super(XWiki.CONTEXT_KEY, xwiki);
+      super(XWiki.EXEC_CONTEXT_KEY, xwiki);
       this.wikiRef = wikiRef;
     }
 

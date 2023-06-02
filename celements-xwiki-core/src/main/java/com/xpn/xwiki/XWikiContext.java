@@ -73,7 +73,8 @@ public class XWikiContext extends Hashtable<Object, Object> {
   @Deprecated
   public static final int MODE_GWT_DEBUG = 6;
 
-  public static final String EXECUTIONCONTEXT_KEY = "xwikicontext";
+  public static final String EXEC_CONTEXT_KEY = "xwikicontext";
+  public static final String EXECUTIONCONTEXT_KEY = EXEC_CONTEXT_KEY;
 
   private static final String WIKI_KEY = "wiki";
 

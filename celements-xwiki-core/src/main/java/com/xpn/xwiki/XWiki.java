@@ -80,7 +80,6 @@ import org.xwiki.cache.CacheFactory;
 import org.xwiki.cache.CacheManager;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -174,7 +173,8 @@ import com.xpn.xwiki.web.XWikiURLFactoryService;
 
 public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
 
-  public static final String CONTEXT_KEY = "xwiki";
+  public static final String SERVLET_CONTEXT_KEY = "xwiki.instance";
+  public static final String EXEC_CONTEXT_KEY = "xwiki.instance";
 
   protected static final Logger LOG = LoggerFactory.getLogger(XWiki.class);
 
@@ -363,12 +363,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
   }
 
-  private ExecutionContext getExecContext() {
-    return Utils.getComponent(Execution.class).getContext();
-  }
-
   private XWikiContext getContext() {
-    return (XWikiContext) getExecContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    return (XWikiContext) Utils.getComponent(Execution.class).getContext()
+        .getProperty(XWikiContext.EXEC_CONTEXT_KEY);
   }
 
   protected void initXWiki() throws XWikiException {

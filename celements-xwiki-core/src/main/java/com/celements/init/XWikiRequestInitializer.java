@@ -85,7 +85,7 @@ public class XWikiRequestInitializer {
 
   private XWikiContext prepareXWikiContext(ExecutionContext execCtx, String action,
       HttpServletRequest request, HttpServletResponse response) throws MalformedURLException {
-    XWikiContext context = (XWikiContext) execCtx.getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    XWikiContext context = (XWikiContext) execCtx.getProperty(XWikiContext.EXEC_CONTEXT_KEY);
     checkNotNull(context, "should have been initialized by XWikiStubContextInitializer");
     context.setAction(action);
     context.setRequest(new XWikiServletRequest(request));
