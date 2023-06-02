@@ -22,7 +22,9 @@ public class XWikiExecutionContextInitializer implements ExecutionContextInitial
   @Override
   public void initialize(ExecutionContext context) throws ExecutionContextException {
     try {
-      XWiki xwiki = wikiProvider.await(Duration.ofHours(1));
+      XWiki xwiki = context.getProperty("noAwait", false)
+          ? wikiProvider.get().orElse(null)
+          : wikiProvider.await(Duration.ofHours(1));
       context.setProperty(XWiki.CONTEXT_KEY, xwiki);
     } catch (XWikiException xwe) {
       throw new ExecutionContextException("failed initializing XWiki", xwe);

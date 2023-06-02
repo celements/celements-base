@@ -99,6 +99,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
 
   public ExecutionContext initExecutionContext() throws ExecutionContextException {
     ExecutionContext executionCtx = new ExecutionContext();
+    executionCtx.setProperty("noAwait", true);
     executionManager.initialize(executionCtx);
     execution.setContext(executionCtx);
     return executionCtx;
