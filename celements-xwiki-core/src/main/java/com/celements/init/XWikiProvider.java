@@ -2,6 +2,7 @@ package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.Preconditions.*;
+import static com.xpn.xwiki.XWikiException.*;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -67,17 +68,19 @@ public class XWikiProvider {
 
   private Optional<XWiki> getFromSContext(Duration awaitDuration) throws XWikiException {
     try {
-      LOGGER.trace("awaitXWikiBootstrap");
+      LOGGER.trace("getFromSContext");
       CompletableFuture<XWiki> future = getXWikiServletFuture();
       checkState(future != null, "should not happen, are we before ApplicationStartedEvent?");
-      return Optional.ofNullable(((awaitDuration == null) || awaitDuration.isNegative())
-          ? getXWikiServletFuture().join()
-          : getXWikiServletFuture().get(awaitDuration.get(ChronoUnit.SECONDS), TimeUnit.SECONDS));
+      long awaitSeconds = Optional.ofNullable(awaitDuration)
+          .filter(duration -> !duration.isNegative())
+          .map(duration -> duration.get(ChronoUnit.SECONDS))
+          .orElse(0L);
+      return Optional.ofNullable(getXWikiServletFuture().get(awaitSeconds, TimeUnit.SECONDS));
     } catch (ExecutionException | TimeoutException exc) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI, XWikiException.ERROR_XWIKI_INIT_FAILED,
+      throw new XWikiException(MODULE_XWIKI, ERROR_XWIKI_INIT_FAILED,
           "Could not initialize main XWiki context", exc);
     } catch (InterruptedException iexc) {
-      LOGGER.warn("getXWiki - interrupted", iexc);
+      LOGGER.warn("getFromSContext - interrupted", iexc);
       Thread.currentThread().interrupt();
       throw new IllegalStateException();
     }
