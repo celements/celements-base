@@ -83,5 +83,6 @@ public abstract class AbstractXWikiRunnable implements Runnable {
     }
   }
 
-  protected abstract void runInternal();
+  protected abstract void runInternal() throws Exception;
+
 }

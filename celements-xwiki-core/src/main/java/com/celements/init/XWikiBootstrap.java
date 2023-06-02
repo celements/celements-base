@@ -93,7 +93,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     XWiki xwiki = new XWiki(true);
     executionCtx.setProperty(XWiki.CONTEXT_KEY, xwiki);
     xwiki.loadPlugins();
-    updateDatabases();
+    triggerWikiUpdates();
     return xwiki;
   }
 
@@ -104,7 +104,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     return executionCtx;
   }
 
-  private void updateDatabases() throws XWikiException {
+  private void triggerWikiUpdates() {
     try {
       if ("1".equals(xwikiCfg.getProperty("xwiki.store.updatedatabase", "1"))
           && xwikiCfg.isVirtualMode()) {
@@ -112,11 +112,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
             .forEach(wikiUpdater::updateAsync);
       }
       if ("1".equals(xwikiCfg.getProperty("xwiki.store.migration", "0"))) {
-        wikiUpdater.runMigrationsSync();
-        if ("1".equals(xwikiCfg.getProperty("xwiki.store.migration.exitAfterEnd", "0"))) {
-          LOGGER.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
-          System.exit(0); // TODO so brutal, throw exception instead ?
-        }
+        wikiUpdater.runAllMigrationsAsync();
       }
     } finally {
       wikiUpdater.shutdown();

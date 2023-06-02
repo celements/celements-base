@@ -32,7 +32,7 @@ import com.xpn.xwiki.util.AbstractXWikiRunnable;
 public class WikiUpdater {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WikiUpdater.class);
-  private static final int THREAD_COUNT = 10;
+  private static final int THREAD_COUNT = 11;
 
   private final XWikiConfigSource xwikiCfg;
   private final XWikiProvider wikiProvider;
@@ -69,11 +69,21 @@ public class WikiUpdater {
   }
 
   // TODO start migration per wiki within updateAsync
-  public void runMigrationsSync() throws XWikiException {
-    LOGGER.debug("runMigrations - waiting for all wiki updates to finish...");
-    getAllFutures().forEach(CompletableFuture::join);
-    LOGGER.debug("runMigrations - wiki updates finished, starting migrations");
-    getMigrationManager(getContext()).startMigrations(getContext());
+  public void runAllMigrationsAsync() {
+    CompletableFuture.runAsync(new AbstractXWikiRunnable() {
+
+      @Override
+      protected void runInternal() throws XWikiException {
+        LOGGER.debug("runMigrations - waiting for all wiki updates to finish...");
+        getAllFutures().forEach(CompletableFuture::join);
+        LOGGER.debug("runMigrations - wiki updates finished, starting migrations");
+        getMigrationManager(getContext()).startMigrations(getContext());
+        if ("1".equals(xwikiCfg.getProperty("xwiki.store.migration.exitAfterEnd", "0"))) {
+          LOGGER.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
+          System.exit(0); // so brutal
+        }
+      }
+    }, executor);
   }
 
   // TODO refactor to component
