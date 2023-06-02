@@ -40,6 +40,6 @@ public class XWikiStubContextInitializer implements ExecutionContextInitializer 
     }
     Optional.ofNullable(wikiProvider)
         .flatMap(XWikiProvider::get)
-        .ifPresent(xwiki -> context.setProperty(XWiki.EXECUTION_CONTEXT_KEY, xwiki));
+        .ifPresent(xwiki -> context.setProperty(XWiki.CONTEXT_KEY, xwiki));
   }
 }

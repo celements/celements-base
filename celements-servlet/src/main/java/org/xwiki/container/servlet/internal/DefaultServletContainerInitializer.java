@@ -134,6 +134,6 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     container.removeResponse();
     container.removeSession();
     execution.removeContext();
-    LOGGER.trace("cleanupSession - done");
+    LOGGER.trace("cleanup - done");
   }
 }

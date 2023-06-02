@@ -56,8 +56,7 @@ public class XWikiProvider {
   }
 
   private Optional<XWiki> getFromEContext() {
-    return Optional.ofNullable((XWiki) getEContext()
-        .getProperty(XWiki.EXECUTION_CONTEXT_KEY));
+    return Optional.ofNullable((XWiki) getEContext().getProperty(XWiki.CONTEXT_KEY));
   }
 
   private Optional<XWiki> getFromSContext() {
@@ -69,6 +68,8 @@ public class XWikiProvider {
   private Optional<XWiki> getFromSContext(Duration awaitDuration) throws XWikiException {
     try {
       LOGGER.trace("awaitXWikiBootstrap");
+      CompletableFuture<XWiki> future = getXWikiServletFuture();
+      checkState(future != null, "should not happen, are we before ApplicationStartedEvent?");
       return Optional.ofNullable(((awaitDuration == null) || awaitDuration.isNegative())
           ? getXWikiServletFuture().join()
           : getXWikiServletFuture().get(awaitDuration.get(ChronoUnit.SECONDS), TimeUnit.SECONDS));
@@ -84,10 +85,7 @@ public class XWikiProvider {
 
   @SuppressWarnings("unchecked")
   private CompletableFuture<XWiki> getXWikiServletFuture() {
-    CompletableFuture<XWiki> future = (CompletableFuture<XWiki>) servletContext
-        .getAttribute(XWikiBootstrap.XWIKI_SERVLET_CTX_KEY);
-    checkState(future != null, "should not happen, are we before ApplicationStartedEvent?");
-    return future;
+    return (CompletableFuture<XWiki>) servletContext.getAttribute(XWiki.CONTEXT_KEY);
   }
 
   private ExecutionContext getEContext() {

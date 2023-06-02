@@ -33,8 +33,6 @@ import com.xpn.xwiki.web.Utils;
 @Component
 public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
 
-  public static final String XWIKI_SERVLET_CTX_KEY = "xwiki";
-
   protected static final Logger LOGGER = LoggerFactory.getLogger(XWikiBootstrap.class);
 
   private static final AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
@@ -74,9 +72,9 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   public void onApplicationEvent(CelementsLifecycleEvent event) {
     if (event.getType() == CelementsLifecycleEvent.State.STARTED) {
       checkState(!INIT_FLAG.getAndSet(true), "already initialised");
-      checkState(servletContext.getAttribute(XWIKI_SERVLET_CTX_KEY) == null);
+      checkState(servletContext.getAttribute(XWiki.CONTEXT_KEY) == null);
       CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
-      servletContext.setAttribute(XWIKI_SERVLET_CTX_KEY, xwikiFuture);
+      servletContext.setAttribute(XWiki.CONTEXT_KEY, xwikiFuture);
       try {
         XWiki xwiki = bootstrapXWiki();
         // make XWiki available to all requests via servlet context, see {@link XWikiProvider}
@@ -93,7 +91,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     Utils.setComponentManager(componentManager);
     ExecutionContext executionCtx = initExecutionContext();
     XWiki xwiki = new XWiki(true);
-    executionCtx.setProperty(XWiki.EXECUTION_CONTEXT_KEY, xwiki);
+    executionCtx.setProperty(XWiki.CONTEXT_KEY, xwiki);
     xwiki.loadPlugins();
     updateDatabases();
     return xwiki;

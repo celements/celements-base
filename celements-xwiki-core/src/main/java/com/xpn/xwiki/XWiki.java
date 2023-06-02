@@ -174,7 +174,7 @@ import com.xpn.xwiki.web.XWikiURLFactoryService;
 
 public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
 
-  public static final String EXECUTION_CONTEXT_KEY = "xwiki";
+  public static final String CONTEXT_KEY = "xwiki";
 
   protected static final Logger LOG = LoggerFactory.getLogger(XWiki.class);
 
