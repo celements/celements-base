@@ -57,7 +57,7 @@ public class XWikiProvider {
   }
 
   private Optional<XWiki> getFromEContext() {
-    return getEContext().map(ctx -> (XWiki) ctx.getProperty(XWiki.EXEC_CONTEXT_KEY));
+    return getEContext().map(ctx -> (XWiki) ctx.getProperty(XWiki.CONTEXT_KEY));
   }
 
   private Optional<XWiki> getFromSContext() {
@@ -88,7 +88,7 @@ public class XWikiProvider {
 
   @SuppressWarnings("unchecked")
   private CompletableFuture<XWiki> getXWikiServletFuture() {
-    return (CompletableFuture<XWiki>) servletContext.getAttribute(XWiki.SERVLET_CONTEXT_KEY);
+    return (CompletableFuture<XWiki>) servletContext.getAttribute(XWiki.CONTEXT_KEY);
   }
 
   private Optional<ExecutionContext> getEContext() {
