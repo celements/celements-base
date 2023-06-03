@@ -42,16 +42,6 @@ public class XWikiHibernateRecycleBinStore extends XWikiHibernateBaseStore
     implements XWikiRecycleBinStoreInterface {
 
   /**
-   * @param context
-   *          used for environment
-   * @deprecated 1.6M1. Use ComponentManager.lookup(XWikiRecycleBinStoreInterface.class) instead.
-   */
-  @Deprecated
-  public XWikiHibernateRecycleBinStore(XWikiContext context) {
-    super(context.getWiki(), context);
-  }
-
-  /**
    * Empty constructor needed for component manager.
    */
   public XWikiHibernateRecycleBinStore() {}
