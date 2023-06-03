@@ -3847,7 +3847,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   /**
    * @return true for multi-wiki/false for mono-wiki
-   * @deprecated instead use {@link XWikiConfigSource#isVirtualMode()}
+   *
+   * @deprecated since 6.0 instead use {@link XWikiConfigSource#isVirtualMode()}
    */
   @Deprecated
   public boolean isVirtualMode() {

@@ -292,7 +292,8 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   @Deprecated
   public String getSchemaFromWikiName(String wikiName, XWikiContext context) {
-    return getSchemaFromWikiName(new WikiReference(wikiName));
+    return getSchemaFromWikiName(Strings.isNullOrEmpty(wikiName) ? null
+        : new WikiReference(wikiName));
   }
 
   /**

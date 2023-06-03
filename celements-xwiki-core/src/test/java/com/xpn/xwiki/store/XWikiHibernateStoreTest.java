@@ -30,7 +30,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.test.AbstractComponentTest;
+import com.xpn.xwiki.web.Utils;
 
 /**
  * Unit tests for the {@link XWikiHibernateStore} class.
@@ -43,7 +45,8 @@ public class XWikiHibernateStoreTest extends AbstractComponentTest {
 
   @Before
   public void setUp() {
-    store = new XWikiHibernateStore("whatever");
+    store = Utils.getComponent(XWikiHibernateStore.class);
+    store.setPath("whatever");
   }
 
   @Test
@@ -107,8 +110,7 @@ public class XWikiHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_getSchemaFromWikiName_virtual() {
-    expect(getWikiMock().isVirtualMode()).andReturn(true).anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
+    getXWikiCfg().setProperty("xwiki.db.prefix", "pref_");
     replayDefault();
     assertNull(store.getSchemaFromWikiName(null, getContext()));
     assertEquals("pref_as5df", store.getSchemaFromWikiName("as5df", getContext()));
@@ -120,12 +122,12 @@ public class XWikiHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_getSchemaFromWikiName_main() {
-    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
-    expect(getWikiMock().Param("xwiki.db", "")).andReturn("main").anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
+    getXWikiCfg().setProperty("xwiki.db", "main");
+    getXWikiCfg().setProperty("xwiki.db.prefix", "pref_");
     replayDefault();
     assertNull(store.getSchemaFromWikiName(null, getContext()));
-    assertEquals("pref_main", store.getSchemaFromWikiName("as5df", getContext()));
+    assertEquals("pref_main",
+        store.getSchemaFromWikiName(XWikiConstant.MAIN_WIKI.getName(), getContext()));
     verifyDefault();
   }
 
