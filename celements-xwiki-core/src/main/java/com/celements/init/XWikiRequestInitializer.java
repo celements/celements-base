@@ -1,6 +1,7 @@
 package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
 import static com.xpn.xwiki.XWikiException.*;
 
@@ -96,19 +97,25 @@ public class XWikiRequestInitializer {
 
   private WikiReference determineWiki(URL url) throws XWikiException {
     String host = Strings.nullToEmpty(url.getHost());
-    if (host.isEmpty() || !xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
+    checkArgument(!host.isEmpty());
+    if (!xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
       return XWikiConstant.MAIN_WIKI;
     }
     WikiReference wikiRef = wikiService.getWikiForHost(host)
         .map(Optional::of) // replace with #or in Java9+
         // no wiki found based on the full host name, try to use the first part as the wiki name
-        .orElseGet(() -> Optional.of(host).filter(h -> h.indexOf(".") > 0)
-            .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
-            .filter(wikiService::hasWiki))
+        .orElseGet(() -> getWikiFromDomain(host))
         .orElseThrow(() -> new XWikiException(MODULE_XWIKI, ERROR_XWIKI_DOES_NOT_EXIST,
             "The wiki " + host + " does not exist"));
     LOGGER.debug("determineWiki - {}", wikiRef);
     return wikiRef;
+  }
+
+  private Optional<WikiReference> getWikiFromDomain(String host) {
+    return Optional.of(host).filter(h -> h.indexOf(".") > 0)
+        .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
+        .filter(log(wikiService::hasWiki)
+            .warn(LOGGER).msg("using wiki domain fallback"));
   }
 
   private XWiki awaitWikiAvailability(WikiReference wikiRef, Duration awaitDuration)

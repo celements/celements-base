@@ -33,6 +33,8 @@ import org.xwiki.rendering.syntax.Syntax;
 import com.celements.common.test.AbstractBaseComponentTest;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConfig;
+import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
@@ -87,12 +89,16 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
     Utils.setComponentManager(null);
   }
 
+  protected XWikiConfig getXWikiCfg() {
+    return Utils.getComponent(XWikiConfigSource.class).getXWikiConfig();
+  }
+
   public XWikiContext getContext() {
     return context;
   }
 
   public XWiki getWikiMock() {
-    return context.getWiki();
+    return getMock(XWiki.class);
   }
 
 }

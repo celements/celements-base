@@ -459,7 +459,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public XWikiHibernateStore getHibernateStore() {
-    XWikiStoreInterface hibStore = this.store;
+    XWikiStoreInterface hibStore = getStore();
     if (!(hibStore instanceof XWikiHibernateStore)) {
       hibStore = Utils.getComponent(XWikiStoreInterface.class, "hibernate");
     }
@@ -3714,14 +3714,14 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   /**
-   * @deprecated use {@link ServerUrlUtilsRole#getServerURL(String)}
+   * @deprecated use {@link WikiService#streamUrlsForWiki(WikiReference)}
    */
   @Deprecated
   public URL getServerURL(String wikiName, XWikiContext context) throws MalformedURLException {
     if (!Strings.isNullOrEmpty(wikiName)) {
-      return Utils.getComponent(ServerUrlUtilsRole.class)
-          .getServerURL(new WikiReference(wikiName))
-          .orElse(null);
+      return Utils.getComponent(WikiService.class)
+          .streamUrlsForWiki(new WikiReference(wikiName))
+          .findFirst().orElse(null);
     }
     return null;
   }
@@ -3846,7 +3846,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   /**
    * @return true for multi-wiki/false for mono-wiki
-   * @deprecated instead use {@link XWikiConfigSource#isVirtualMode()}
+   *
+   * @deprecated since 6.0 instead use {@link XWikiConfigSource#isVirtualMode()}
    */
   @Deprecated
   public boolean isVirtualMode() {

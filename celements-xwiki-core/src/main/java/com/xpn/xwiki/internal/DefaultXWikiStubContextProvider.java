@@ -20,13 +20,16 @@
 package com.xpn.xwiki.internal;
 
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
 
 import org.springframework.stereotype.Component;
 
-import com.xpn.xwiki.ServerUrlUtilsRole;
+import com.celements.wiki.WikiService;
+import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -45,40 +48,45 @@ import com.xpn.xwiki.web.XWikiURLFactoryService;
 @Component
 public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider {
 
+  private static final Supplier<URL> LOCALHOST = Suppliers.memoize(() -> {
+    try {
+      return new URL("localhost");
+    } catch (MalformedURLException exc) {
+      throw new IllegalArgumentException(exc);
+    }
+  });
+
   private final ServletContext servletContext;
-  private final ServerUrlUtilsRole serverUrlUtils;
+  private final WikiService wikiService;
   private final XWikiURLFactoryService urlFactoryService;
 
   @Inject
   public DefaultXWikiStubContextProvider(
       ServletContext servletContext,
-      ServerUrlUtilsRole serverUrlUtils,
+      WikiService wikiService,
       XWikiURLFactoryService urlFactoryService) {
     this.servletContext = servletContext;
-    this.serverUrlUtils = serverUrlUtils;
+    this.wikiService = wikiService;
     this.urlFactoryService = urlFactoryService;
   }
 
   @Override
   public XWikiContext createStubContext() {
-    try {
-      XWikiContext ctx = new XWikiContext();
-      ctx.setMode(XWikiContext.MODE_SERVLET);
-      ctx.setEngineContext(new XWikiServletContext(servletContext));
-      ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
-      ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
-      ctx.setURL(serverUrlUtils.getServerURL());
-      ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
-      XWikiServletRequestStub requestStub = new XWikiServletRequestStub();
-      requestStub.setHost(ctx.getURL().getHost());
-      requestStub.setScheme(ctx.getURL().getProtocol());
-      ctx.setRequest(new XWikiServletRequest(requestStub));
-      ctx.setResponse(new XWikiServletResponseStub());
-      ctx.setDoc(new XWikiDocument());
-      return ctx;
-    } catch (MalformedURLException exc) {
-      throw new IllegalStateException("failing to create initial xwiki context", exc);
-    }
+    XWikiContext ctx = new XWikiContext();
+    ctx.setMode(XWikiContext.MODE_SERVLET);
+    ctx.setEngineContext(new XWikiServletContext(servletContext));
+    ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
+    ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
+    ctx.setURL(wikiService.streamUrlsForWiki(XWikiConstant.MAIN_WIKI)
+        .findFirst().orElseGet(LOCALHOST));
+    ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
+    XWikiServletRequestStub requestStub = new XWikiServletRequestStub();
+    requestStub.setHost(ctx.getURL().getHost());
+    requestStub.setScheme(ctx.getURL().getProtocol());
+    ctx.setRequest(new XWikiServletRequest(requestStub));
+    ctx.setResponse(new XWikiServletResponseStub());
+    ctx.setDoc(new XWikiDocument());
+    return ctx;
   }
 
 }

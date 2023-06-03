@@ -30,8 +30,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.wiki.WikiService;
 import com.google.common.base.Strings;
-import com.xpn.xwiki.ServerUrlUtilsRole;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiConfigSource;
@@ -48,14 +48,14 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
 
   protected URL serverURL;
 
-  protected String contextPath = "/";// Celements must always be the ROOT app
+  protected String contextPath = "/"; // Celements must always be the ROOT app
 
   private final XWikiConfig xwikiCfg;
-  private final ServerUrlUtilsRole serverUrlUtils;
+  private final WikiService wikiService;
 
   protected XWikiServletURLFactory() {
     xwikiCfg = Utils.getComponent(XWikiConfigSource.class).getXWikiConfig();
-    serverUrlUtils = Utils.getComponent(ServerUrlUtilsRole.class);
+    wikiService = Utils.getComponent(WikiService.class);
   }
 
   // Used by tests
@@ -69,7 +69,7 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
     this.serverURL = serverURL;
     this.contextPath = contextPath;
     this.xwikiCfg = xwikiCfg;
-    this.serverUrlUtils = null;
+    this.wikiService = null;
   }
 
   /**
@@ -89,9 +89,7 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
   @Override
   public void init(XWikiContext context) {
     try {
-      this.serverURL = (context.getURL() != null)
-          ? new URL(getProtocol(context) + "://" + getHost(context))
-          : serverUrlUtils.getServerURL();
+      this.serverURL = new URL(getProtocol(context) + "://" + getHost(context));
     } catch (MalformedURLException exc) {
       throw new IllegalArgumentException("should not happen ;)", exc);
     }
@@ -172,8 +170,8 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
         return new URL(surl);
       }
     }
-    return serverUrlUtils.getServerURL(new WikiReference(xwikidb))
-        .orElse(serverURL);
+    return wikiService.streamUrlsForWiki(new WikiReference(xwikidb))
+        .findFirst().orElse(serverURL);
   }
 
   /**

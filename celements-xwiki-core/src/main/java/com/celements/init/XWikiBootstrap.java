@@ -2,11 +2,13 @@ package com.celements.init;
 
 import static com.google.common.base.Preconditions.*;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 
@@ -16,6 +18,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
@@ -45,6 +48,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiConfigSource xwikiCfg;
+  private final ConfigurationSource cfgSrc;
 
   @Inject
   public XWikiBootstrap(
@@ -54,7 +58,8 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
       ComponentManager componentManager,
       WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiConfigSource xwikiCfg) {
+      XWikiConfigSource xwikiCfg,
+      @Named("allproperties") ConfigurationSource cfgSrc) {
     this.servletContext = servletContext;
     this.execution = execution;
     this.executionManager = executionManager;
@@ -62,6 +67,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiCfg = xwikiCfg;
+    this.cfgSrc = cfgSrc;
   }
 
   @Override
@@ -100,21 +106,23 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
 
   public ExecutionContext initExecutionContext() throws ExecutionContextException {
     ExecutionContext executionCtx = new ExecutionContext();
+    execution.setContext(executionCtx);
     // disable awaiting XWiki instance in this bootstrap execution
     executionCtx.setProperty(XWikiExecutionContextInitializer.CTX_NO_AWAIT_KEY, true);
     executionManager.initialize(executionCtx);
-    execution.setContext(executionCtx);
     return executionCtx;
   }
 
   private void triggerWikiUpdates() {
     try {
-      if ("1".equals(xwikiCfg.getProperty("xwiki.store.updatedatabase", "1"))
+      if (Boolean.TRUE.equals(cfgSrc.getProperty("celements.init.updatedatabases"))
           && xwikiCfg.isVirtualMode()) {
         wikiService.streamAllWikis()
             .forEach(wikiUpdater::updateAsync);
       }
-      if ("1".equals(xwikiCfg.getProperty("xwiki.store.migration", "0"))) {
+      if (Boolean.TRUE.equals(Optional
+          .ofNullable(cfgSrc.getProperty("celements.init.migration", Boolean.class))
+          .orElseGet(() -> "1".equals(xwikiCfg.getProperty("xwiki.store.migration", "0"))))) {
         wikiUpdater.runAllMigrationsAsync();
       }
     } finally {

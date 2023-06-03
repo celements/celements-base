@@ -206,16 +206,14 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
    * Make sure an ExecutionContext initialized for remote->local thread.
    */
   private void initiContext() {
-    if (this.execution.getContext() == null) {
+    if (execution.getContext() == null) {
       ExecutionContext context = new ExecutionContext();
-
+      execution.setContext(context);
       try {
-        this.executionContextManager.initialize(context);
+        executionContextManager.initialize(context);
       } catch (ExecutionContextException e) {
         LOGGER.error("failed to initialize execution context", e);
       }
-
-      this.execution.setContext(context);
     }
   }
 }

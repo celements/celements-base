@@ -1,6 +1,6 @@
 package com.celements.wiki;
 
-import java.util.Map;
+import java.net.URL;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -17,9 +17,9 @@ public interface WikiService {
   Stream<WikiReference> streamAllWikis();
 
   @NotNull
-  Optional<WikiReference> getWikiForHost(@Nullable String host);
+  Stream<URL> streamUrlsForWiki(@Nullable WikiReference wikiRef);
 
   @NotNull
-  Map<String, WikiReference> getWikisByHost();
+  Optional<WikiReference> getWikiForHost(@Nullable String host);
 
 }

@@ -7,25 +7,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.WikiReference;
 
+import com.celements.wiki.WikiService;
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.test.AbstractComponentTest;
 
 public class XWikiServletURLFactoryTest extends AbstractComponentTest {
 
   private static final String MAIN_WIKI_NAME = "xwiki";
-
-  private XWikiConfig config;
 
   private XWikiServletURLFactory urlFactory;
 
@@ -68,6 +67,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
   @Before
   public void setUp() throws Exception {
     this.databases.put(MAIN_WIKI_NAME, new HashMap<String, XWikiDocument>());
+    registerComponentMock(WikiService.class);
     urlFactory = new XWikiServletURLFactory();
 
     XWiki xwiki = new XWiki(false) {
@@ -90,7 +90,6 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
         return defaultValue;
       }
     };
-    xwiki.setConfig((this.config = new XWikiConfig()));
 
     XWikiRequest requestMock = createDefaultMock(XWikiRequest.class);
     expect(requestMock.getScheme()).andReturn("http").anyTimes();
@@ -99,28 +98,14 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
     getContext().setRequest(requestMock);
 
     // Create sub-wikis.
-    createWiki("wiki1");
-    createWiki("wiki2");
+    expect(getMock(WikiService.class).streamUrlsForWiki(new WikiReference("wiki1")))
+        .andAnswer(() -> Stream.of(new URL("http://wiki1.celements.com")))
+        .anyTimes();
+    expect(getMock(WikiService.class).streamUrlsForWiki(new WikiReference("wiki2")))
+        .andAnswer(() -> Stream.of(new URL("http://wiki2.celements.com"), new URL("http://a.ch")))
+        .anyTimes();
 
     getContext().setURL(new URL("http://celements.com/view/InitialSpace/InitialPage"));
-  }
-
-  /**
-   * Creates a new sub-wiki with the given name.
-   *
-   * @param wikiName
-   *          the wiki name
-   * @throws Exception
-   *           if creating the wiki fails
-   */
-  private void createWiki(String wikiName) throws Exception {
-    String wikiDocName = "XWikiServer" + wikiName.substring(0, 1).toUpperCase()
-        + wikiName.substring(1);
-    XWikiDocument wikiDoc = getDocument(
-        new DocumentReference(MAIN_WIKI_NAME, "XWiki", wikiDocName));
-    BaseObject wikiObj = wikiDoc.newObject("XWiki.XWikiServerClass", getContext());
-    wikiObj.setStringValue("server", wikiName + ".celements.com");
-    saveDocument(wikiDoc);
   }
 
   @Test
@@ -151,7 +136,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
 
   @Test
   public void testCreateURLOnSubWikiInVirtualMode() throws MalformedURLException {
-    this.config.setProperty("xwiki.virtual", "1");
+    getXWikiCfg().setProperty("xwiki.virtual", "1");
     expect(getContext().getRequest().isSecure()).andReturn(false).atLeastOnce();
     expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn(null);
 
@@ -202,7 +187,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
 
   @Test
   public void testCreateURLOnSubWikiInVirtualModeInReverseProxyMode() throws MalformedURLException {
-    config.setProperty("xwiki.virtual", "1");
+    getXWikiCfg().setProperty("xwiki.virtual", "1");
     expect(getContext().getRequest().isSecure()).andReturn(true).atLeastOnce();
     expect(getContext().getRequest().getHeader("x-forwarded-host")).andReturn("www.xwiki.org");
 
@@ -210,9 +195,9 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
     urlFactory.init(getContext());
     URL url = urlFactory.createURL("Space", "Page", "view", "param1=1", "anchor", "wiki1",
         getContext());
-    assertEquals(new URL("https://wiki1.celements.com/view/Space/Page?param1=1#anchor"), url);
+    assertEquals(new URL("http://wiki1.celements.com/view/Space/Page?param1=1#anchor"), url);
     // The URL remains absolute in this case.
-    assertEquals("https://wiki1.celements.com/view/Space/Page?param1=1#anchor",
+    assertEquals("http://wiki1.celements.com/view/Space/Page?param1=1#anchor",
         urlFactory.getURL(url, getContext()));
     verifyDefault();
   }
