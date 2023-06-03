@@ -1,4 +1,3 @@
-com.xpn.xwiki.ServerUrlUtils
 com.celements.store.id.XWikiDocumentIdComputer
 com.xpn.xwiki.doc.DefaultDocumentAccessBridge
 com.xpn.xwiki.DefaultSkinAccessBridge
