@@ -121,13 +121,9 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   public Session getSession() {
     Session session = (Session) getEContext().getProperty(KEY_SESSION);
-    // Make sure we are in this mode
-    try {
-      if (session != null) {
-        session.setFlushMode(FlushMode.COMMIT);
-      }
-    } catch (org.hibernate.SessionException ex) {
-      session = null;
+    if (session != null) {
+      session.setFlushMode(FlushMode.COMMIT);
+      logger.trace("getSession - [{}]", defer(session::hashCode));
     }
     return session;
   }
@@ -151,9 +147,10 @@ public class XWikiHibernateBaseStore implements Initializable {
   public void setSession(Session session) {
     if (session == null) {
       getEContext().removeProperty(KEY_SESSION);
+      logger.trace("setSession - cleared");
     } else {
-      logger.trace("setSession - [{}]", defer(session::hashCode));
       getEContext().setProperty(KEY_SESSION, session);
+      logger.trace("setSession - [{}]", defer(session::hashCode));
     }
   }
 
@@ -509,11 +506,12 @@ public class XWikiHibernateBaseStore implements Initializable {
   public void setDatabase(Session session, WikiReference wikiRef) throws XWikiException {
     if (xwikiCfg.isVirtualMode()) {
       try {
-        logger.debug("setDatabase - {} ", wikiRef);
         if (wikiRef != null) {
+          logger.trace("setDatabase - {} ", wikiRef);
           String schemaName = getSchemaFromWikiName(wikiRef);
           Connection connection = session.connection();
           if (!schemaName.equals(getCurrentSchema(connection))) {
+            logger.debug("setDatabase - setting catalog to {} ", schemaName);
             connection.setCatalog(schemaName);
           }
           setCurrentWiki(wikiRef);
@@ -654,22 +652,20 @@ public class XWikiHibernateBaseStore implements Initializable {
       throws HibernateException, XWikiException {
     Transaction transaction = getTransaction();
     Session session = getSession();
-    checkState(((session == null) != (transaction != null)),
+    checkState(((session == null) != (transaction != null)), // XNOR
         "beginTransaction - incompatible session and transaction status");
     if (session != null) {
-      logger.trace("beginTransaction - taking session [{}] from context", defer(session::hashCode));
+      logger.trace("beginTransaction - [{}] taking session [{}] from context",
+          defer(transaction::hashCode), defer(session::hashCode));
       return false;
     }
-    if (sfactory == null) {
-      session = getSessionFactory().openSession();
-    } else {
-      session = sfactory.openSession();
-    }
-    setSession(session);
+    session = ((sfactory != null) ? sfactory : getSessionFactory()).openSession();
     setDatabase(session, wikiRef);
     transaction = session.beginTransaction();
+    logger.debug("beginTransaction - [{}] opened with session [{}]",
+        defer(transaction::hashCode), defer(session::hashCode));
     setTransaction(transaction);
-    logger.debug("beginTransaction - [{}] opened", defer(transaction::hashCode));
+    setSession(session);
     return true;
   }
 
@@ -713,11 +709,9 @@ public class XWikiHibernateBaseStore implements Initializable {
     Session session = null;
     try {
       session = getSession();
-      setSession(null);
       Transaction transaction = getTransaction();
-      setTransaction(null);
       if (transaction != null) {
-        logger.debug("endTransaction - [{}] commited {}", defer(transaction::hashCode), commit);
+        logger.debug("endTransaction - [{}] commit {}", defer(transaction::hashCode), commit);
         if (commit) {
           transaction.commit();
         } else {
@@ -729,6 +723,8 @@ public class XWikiHibernateBaseStore implements Initializable {
       throw new HibernateException("Failed to commit or rollback transaction. Root cause ["
           + getExceptionMessage(e) + "]", e);
     } finally {
+      setSession(null);
+      setTransaction(null);
       closeSession(session);
     }
   }

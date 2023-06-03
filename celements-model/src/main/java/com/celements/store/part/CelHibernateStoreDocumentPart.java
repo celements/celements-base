@@ -120,7 +120,7 @@ public class CelHibernateStoreDocumentPart {
         deleteAndSaveXObjects(doc, context);
       }
       if (context.getWiki().hasBacklinks(context)) {
-        store.saveLinks(doc, context, true);
+        store.saveLinks(doc, context, false);
       }
       commit = true;
       doc.setNew(false);

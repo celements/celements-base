@@ -38,13 +38,13 @@ public class DefaultExecutionContextManager implements ExecutionContextManager {
 
   @Override
   public ExecutionContext clone(ExecutionContext context) throws ExecutionContextException {
-    ExecutionContext clonedContext = new ExecutionContext();
-    clonedContext.setProperty("xwikicontext", context.getProperty("xwikicontext"));
     // Ideally we would like to do a deep cloning here. However it's just too hard since we don't
     // control objects put in the Execution Context and they can be of any type, including Maps
     // which are cloneable but only do shallow clones.
     // Thus instead we recreate the Execution Context from scratch and reinitialize it by calling
     // all the Execution Context Initializers on it.
+    ExecutionContext clonedContext = new ExecutionContext();
+    clonedContext.setProperty("xwikicontext", context.getProperty("xwikicontext"));
     initialize(clonedContext);
     // Manually clone the Velocity Context too since currently the XWikiVelocityContextInitializer
     // is not yet implemented.

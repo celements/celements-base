@@ -50,6 +50,7 @@ import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
+import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
@@ -1006,18 +1007,17 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     // renderer uses context.getDoc().getSpace() to find out the space name if no
     // space is specified in the link. A better implementation would be to pass
     // explicitely the current space to the render() method.
-    ExecutionContext econtext = Utils.getComponent(Execution.class).getContext();
-
+    ExecutionContext econtext = new ExecutionContext();
+    Execution execution = Utils.getComponent(Execution.class);
+    execution.pushContext(econtext);
     List<String> links;
     try {
       // Create new clean context to avoid wiki manager plugin requests in same session
       XWikiContext renderContext = (XWikiContext) context.clone();
 
       renderContext.setDoc(doc);
-      econtext.setProperty("xwikicontext", renderContext);
-
-      setSession(null, renderContext);
-      setTransaction(null, renderContext);
+      econtext.setProperty(XWikiContext.EXEC_CONTEXT_KEY, renderContext);
+      Utils.getComponent(ExecutionContextManager.class).initialize(econtext);
 
       XWikiRenderer renderer = renderContext.getWiki().getRenderingEngine().getRenderer("wiki");
       renderer.render(doc.getContent(), doc, doc, renderContext);
@@ -1027,7 +1027,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
       // If the rendering fails lets forget backlinks without errors
       links = Collections.emptyList();
     } finally {
-      econtext.setProperty("xwikicontext", context);
+      execution.popContext();
     }
 
     if (links != null) {
