@@ -35,7 +35,7 @@ public class QueryWikiServiceTest extends AbstractComponentTest {
     expectWikiQuery(ImmutableList.of(
         new String[] { "XWikiServerAtest", "a1.host" },
         new String[] { "XWikiServerBtest", "b1.host" },
-        new String[] { "XWikiServerAtest", "a2.host" }),
+        new String[] { "XWikiServerAtest", "https://a2.host" }),
         1);
     replayDefault();
     assertEquals(ImmutableSetMultimap.of(

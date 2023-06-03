@@ -135,8 +135,9 @@ public class QueryWikiService implements WikiService,
 
   private Stream<URL> toURL(String host) {
     try {
-      return Stream.of(UriComponentsBuilder.fromUriString(host)
+      return Stream.of(UriComponentsBuilder.newInstance()
           .scheme(xwikiCfg.getProperty("xwiki.url.protocol", "http"))
+          .host(StreamEx.ofReversed(host.split("://")).findFirst().orElse(host))
           .port(Integer.parseInt(xwikiCfg.getProperty("xwiki.url.port", "-1")))
           .build().toUri().toURL());
     } catch (MalformedURLException e) {
