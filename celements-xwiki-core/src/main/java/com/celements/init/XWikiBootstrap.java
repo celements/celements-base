@@ -100,10 +100,10 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
 
   public ExecutionContext initExecutionContext() throws ExecutionContextException {
     ExecutionContext executionCtx = new ExecutionContext();
+    execution.setContext(executionCtx);
     // disable awaiting XWiki instance in this bootstrap execution
     executionCtx.setProperty(XWikiExecutionContextInitializer.CTX_NO_AWAIT_KEY, true);
     executionManager.initialize(executionCtx);
-    execution.setContext(executionCtx);
     return executionCtx;
   }
 
