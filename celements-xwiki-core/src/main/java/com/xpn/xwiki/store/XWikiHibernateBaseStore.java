@@ -1,5 +1,8 @@
 package com.xpn.xwiki.store;
 
+import static com.celements.logging.LogUtils.*;
+import static com.google.common.base.Preconditions.*;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -149,6 +152,7 @@ public class XWikiHibernateBaseStore implements Initializable {
     if (session == null) {
       getEContext().removeProperty(KEY_SESSION);
     } else {
+      logger.trace("setSession - [{}]", defer(session::hashCode));
       getEContext().setProperty(KEY_SESSION, session);
     }
   }
@@ -505,7 +509,7 @@ public class XWikiHibernateBaseStore implements Initializable {
   public void setDatabase(Session session, WikiReference wikiRef) throws XWikiException {
     if (xwikiCfg.isVirtualMode()) {
       try {
-        logger.debug("setDatabase - {}", wikiRef);
+        logger.debug("setDatabase - {} ", wikiRef);
         if (wikiRef != null) {
           String schemaName = getSchemaFromWikiName(wikiRef);
           Connection connection = session.connection();
@@ -650,15 +654,10 @@ public class XWikiHibernateBaseStore implements Initializable {
       throws HibernateException, XWikiException {
     Transaction transaction = getTransaction();
     Session session = getSession();
-    if ((session == null) == (transaction != null)) {
-      logger.warn("beginTransaction - incompatible session [{}] and transaction [{}] status",
-          session, transaction);
-      // TODO: Fix this problem, don't ignore it!
-      return false;
-    }
+    checkState(((session == null) != (transaction != null)),
+        "beginTransaction - incompatible session and transaction status");
     if (session != null) {
-      logger.trace("beginTransaction - taking session [{}] and transaction [{}] from context",
-          session, transaction);
+      logger.trace("beginTransaction - taking session [{}] from context", defer(session::hashCode));
       return false;
     }
     if (sfactory == null) {
@@ -666,12 +665,11 @@ public class XWikiHibernateBaseStore implements Initializable {
     } else {
       session = sfactory.openSession();
     }
-    logger.trace("beginTransaction - taking session from pool {}", session);
     setSession(session);
     setDatabase(session, wikiRef);
     transaction = session.beginTransaction();
     setTransaction(transaction);
-    logger.debug("opened transaction {}", transaction);
+    logger.debug("beginTransaction - [{}] opened", defer(transaction::hashCode));
     return true;
   }
 
@@ -715,11 +713,11 @@ public class XWikiHibernateBaseStore implements Initializable {
     Session session = null;
     try {
       session = getSession();
-      Transaction transaction = getTransaction();
       setSession(null);
+      Transaction transaction = getTransaction();
       setTransaction(null);
       if (transaction != null) {
-        logger.debug("Releasing hibernate transaction {}", transaction);
+        logger.debug("endTransaction - [{}] commited {}", defer(transaction::hashCode), commit);
         if (commit) {
           transaction.commit();
         } else {
@@ -770,6 +768,7 @@ public class XWikiHibernateBaseStore implements Initializable {
   private void closeSession(Session session) throws HibernateException {
     if (session != null) {
       session.close();
+      logger.debug("closeSession - closed {}", defer(session::hashCode));
     }
   }
 

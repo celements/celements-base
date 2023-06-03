@@ -108,7 +108,8 @@ public class QueryWikiService implements WikiService,
   }
 
   private ImmutableMultimap<WikiReference, URL> queryAllWikis() throws QueryException {
-    return StreamEx.of(queryManager.getNamedQuery("getAllWikis")
+    ImmutableMultimap<WikiReference, URL> ret = StreamEx.of(queryManager
+        .getNamedQuery("getAllWikis")
         .setWiki(XWikiConstant.MAIN_WIKI.getName())
         .<Object[]>execute())
         .mapToEntry(
@@ -117,6 +118,8 @@ public class QueryWikiService implements WikiService,
         .flatMapKeys(this::toWikiRef)
         .flatMapValues(this::toURL)
         .collect(toImmutableSetMultimap(Entry::getKey, Entry::getValue));
+    LOGGER.info("queryAllWikis - {}", ret);
+    return ret;
   }
 
   private Stream<WikiReference> toWikiRef(String name) {
@@ -146,7 +149,7 @@ public class QueryWikiService implements WikiService,
   }
 
   public void refresh() {
-    LOGGER.trace("refresh");
+    LOGGER.info("refresh");
     cache.set(null);
   }
 
