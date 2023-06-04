@@ -17,7 +17,6 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.impl.SessionFactoryImpl;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,19 +194,6 @@ public class XWikiHibernateBaseStore implements Initializable {
       getEContext().removeProperty(KEY_TRANSACTION);
     } else {
       getEContext().setProperty(KEY_TRANSACTION, transaction);
-    }
-  }
-
-  /**
-   * Allows to shut down the hibernate configuration Closing all pools and connections
-   *
-   * @throws HibernateException
-   */
-  public void shutdownHibernate() throws HibernateException {
-    Session session = getSession();
-    closeSession(session);
-    if (getSessionFactory() != null) {
-      ((SessionFactoryImpl) getSessionFactory()).getConnectionProvider().close();
     }
   }
 
