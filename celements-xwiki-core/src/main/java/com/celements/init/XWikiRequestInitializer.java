@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
@@ -84,12 +83,11 @@ public class XWikiRequestInitializer {
       MalformedURLException, XWikiException {
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
     execution.setContext(eContext);
-    URL url = eContext.getProperty(XWikiRequest.URL_EXEC_CONTEXT_KEY, URL.class);
-    MDC.put("url", url.toExternalForm()); // set as early as possible for complete logging
     containerInitializer.initializeRequest(request);
     containerInitializer.initializeResponse(response);
     containerInitializer.initializeSession(request);
     execContextManager.initialize(eContext);
+    URL url = eContext.getProperty(XWikiRequest.URL_EXEC_CONTEXT_KEY, URL.class);
     WikiReference wikiRef = determineWiki(url);
     XWikiContext xContext = eContext.getProperty(XWikiContext.EXEC_CONTEXT_KEY, XWikiContext.class);
     checkNotNull(xContext, "should have been initialized by XWikiStubContextInitializer");
@@ -165,7 +163,6 @@ public class XWikiRequestInitializer {
     LOGGER.info("cleanup");
     containerInitializer.cleanup();
     execution.removeContext();
-    MDC.remove("url");
   }
 
 }
