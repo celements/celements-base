@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.bridge.event.WikiCreatedEvent;
 import org.xwiki.bridge.event.WikiDeletedEvent;
 import org.xwiki.model.reference.WikiReference;
@@ -37,6 +38,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;
+import com.xpn.xwiki.doc.XWikiDocument;
 
 import one.util.streamex.EntryStream;
 import one.util.streamex.StreamEx;
@@ -162,13 +164,23 @@ public class QueryWikiService implements WikiService,
   public List<Event> getEvents() {
     return ImmutableList.of(
         new WikiCreatedEvent(),
-        new WikiDeletedEvent());
+        new WikiDeletedEvent(),
+        new DocumentUpdatedEvent());
   }
 
   @Override
   public void onEvent(Event event, Object source, Object data) {
     LOGGER.trace("onEvent - '{}', source '{}', data '{}'", event.getClass(), source, data);
-    refresh();
+    if (((event instanceof DocumentUpdatedEvent) && hasServerObj((XWikiDocument) source))
+        || (event instanceof WikiCreatedEvent)
+        || (event instanceof WikiDeletedEvent)) {
+      refresh();
+    }
+  }
+
+  private boolean hasServerObj(XWikiDocument doc) {
+    return XWikiConstant.MAIN_WIKI.equals(doc.getDocumentReference().getWikiReference())
+        && (doc.getXObject(XWikiConstant.SERVER_CLASS_DOCREF) != null);
   }
 
   @Override
