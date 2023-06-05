@@ -27,7 +27,7 @@ public class XWikiExecutionContextInitializer implements ExecutionContextInitial
       XWiki xwiki = Boolean.TRUE.equals(context.getProperty(CTX_NO_AWAIT_KEY))
           ? wikiProvider.get().orElse(null)
           : wikiProvider.await(Duration.ofHours(1));
-      context.setProperty(XWiki.CONTEXT_KEY, xwiki);
+      context.setProperty(XWiki.EXEC_CONTEXT_KEY, xwiki);
     } catch (XWikiException xwe) {
       throw new ExecutionContextException("failed initializing XWiki", xwe);
     }

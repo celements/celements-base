@@ -30,7 +30,6 @@ import java.util.function.Supplier;
  * independent of the environment and all environment-dependent data are stored in the Container
  * component instead.
  *
- * @version $Id$
  * @since 1.5M2
  */
 public class ExecutionContext {
@@ -44,6 +43,10 @@ public class ExecutionContext {
    */
   public Object getProperty(String key) {
     return properties.get(key);
+  }
+
+  public <T> T getProperty(String key, Class<T> type) {
+    return type.cast(getProperty(key));
   }
 
   public <T> T getProperty(String key, T defaultValue) {

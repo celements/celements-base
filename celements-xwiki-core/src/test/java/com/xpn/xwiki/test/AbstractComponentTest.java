@@ -73,7 +73,7 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
     execCtx.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, context);
     XWikiStubContextProvider ctxProviderMock = registerComponentMock(
         XWikiStubContextProvider.class);
-    expect(ctxProviderMock.createStubContext()).andReturn(context).anyTimes();
+    expect(ctxProviderMock.createStubContext(same(execCtx))).andReturn(context).anyTimes();
 
     // Set a simple application context, as some components fail to start without one.
     getComponentManager().lookup(Container.class)

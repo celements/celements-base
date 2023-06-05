@@ -21,11 +21,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
+import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
+import org.xwiki.context.ExecutionContextException;
+import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.wiki.WikiService;
@@ -37,6 +39,8 @@ import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.web.XWikiRequest;
+import com.xpn.xwiki.web.XWikiResponse;
 import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiServletResponse;
 
@@ -48,7 +52,9 @@ public class XWikiRequestInitializer {
   private static final ImmutableSet<String> LOCAL_HOSTS = ImmutableSet.of(
       "localhost", "127.0.0.1", "::1");
 
-  private final ServletContainerInitializer initializer;
+  private final Execution execution;
+  private final ExecutionContextManager execContextManager;
+  private final ServletContainerInitializer containerInitializer;
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiProvider xwikiProvider;
@@ -56,12 +62,16 @@ public class XWikiRequestInitializer {
 
   @Inject
   public XWikiRequestInitializer(
-      ServletContainerInitializer initializer,
+      Execution execution,
+      ExecutionContextManager execContextManager,
+      ServletContainerInitializer containerInitializer,
       WikiService wikiService,
       WikiUpdater wikiUpdater,
       XWikiProvider xwikiProvider,
       XWikiConfigSource xwikiCfg) {
-    this.initializer = initializer;
+    this.execution = execution;
+    this.execContextManager = execContextManager;
+    this.containerInitializer = containerInitializer;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
@@ -69,29 +79,36 @@ public class XWikiRequestInitializer {
   }
 
   public XWikiContext init(String action, HttpServletRequest request, HttpServletResponse response)
-      throws MalformedURLException, ServletContainerException, XWikiException {
-    ExecutionContext execContext = initializer.initializeRequest(request);
-    XWikiContext context = prepareXWikiContext(execContext, action, request, response);
-    MDC.put("url", context.getURL().toExternalForm());
-    initializer.initializeResponse(response);
-    initializer.initializeSession(request);
-    WikiReference wikiRef = determineWiki(context.getURL());
-    context.setDatabase(wikiRef.getName());
-    context.setOriginalDatabase(wikiRef.getName());
+      throws ServletContainerException, ExecutionContextException,
+      MalformedURLException, XWikiException {
+    ExecutionContext eContext = createExecContextForRequest(action, request, response);
+    execution.setContext(eContext);
+    containerInitializer.initializeRequest(request);
+    containerInitializer.initializeResponse(response);
+    containerInitializer.initializeSession(request);
+    execContextManager.initialize(eContext);
+    URL url = eContext.getProperty(XWikiRequest.URL_EXEC_CONTEXT_KEY, URL.class);
+    WikiReference wikiRef = determineWiki(url);
+    XWikiContext xContext = eContext.getProperty(XWikiContext.EXEC_CONTEXT_KEY, XWikiContext.class);
+    checkNotNull(xContext, "should have been initialized by XWikiStubContextInitializer");
+    xContext.setDatabase(wikiRef.getName());
+    xContext.setOriginalDatabase(wikiRef.getName());
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
-    xwiki.prepareResources(context);
+    xwiki.prepareResources(xContext);
     LOGGER.info("request initialized");
-    return context;
+    return xContext;
   }
 
-  private XWikiContext prepareXWikiContext(ExecutionContext execCtx, String action,
-      HttpServletRequest request, HttpServletResponse response) throws MalformedURLException {
-    XWikiContext context = (XWikiContext) execCtx.getProperty(XWikiContext.EXEC_CONTEXT_KEY);
-    checkNotNull(context, "should have been initialized by XWikiStubContextInitializer");
-    context.setAction(action);
-    context.setRequest(new XWikiServletRequest(request));
-    context.setResponse(new XWikiServletResponse(response));
-    context.setURL(context.getRequest().getURL());
+  private ExecutionContext createExecContextForRequest(String action,
+      HttpServletRequest request, HttpServletResponse response)
+      throws MalformedURLException {
+    ExecutionContext context = new ExecutionContext();
+    XWikiRequest xRequest = new XWikiServletRequest(request);
+    context.setProperty(XWikiRequest.EXEC_CONTEXT_KEY, xRequest);
+    context.setProperty(XWikiRequest.ACTION_EXEC_CONTEXT_KEY, action);
+    context.setProperty(XWikiRequest.URL_EXEC_CONTEXT_KEY, xRequest.getURL());
+    XWikiResponse xResponse = new XWikiServletResponse(response);
+    context.setProperty(XWikiResponse.EXEC_CONTEXT_KEY, xResponse);
     return context;
   }
 
@@ -144,8 +161,8 @@ public class XWikiRequestInitializer {
 
   public void cleanup() {
     LOGGER.info("cleanup");
-    initializer.cleanup();
-    MDC.remove("url");
+    containerInitializer.cleanup();
+    execution.removeContext();
   }
 
 }

@@ -26,7 +26,7 @@ public class XWikiStubContextInitializer implements ExecutionContextInitializer 
   public void initialize(ExecutionContext context) throws ExecutionContextException {
     XWikiContext xcontext = (XWikiContext) context.getProperty(XWikiContext.EXEC_CONTEXT_KEY);
     if (xcontext == null) {
-      XWikiContext stubContext = stubContextProvider.createStubContext();
+      XWikiContext stubContext = stubContextProvider.createStubContext(context);
       context.setProperty(XWikiContext.EXEC_CONTEXT_KEY, stubContext);
     }
   }

@@ -117,7 +117,7 @@ public class WikiUpdater {
     WikiUpdateRunnable(WikiReference wikiRef, XWiki xwiki) {
       // make XWiki available in the runnable's execution context since it's not necessarily
       // already available in the servlet context, see XWikiProvider
-      super(XWiki.CONTEXT_KEY, xwiki);
+      super(XWiki.EXEC_CONTEXT_KEY, xwiki);
       this.wikiRef = wikiRef;
     }
 

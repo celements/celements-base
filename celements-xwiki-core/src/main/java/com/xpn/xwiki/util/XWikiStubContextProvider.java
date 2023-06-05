@@ -3,6 +3,7 @@ package com.xpn.xwiki.util;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
+import org.xwiki.context.ExecutionContext;
 
 import com.xpn.xwiki.XWikiContext;
 
@@ -16,6 +17,6 @@ import com.xpn.xwiki.XWikiContext;
 public interface XWikiStubContextProvider {
 
   @NotNull
-  XWikiContext createStubContext();
+  XWikiContext createStubContext(@NotNull ExecutionContext execContext);
 
 }

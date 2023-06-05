@@ -174,6 +174,8 @@ public class XWikiDocument implements DocumentModelBridge {
 
   public static final String XWIKI20_SYNTAXID = Syntax.XWIKI_2_0.toIdString();
 
+  public static String EXEC_CONTEXT_KEY = "xwiki.doc";
+
   private String title;
 
   /**
