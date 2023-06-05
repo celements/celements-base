@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.Container;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.AbstractComponentTestCase;
 
@@ -99,7 +100,7 @@ public abstract class AbstractBridgedComponentTestCase extends AbstractComponent
     this.mockery.checking(new Expectations() {
 
       {
-        allowing(ctxProviderMock).createStubContext();
+        allowing(ctxProviderMock).createStubContext(with(any(ExecutionContext.class)));
         will(returnValue(context));
       }
     });

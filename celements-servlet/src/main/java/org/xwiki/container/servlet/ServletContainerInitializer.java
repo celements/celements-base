@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
-import org.xwiki.context.ExecutionContext;
 
 @ComponentRole
 public interface ServletContainerInitializer {
@@ -35,9 +34,7 @@ public interface ServletContainerInitializer {
 
   void destroyApplicationContext();
 
-  @NotNull
-  ExecutionContext initializeRequest(@NotNull HttpServletRequest request)
-      throws ServletContainerException;
+  void initializeRequest(@NotNull HttpServletRequest request) throws ServletContainerException;
 
   void initializeResponse(HttpServletResponse response);
 

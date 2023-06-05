@@ -31,6 +31,10 @@ import com.google.common.base.Strings;
 
 public interface XWikiRequest extends HttpServletRequest {
 
+  String EXEC_CONTEXT_KEY = "xwiki.request";
+  String URL_EXEC_CONTEXT_KEY = "xwiki.request.url";
+  String ACTION_EXEC_CONTEXT_KEY = "xwiki.request.action";
+
   String get(String name);
 
   HttpServletRequest getHttpServletRequest();

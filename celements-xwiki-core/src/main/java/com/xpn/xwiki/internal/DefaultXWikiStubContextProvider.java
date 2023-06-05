@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletContext;
 
 import org.springframework.stereotype.Component;
+import org.xwiki.context.ExecutionContext;
 
 import com.celements.wiki.WikiService;
 import com.google.common.base.Suppliers;
@@ -34,9 +35,13 @@ import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
+import com.xpn.xwiki.web.ViewAction;
+import com.xpn.xwiki.web.XWikiRequest;
+import com.xpn.xwiki.web.XWikiResponse;
 import com.xpn.xwiki.web.XWikiServletContext;
 import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiServletRequestStub;
+import com.xpn.xwiki.web.XWikiServletResponse;
 import com.xpn.xwiki.web.XWikiServletResponseStub;
 import com.xpn.xwiki.web.XWikiURLFactoryService;
 
@@ -71,21 +76,29 @@ public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider
   }
 
   @Override
-  public XWikiContext createStubContext() {
+  public XWikiContext createStubContext(ExecutionContext execContext) {
     XWikiContext ctx = new XWikiContext();
     ctx.setMode(XWikiContext.MODE_SERVLET);
     ctx.setEngineContext(new XWikiServletContext(servletContext));
     ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
     ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
-    ctx.setURL(wikiService.streamUrlsForWiki(XWikiConstant.MAIN_WIKI)
-        .findFirst().orElseGet(LOCALHOST));
+    ctx.setURL(execContext.computeIfAbsent(XWikiRequest.URL_EXEC_CONTEXT_KEY,
+        () -> wikiService.streamUrlsForWiki(XWikiConstant.MAIN_WIKI)
+            .findFirst().orElseGet(LOCALHOST)));
+    ctx.setRequest(execContext.computeIfAbsent(XWikiRequest.EXEC_CONTEXT_KEY, () -> {
+      XWikiServletRequestStub stub = new XWikiServletRequestStub();
+      stub.setHost(ctx.getURL().getHost());
+      stub.setScheme(ctx.getURL().getProtocol());
+      return new XWikiServletRequest(stub);
+    }));
+    ctx.setResponse(execContext.computeIfAbsent(XWikiResponse.EXEC_CONTEXT_KEY, () -> {
+      XWikiServletResponseStub stub = new XWikiServletResponseStub();
+      return new XWikiServletResponse(stub);
+    }));
+    ctx.setAction(execContext.computeIfAbsent(XWikiRequest.ACTION_EXEC_CONTEXT_KEY,
+        () -> ViewAction.VIEW_ACTION));
+    ctx.setDoc(execContext.computeIfAbsent(XWikiDocument.EXEC_CONTEXT_KEY, XWikiDocument::new));
     ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
-    XWikiServletRequestStub requestStub = new XWikiServletRequestStub();
-    requestStub.setHost(ctx.getURL().getHost());
-    requestStub.setScheme(ctx.getURL().getProtocol());
-    ctx.setRequest(new XWikiServletRequest(requestStub));
-    ctx.setResponse(new XWikiServletResponseStub());
-    ctx.setDoc(new XWikiDocument());
     return ctx;
   }
 

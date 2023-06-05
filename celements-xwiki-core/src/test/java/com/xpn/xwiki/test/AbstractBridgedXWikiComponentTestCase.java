@@ -75,7 +75,7 @@ public abstract class AbstractBridgedXWikiComponentTestCase extends AbstractXWik
   @Override
   protected void registerComponents() throws Exception {
     Mock ctxProviderMock = registerMockComponent(XWikiStubContextProvider.class, "default");
-    ctxProviderMock.stubs().method("createStubContext")
+    ctxProviderMock.stubs().method("createStubContext").withAnyArguments()
         .will(returnValue(context));
   }
 
