@@ -92,7 +92,6 @@ import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryExecutor;
-import org.xwiki.rendering.macro.wikibridge.WikiMacroInitializer;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.standard.XWikiURLBuilder;
@@ -440,15 +439,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     getSkinClass(context);
     getGlobalRightsClass(context);
     getSheetClass(context);
-
-    try {
-      WikiMacroInitializer wikiMacroInitializer = Utils.getComponentManager().lookup(
-          WikiMacroInitializer.class);
-      wikiMacroInitializer.installOrUpgradeWikiMacroClasses();
-    } catch (Exception ex) {
-      LOG.error("Error while installing / upgrading xwiki classes required for wiki macros.", ex);
-    }
-
     if (context.getDatabase().equals(context.getMainXWiki()) && "1".equals(Param(
         "xwiki.preferences.redirect"))) {
       getRedirectClass(context);
