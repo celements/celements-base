@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.store.hibernate;
 
+import static com.celements.common.MoreObjectsCel.*;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -26,19 +28,22 @@ import java.net.URL;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.connection.ConnectionProvider;
+import org.hibernate.impl.SessionFactoryImpl;
+import org.springframework.context.ApplicationListener;
 import org.xwiki.component.annotation.Component;
 
+import com.celements.servlet.CelementsLifecycleEvent;
 import com.xpn.xwiki.util.Util;
 
 /**
  * Default implementation for {@link HibernateSessionFactory}.
  *
- * @version $Id$
  * @since 2.0M1
  */
-// TODO: This was coded by Artem. Find out why we need this as a component.
 @Component
-public class DefaultHibernateSessionFactory implements HibernateSessionFactory {
+public class DefaultHibernateSessionFactory implements HibernateSessionFactory,
+    ApplicationListener<CelementsLifecycleEvent> {
 
   /**
    * Hibernate configuration object.
@@ -57,11 +62,6 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory {
      */
     private boolean isConfigurationInitialized;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.hibernate.cfg.Configuration#configure()
-     */
     @Override
     public Configuration configure() throws HibernateException {
       Configuration configuration;
@@ -74,11 +74,6 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory {
       return configuration;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.hibernate.cfg.Configuration#configure(String)
-     */
     @Override
     public Configuration configure(String resource) throws HibernateException {
       Configuration configuration;
@@ -91,11 +86,6 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory {
       return configuration;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.hibernate.cfg.Configuration#configure(java.net.URL)
-     */
     @Override
     public Configuration configure(URL url) throws HibernateException {
       Configuration configuration;
@@ -108,11 +98,6 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory {
       return configuration;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.hibernate.cfg.Configuration#configure(java.io.File)
-     */
     @Override
     public Configuration configure(File configFile) throws HibernateException {
       Configuration configuration;
@@ -142,33 +127,28 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory {
    */
   private SessionFactory sessionFactory;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see HibernateSessionFactory#getConfiguration()
-   */
   @Override
   public Configuration getConfiguration() {
     return this.configuration;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see HibernateSessionFactory#getSessionFactory()
-   */
   @Override
   public SessionFactory getSessionFactory() {
     return this.sessionFactory;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see HibernateSessionFactory#setSessionFactory(SessionFactory)
-   */
   @Override
   public void setSessionFactory(SessionFactory sessionFactory) {
     this.sessionFactory = sessionFactory;
   }
+
+  @Override
+  public void onApplicationEvent(CelementsLifecycleEvent event) {
+    if (event.getType() == CelementsLifecycleEvent.State.STOPPED) {
+      tryCast(getSessionFactory(), SessionFactoryImpl.class)
+          .map(SessionFactoryImpl::getConnectionProvider)
+          .ifPresent(ConnectionProvider::close);
+    }
+  }
+
 }
