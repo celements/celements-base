@@ -3,7 +3,7 @@ package com.celements.wiki;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import org.junit.Before;
@@ -39,9 +39,9 @@ public class QueryWikiServiceTest extends AbstractComponentTest {
         1);
     replayDefault();
     assertEquals(ImmutableSetMultimap.of(
-        new WikiReference("atest"), new URL("http://a1.host"),
-        new WikiReference("btest"), new URL("http://b1.host"),
-        new WikiReference("atest"), new URL("https://a2.host")),
+        new WikiReference("atest"), URI.create("http://a1.host"),
+        new WikiReference("btest"), URI.create("http://b1.host"),
+        new WikiReference("atest"), URI.create("https://a2.host")),
         service.getWikiMap());
     verifyDefault();
   }

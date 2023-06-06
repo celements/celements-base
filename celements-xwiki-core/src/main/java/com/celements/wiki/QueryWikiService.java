@@ -6,13 +6,15 @@ import static com.google.common.base.Predicates.*;
 import static com.google.common.collect.ImmutableSetMultimap.*;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -20,19 +22,13 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.xwiki.bridge.event.DocumentUpdatedEvent;
-import org.xwiki.bridge.event.WikiCreatedEvent;
-import org.xwiki.bridge.event.WikiDeletedEvent;
 import org.xwiki.model.reference.WikiReference;
-import org.xwiki.observation.EventListener;
-import org.xwiki.observation.event.Event;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
+import com.celements.common.MoreOptional;
 import com.celements.common.lambda.Try;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -42,14 +38,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;
-import com.xpn.xwiki.doc.XWikiDocument;
 
 import one.util.streamex.EntryStream;
 import one.util.streamex.StreamEx;
 
 @Service
-public class QueryWikiService implements WikiService,
-    EventListener, ApplicationListener<QueryWikiService.RefreshEvent> {
+public class QueryWikiService implements WikiService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(QueryWikiService.class);
 
@@ -64,7 +58,7 @@ public class QueryWikiService implements WikiService,
 
   private final QueryManager queryManager;
   private final XWikiConfigSource xwikiCfg;
-  private final AtomicReference<Try<ImmutableMultimap<WikiReference, URL>, QueryException>> cache;
+  private final AtomicReference<Try<ImmutableMultimap<WikiReference, URI>, QueryException>> cache;
 
   @Inject
   public QueryWikiService(
@@ -91,19 +85,44 @@ public class QueryWikiService implements WikiService,
   }
 
   @Override
-  public Stream<URL> streamUrlsForWiki(@Nullable WikiReference wikiRef) {
-    return getWikiMap().get(convertMainWiki(wikiRef)).stream();
+  public Stream<WikiReference> findWikis(Predicate<URL> matcher) {
+    return EntryStream.of(getWikiMap().entries().stream())
+        .mapValues(this::toURL)
+        .filterValues(matcher)
+        .keys();
   }
 
   @Override
-  public Optional<WikiReference> getWikiForHost(String host) {
-    return EntryStream.of(getWikiMap().entries().stream())
-        .filterValues(url -> url.getHost().equals(host))
-        .keys()
-        .findFirst();
+  public Stream<URL> streamUrlsForWiki(@Nullable WikiReference wikiRef) {
+    return getWikiMap().get(convertMainWiki(wikiRef)).stream()
+        .map(this::toURL);
   }
 
-  Multimap<WikiReference, URL> getWikiMap() {
+  @Override
+  public WikiReference determineWiki(URL url) throws WikiMissingException {
+    String host = Strings.nullToEmpty(url.getHost());
+    checkArgument(!host.isEmpty());
+    if (!xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
+      return XWikiConstant.MAIN_WIKI;
+    }
+    WikiReference wikiRef = findWikis(u -> u.getHost().equals(host))
+        .findFirst()
+        .map(Optional::of) // replace with #or in Java9+
+        // no wiki found based on the full host name, try to use the first part as the wiki name
+        .orElseGet(() -> getWikiFromDomain(host))
+        .orElseThrow(() -> new WikiMissingException("The wiki " + host + " does not exist"));
+    LOGGER.debug("determineWiki - {}", wikiRef);
+    return wikiRef;
+  }
+
+  private Optional<WikiReference> getWikiFromDomain(String host) {
+    return Optional.of(host).filter(h -> h.indexOf(".") > 0)
+        .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
+        .filter(log(this::hasWiki)
+            .warn(LOGGER).msg("using wiki domain fallback"));
+  }
+
+  Multimap<WikiReference, URI> getWikiMap() {
     try {
       return cache.updateAndGet(trying -> (trying != null) && trying.isSuccess()
           ? trying
@@ -115,18 +134,18 @@ public class QueryWikiService implements WikiService,
     return ImmutableMultimap.of();
   }
 
-  private ImmutableMultimap<WikiReference, URL> queryAllWikis() throws QueryException {
-    ImmutableMultimap<WikiReference, URL> ret = StreamEx.of(queryManager
+  private ImmutableMultimap<WikiReference, URI> queryAllWikis() throws QueryException {
+    ImmutableMultimap<WikiReference, URI> ret = StreamEx.of(queryManager
         .getNamedQuery("getAllWikis")
         .setWiki(XWikiConstant.MAIN_WIKI.getName())
         .<Object[]>execute())
         .mapToEntry(
             row -> row[0].toString(), // doc.name
-            row -> toURL(
+            row -> toURI(
                 (Integer) row[1], // secure.value
                 row[2].toString())) // host.value
         .flatMapKeys(this::toWikiRef)
-        .flatMapValues(s -> s)
+        .flatMapValues(MoreOptional::stream)
         .collect(toImmutableSetMultimap(Entry::getKey, Entry::getValue));
     LOGGER.info("queryAllWikis - {}", ret);
     return ret;
@@ -146,41 +165,19 @@ public class QueryWikiService implements WikiService,
     return wikiRef;
   }
 
-  private Stream<URL> toURL(Integer secure, String host) {
+  private Optional<URI> toURI(Integer secure, String host) {
     try {
-      return Stream.of(UriComponentsBuilder.newInstance()
+      return Optional.of(UriComponentsBuilder.newInstance()
           .scheme(Optional.ofNullable(secure)
               .map(i -> (i > 0) ? "https" : "http")
               .orElseGet(() -> xwikiCfg.getProperty("xwiki.url.protocol", "http")))
           .host(StreamEx.ofReversed(host.split("://")).findFirst().orElse(host))
           .port(Integer.parseInt(xwikiCfg.getProperty("xwiki.url.port", "-1")))
-          .build().toUri().toURL());
-    } catch (MalformedURLException e) {
-      return Stream.empty();
+          .build().toUri().toURL().toURI());
+    } catch (NumberFormatException | MalformedURLException | URISyntaxException exc) {
+      LOGGER.warn("toURI - failed for [{}]", host, exc);
+      return Optional.empty();
     }
-  }
-
-  @Override
-  public WikiReference determineWiki(URL url) throws WikiMissingException {
-    String host = Strings.nullToEmpty(url.getHost());
-    checkArgument(!host.isEmpty());
-    if (!xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
-      return XWikiConstant.MAIN_WIKI;
-    }
-    WikiReference wikiRef = getWikiForHost(host)
-        .map(Optional::of) // replace with #or in Java9+
-        // no wiki found based on the full host name, try to use the first part as the wiki name
-        .orElseGet(() -> getWikiFromDomain(host))
-        .orElseThrow(() -> new WikiMissingException("The wiki " + host + " does not exist"));
-    LOGGER.debug("determineWiki - {}", wikiRef);
-    return wikiRef;
-  }
-
-  private Optional<WikiReference> getWikiFromDomain(String host) {
-    return Optional.of(host).filter(h -> h.indexOf(".") > 0)
-        .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
-        .filter(log(this::hasWiki)
-            .warn(LOGGER).msg("using wiki domain fallback"));
   }
 
   public void refresh() {
@@ -188,48 +185,12 @@ public class QueryWikiService implements WikiService,
     cache.set(null);
   }
 
-  @Override
-  public String getName() {
-    return this.getClass().getName();
-  }
-
-  @Override
-  public List<Event> getEvents() {
-    return ImmutableList.of(
-        new WikiCreatedEvent(),
-        new WikiDeletedEvent(),
-        new DocumentUpdatedEvent());
-  }
-
-  @Override
-  public void onEvent(Event event, Object source, Object data) {
-    LOGGER.trace("onEvent - '{}', source '{}', data '{}'", event.getClass(), source, data);
-    if (((event instanceof DocumentUpdatedEvent) && hasServerObj((XWikiDocument) source))
-        || (event instanceof WikiCreatedEvent)
-        || (event instanceof WikiDeletedEvent)) {
-      refresh();
+  private URL toURL(URI uri) {
+    try {
+      return uri.toURL();
+    } catch (MalformedURLException exc) {
+      throw new IllegalStateException("should not happen", exc);
     }
-  }
-
-  private boolean hasServerObj(XWikiDocument doc) {
-    return XWikiConstant.MAIN_WIKI.equals(doc.getDocumentReference().getWikiReference())
-        && (doc.getXObject(XWikiConstant.SERVER_CLASS_DOCREF) != null);
-  }
-
-  @Override
-  public void onApplicationEvent(RefreshEvent event) {
-    LOGGER.trace("onApplicationEvent - {}", event);
-    refresh();
-  }
-
-  public class RefreshEvent extends ApplicationEvent {
-
-    private static final long serialVersionUID = 1L;
-
-    public RefreshEvent(Object source) {
-      super(source);
-    }
-
   }
 
 }
