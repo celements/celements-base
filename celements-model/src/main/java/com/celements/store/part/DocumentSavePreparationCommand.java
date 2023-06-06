@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -94,7 +93,6 @@ class DocumentSavePreparationCommand {
       store.beginTransaction(sfactory, context);
     }
     session = store.getSession(context);
-    session.setFlushMode(FlushMode.COMMIT);
   }
 
   private void ensureDatabaseConsistency() {
