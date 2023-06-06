@@ -20,10 +20,15 @@
  */
 package org.xwiki.context;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
+
+import com.google.common.base.Strings;
 
 /**
  * Contains all state data related to the current user action. Note that the execution context is
@@ -35,6 +40,10 @@ import java.util.function.Supplier;
 public class ExecutionContext {
 
   private final Map<String, Object> properties = new HashMap<>();
+
+  public <T> Optional<T> get(Property<T> prop) {
+    return Optional.ofNullable(getProperty(prop.name, prop.type));
+  }
 
   /**
    * @param key
@@ -52,6 +61,14 @@ public class ExecutionContext {
   public <T> T getProperty(String key, T defaultValue) {
     T value = uncheckedCast(getProperty(key));
     return (value != null) ? value : defaultValue;
+  }
+
+  public <T> T computeIfAbsent(Property<T> prop, Supplier<T> defaultGetter) {
+    return get(prop).orElseGet(() -> {
+      T newValue = defaultGetter.get();
+      set(prop, newValue);
+      return newValue;
+    });
   }
 
   public <T> T computeIfAbsent(String key, Supplier<T> defaultGetter) {
@@ -93,12 +110,37 @@ public class ExecutionContext {
     properties.put(key, value);
   }
 
+  public <T> T set(Property<T> prop, T value) {
+    Object previous = properties.put(prop.name, value);
+    return prop.type.cast(previous);
+  }
+
   /**
    * @param properties
    *          the properties to add to the context
    */
   public void setProperties(Map<String, Object> properties) {
     this.properties.putAll(properties);
+  }
+
+  public static class Property<T> {
+
+    private final String name;
+    private final Class<T> type;
+
+    public Property(String name, Class<T> type) {
+      this.name = checkNotNull(Strings.emptyToNull(name));
+      this.type = checkNotNull(type);
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public Class<T> getType() {
+      return type;
+    }
+
   }
 
 }

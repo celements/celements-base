@@ -21,6 +21,7 @@ package com.xpn.xwiki;
 
 import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static com.xpn.xwiki.XWikiExecutionProp.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -173,7 +174,6 @@ import com.xpn.xwiki.web.XWikiURLFactoryService;
 public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
 
   public static final String SERVLET_CONTEXT_KEY = "xwiki.instance";
-  public static final String EXEC_CONTEXT_KEY = SERVLET_CONTEXT_KEY;
 
   protected static final Logger LOG = LoggerFactory.getLogger(XWiki.class);
 
@@ -363,8 +363,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   private XWikiContext getContext() {
-    return (XWikiContext) Utils.getComponent(Execution.class).getContext()
-        .getProperty(XWikiContext.EXEC_CONTEXT_KEY);
+    return Utils.getComponent(Execution.class).getContext()
+        .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
 
   protected void initXWiki() throws XWikiException {

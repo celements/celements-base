@@ -1,6 +1,7 @@
 package com.celements.init;
 
 import static com.google.common.base.Preconditions.*;
+import static com.xpn.xwiki.XWikiExecutionProp.*;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -98,7 +99,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
     Utils.setComponentManager(componentManager);
     ExecutionContext executionCtx = initExecutionContext();
     XWiki xwiki = new XWiki(true);
-    executionCtx.setProperty(XWiki.EXEC_CONTEXT_KEY, xwiki);
+    executionCtx.set(XWIKI, xwiki);
     xwiki.loadPlugins();
     triggerWikiUpdates();
     return xwiki;
@@ -108,7 +109,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
     ExecutionContext executionCtx = new ExecutionContext();
     execution.setContext(executionCtx);
     // disable awaiting XWiki instance in this bootstrap execution
-    executionCtx.setProperty(XWikiExecutionContextInitializer.CTX_NO_AWAIT_KEY, true);
+    executionCtx.set(XWikiExecutionContextInitializer.NO_AWAIT, true);
     executionManager.initialize(executionCtx);
     return executionCtx;
   }

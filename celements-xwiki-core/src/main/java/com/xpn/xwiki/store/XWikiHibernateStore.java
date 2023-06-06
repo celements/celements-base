@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.store;
 
+import static com.xpn.xwiki.XWikiExecutionProp.*;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -1016,7 +1018,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
       XWikiContext renderContext = (XWikiContext) context.clone();
 
       renderContext.setDoc(doc);
-      econtext.setProperty(XWikiContext.EXEC_CONTEXT_KEY, renderContext);
+      econtext.set(XWIKI_CONTEXT, renderContext);
       Utils.getComponent(ExecutionContextManager.class).initialize(econtext);
 
       XWikiRenderer renderer = renderContext.getWiki().getRenderingEngine().getRenderer("wiki");

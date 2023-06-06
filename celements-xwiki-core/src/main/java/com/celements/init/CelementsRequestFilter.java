@@ -1,7 +1,7 @@
 package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
-import static com.google.common.base.Preconditions.*;
+import static com.xpn.xwiki.XWikiExecutionProp.*;
 
 import java.net.URI;
 import java.time.Duration;
@@ -73,10 +73,9 @@ public class CelementsRequestFilter {
     containerInitializer.initializeResponse(response);
     containerInitializer.initializeSession(request);
     execContextManager.initialize(eContext);
-    URI uri = eContext.getProperty(XWikiRequest.URI_EXEC_CONTEXT_KEY, URI.class);
+    URI uri = eContext.get(XWIKI_REQUEST_URI).orElseThrow(IllegalStateException::new);
     WikiReference wikiRef = wikiService.determineWiki(uri);
-    XWikiContext xContext = eContext.getProperty(XWikiContext.EXEC_CONTEXT_KEY, XWikiContext.class);
-    checkNotNull(xContext, "should have been initialized by XWikiStubContextInitializer");
+    XWikiContext xContext = eContext.get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
     xContext.setDatabase(wikiRef.getName());
     xContext.setOriginalDatabase(wikiRef.getName());
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
@@ -89,11 +88,11 @@ public class CelementsRequestFilter {
       HttpServletRequest request, HttpServletResponse response) {
     ExecutionContext context = new ExecutionContext();
     XWikiRequest xRequest = new XWikiServletRequest(request);
-    context.setProperty(XWikiRequest.EXEC_CONTEXT_KEY, xRequest);
-    context.setProperty(XWikiRequest.ACTION_EXEC_CONTEXT_KEY, action);
-    context.setProperty(XWikiRequest.URI_EXEC_CONTEXT_KEY, xRequest.getUri());
+    context.set(XWIKI_REQUEST, xRequest);
+    context.set(XWIKI_REQUEST_ACTION, action);
+    context.set(XWIKI_REQUEST_URI, xRequest.getUri());
     XWikiResponse xResponse = new XWikiServletResponse(response);
-    context.setProperty(XWikiResponse.EXEC_CONTEXT_KEY, xResponse);
+    context.set(XWIKI_RESPONSE, xResponse);
     return context;
   }
 

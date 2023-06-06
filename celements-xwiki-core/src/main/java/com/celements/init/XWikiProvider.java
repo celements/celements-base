@@ -2,6 +2,7 @@ package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.Preconditions.*;
+import static com.xpn.xwiki.XWikiExecutionProp.*;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -55,7 +56,7 @@ public class XWikiProvider {
   }
 
   private Optional<XWiki> getFromEContext() {
-    return getEContext().map(ctx -> ctx.getProperty(XWiki.EXEC_CONTEXT_KEY, XWiki.class));
+    return getEContext().flatMap(ctx -> ctx.get(XWIKI));
   }
 
   private Optional<XWiki> getFromSContext() {
