@@ -5,10 +5,7 @@ import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Predicates.*;
 import static com.google.common.collect.ImmutableSetMultimap.*;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -85,21 +82,19 @@ public class QueryWikiService implements WikiService {
   }
 
   @Override
-  public Stream<WikiReference> findWikis(Predicate<URL> matcher) {
+  public Stream<WikiReference> findWikis(Predicate<URI> matcher) {
     return EntryStream.of(getWikiMap().entries().stream())
-        .mapValues(this::toURL)
         .filterValues(matcher)
         .keys();
   }
 
   @Override
-  public Stream<URL> streamUrlsForWiki(@Nullable WikiReference wikiRef) {
-    return getWikiMap().get(convertMainWiki(wikiRef)).stream()
-        .map(this::toURL);
+  public Stream<URI> streamUrisForWiki(@Nullable WikiReference wikiRef) {
+    return getWikiMap().get(convertMainWiki(wikiRef)).stream();
   }
 
   @Override
-  public WikiReference determineWiki(URL url) throws WikiMissingException {
+  public WikiReference determineWiki(URI url) throws WikiMissingException {
     String host = Strings.nullToEmpty(url.getHost());
     checkArgument(!host.isEmpty());
     if (!xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
@@ -141,7 +136,7 @@ public class QueryWikiService implements WikiService {
         .<Object[]>execute())
         .mapToEntry(
             row -> row[0].toString(), // doc.name
-            row -> toURI(
+            row -> toUri(
                 (Integer) row[1], // secure.value
                 row[2].toString())) // host.value
         .flatMapKeys(this::toWikiRef)
@@ -165,7 +160,7 @@ public class QueryWikiService implements WikiService {
     return wikiRef;
   }
 
-  private Optional<URI> toURI(Integer secure, String host) {
+  private Optional<URI> toUri(Integer secure, String host) {
     try {
       return Optional.of(UriComponentsBuilder.newInstance()
           .scheme(Optional.ofNullable(secure)
@@ -173,9 +168,9 @@ public class QueryWikiService implements WikiService {
               .orElseGet(() -> xwikiCfg.getProperty("xwiki.url.protocol", "http")))
           .host(StreamEx.ofReversed(host.split("://")).findFirst().orElse(host))
           .port(Integer.parseInt(xwikiCfg.getProperty("xwiki.url.port", "-1")))
-          .build().toUri().toURL().toURI());
-    } catch (NumberFormatException | MalformedURLException | URISyntaxException exc) {
-      LOGGER.warn("toURI - failed for [{}]", host, exc);
+          .build().toUri());
+    } catch (IllegalArgumentException | IllegalStateException exc) {
+      LOGGER.warn("toUri - failed for [{}]", host, exc);
       return Optional.empty();
     }
   }
@@ -183,14 +178,6 @@ public class QueryWikiService implements WikiService {
   public void refresh() {
     LOGGER.info("refresh");
     cache.set(null);
-  }
-
-  private URL toURL(URI uri) {
-    try {
-      return uri.toURL();
-    } catch (MalformedURLException exc) {
-      throw new IllegalStateException("should not happen", exc);
-    }
   }
 
 }

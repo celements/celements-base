@@ -11,11 +11,13 @@ import java.util.stream.Stream;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
@@ -34,6 +36,7 @@ public class WikiUpdater {
   private static final Logger LOGGER = LoggerFactory.getLogger(WikiUpdater.class);
   private static final int THREAD_COUNT = 11;
 
+  private final ConfigurationSource cfgSrc;
   private final XWikiConfigSource xwikiCfg;
   private final XWikiProvider wikiProvider;
   private final Execution execution;
@@ -41,7 +44,12 @@ public class WikiUpdater {
   private final ConcurrentHashMap<WikiReference, CompletableFuture<Void>> wikiUpdates;
 
   @Inject
-  public WikiUpdater(XWikiConfigSource xwikiCfg, XWikiProvider wikiProvider, Execution execution) {
+  public WikiUpdater(
+      @Named("allproperties") ConfigurationSource cfgSrc,
+      XWikiConfigSource xwikiCfg,
+      XWikiProvider wikiProvider,
+      Execution execution) {
+    this.cfgSrc = cfgSrc;
     this.xwikiCfg = xwikiCfg;
     this.wikiProvider = wikiProvider;
     this.execution = execution;
@@ -78,7 +86,10 @@ public class WikiUpdater {
         getAllFutures().forEach(CompletableFuture::join);
         LOGGER.debug("runMigrations - wiki updates finished, starting migrations");
         getMigrationManager(getContext()).startMigrations(getContext());
-        if ("1".equals(xwikiCfg.getProperty("xwiki.store.migration.exitAfterEnd", "0"))) {
+        if (Boolean.TRUE.equals(Optional
+            .ofNullable(cfgSrc.getProperty("celements.init.migration.exitAfterEnd", Boolean.class))
+            .orElseGet(() -> "1".equals(xwikiCfg.getProperty(
+                "xwiki.store.migration.exitAfterEnd", "0"))))) {
           LOGGER.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
           System.exit(0); // so brutal
         }

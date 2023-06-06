@@ -19,9 +19,7 @@
  */
 package com.xpn.xwiki.internal;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.function.Supplier;
+import java.net.URI;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
@@ -30,7 +28,6 @@ import org.springframework.stereotype.Component;
 import org.xwiki.context.ExecutionContext;
 
 import com.celements.wiki.WikiService;
-import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -53,13 +50,7 @@ import com.xpn.xwiki.web.XWikiURLFactoryService;
 @Component
 public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider {
 
-  private static final Supplier<URL> LOCALHOST = Suppliers.memoize(() -> {
-    try {
-      return new URL("localhost");
-    } catch (MalformedURLException exc) {
-      throw new IllegalArgumentException(exc);
-    }
-  });
+  private static final URI LOCALHOST = URI.create("localhost");
 
   private final ServletContext servletContext;
   private final WikiService wikiService;
@@ -82,13 +73,13 @@ public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider
     ctx.setEngineContext(new XWikiServletContext(servletContext));
     ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
     ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
-    ctx.setURL(execContext.computeIfAbsent(XWikiRequest.URL_EXEC_CONTEXT_KEY,
-        () -> wikiService.streamUrlsForWiki(XWikiConstant.MAIN_WIKI)
-            .findFirst().orElseGet(LOCALHOST)));
+    ctx.setUri(execContext.computeIfAbsent(XWikiRequest.URI_EXEC_CONTEXT_KEY,
+        () -> wikiService.streamUrisForWiki(XWikiConstant.MAIN_WIKI)
+            .findFirst().orElse(LOCALHOST)));
     ctx.setRequest(execContext.computeIfAbsent(XWikiRequest.EXEC_CONTEXT_KEY, () -> {
       XWikiServletRequestStub stub = new XWikiServletRequestStub();
-      stub.setHost(ctx.getURL().getHost());
-      stub.setScheme(ctx.getURL().getProtocol());
+      stub.setHost(ctx.getUri().getHost());
+      stub.setScheme(ctx.getUri().getScheme());
       return new XWikiServletRequest(stub);
     }));
     ctx.setResponse(execContext.computeIfAbsent(XWikiResponse.EXEC_CONTEXT_KEY, () -> {

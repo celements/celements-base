@@ -21,6 +21,9 @@
 
 package com.xpn.xwiki;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,9 +113,9 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private int mode;
 
-  private URL url;
+  private URI uri;
 
-  private XWikiURLFactory URLFactory;
+  private XWikiURLFactory urlFactory;
 
   private int cacheDuration = 0;
 
@@ -375,20 +378,44 @@ public class XWikiContext extends Hashtable<Object, Object> {
     this.mode = mode;
   }
 
+  /**
+   * @deprecated since 6.0 instead use {@link #getUri()}
+   */
+  @Deprecated
   public URL getURL() {
-    return this.url;
+    try {
+      return getUri().toURL();
+    } catch (MalformedURLException exc) {
+      throw new IllegalArgumentException(exc);
+    }
   }
 
+  public URI getUri() {
+    return this.uri;
+  }
+
+  /**
+   * @deprecated since 6.0 instead use {@link #getUri()}
+   */
+  @Deprecated
   public void setURL(URL url) {
-    this.url = url;
+    try {
+      setUri(url.toURI());
+    } catch (URISyntaxException exc) {
+      throw new IllegalArgumentException(exc);
+    }
+  }
+
+  public void setUri(URI uri) {
+    this.uri = uri;
   }
 
   public XWikiURLFactory getURLFactory() {
-    return this.URLFactory;
+    return this.urlFactory;
   }
 
-  public void setURLFactory(XWikiURLFactory URLFactory) {
-    this.URLFactory = URLFactory;
+  public void setURLFactory(XWikiURLFactory urlFactory) {
+    this.urlFactory = urlFactory;
   }
 
   public XWikiForm getForm() {

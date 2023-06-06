@@ -403,7 +403,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         "XWiki.XWikiPreferences", "plugin"));
 
     // Make sure these classes exists
-    // TODO needed here on every startup?
     initializeMandatoryClasses(context);
 
     // Add a notification for notifications
@@ -3705,13 +3704,14 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   /**
-   * @deprecated use {@link WikiService#streamUrlsForWiki(WikiReference)}
+   * @deprecated use {@link WikiService#streamUrisForWiki(WikiReference)}
    */
   @Deprecated
   public URL getServerURL(String wikiName, XWikiContext context) throws MalformedURLException {
     if (!Strings.isNullOrEmpty(wikiName)) {
       return Utils.getComponent(WikiService.class)
-          .streamUrlsForWiki(new WikiReference(wikiName))
+          .streamUrisForWiki(new WikiReference(wikiName))
+          .map(rethrowFunction(URI::toURL))
           .findFirst().orElse(null);
     }
     return null;

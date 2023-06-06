@@ -4,6 +4,7 @@ import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,14 +99,16 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
     getContext().setRequest(requestMock);
 
     // Create sub-wikis.
-    expect(getMock(WikiService.class).streamUrlsForWiki(new WikiReference("wiki1")))
-        .andAnswer(() -> Stream.of(new URL("http://wiki1.celements.com")))
+    expect(getMock(WikiService.class).streamUrisForWiki(new WikiReference("wiki1")))
+        .andAnswer(() -> Stream.of(URI.create("http://wiki1.celements.com")))
         .anyTimes();
-    expect(getMock(WikiService.class).streamUrlsForWiki(new WikiReference("wiki2")))
-        .andAnswer(() -> Stream.of(new URL("http://wiki2.celements.com"), new URL("http://a.ch")))
+    expect(getMock(WikiService.class).streamUrisForWiki(new WikiReference("wiki2")))
+        .andAnswer(() -> Stream.of(
+            URI.create("http://wiki2.celements.com"),
+            URI.create("http://a.ch")))
         .anyTimes();
 
-    getContext().setURL(new URL("http://celements.com/view/InitialSpace/InitialPage"));
+    getContext().setUri(URI.create("http://celements.com/view/InitialSpace/InitialPage"));
   }
 
   @Test

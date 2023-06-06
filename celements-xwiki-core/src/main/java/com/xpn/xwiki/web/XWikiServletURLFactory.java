@@ -20,7 +20,10 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -170,7 +173,8 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
         return new URL(surl);
       }
     }
-    return wikiService.streamUrlsForWiki(new WikiReference(xwikidb))
+    return wikiService.streamUrisForWiki(new WikiReference(xwikidb))
+        .map(rethrowFunction(URI::toURL))
         .findFirst().orElse(serverURL);
   }
 
