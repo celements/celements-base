@@ -5,13 +5,15 @@
 <hibernate-mapping>
   <query name="getAllWikis">
     select doc.name, host.value
-    from XWikiDocument as doc, BaseObject as obj, StringProperty as host
+    from XWikiDocument as doc, BaseObject as obj, IntegerProperty as secure, StringProperty as host
     where doc.space='XWiki'
       and doc.name like 'XWikiServer%'
       and doc.name&lt;&gt;'XWikiServerClassTemplate' 
       and obj.name=doc.fullName 
       and obj.className='XWiki.XWikiServerClass'
+      and obj.id=secure.id.id
       and obj.id=host.id.id
+      and secure.id.name='secure'
       and host.id.name='server'
     order by doc.name, obj.number
   </query>

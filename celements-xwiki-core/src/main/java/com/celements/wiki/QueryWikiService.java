@@ -1,5 +1,7 @@
 package com.celements.wiki;
 
+import static com.celements.logging.LogUtils.*;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Predicates.*;
 import static com.google.common.collect.ImmutableSetMultimap.*;
 
@@ -32,8 +34,10 @@ import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
 import com.celements.common.lambda.Try;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.xpn.xwiki.XWikiConfigSource;
@@ -49,6 +53,8 @@ public class QueryWikiService implements WikiService,
 
   private static final Logger LOGGER = LoggerFactory.getLogger(QueryWikiService.class);
 
+  private static final ImmutableSet<String> LOCAL_HOSTS = ImmutableSet.of(
+      "localhost", "127.0.0.1", "::1");
   private static final ImmutableList<WikiReference> WIKI_PRIORITY = ImmutableList.of(
       XWikiConstant.MAIN_WIKI, XWikiConstant.CENTRAL_WIKI);
   public static final Comparator<WikiReference> WIKI_MAIN_FIRST_COMPARATOR = Ordering
@@ -116,9 +122,11 @@ public class QueryWikiService implements WikiService,
         .<Object[]>execute())
         .mapToEntry(
             row -> row[0].toString(), // doc.name
-            row -> row[1].toString()) // host.value
+            row -> toURL(
+                (Integer) row[1], // secure.value
+                row[2].toString())) // host.value
         .flatMapKeys(this::toWikiRef)
-        .flatMapValues(this::toURL)
+        .flatMapValues(s -> s)
         .collect(toImmutableSetMultimap(Entry::getKey, Entry::getValue));
     LOGGER.info("queryAllWikis - {}", ret);
     return ret;
@@ -138,16 +146,41 @@ public class QueryWikiService implements WikiService,
     return wikiRef;
   }
 
-  private Stream<URL> toURL(String host) {
+  private Stream<URL> toURL(Integer secure, String host) {
     try {
       return Stream.of(UriComponentsBuilder.newInstance()
-          .scheme(xwikiCfg.getProperty("xwiki.url.protocol", "http"))
+          .scheme(Optional.ofNullable(secure)
+              .map(i -> (i > 0) ? "https" : "http")
+              .orElseGet(() -> xwikiCfg.getProperty("xwiki.url.protocol", "http")))
           .host(StreamEx.ofReversed(host.split("://")).findFirst().orElse(host))
           .port(Integer.parseInt(xwikiCfg.getProperty("xwiki.url.port", "-1")))
           .build().toUri().toURL());
     } catch (MalformedURLException e) {
       return Stream.empty();
     }
+  }
+
+  @Override
+  public WikiReference determineWiki(URL url) throws WikiMissingException {
+    String host = Strings.nullToEmpty(url.getHost());
+    checkArgument(!host.isEmpty());
+    if (!xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
+      return XWikiConstant.MAIN_WIKI;
+    }
+    WikiReference wikiRef = getWikiForHost(host)
+        .map(Optional::of) // replace with #or in Java9+
+        // no wiki found based on the full host name, try to use the first part as the wiki name
+        .orElseGet(() -> getWikiFromDomain(host))
+        .orElseThrow(() -> new WikiMissingException("The wiki " + host + " does not exist"));
+    LOGGER.debug("determineWiki - {}", wikiRef);
+    return wikiRef;
+  }
+
+  private Optional<WikiReference> getWikiFromDomain(String host) {
+    return Optional.of(host).filter(h -> h.indexOf(".") > 0)
+        .map(h -> new WikiReference(h.substring(0, h.indexOf("."))))
+        .filter(log(this::hasWiki)
+            .warn(LOGGER).msg("using wiki domain fallback"));
   }
 
   public void refresh() {
