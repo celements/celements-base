@@ -2,7 +2,6 @@ package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.base.Preconditions.*;
-import static com.xpn.xwiki.XWikiException.*;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -23,7 +22,6 @@ import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiException;
 
 @Component
 public class XWikiProvider {
@@ -49,7 +47,7 @@ public class XWikiProvider {
   }
 
   @NotNull
-  public XWiki await(Duration awaitDuration) throws XWikiException {
+  public XWiki await(Duration awaitDuration) throws ExecutionException {
     return getFromEContext()
         .map(Optional::of) // replace with #or in Java9+
         .orElseGet(rethrow(() -> getFromSContext(awaitDuration)))
@@ -66,7 +64,7 @@ public class XWikiProvider {
         .map(CompletableFuture::join);
   }
 
-  private Optional<XWiki> getFromSContext(Duration awaitDuration) throws XWikiException {
+  private Optional<XWiki> getFromSContext(Duration awaitDuration) throws ExecutionException {
     try {
       LOGGER.trace("getFromSContext");
       CompletableFuture<XWiki> future = getXWikiServletFuture();
@@ -76,9 +74,8 @@ public class XWikiProvider {
           .map(duration -> duration.get(ChronoUnit.SECONDS))
           .orElse(0L);
       return Optional.ofNullable(getXWikiServletFuture().get(awaitSeconds, TimeUnit.SECONDS));
-    } catch (ExecutionException | TimeoutException exc) {
-      throw new XWikiException(MODULE_XWIKI, ERROR_XWIKI_INIT_FAILED,
-          "Could not initialize main XWiki context", exc);
+    } catch (TimeoutException exc) {
+      throw new ExecutionException("timed out awaiting XWiki", exc);
     } catch (InterruptedException iexc) {
       LOGGER.warn("getFromSContext - interrupted", iexc);
       Thread.currentThread().interrupt();

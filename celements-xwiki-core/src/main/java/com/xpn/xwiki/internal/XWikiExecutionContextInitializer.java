@@ -1,6 +1,7 @@
 package com.xpn.xwiki.internal;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
@@ -11,7 +12,6 @@ import org.xwiki.context.ExecutionContextInitializer;
 
 import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiException;
 
 @Component
 public class XWikiExecutionContextInitializer implements ExecutionContextInitializer {
@@ -28,7 +28,7 @@ public class XWikiExecutionContextInitializer implements ExecutionContextInitial
           ? wikiProvider.get().orElse(null)
           : wikiProvider.await(Duration.ofHours(1));
       context.setProperty(XWiki.EXEC_CONTEXT_KEY, xwiki);
-    } catch (XWikiException xwe) {
+    } catch (ExecutionException xwe) {
       throw new ExecutionContextException("failed initializing XWiki", xwe);
     }
   }

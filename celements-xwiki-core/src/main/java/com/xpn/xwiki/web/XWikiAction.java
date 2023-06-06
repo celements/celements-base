@@ -127,6 +127,9 @@ public abstract class XWikiAction extends Action {
       }
       // From this line forward all information can be found in the XWiki Context.
       return execute(context);
+    } catch (Exception exc) {
+      LOG.error("execute - failed", exc);
+      return null;
     } finally {
       requestInitializer.cleanup();
     }
@@ -160,8 +163,8 @@ public abstract class XWikiAction extends Action {
         }
         try {
           xwiki.getNotificationManager().preverify(context.getDoc(), context.getAction(), context);
-        } catch (Throwable e) {
-          LOG.error("Exception while pre-notifying", e);
+        } catch (Exception exc) {
+          LOG.error("execute - failed on notfication preverify", exc);
         }
         String renderResult = null;
         XWikiDocument doc = context.getDoc();
@@ -180,7 +183,7 @@ public abstract class XWikiAction extends Action {
           }
         }
         return null;
-      } catch (Throwable e) {
+      } catch (Exception e) {
         if (e instanceof IOException) {
           e = new XWikiException(XWikiException.MODULE_XWIKI_APP,
               XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION,
@@ -229,6 +232,9 @@ public abstract class XWikiAction extends Action {
         } catch (XWikiException ex) {
           if (ex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
             LOG.error("Connection aborted");
+          } else {
+            LOG.error("Uncaught exceptions (inner): ", e);
+            LOG.error("Uncaught exceptions (outer): ", ex);
           }
         } catch (Exception e2) {
           // I hope this never happens
@@ -249,8 +255,8 @@ public abstract class XWikiAction extends Action {
         // deprecation stage. It will be removed later.
         try {
           xwiki.getNotificationManager().verify(context.getDoc(), context.getAction(), context);
-        } catch (Throwable e) {
-          e.printStackTrace();
+        } catch (Exception exc) {
+          LOG.error("execute - failed on notfication verify", exc);
         }
         // This is the new notification mechanism, implemented as a Plexus Component.
         // For the moment we're sending the XWiki context as the data, but this will be
@@ -259,7 +265,7 @@ public abstract class XWikiAction extends Action {
         try {
           ObservationManager om = Utils.getComponent(ObservationManager.class);
           om.notify(new ActionExecutionEvent(context.getAction()), context.getDoc(), context);
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
           LOG.error("Cannot send action notifications for document [" + docName + " using action ["
               + context.getAction() + "]", ex);
         }
