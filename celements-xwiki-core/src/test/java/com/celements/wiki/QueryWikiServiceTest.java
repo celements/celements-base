@@ -33,15 +33,15 @@ public class QueryWikiServiceTest extends AbstractComponentTest {
   @Test
   public void test_getWikiMap() throws Exception {
     expectWikiQuery(ImmutableList.of(
-        new String[] { "XWikiServerAtest", "a1.host" },
-        new String[] { "XWikiServerBtest", "b1.host" },
-        new String[] { "XWikiServerAtest", "https://a2.host" }),
+        new Object[] { "XWikiServerAtest", null, "a1.host" },
+        new Object[] { "XWikiServerBtest", 0, "b1.host" },
+        new Object[] { "XWikiServerAtest", 1, "https://a2.host" }),
         1);
     replayDefault();
     assertEquals(ImmutableSetMultimap.of(
         new WikiReference("atest"), new URL("http://a1.host"),
         new WikiReference("btest"), new URL("http://b1.host"),
-        new WikiReference("atest"), new URL("http://a2.host")),
+        new WikiReference("atest"), new URL("https://a2.host")),
         service.getWikiMap());
     verifyDefault();
   }
@@ -78,12 +78,12 @@ public class QueryWikiServiceTest extends AbstractComponentTest {
     verifyDefault();
   }
 
-  private void expectWikiQuery(List<String[]> result, int times) throws QueryException {
+  private void expectWikiQuery(List<Object[]> result, int times) throws QueryException {
     Query queryMock = createDefaultMock(Query.class);
     expect(getMock(QueryManager.class).getNamedQuery("getAllWikis"))
         .andReturn(queryMock).times(times);
     expect(queryMock.setWiki(XWikiConstant.MAIN_WIKI.getName())).andReturn(queryMock).times(times);
-    expect(queryMock.<String[]>execute()).andReturn(result).times(times);
+    expect(queryMock.<Object[]>execute()).andReturn(result).times(times);
   }
 
 }
