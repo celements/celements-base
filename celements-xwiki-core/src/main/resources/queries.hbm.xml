@@ -4,7 +4,7 @@
 	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
   <query name="getAllWikis">
-    select doc.name, host.value
+    select doc.name, secure.value, host.value
     from XWikiDocument as doc, BaseObject as obj, IntegerProperty as secure, StringProperty as host
     where doc.space='XWiki'
       and doc.name like 'XWikiServer%'
