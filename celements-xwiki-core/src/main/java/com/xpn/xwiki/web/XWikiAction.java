@@ -43,7 +43,7 @@ import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
 import org.xwiki.velocity.VelocityManager;
 
-import com.celements.init.XWikiRequestInitializer;
+import com.celements.init.CelementsRequestFilter;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -115,12 +115,13 @@ public abstract class XWikiAction extends Action {
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest req,
       HttpServletResponse resp) throws Exception {
     XWikiContext context = null;
-    XWikiRequestInitializer requestInitializer = Utils.getComponent(XWikiRequestInitializer.class);
+    CelementsRequestFilter requestFilter = Utils.getComponent(CelementsRequestFilter.class);
     try {
       // Initialize the XWiki Context which is the main object used to pass information across
       // classes/methods. It's also wrapping the request, response, and all container objects
       // in general.
-      context = requestInitializer.init(mapping.getName(), req, resp);
+      context = requestFilter.preExecute(mapping.getName(), req, resp)
+          .getProperty(XWikiContext.EXEC_CONTEXT_KEY, XWikiContext.class);
       if (form != null) {
         form.reset(mapping, context.getRequest());
         context.setForm((XWikiForm) form);
@@ -131,7 +132,7 @@ public abstract class XWikiAction extends Action {
       LOG.error("execute - failed", exc);
       return null;
     } finally {
-      requestInitializer.cleanup();
+      requestFilter.postExecute();
     }
   }
 

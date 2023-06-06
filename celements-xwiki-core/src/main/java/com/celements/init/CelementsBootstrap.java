@@ -35,9 +35,9 @@ import com.xpn.xwiki.web.Utils;
 @Immutable
 @Singleton
 @Component
-public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
+public class CelementsBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(XWikiBootstrap.class);
+  protected static final Logger LOGGER = LoggerFactory.getLogger(CelementsBootstrap.class);
 
   private static final AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
 
@@ -51,7 +51,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
   private final ConfigurationSource cfgSrc;
 
   @Inject
-  public XWikiBootstrap(
+  public CelementsBootstrap(
       ServletContext servletContext,
       Execution execution,
       ExecutionContextManager executionManager,
@@ -89,7 +89,7 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
         LOGGER.info("XWiki published");
       } catch (Exception exc) {
         xwikiFuture.completeExceptionally(exc);
-        throw new XWikiBootstrapException(exc);
+        throw new CelementsBootstrapException(exc);
       }
     }
   }
@@ -130,11 +130,11 @@ public class XWikiBootstrap implements ApplicationListener<CelementsLifecycleEve
     }
   }
 
-  public class XWikiBootstrapException extends RuntimeException {
+  public class CelementsBootstrapException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    XWikiBootstrapException(Throwable cause) {
+    CelementsBootstrapException(Throwable cause) {
       super(cause);
     }
 

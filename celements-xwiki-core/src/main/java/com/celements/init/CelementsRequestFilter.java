@@ -38,9 +38,9 @@ import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiServletResponse;
 
 @Component
-public class XWikiRequestInitializer {
+public class CelementsRequestFilter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(XWikiRequestInitializer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CelementsRequestFilter.class);
 
   private final Execution execution;
   private final ExecutionContextManager execContextManager;
@@ -50,7 +50,7 @@ public class XWikiRequestInitializer {
   private final XWikiProvider xwikiProvider;
 
   @Inject
-  public XWikiRequestInitializer(
+  public CelementsRequestFilter(
       Execution execution,
       ExecutionContextManager execContextManager,
       ServletContainerInitializer containerInitializer,
@@ -65,9 +65,9 @@ public class XWikiRequestInitializer {
     this.xwikiProvider = xwikiProvider;
   }
 
-  public XWikiContext init(String action, HttpServletRequest request, HttpServletResponse response)
-      throws MalformedURLException, ServletContainerException, ExecutionContextException,
-      WikiMissingException, ExecutionException {
+  public ExecutionContext preExecute(String action, HttpServletRequest request,
+      HttpServletResponse response) throws MalformedURLException, ServletContainerException,
+      ExecutionContextException, ExecutionException, WikiMissingException {
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
     execution.setContext(eContext);
     containerInitializer.initializeRequest(request);
@@ -83,7 +83,7 @@ public class XWikiRequestInitializer {
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
     xwiki.prepareResources(xContext);
     LOGGER.info("request initialized");
-    return xContext;
+    return eContext;
   }
 
   private ExecutionContext createExecContextForRequest(String action,
@@ -122,8 +122,8 @@ public class XWikiRequestInitializer {
     }
   }
 
-  public void cleanup() {
-    LOGGER.info("cleanup");
+  public void postExecute() {
+    LOGGER.info("postExecute");
     containerInitializer.cleanup();
     execution.removeContext();
   }
