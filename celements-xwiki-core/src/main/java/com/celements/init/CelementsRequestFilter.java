@@ -3,7 +3,6 @@ package com.celements.init;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.xpn.xwiki.XWikiExecutionProp.*;
 
-import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
@@ -68,16 +67,12 @@ public class CelementsRequestFilter {
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
-    execution.setContext(eContext);
     containerInitializer.initializeRequest(request);
     containerInitializer.initializeResponse(response);
     containerInitializer.initializeSession(request);
     execContextManager.initialize(eContext);
-    URI uri = eContext.get(XWIKI_REQUEST_URI).orElseThrow(IllegalStateException::new);
-    WikiReference wikiRef = wikiService.determineWiki(uri);
+    WikiReference wikiRef = eContext.get(WIKI).orElseThrow(IllegalStateException::new);
     XWikiContext xContext = eContext.get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
-    xContext.setDatabase(wikiRef.getName());
-    xContext.setOriginalDatabase(wikiRef.getName());
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
     xwiki.prepareResources(xContext);
     LOGGER.info("request initialized");
@@ -85,9 +80,12 @@ public class CelementsRequestFilter {
   }
 
   private ExecutionContext createExecContextForRequest(String action,
-      HttpServletRequest request, HttpServletResponse response) {
+      HttpServletRequest request, HttpServletResponse response)
+      throws WikiMissingException {
     ExecutionContext context = new ExecutionContext();
+    execution.setContext(context);
     XWikiRequest xRequest = new XWikiServletRequest(request);
+    context.set(WIKI, wikiService.determineWiki(xRequest.getUri()));
     context.set(XWIKI_REQUEST, xRequest);
     context.set(XWIKI_REQUEST_ACTION, action);
     context.set(XWIKI_REQUEST_URI, xRequest.getUri());

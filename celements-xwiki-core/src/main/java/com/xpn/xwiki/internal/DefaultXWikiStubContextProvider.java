@@ -74,6 +74,7 @@ public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider
     ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
     WikiReference wikiRef = execContext.computeIfAbsent(WIKI, () -> XWikiConstant.MAIN_WIKI);
     ctx.setDatabase(wikiRef.getName());
+    ctx.setOriginalDatabase(wikiRef.getName());
     ctx.setUri(execContext.computeIfAbsent(XWIKI_REQUEST_URI,
         () -> wikiService.streamUrisForWiki(wikiRef).findFirst().orElse(LOCALHOST)));
     ctx.setRequest(execContext.computeIfAbsent(XWIKI_REQUEST, () -> {
