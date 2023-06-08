@@ -106,7 +106,7 @@ public class QueryWikiService implements WikiService {
         // no wiki found based on the full host name, try to use the first part as the wiki name
         .orElseGet(() -> getWikiFromDomain(host))
         .orElseThrow(() -> new WikiMissingException("The wiki " + host + " does not exist"));
-    LOGGER.debug("determineWiki - {}", wikiRef);
+    LOGGER.debug("determineWiki - [{}] for [{}]", wikiRef.getName(), url);
     return wikiRef;
   }
 
