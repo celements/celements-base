@@ -3,11 +3,16 @@ package com.celements.query;
 import static com.google.common.base.MoreObjects.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
+import static java.util.stream.Collectors.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -23,6 +28,7 @@ import org.xwiki.query.QueryException;
 
 import com.celements.model.access.ContextExecutor;
 import com.celements.model.context.ModelContext;
+import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiException;
@@ -47,11 +53,21 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
 
   @Override
   public <T> List<List<T>> executeReadSql(Class<T> type, String sql) throws XWikiException {
+    List<List<T>> result = new ArrayList<>();
+    executeReadSql(type, sql, result::add);
+    return result;
+  }
+
+  @Override
+  public <T> void executeReadSql(Class<T> type, String sql, Consumer<List<T>> action)
+      throws XWikiException {
     Session session = null;
     try {
       session = getNewHibSession();
-      List<?> result = session.createSQLQuery(sql).list();
-      return harmoniseResult(type, result);
+      Iterator<?> iter = session.createSQLQuery(sql).iterate();
+      while (iter.hasNext()) {
+        action.accept(parseRow(type, iter));
+      }
     } catch (HibernateException | ClassCastException exc) {
       throw new XWikiException(0, 0, "error while executing or parsing sql", exc);
     } finally {
@@ -61,21 +77,16 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
     }
   }
 
-  private <T> List<List<T>> harmoniseResult(Class<T> type, List<?> result)
-      throws ClassCastException {
-    List<List<T>> ret = new ArrayList<>();
-    for (Object elem : result) {
-      List<T> resultRow = new ArrayList<>();
-      if ((elem != null) && elem.getClass().isArray()) { // multiple columns selected
-        for (Object col : ((Object[]) elem)) {
-          resultRow.add(cast(type, col));
-        }
-      } else { // one column selected
-        resultRow.add(cast(type, elem));
+  private <T> List<T> parseRow(Class<T> type, Object obj) throws ClassCastException {
+    List<T> row = new ArrayList<>();
+    if ((obj != null) && obj.getClass().isArray()) { // multiple columns selected
+      for (Object col : ((Object[]) obj)) {
+        row.add(cast(type, col));
       }
-      ret.add(resultRow);
+    } else { // one column selected
+      row.add(cast(type, obj));
     }
-    return ret;
+    return row;
   }
 
   private <T> T cast(Class<T> type, Object elem) throws ClassCastException {
@@ -153,12 +164,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
 
   @Override
   public DocumentReference executeAndGetDocRef(Query query) throws QueryException {
-    DocumentReference ret = null;
-    List<DocumentReference> list = executeAndGetDocRefs(query);
-    if (list.size() > 0) {
-      ret = list.get(0);
-    }
-    return ret;
+    return executeAndGetDocRefs(query).stream().findFirst().orElse(null);
   }
 
   @Override
@@ -189,7 +195,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
       throws XWikiException {
     String sql = getIndexExistSql(modelUtils.getDatabaseName(wikiRef), checkNotNull(emptyToNull(
         table)), checkNotNull(emptyToNull(name)));
-    return executeReadSql(String.class, sql).size() > 0;
+    return !executeReadSql(String.class, sql).isEmpty();
   }
 
   private String getIndexExistSql(String database, String table, String name) {

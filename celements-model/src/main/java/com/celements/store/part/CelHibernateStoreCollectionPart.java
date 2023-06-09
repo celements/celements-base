@@ -67,7 +67,6 @@ public class CelHibernateStoreCollectionPart {
         session.update("com.xpn.xwiki.objects.BaseObject", object);
       }
       /*
-       * if (stats) session.saveOrUpdate(object); else
        * session.saveOrUpdate((String)"com.xpn.xwiki.objects.BaseObject", (Object)object);
        */
       BaseClass bclass = object.getXClass(context);

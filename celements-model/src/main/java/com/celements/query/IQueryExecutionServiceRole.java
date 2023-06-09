@@ -2,7 +2,9 @@ package com.celements.query;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
@@ -17,26 +19,32 @@ import com.xpn.xwiki.XWikiException;
 public interface IQueryExecutionServiceRole {
 
   @NotNull
-  public List<List<String>> executeReadSql(@NotNull String sql) throws XWikiException;
+  List<List<String>> executeReadSql(@NotNull String sql) throws XWikiException;
 
   @NotNull
-  public <T> List<List<T>> executeReadSql(@NotNull Class<T> type, @NotNull String sql)
+  <T> List<List<T>> executeReadSql(@NotNull Class<T> type, @NotNull String sql)
       throws XWikiException;
 
-  public int executeWriteSQL(String sql) throws XWikiException;
+  <T> void executeReadSql(@NotNull Class<T> type, @NotNull String sql,
+      @NotNull Consumer<List<T>> action) throws XWikiException;
 
-  public List<Integer> executeWriteSQLs(List<String> sqls) throws XWikiException;
+  int executeWriteSQL(@NotNull String sql) throws XWikiException;
 
-  public int executeWriteHQL(String hql, Map<String, Object> binds) throws XWikiException;
+  List<Integer> executeWriteSQLs(@NotNull List<String> sqls) throws XWikiException;
 
-  public int executeWriteHQL(String hql, Map<String, Object> binds, WikiReference wikiRef)
+  int executeWriteHQL(@NotNull String hql, @NotNull Map<String, Object> binds)
       throws XWikiException;
 
-  public DocumentReference executeAndGetDocRef(Query query) throws QueryException;
+  int executeWriteHQL(@NotNull String hql, @NotNull Map<String, Object> binds,
+      @Nullable WikiReference wikiRef) throws XWikiException;
 
-  public List<DocumentReference> executeAndGetDocRefs(Query query) throws QueryException;
+  @Nullable
+  DocumentReference executeAndGetDocRef(@NotNull Query query) throws QueryException;
 
-  public boolean existsIndex(@NotNull WikiReference wikiRef, @NotNull String table,
+  @NotNull
+  List<DocumentReference> executeAndGetDocRefs(@NotNull Query query) throws QueryException;
+
+  boolean existsIndex(@NotNull WikiReference wikiRef, @NotNull String table,
       @NotNull String name) throws XWikiException;
 
 }
