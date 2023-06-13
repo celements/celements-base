@@ -1,7 +1,7 @@
 package com.celements.init;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
-import static com.xpn.xwiki.XWikiExecutionProp.*;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -22,13 +22,13 @@ import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.execution.XWikiExecutionProp;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.XWikiExecutionProp;
 import com.xpn.xwiki.store.migration.XWikiMigrationManagerInterface;
 import com.xpn.xwiki.util.AbstractXWikiRunnable;
 

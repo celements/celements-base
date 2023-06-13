@@ -116,7 +116,7 @@ public class AnnotationEventConverterTest extends AbstractComponentTest {
   @Test
   public void test_serializeData_XWikiContext() {
     XWikiContext context = getContext();
-    String database = "myDB";
+    String database = "mydb";
     context.setDatabase(database);
     LocalEventData localEvent = new LocalEventData();
     localEvent.setData(context);

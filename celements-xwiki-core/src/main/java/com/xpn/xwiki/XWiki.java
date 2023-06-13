@@ -21,7 +21,7 @@ package com.xpn.xwiki;
 
 import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
-import static com.xpn.xwiki.XWikiExecutionProp.*;
+import static com.celements.execution.XWikiExecutionProp.*;
 
 import java.io.File;
 import java.io.IOException;

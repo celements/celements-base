@@ -20,9 +20,9 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
-import static com.xpn.xwiki.XWikiExecutionProp.*;
 
 import java.io.IOException;
 import java.util.Vector;

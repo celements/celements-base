@@ -19,7 +19,7 @@
  */
 package com.xpn.xwiki.store;
 
-import static com.xpn.xwiki.XWikiExecutionProp.*;
+import static com.celements.execution.XWikiExecutionProp.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;

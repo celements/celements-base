@@ -1,10 +1,12 @@
-package com.xpn.xwiki;
+package com.celements.execution;
 
 import java.net.URI;
 
 import org.xwiki.context.ExecutionContext.Property;
 import org.xwiki.model.reference.WikiReference;
 
+import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiResponse;

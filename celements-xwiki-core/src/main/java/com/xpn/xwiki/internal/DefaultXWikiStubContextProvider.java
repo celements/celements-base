@@ -19,7 +19,7 @@
  */
 package com.xpn.xwiki.internal;
 
-import static com.xpn.xwiki.XWikiExecutionProp.*;
+import static com.celements.execution.XWikiExecutionProp.*;
 
 import java.net.URI;
 

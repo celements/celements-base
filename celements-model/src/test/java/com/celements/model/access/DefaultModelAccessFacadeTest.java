@@ -1579,7 +1579,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Test
   public void test_setProperty_getProperty_customField() throws Exception {
     ClassField<DocumentReference> field = FIELD_MY_DOCREF;
-    DocumentReference toStoreRef = new DocumentReference("myDB", "mySpace", "myDoc");
+    DocumentReference toStoreRef = new DocumentReference("mydb", "mySpace", "myDoc");
 
     BaseClass bClass = expectNewBaseObject(field.getClassReference().getDocRef());
     expectPropertyClass(bClass, field.getName(), new StringClass());

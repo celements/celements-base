@@ -1,7 +1,7 @@
 package com.celements.init;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
-import static com.xpn.xwiki.XWikiExecutionProp.*;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;

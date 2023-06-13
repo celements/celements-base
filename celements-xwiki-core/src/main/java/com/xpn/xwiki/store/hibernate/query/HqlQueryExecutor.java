@@ -19,7 +19,7 @@
  */
 package com.xpn.xwiki.store.hibernate.query;
 
-import static com.xpn.xwiki.XWikiExecutionProp.*;
+import static com.celements.execution.XWikiExecutionProp.*;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.xpn.xwiki.internal;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
-import static com.xpn.xwiki.XWikiExecutionProp.*;
+import static com.celements.execution.XWikiExecutionProp.*;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
