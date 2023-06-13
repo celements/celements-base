@@ -42,16 +42,13 @@ public class XWikiProvider {
 
   @NotNull
   public Optional<XWiki> get() {
-    return getFromEContext()
-        .map(Optional::of) // replace with #or in Java9+
-        .orElseGet(this::getFromSContext);
+    return getFromEContext().or(this::getFromSContext);
   }
 
   @NotNull
   public XWiki await(Duration awaitDuration) throws ExecutionException {
     return getFromEContext()
-        .map(Optional::of) // replace with #or in Java9+
-        .orElseGet(rethrow(() -> getFromSContext(awaitDuration)))
+        .or(rethrow(() -> getFromSContext(awaitDuration)))
         .orElseThrow(IllegalStateException::new);
   }
 

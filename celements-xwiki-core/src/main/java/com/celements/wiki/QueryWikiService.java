@@ -100,11 +100,9 @@ public class QueryWikiService implements WikiService {
     if (!xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
       return XWikiConstant.MAIN_WIKI;
     }
-    WikiReference wikiRef = findWikis(u -> u.getHost().equals(host))
-        .findFirst()
-        .map(Optional::of) // replace with #or in Java9+
+    WikiReference wikiRef = findWikis(u -> u.getHost().equals(host)).findFirst()
         // no wiki found based on the full host name, try to use the first part as the wiki name
-        .orElseGet(() -> getWikiFromDomain(host))
+        .or(() -> getWikiFromDomain(host))
         .orElseThrow(() -> new WikiMissingException("The wiki " + host + " does not exist"));
     LOGGER.debug("determineWiki - [{}] for [{}]", wikiRef.getName(), url);
     return wikiRef;

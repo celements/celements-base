@@ -84,8 +84,7 @@ public class SpringShimComponentManager implements ComponentManager {
     ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
     try {
       return getBean(compRole)
-          .map(Optional::of) // replace with #or in Java9+
-          .orElseGet(() -> tryCast(springContext, role)) // context isn't in beanFactory
+          .or(() -> tryCast(springContext, role)) // context isn't in beanFactory
           .orElseThrow(() -> new NoSuchBeanDefinitionException(compRole.getBeanName()));
     } catch (BeansException exc) {
       throw new ComponentLookupException("lookup - [" + compRole + "] failed", exc);
