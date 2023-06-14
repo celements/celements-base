@@ -77,8 +77,10 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.bridge.event.DocumentDeletedEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
+import org.xwiki.cache.Cache;
 import org.xwiki.cache.CacheFactory;
 import org.xwiki.cache.CacheManager;
+import org.xwiki.cache.internal.DefaultCache;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
@@ -528,6 +530,17 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     } finally {
       context.setDatabase(database);
     }
+  }
+
+  /**
+   * @return the cache containing the names of the wikis already initialized.
+   * @since 1.5M2.
+   *
+   * @deprecated since 6.0, instead use {@link WikiService}
+   */
+  @Deprecated
+  public Cache<DocumentReference> getVirtualWikiCache() {
+    return new DefaultCache<>();
   }
 
   public String getWikiOwner(String servername, XWikiContext context) throws XWikiException {
@@ -5633,14 +5646,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     }
   }
 
-  private static final List<Event> LISTENER_EVENTS = new ArrayList<Event>() {
-
-    {
-      add(new DocumentCreatedEvent());
-      add(new DocumentUpdatedEvent());
-      add(new DocumentDeletedEvent());
-    }
-  };
+  private static final List<Event> LISTENER_EVENTS = List.of(
+      new DocumentCreatedEvent(),
+      new DocumentUpdatedEvent(),
+      new DocumentDeletedEvent());
 
   @Override
   public List<Event> getEvents() {
