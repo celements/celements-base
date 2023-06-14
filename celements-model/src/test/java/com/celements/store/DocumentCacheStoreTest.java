@@ -238,7 +238,7 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
 
   @Test
   public void testLoadXWikiDoc_different_contextDb_WikiRef() throws Exception {
-    getContext().setDatabase("xwikimyDB");
+    getContext().setDatabase("xwikimydb");
     DocumentReference docRef = new DocumentReference("wiki", "space", "page");
     DocumentReference expectedDocRef = References.adjustRef(docRef, DocumentReference.class,
         new WikiReference(getContext().getDatabase()));

@@ -1,5 +1,6 @@
 package com.celements.init;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.util.Optional;
@@ -21,6 +22,7 @@ import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.execution.XWikiExecutionProp;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xpn.xwiki.XWiki;
@@ -113,7 +115,7 @@ public class WikiUpdater {
   }
 
   private XWikiContext getContext() {
-    return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXEC_CONTEXT_KEY);
+    return execution.getContext().get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
 
   @PreDestroy
@@ -128,7 +130,7 @@ public class WikiUpdater {
     WikiUpdateRunnable(WikiReference wikiRef, XWiki xwiki) {
       // make XWiki available in the runnable's execution context since it's not necessarily
       // already available in the servlet context, see XWikiProvider
-      super(XWiki.EXEC_CONTEXT_KEY, xwiki);
+      super(XWikiExecutionProp.XWIKI.getName(), xwiki);
       this.wikiRef = wikiRef;
     }
 

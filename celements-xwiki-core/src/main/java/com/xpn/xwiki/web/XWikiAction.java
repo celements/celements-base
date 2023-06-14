@@ -20,6 +20,7 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
@@ -121,7 +122,7 @@ public abstract class XWikiAction extends Action {
       // classes/methods. It's also wrapping the request, response, and all container objects
       // in general.
       context = requestFilter.preExecute(mapping.getName(), req, resp)
-          .getProperty(XWikiContext.EXEC_CONTEXT_KEY, XWikiContext.class);
+          .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
       if (form != null) {
         form.reset(mapping, context.getRequest());
         context.setForm((XWikiForm) form);

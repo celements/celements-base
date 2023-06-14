@@ -1,6 +1,7 @@
 package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.time.Duration;
@@ -41,21 +42,18 @@ public class XWikiProvider {
 
   @NotNull
   public Optional<XWiki> get() {
-    return getFromEContext()
-        .map(Optional::of) // replace with #or in Java9+
-        .orElseGet(this::getFromSContext);
+    return getFromEContext().or(this::getFromSContext);
   }
 
   @NotNull
   public XWiki await(Duration awaitDuration) throws ExecutionException {
     return getFromEContext()
-        .map(Optional::of) // replace with #or in Java9+
-        .orElseGet(rethrow(() -> getFromSContext(awaitDuration)))
+        .or(rethrow(() -> getFromSContext(awaitDuration)))
         .orElseThrow(IllegalStateException::new);
   }
 
   private Optional<XWiki> getFromEContext() {
-    return getEContext().map(ctx -> ctx.getProperty(XWiki.EXEC_CONTEXT_KEY, XWiki.class));
+    return getEContext().flatMap(ctx -> ctx.get(XWIKI));
   }
 
   private Optional<XWiki> getFromSContext() {

@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.internal;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+
 import java.net.URI;
 
 import javax.inject.Inject;
@@ -26,6 +28,7 @@ import javax.servlet.ServletContext;
 
 import org.springframework.stereotype.Component;
 import org.xwiki.context.ExecutionContext;
+import org.xwiki.model.reference.WikiReference;
 
 import com.celements.wiki.WikiService;
 import com.xpn.xwiki.XWikiConstant;
@@ -33,8 +36,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.ViewAction;
-import com.xpn.xwiki.web.XWikiRequest;
-import com.xpn.xwiki.web.XWikiResponse;
 import com.xpn.xwiki.web.XWikiServletContext;
 import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiServletRequestStub;
@@ -50,7 +51,7 @@ import com.xpn.xwiki.web.XWikiURLFactoryService;
 @Component
 public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider {
 
-  private static final URI LOCALHOST = URI.create("localhost");
+  private static final URI LOCALHOST = URI.create("http://localhost");
 
   private final ServletContext servletContext;
   private final WikiService wikiService;
@@ -69,26 +70,25 @@ public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider
   @Override
   public XWikiContext createStubContext(ExecutionContext execContext) {
     XWikiContext ctx = new XWikiContext();
-    ctx.setMode(XWikiContext.MODE_SERVLET);
     ctx.setEngineContext(new XWikiServletContext(servletContext));
     ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
-    ctx.setDatabase(XWikiConstant.MAIN_WIKI.getName());
-    ctx.setUri(execContext.computeIfAbsent(XWikiRequest.URI_EXEC_CONTEXT_KEY,
-        () -> wikiService.streamUrisForWiki(XWikiConstant.MAIN_WIKI)
-            .findFirst().orElse(LOCALHOST)));
-    ctx.setRequest(execContext.computeIfAbsent(XWikiRequest.EXEC_CONTEXT_KEY, () -> {
+    WikiReference wikiRef = execContext.computeIfAbsent(WIKI, () -> XWikiConstant.MAIN_WIKI);
+    ctx.setDatabase(wikiRef.getName());
+    ctx.setOriginalDatabase(wikiRef.getName());
+    ctx.setUri(execContext.computeIfAbsent(XWIKI_REQUEST_URI,
+        () -> wikiService.streamUrisForWiki(wikiRef).findFirst().orElse(LOCALHOST)));
+    ctx.setRequest(execContext.computeIfAbsent(XWIKI_REQUEST, () -> {
       XWikiServletRequestStub stub = new XWikiServletRequestStub();
       stub.setHost(ctx.getUri().getHost());
       stub.setScheme(ctx.getUri().getScheme());
       return new XWikiServletRequest(stub);
     }));
-    ctx.setResponse(execContext.computeIfAbsent(XWikiResponse.EXEC_CONTEXT_KEY, () -> {
+    ctx.setResponse(execContext.computeIfAbsent(XWIKI_RESPONSE, () -> {
       XWikiServletResponseStub stub = new XWikiServletResponseStub();
       return new XWikiServletResponse(stub);
     }));
-    ctx.setAction(execContext.computeIfAbsent(XWikiRequest.ACTION_EXEC_CONTEXT_KEY,
-        () -> ViewAction.VIEW_ACTION));
-    ctx.setDoc(execContext.computeIfAbsent(XWikiDocument.EXEC_CONTEXT_KEY, XWikiDocument::new));
+    ctx.setAction(execContext.computeIfAbsent(XWIKI_REQUEST_ACTION, () -> ViewAction.VIEW_ACTION));
+    ctx.setDoc(execContext.computeIfAbsent(DOC, XWikiDocument::new));
     ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
     return ctx;
   }

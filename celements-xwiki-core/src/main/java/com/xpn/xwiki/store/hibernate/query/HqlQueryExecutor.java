@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.store.hibernate.query;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -158,7 +160,7 @@ public class HqlQueryExecutor implements QueryExecutor, Initializable {
   }
 
   protected XWikiContext getXContext() {
-    return (XWikiContext) getEContext().getProperty(XWikiContext.EXEC_CONTEXT_KEY);
+    return getEContext().get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
 
   protected ExecutionContext getEContext() {

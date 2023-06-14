@@ -1,9 +1,8 @@
 package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
-import static com.google.common.base.Preconditions.*;
+import static com.celements.execution.XWikiExecutionProp.*;
 
-import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
@@ -68,17 +67,12 @@ public class CelementsRequestFilter {
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
-    execution.setContext(eContext);
     containerInitializer.initializeRequest(request);
     containerInitializer.initializeResponse(response);
     containerInitializer.initializeSession(request);
     execContextManager.initialize(eContext);
-    URI uri = eContext.getProperty(XWikiRequest.URI_EXEC_CONTEXT_KEY, URI.class);
-    WikiReference wikiRef = wikiService.determineWiki(uri);
-    XWikiContext xContext = eContext.getProperty(XWikiContext.EXEC_CONTEXT_KEY, XWikiContext.class);
-    checkNotNull(xContext, "should have been initialized by XWikiStubContextInitializer");
-    xContext.setDatabase(wikiRef.getName());
-    xContext.setOriginalDatabase(wikiRef.getName());
+    WikiReference wikiRef = eContext.get(WIKI).orElseThrow(IllegalStateException::new);
+    XWikiContext xContext = eContext.get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
     xwiki.prepareResources(xContext);
     LOGGER.info("request initialized");
@@ -86,14 +80,17 @@ public class CelementsRequestFilter {
   }
 
   private ExecutionContext createExecContextForRequest(String action,
-      HttpServletRequest request, HttpServletResponse response) {
+      HttpServletRequest request, HttpServletResponse response)
+      throws WikiMissingException {
     ExecutionContext context = new ExecutionContext();
+    execution.setContext(context);
     XWikiRequest xRequest = new XWikiServletRequest(request);
-    context.setProperty(XWikiRequest.EXEC_CONTEXT_KEY, xRequest);
-    context.setProperty(XWikiRequest.ACTION_EXEC_CONTEXT_KEY, action);
-    context.setProperty(XWikiRequest.URI_EXEC_CONTEXT_KEY, xRequest.getUri());
+    context.set(WIKI, wikiService.determineWiki(xRequest.getUri()));
+    context.set(XWIKI_REQUEST, xRequest);
+    context.set(XWIKI_REQUEST_ACTION, action);
+    context.set(XWIKI_REQUEST_URI, xRequest.getUri());
     XWikiResponse xResponse = new XWikiServletResponse(response);
-    context.setProperty(XWikiResponse.EXEC_CONTEXT_KEY, xResponse);
+    context.set(XWIKI_RESPONSE, xResponse);
     return context;
   }
 

@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
+import com.celements.execution.XWikiExecutionProp;
 import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiDocumentArchive;
@@ -76,8 +77,11 @@ public class XWikiContext extends Hashtable<Object, Object> {
   @Deprecated
   public static final int MODE_GWT_DEBUG = 6;
 
-  public static final String EXEC_CONTEXT_KEY = "xwikicontext";
-  public static final String EXECUTIONCONTEXT_KEY = EXEC_CONTEXT_KEY;
+  /**
+   * @deprecated since 6.0 instead use {@link XWikiExecutionProp#XWIKI_CONTEXT}
+   */
+  @Deprecated
+  public static final String EXECUTIONCONTEXT_KEY = "xwikicontext";
 
   private static final String WIKI_KEY = "wiki";
 
@@ -371,11 +375,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public int getMode() {
-    return this.mode;
-  }
-
-  public void setMode(int mode) {
-    this.mode = mode;
+    return MODE_SERVLET;
   }
 
   /**

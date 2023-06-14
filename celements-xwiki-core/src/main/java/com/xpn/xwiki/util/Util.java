@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -41,8 +40,6 @@ import java.util.Set;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -59,8 +56,6 @@ import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.PatternMatcherInput;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.springframework.core.io.ResourceLoader;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xwiki.xml.internal.XMLScriptService;
 
 import com.xpn.xwiki.XWikiContext;
@@ -549,39 +544,6 @@ public class Util {
     return "<a href=\"\" onclick=\"document.getElementById('xwikierror" + id
         + "').style.display='block'; return false;\">" + title + "</a><div id=\"xwikierror" + id
         + "\" style=\"display: none;\"><pre class=\"xwikierror\">\n" + text + "</pre></div>";
-  }
-
-  /**
-   * API to obtain a DOM document for the specified string
-   *
-   * @param str
-   *          The parsed text
-   * @return A DOM document element corresponding to the string, or null on error
-   */
-  public org.w3c.dom.Document getDOMForString(String str) {
-    try {
-      return DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-          new InputSource(new StringReader(str)));
-    } catch (SAXException | IOException | ParserConfigurationException ex) {
-      LOG.warn("Cannot parse string:" + str, ex);
-    }
-
-    return null;
-  }
-
-  /**
-   * API to get a new DOM document
-   *
-   * @return a new DOM document element, or null on error
-   */
-  public org.w3c.dom.Document getDOMDocument() {
-    try {
-      return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-    } catch (ParserConfigurationException ex) {
-      LOG.warn("Cannot create DOM tree", ex);
-    }
-
-    return null;
   }
 
   /**

@@ -6,7 +6,7 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextInitializer;
 
-import com.xpn.xwiki.XWikiContext;
+import com.celements.execution.XWikiExecutionProp;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 
 /**
@@ -24,11 +24,8 @@ public class XWikiStubContextInitializer implements ExecutionContextInitializer 
 
   @Override
   public void initialize(ExecutionContext context) throws ExecutionContextException {
-    XWikiContext xcontext = (XWikiContext) context.getProperty(XWikiContext.EXEC_CONTEXT_KEY);
-    if (xcontext == null) {
-      XWikiContext stubContext = stubContextProvider.createStubContext(context);
-      context.setProperty(XWikiContext.EXEC_CONTEXT_KEY, stubContext);
-    }
+    context.computeIfAbsent(XWikiExecutionProp.XWIKI_CONTEXT,
+        () -> stubContextProvider.createStubContext(context));
   }
 
 }

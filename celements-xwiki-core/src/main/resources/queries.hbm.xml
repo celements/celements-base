@@ -3,20 +3,16 @@
 	"-//Hibernate/Hibernate Mapping DTD//EN"
 	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-  <query name="getAllWikis">
-    select doc.name, secure.value, host.value
-    from XWikiDocument as doc, BaseObject as obj, IntegerProperty as secure, StringProperty as host
-    where doc.space='XWiki'
-      and doc.name like 'XWikiServer%'
-      and doc.name&lt;&gt;'XWikiServerClassTemplate' 
-      and obj.name=doc.fullName 
-      and obj.className='XWiki.XWikiServerClass'
-      and obj.id=secure.id.id
-      and obj.id=host.id.id
-      and secure.id.name='secure'
-      and host.id.name='server'
-    order by doc.name, obj.number
-  </query>
+  <sql-query name="getAllWikis">
+    select doc.xwd_name, secure.xwi_value, host.xws_value
+    from xwikidoc as doc
+    join xwikiobjects as obj on obj.xwo_name = doc.xwd_fullname and obj.xwo_classname = 'XWiki.XWikiServerClass'
+    join xwikistrings as host on host.xws_id = obj.xwo_id and host.xws_name = 'server'
+    left join xwikiintegers as secure on secure.xwi_id = obj.xwo_id and secure.xwi_name = 'secure'
+    where doc.xwd_name like 'XWikiServer%'
+      and doc.xwd_name &lt;&gt; 'XWikiServerClassTemplate'
+    order by doc.xwd_name, obj.xwo_number
+  </sql-query>
   <query name="getSpaceDocsName">
     select distinct doc.name from XWikiDocument doc where doc.space=:space and (doc.hidden &lt;&gt; true or doc.hidden is null) order by doc.name asc
   </query>
