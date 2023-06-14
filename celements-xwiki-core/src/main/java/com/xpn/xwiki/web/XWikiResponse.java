@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface XWikiResponse extends HttpServletResponse {
 
+  String EXEC_CONTEXT_KEY = "xwiki.response";
+
   HttpServletResponse getHttpServletResponse();
 
   @Override
