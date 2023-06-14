@@ -4,73 +4,39 @@ import static com.google.common.base.Predicates.*;
 import static com.google.common.collect.ImmutableSet.*;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.xwiki.bridge.event.WikiCreatedEvent;
-import org.xwiki.bridge.event.WikiDeletedEvent;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
-import org.xwiki.observation.EventListener;
-import org.xwiki.observation.event.Event;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
-import com.celements.common.lambda.Try;
-import com.google.common.collect.ImmutableList;
+import com.celements.wiki.WikiService;
 import com.google.common.collect.ImmutableSet;
-import com.xpn.xwiki.XWikiConstant;
-
-import one.util.streamex.StreamEx;
 
 @Component
-@Lazy
-public class ReferenceProvider implements EventListener,
-    ApplicationListener<ReferenceProvider.RefreshEvent> {
+public class ReferenceProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceProvider.class);
 
   private final QueryManager queryManager;
-  private final AtomicReference<Try<ImmutableSet<WikiReference>, QueryException>> wikisCache;
+  private final WikiService wikiService;
 
   @Inject
-  public ReferenceProvider(QueryManager queryManager) {
+  public ReferenceProvider(QueryManager queryManager, WikiService wikiService) {
     this.queryManager = queryManager;
-    this.wikisCache = new AtomicReference<>();
+    this.wikiService = wikiService;
   }
 
   @NotNull
   public Collection<WikiReference> getAllWikis() {
-    try {
-      return wikisCache.updateAndGet(trying -> (trying != null) && trying.isSuccess()
-          ? trying
-          : Try.to(this::queryWikis))
-          .getOrThrow();
-    } catch (QueryException exc) {
-      LOGGER.error("getAllWikis - failed", exc);
-    }
-    return ImmutableSet.of(XWikiConstant.MAIN_WIKI);
-  }
-
-  private ImmutableSet<WikiReference> queryWikis() throws QueryException {
-    return StreamEx.of(XWikiConstant.MAIN_WIKI)
-        .append(queryManager.getNamedQuery("getAllWikis")
-            .setWiki(XWikiConstant.MAIN_WIKI.getName())
-            .<String>execute().stream()
-            .map(name -> name.replace("XWikiServer", ""))
-            .filter(not(String::isEmpty))
-            .map(WikiReference::new))
-        .collect(toImmutableSet()); // keeps order
+    return wikiService.streamAllWikis().collect(toImmutableSet());
   }
 
   @NotNull
@@ -112,45 +78,6 @@ public class ReferenceProvider implements EventListener,
         .filter(not(String::isEmpty))
         .map(name -> builder.doc(name).build(DocumentReference.class))
         .collect(toImmutableSet()); // keeps order
-  }
-
-  public void refresh() {
-    LOGGER.trace("refresh");
-    wikisCache.set(null);
-  }
-
-  @Override
-  public String getName() {
-    return this.getClass().getName();
-  }
-
-  @Override
-  public List<Event> getEvents() {
-    return ImmutableList.of(
-        new WikiCreatedEvent(),
-        new WikiDeletedEvent());
-  }
-
-  @Override
-  public void onEvent(Event event, Object source, Object data) {
-    LOGGER.trace("onEvent - '{}', source '{}', data '{}'", event.getClass(), source, data);
-    refresh();
-  }
-
-  @Override
-  public void onApplicationEvent(RefreshEvent event) {
-    LOGGER.trace("onApplicationEvent - {}", event);
-    refresh();
-  }
-
-  public class RefreshEvent extends ApplicationEvent {
-
-    private static final long serialVersionUID = -6948726248642122691L;
-
-    public RefreshEvent(Object source) {
-      super(source);
-    }
-
   }
 
 }

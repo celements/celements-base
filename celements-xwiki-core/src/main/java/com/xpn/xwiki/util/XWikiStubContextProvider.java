@@ -1,37 +1,22 @@
 package com.xpn.xwiki.util;
 
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
+import org.xwiki.context.ExecutionContext;
 
 import com.xpn.xwiki.XWikiContext;
 
 /**
- * Tool to make easier to generate stub XWikiContext. It's supposed to be initialized once with the
- * first request and it
- * can be called to get a stub context generated from this initial XWikiContext.
- * <p>
- * The reason to initialize it based on first request is to get some informations we could not know
- * otherwise like a
- * default scheme/host/port.
+ * Tool to create a stub XWikiContext. We call it a stub because it doesn't contain actual request
+ * or response data. It's created from scratch on every call to avoid deep cloning or memory
+ * poisoning via uncloned context content.
  *
- * @version $Id$
  */
 @ComponentRole
 public interface XWikiStubContextProvider {
 
-  /**
-   * Initialize a stub context from a real context.
-   * <p>
-   * We create initial stub context from a real XWikiContext to have a stub as complete as possible.
-   * Like getting the
-   * proper host/port/scheme, the engine context etc.
-   *
-   * @param context
-   *          a real XWikiContext
-   */
-  void initialize(XWikiContext context);
+  @NotNull
+  XWikiContext createStubContext(@NotNull ExecutionContext execContext);
 
-  /**
-   * @return a usable XWikiContext
-   */
-  XWikiContext createStubContext();
 }

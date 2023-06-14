@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,23 +49,23 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
 
   @Override
   public void checkAllMandatoryDocuments() {
-    LOGGER.info("checkAllMandatoryDocuments for wiki [" + getContext().getDatabase() + "].");
+    LOGGER.info("checkAllMandatoryDocuments for wiki [{}] ", getContext().getDatabase());
     for (String mandatoryDocKey : getMandatoryDocumentsList()) {
       IMandatoryDocumentRole mandatoryDoc = mandatoryDocumentsMap.get(mandatoryDocKey);
       try {
-        LOGGER.trace("checkDocuments with [" + mandatoryDoc.getClass() + "].");
+        LOGGER.trace("checkDocuments - starting [{}]", mandatoryDoc.getClass());
         mandatoryDoc.checkDocuments();
-        LOGGER.trace("end checkDocuments with [" + mandatoryDoc.getClass() + "].");
+        LOGGER.debug("checkDocuments - done [{}]", mandatoryDoc.getClass());
       } catch (Exception exp) {
-        LOGGER.error("Exception checking mandatory documents for component "
-            + mandatoryDoc.getClass(), exp);
+        LOGGER.warn("Failed checking mandatory documents for wiki [" + getContext().getDatabase()
+            + "] and  component [" + mandatoryDoc.getClass() + "]", exp);
       }
     }
   }
 
   List<String> getMandatoryDocumentsList() {
     Collection<String> mandatoryDocElemKeys = new ArrayList<>(mandatoryDocumentsMap.keySet());
-    List<String> mandatoryDocExecList = new Vector<>();
+    List<String> mandatoryDocExecList = new ArrayList<>();
     do {
       for (String mandatoryDocElemKey : mandatoryDocElemKeys) {
         if (mandatoryDocExecList.containsAll(mandatoryDocumentsMap.get(
@@ -77,10 +76,10 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
     } while (mandatoryDocElemKeys.removeAll(mandatoryDocExecList)
         && !mandatoryDocElemKeys.isEmpty());
     for (String skippedDocElemKey : mandatoryDocElemKeys) {
-      LOGGER.error("Cannot order all mandatory document roles. Thus skipping: "
-          + skippedDocElemKey);
+      LOGGER.error("Cannot order all mandatory document roles. Thus skipping: {}",
+          skippedDocElemKey);
     }
-    LOGGER.debug("getMandatoryDocumentsList returning [" + mandatoryDocExecList + "].");
+    LOGGER.debug("getMandatoryDocumentsList returning [{}]", mandatoryDocExecList);
     return mandatoryDocExecList;
   }
 

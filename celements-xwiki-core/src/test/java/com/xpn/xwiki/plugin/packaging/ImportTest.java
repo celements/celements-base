@@ -39,7 +39,6 @@ import org.jmock.core.stub.VoidStub;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.notify.XWikiNotificationManager;
 import com.xpn.xwiki.store.XWikiHibernateRecycleBinStore;
@@ -76,15 +75,13 @@ public class ImportTest extends AbstractBridgedXWikiComponentTestCase {
     super.setUp();
 
     this.pack = new Package();
-    this.xwiki = new XWiki();
+    this.xwiki = new XWiki(false);
     getContext().setWiki(this.xwiki);
     this.xwiki.setConfig(new XWikiConfig());
     this.xwiki.setNotificationManager(new XWikiNotificationManager());
 
     // mock a store that would also handle translations
-    this.mockXWikiStore = mock(XWikiHibernateStore.class,
-        new Class[] { XWiki.class, XWikiContext.class }, new Object[] { this.xwiki,
-            getContext() });
+    this.mockXWikiStore = mock(XWikiHibernateStore.class, new Class[] {}, new Object[] {});
     this.mockXWikiStore.stubs().method("loadXWikiDoc").will(
         new CustomStub("Implements XWikiStoreInterface.loadXWikiDoc") {
 
@@ -156,12 +153,11 @@ public class ImportTest extends AbstractBridgedXWikiComponentTestCase {
     this.mockXWikiStore.stubs().method("injectCustomMapping").will(returnValue(false));
 
     this.mockRecycleBinStore = mock(XWikiHibernateRecycleBinStore.class,
-        new Class[] { XWikiContext.class }, new Object[] { getContext() });
+        new Class[] {}, new Object[] {});
     this.mockRecycleBinStore.stubs().method("saveToRecycleBin").will(VoidStub.INSTANCE);
 
     this.mockXWikiVersioningStore = mock(XWikiHibernateVersioningStore.class,
-        new Class[] { XWiki.class, XWikiContext.class }, new Object[] {
-            this.xwiki, getContext() });
+        new Class[] {}, new Object[] {});
     this.mockXWikiVersioningStore.stubs().method("getXWikiDocumentArchive").will(returnValue(null));
     this.mockXWikiVersioningStore.stubs().method("resetRCSArchive").will(returnValue(null));
 

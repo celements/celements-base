@@ -138,7 +138,9 @@ public class XWikiWikiBaseRenderer implements XWikiRenderer {
     }
 
     // PLUGIN: call startRenderingHandler at the start with the full content
-    content = plugins.commonTagsHandler(content, context);
+    if (plugins != null) {
+      content = plugins.commonTagsHandler(content, context);
+    }
 
     // Call it again after plugins..
     if (this.renderWiki) {
@@ -183,7 +185,9 @@ public class XWikiWikiBaseRenderer implements XWikiRenderer {
     content = preTagSubst.substitute(content);
 
     // PLUGIN: call startRenderingHandler at the start with the full content
-    content = plugins.startRenderingHandler(content, context);
+    if (plugins != null) {
+      content = plugins.startRenderingHandler(content, context);
+    }
 
     StringTokenizer tokens = new StringTokenizer(content, "\n");
     while (tokens.hasMoreTokens()) {
@@ -209,10 +213,14 @@ public class XWikiWikiBaseRenderer implements XWikiRenderer {
         }
 
         // PLUGIN: call insidePREHandler with the current line
-        line = plugins.insidePREHandler(line, context);
+        if (plugins != null) {
+          line = plugins.insidePREHandler(line, context);
+        }
       } else {
         // PLUGIN: call insidePREHandler with the current line
-        line = plugins.outsidePREHandler(line, context);
+        if (plugins != null) {
+          line = plugins.outsidePREHandler(line, context);
+        }
         if (this.renderWiki) {
           line = handleHeadings(line, util);
           line = handleHR(line, util);
@@ -239,7 +247,9 @@ public class XWikiWikiBaseRenderer implements XWikiRenderer {
 
     // PLUGIN: call endRenderingHandler at the end with the full content
     String result = output.toString();
-    result = plugins.endRenderingHandler(result, context);
+    if (plugins != null) {
+      result = plugins.endRenderingHandler(result, context);
+    }
 
     return preTagSubst.insertNonWikiText(result);
   }

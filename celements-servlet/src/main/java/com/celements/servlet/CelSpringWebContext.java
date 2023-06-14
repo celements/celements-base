@@ -3,6 +3,7 @@ package com.celements.servlet;
 import static org.xwiki.component.spring.XWikiSpringConfig.*;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.validation.constraints.NotNull;
 
@@ -23,6 +24,8 @@ import com.google.common.collect.ImmutableList;
 public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CelSpringWebContext.class);
+
+  final AtomicReference<Exception> firstClosingStackTrace = new AtomicReference<>();
 
   public CelSpringWebContext() {
     this(ImmutableList.of(
@@ -57,4 +60,12 @@ public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
       beanFactory.registerBeanDefinition(descriptor.getBeanName(), beanDef);
     });
   }
+
+  @Override
+  public void close() {
+    // let's remember the first closing stacktrace to debug early closing
+    firstClosingStackTrace.compareAndSet(null, new Exception());
+    super.close();
+  }
+
 }

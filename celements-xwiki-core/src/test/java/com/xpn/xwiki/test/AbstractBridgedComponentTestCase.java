@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.test;
 
+import java.util.Optional;
+
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -27,10 +29,11 @@ import org.junit.Before;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.Container;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.AbstractComponentTestCase;
 
-import com.celements.common.test.AbstractBaseComponentTest;
+import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
@@ -42,7 +45,7 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  * @since 2.2M2
- * @deprecated instead use {@link AbstractBaseComponentTest}
+ * @deprecated instead use {@link AbstractComponentTest}
  */
 @Deprecated
 public abstract class AbstractBridgedComponentTestCase extends AbstractComponentTestCase {
@@ -60,24 +63,21 @@ public abstract class AbstractBridgedComponentTestCase extends AbstractComponent
   @Override
   @Before
   public void setUp() throws Exception {
+    this.context = new XWikiContext();
+    this.context.setDatabase("xwiki");
+    this.context.setMainXWiki("xwiki");
     super.setUp();
 
     // Statically store the component manager in {@link Utils} to be able to access it without
     // the context.
     Utils.setComponentManager(getComponentManager());
 
-    this.context = new XWikiContext();
-
-    this.context.setDatabase("xwiki");
-    this.context.setMainXWiki("xwiki");
-
     // We need to initialize the Component Manager so that the components can be looked up
     getContext().put(ComponentManager.class.getName(), getComponentManager());
 
     // Bridge with old XWiki Context, required for old code.
     Execution execution = getComponentManager().lookup(Execution.class);
-    execution.getContext().setProperty("xwikicontext", this.context);
-    getComponentManager().lookup(XWikiStubContextProvider.class).initialize(this.context);
+    execution.getContext().setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, context);
 
     // Set a simple application context, as some components fail to start without one.
     Container c = getComponentManager().lookup(Container.class);
@@ -89,6 +89,27 @@ public abstract class AbstractBridgedComponentTestCase extends AbstractComponent
       {
         allowing(mockCoreConfiguration).getDefaultDocumentSyntax();
         will(returnValue(Syntax.XWIKI_1_0));
+      }
+    });
+  }
+
+  @Override
+  protected void registerComponents() throws Exception {
+    final XWikiStubContextProvider ctxProviderMock = registerMockComponent(
+        XWikiStubContextProvider.class);
+    this.mockery.checking(new Expectations() {
+
+      {
+        allowing(ctxProviderMock).createStubContext(with(any(ExecutionContext.class)));
+        will(returnValue(context));
+      }
+    });
+    final XWikiProvider xwikiProviderMock = registerMockComponent(XWikiProvider.class);
+    this.mockery.checking(new Expectations() {
+
+      {
+        allowing(xwikiProviderMock).get();
+        will(returnValue(Optional.empty()));
       }
     });
   }

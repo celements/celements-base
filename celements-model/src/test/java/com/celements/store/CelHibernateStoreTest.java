@@ -13,6 +13,7 @@ import org.easymock.LogicalOperator;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
@@ -43,6 +44,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   private final DocumentReference docRef = new ImmutableDocumentReference(
       "xwikidb", "space", "doc");
   private XWikiDocument doc;
+  private Transaction transactionMock;
 
   @Before
   public void prepareTest() throws Exception {
@@ -58,6 +60,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     expect(getWikiMock().Param(eq("xwiki.store.hibernate.useclasstables.read"), eq("1"))).andReturn(
         "0").anyTimes();
     doc = new XWikiDocument(docRef);
+    transactionMock = createDefaultMock(Transaction.class);
   }
 
   @Test
@@ -132,6 +135,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of());
     expect(sessionMock.save(capture(docCapture))).andReturn(null).once();
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -152,6 +156,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     expectLoadExistingDocs(sessionMock, ImmutableList.of());
     expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
         .andReturn(null);
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -170,7 +175,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     doc.setNew(false);
     Session sessionMock = createSessionMock(doc);
     sessionMock.update(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL));
-    expectLastCall();
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -191,6 +196,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
         new Object[] { computeDocId(START_COLLISION_COUNT_DEFAULT), "space.other", "" }));
     expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
         .andReturn(null);
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -209,6 +215,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
         new Object[] { computeDocId(1), "space.other2", "" },
         new Object[] { computeDocId(2), "space.other3", "" },
         new Object[] { computeDocId(3), "space.other4", "" }));
+    transactionMock.rollback();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -230,36 +237,11 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     verifyDefault();
   }
 
-  @Test
-  public void test_getSchemaFromWikiName_virtual() {
-    expect(getWikiMock().isVirtualMode()).andReturn(true).anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
-    replayDefault();
-    CelHibernateStore store = getStore(null);
-    assertNull(store.getSchemaFromWikiName(null, getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("as5df", getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("AS5DF", getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("a$s5(DF)", getContext()));
-    assertEquals("pref_as5df_suf", store.getSchemaFromWikiName("AS5DF-SUF", getContext()));
-    verifyDefault();
-  }
-
-  @Test
-  public void test_getSchemaFromWikiName_main() {
-    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
-    expect(getWikiMock().Param("xwiki.db")).andReturn("main").anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
-    replayDefault();
-    CelHibernateStore store = getStore(null);
-    assertNull(store.getSchemaFromWikiName(null, getContext()));
-    assertEquals("pref_main", store.getSchemaFromWikiName("as5df", getContext()));
-    verifyDefault();
-  }
-
   private CelHibernateStore getStore(Session session) {
     CelHibernateStore store = (CelHibernateStore) Utils.getComponent(XWikiStoreInterface.class);
     store.setSessionFactory(sessionFactoryMock);
-    store.setSession(session, getContext());
+    store.setTransaction(transactionMock);
+    store.setSession(session);
     return store;
   }
 

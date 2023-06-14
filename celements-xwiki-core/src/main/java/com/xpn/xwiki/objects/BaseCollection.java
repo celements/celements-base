@@ -42,16 +42,12 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.model.reference.EntityReferenceSerializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
-import com.xpn.xwiki.web.Utils;
 
 /**
  * Base class for representing an element having a collection of properties. For example:
@@ -103,25 +99,6 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
   protected int number;
 
   /**
-   * Used to resolve XClass references in the way they are stored externally (database, xml, etc),
-   * ie relative or absolute.
-   */
-  private EntityReferenceResolver<String> relativeEntityReferenceResolver = Utils
-      .getComponent(EntityReferenceResolver.class, "relative");
-
-  /**
-   * Used to convert a proper Class Reference to a string but without the wiki name.
-   */
-  private EntityReferenceSerializer<String> localEntityReferenceSerializer = Utils
-      .getComponent(EntityReferenceSerializer.class, "local");
-
-  /**
-   * Used to normalize references.
-   */
-  private DocumentReferenceResolver<EntityReference> currentReferenceDocumentReferenceResolver = Utils
-      .getComponent(DocumentReferenceResolver.class, "current/reference");
-
-  /**
    * {@inheritDoc}
    *
    * @see java.lang.Object#hashCode()
@@ -150,7 +127,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
     // Ensure we always return an absolute references since we always want well-constructed to
     // be used from outside this class.
     if ((this.xClassDocRefCache == null) && (getRelativeXClassReference() != null)) {
-      this.xClassDocRefCache = this.currentReferenceDocumentReferenceResolver
+      this.xClassDocRefCache = currentRefDocRefResolver.get()
           .resolve(getRelativeXClassReference(), getDocumentReference());
     }
     return xClassDocRefCache;
@@ -173,7 +150,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
   public String getClassName() {
     String xClassAsString;
     if (getXClassReference() != null) {
-      xClassAsString = this.localEntityReferenceSerializer.serialize(getXClassReference());
+      xClassAsString = localEntityRefSerializer.get().serialize(getXClassReference());
     } else {
       xClassAsString = "";
     }
@@ -219,7 +196,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
     // checking for
     // "internal".
     if (!StringUtils.isEmpty(name) && !"internal".equals(name)) {
-      xClassReference = this.relativeEntityReferenceResolver.resolve(name, EntityType.DOCUMENT);
+      xClassReference = relativeEntityRefResolver.get().resolve(name, EntityType.DOCUMENT);
     }
     setXClassReference(xClassReference);
   }
@@ -736,7 +713,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
   public String toString(boolean withDefinition) {
     String className = "?";
     if (getRelativeXClassReference() != null) {
-      className = localEntityReferenceSerializer.serialize(getRelativeXClassReference());
+      className = localEntityRefSerializer.get().serialize(getRelativeXClassReference());
     }
     return super.toString(withDefinition) + "_" + className + "_" + getNumber();
   }

@@ -4,11 +4,18 @@
 	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
   <query name="getAllWikis">
-    select distinct doc.name from XWikiDocument as doc, BaseObject as obj 
-    where doc.space='XWiki' 
+    select doc.name, secure.value, host.value
+    from XWikiDocument as doc, BaseObject as obj, IntegerProperty as secure, StringProperty as host
+    where doc.space='XWiki'
+      and doc.name like 'XWikiServer%'
       and doc.name&lt;&gt;'XWikiServerClassTemplate' 
       and obj.name=doc.fullName 
       and obj.className='XWiki.XWikiServerClass'
+      and obj.id=secure.id.id
+      and obj.id=host.id.id
+      and secure.id.name='secure'
+      and host.id.name='server'
+    order by doc.name, obj.number
   </query>
   <query name="getSpaceDocsName">
     select distinct doc.name from XWikiDocument doc where doc.space=:space and (doc.hidden &lt;&gt; true or doc.hidden is null) order by doc.name asc

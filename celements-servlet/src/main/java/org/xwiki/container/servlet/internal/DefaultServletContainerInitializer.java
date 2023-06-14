@@ -39,9 +39,6 @@ import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.container.servlet.ServletRequest;
 import org.xwiki.container.servlet.ServletResponse;
 import org.xwiki.container.servlet.ServletSession;
-import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
-import org.xwiki.context.ExecutionContextManager;
 
 @Component
 public class DefaultServletContainerInitializer implements ServletContainerInitializer {
@@ -63,9 +60,6 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
   private Container container;
 
   @Requirement
-  private Execution execution;
-
-  @Requirement
   private ComponentManager componentManager;
 
   @Override
@@ -85,23 +79,12 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
   }
 
   @Override
-  public void initializeRequest(HttpServletRequest httpServletRequest, Object xwikiContext)
+  public void initializeRequest(HttpServletRequest httpServletRequest)
       throws ServletContainerException {
     // 1) Create an empty request. From this point forward request initializers can use the
     // Container object to get any data they want from the Request.
     this.container.setRequest(new ServletRequest(httpServletRequest));
-
-    // 2) Create an empty Execution context so that the Container initializers can put things in the
-    // execution context when they execute.
-    this.execution.setContext(new ExecutionContext());
-
-    // 3) Bridge with old code to play well with new components. Old code relies on the
-    // XWikiContext object whereas new code uses the Container component.
-    if (xwikiContext != null) {
-      this.execution.getContext().setProperty("xwikicontext", xwikiContext);
-    }
-
-    // 4) Call the request initializers to populate the Request.
+    // 2) Call the request initializers to populate the Request.
     // TODO: This is where the URL should be converted to a XWikiURL and the wiki, space,
     // document, skin and possibly other parameters are put in the Execution Context by proper
     // initializers.
@@ -112,21 +95,7 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     } catch (Exception e) {
       throw new ServletContainerException("Failed to initialize request", e);
     }
-
-    // 5) Call Execution Context initializers to perform further Execution Context initializations
-    try {
-      ExecutionContextManager manager = this.componentManager.lookup(ExecutionContextManager.class);
-      manager.initialize(this.execution.getContext());
-    } catch (Exception e) {
-      throw new ServletContainerException("Failed to initialize Execution Context", e);
-    }
     LOGGER.trace("initializeRequest - done");
-  }
-
-  @Override
-  public void initializeRequest(HttpServletRequest httpServletRequest)
-      throws ServletContainerException {
-    initializeRequest(httpServletRequest, null);
   }
 
   @Override
@@ -142,11 +111,10 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
   }
 
   @Override
-  public void cleanupSession() {
+  public void cleanup() {
     container.removeRequest();
     container.removeResponse();
     container.removeSession();
-    execution.removeContext();
-    LOGGER.trace("cleanupSession - done");
+    LOGGER.trace("cleanup - done");
   }
 }

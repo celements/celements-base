@@ -246,9 +246,8 @@ public class DefaultXWikiRenderingEngine implements XWikiRenderingEngine {
 
       try {
         // We need to make sure we don't use the cache duretion currently in the system
-        context
-            .setCacheDuration(
-                (int) context.getWiki().ParamAsLong("xwiki.rendering.defaultCacheDuration", 0));
+        context.setCacheDuration((int) context.getWiki().ParamAsLong(
+            "xwiki.rendering.defaultCacheDuration", 0));
 
         String content = text;
 
@@ -261,7 +260,9 @@ public class DefaultXWikiRenderingEngine implements XWikiRenderingEngine {
         context.put("sdoc", contentdoc);
 
         // Let's call the beginRendering loop
-        context.getWiki().getPluginManager().beginRendering(context);
+        if (context.getWiki().getPluginManager() != null) {
+          context.getWiki().getPluginManager().beginRendering(context);
+        }
 
         try {
           for (XWikiRenderer element : this.renderers) {
@@ -301,7 +302,9 @@ public class DefaultXWikiRenderingEngine implements XWikiRenderingEngine {
           }
 
           // Let's call the endRendering loop
-          context.getWiki().getPluginManager().endRendering(context);
+          if (context.getWiki().getPluginManager() != null) {
+            context.getWiki().getPluginManager().endRendering(context);
+          }
         }
 
         try {

@@ -1442,96 +1442,6 @@ public class XWiki extends Api {
   }
 
   /**
-   * Priviledged API to create a new Wiki from an existing wiki This creates the database, copies to
-   * documents from a
-   * existing wiki Assigns the admin rights, creates the Wiki identification page in the main wiki
-   *
-   * @param wikiName
-   *          Wiki Name to create
-   * @param wikiUrl
-   *          Wiki URL to accept requests from
-   * @param wikiAdmin
-   *          Wiki admin user
-   * @param baseWikiName
-   *          Wiki to copy documents from
-   * @param failOnExist
-   *          true to fail if the wiki already exists, false to overwrite
-   * @return Success of Failure code (0 for success, -1 for missing programming rights, > 0 for
-   *         other errors
-   * @throws XWikiException
-   */
-  public int createNewWiki(String wikiName, String wikiUrl, String wikiAdmin, String baseWikiName,
-      boolean failOnExist)
-      throws XWikiException {
-    return createNewWiki(wikiName, wikiUrl, wikiAdmin, baseWikiName, "", null, failOnExist);
-  }
-
-  /**
-   * Priviledged API to create a new Wiki from an existing wiki This creates the database, copies to
-   * documents from a
-   * existing wiki Assigns the admin rights, creates the Wiki identification page in the main wiki
-   *
-   * @param wikiName
-   *          Wiki Name to create
-   * @param wikiUrl
-   *          Wiki URL to accept requests from
-   * @param wikiAdmin
-   *          Wiki admin user
-   * @param baseWikiName
-   *          Wiki to copy documents from
-   * @param description
-   *          Description of the Wiki
-   * @param failOnExist
-   *          true to fail if the wiki already exists, false to overwrite
-   * @return Success of Failure code (0 for success, -1 for missing programming rights, > 0 for
-   *         other errors
-   * @throws XWikiException
-   */
-  public int createNewWiki(String wikiName, String wikiUrl, String wikiAdmin, String baseWikiName,
-      String description, boolean failOnExist) throws XWikiException {
-    return createNewWiki(wikiName, wikiUrl, wikiAdmin, baseWikiName, description, null,
-        failOnExist);
-  }
-
-  /**
-   * Priviledged API to create a new Wiki from an existing wiki This creates the database, copies to
-   * documents from a
-   * existing wiki Assigns the admin rights, creates the Wiki identification page in the main wiki
-   * Copy is limited to
-   * documents of a specified language. If a document for the language is not found, the default
-   * language document is
-   * used
-   *
-   * @param wikiName
-   *          Wiki Name to create
-   * @param wikiUrl
-   *          Wiki URL to accept requests from
-   * @param wikiAdmin
-   *          Wiki admin user
-   * @param baseWikiName
-   *          Wiki to copy documents from
-   * @param description
-   *          Description of the Wiki
-   * @param language
-   *          Language to copy
-   * @param failOnExist
-   *          true to fail if the wiki already exists, false to overwrite
-   * @return Success of Failure code (0 for success, -1 for missing programming rights, > 0 for
-   *         other errors
-   * @throws XWikiException
-   */
-  public int createNewWiki(String wikiName, String wikiUrl, String wikiAdmin, String baseWikiName,
-      String description, String language, boolean failOnExist) throws XWikiException {
-    if (hasProgrammingRights()) {
-      return this.xwiki.createNewWiki(wikiName, wikiUrl, wikiAdmin, baseWikiName, description,
-          language,
-          failOnExist, getXWikiContext());
-    }
-
-    return -1;
-  }
-
-  /**
    * Priviledged API to validate the return code given by a user in response to an email validation
    * email The
    * validation information are taken from the request object
@@ -2340,24 +2250,6 @@ public class XWiki extends Api {
   }
 
   /**
-   * Returns the Advertisement system from the preferences
-   *
-   * @return "google" or "none"
-   */
-  public String getAdType() {
-    return this.xwiki.getAdType(getXWikiContext());
-  }
-
-  /**
-   * Returns the Advertisement client ID from the preferences
-   *
-   * @return an Ad affiliate ID
-   */
-  public String getAdClientId() {
-    return this.xwiki.getAdClientId(getXWikiContext());
-  }
-
-  /**
    * Returns the list of Macros documents in the specified content
    *
    * @param defaultSpace
@@ -2838,9 +2730,7 @@ public class XWiki extends Api {
   }
 
   /**
-   * API to get the Servlet path for a given wiki. In mono wiki this is "bin/" or "xwiki/". In
-   * virtual mode and if
-   * <tt>xwiki.virtual.usepath</tt> is enabled in xwiki.cfg, it is "wiki/wikiname/".
+   * API to get the Servlet path for a given wiki. In mono wiki this is "bin/" or "xwiki/".
    *
    * @param wikiName
    *          wiki for which to get the path
@@ -2851,9 +2741,7 @@ public class XWiki extends Api {
   }
 
   /**
-   * API to get the Servlet path for the current wiki. In mono wiki this is "bin/" or "xwiki/". In
-   * virtual mode and if
-   * <tt>xwiki.virtual.usepath</tt> is enabled in xwiki.cfg, it is "wiki/wikiname/".
+   * API to get the Servlet path for the current wiki. In mono wiki this is "bin/" or "xwiki/".
    *
    * @return The servlet path
    */
@@ -2868,6 +2756,7 @@ public class XWiki extends Api {
    *
    * @return The servlet path
    */
+  @Deprecated
   public String getWebAppPath() {
     return this.xwiki.getWebAppPath(this.context);
   }

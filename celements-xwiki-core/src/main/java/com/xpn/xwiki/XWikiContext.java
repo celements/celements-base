@@ -21,6 +21,9 @@
 
 package com.xpn.xwiki;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
+import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiDocumentArchive;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -47,6 +51,7 @@ import com.xpn.xwiki.web.XWikiForm;
 import com.xpn.xwiki.web.XWikiMessageTool;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiResponse;
+import com.xpn.xwiki.web.XWikiServletRequestStub;
 import com.xpn.xwiki.web.XWikiURLFactory;
 
 public class XWikiContext extends Hashtable<Object, Object> {
@@ -71,7 +76,8 @@ public class XWikiContext extends Hashtable<Object, Object> {
   @Deprecated
   public static final int MODE_GWT_DEBUG = 6;
 
-  public static final String EXECUTIONCONTEXT_KEY = "xwikicontext";
+  public static final String EXEC_CONTEXT_KEY = "xwikicontext";
+  public static final String EXECUTIONCONTEXT_KEY = EXEC_CONTEXT_KEY;
 
   private static final String WIKI_KEY = "wiki";
 
@@ -107,13 +113,9 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private int mode;
 
-  private URL url;
+  private URI uri;
 
-  private XWikiURLFactory URLFactory;
-
-  private String wikiOwner;
-
-  private XWikiDocument wikiServer;
+  private XWikiURLFactory urlFactory;
 
   private int cacheDuration = 0;
 
@@ -144,10 +146,20 @@ public class XWikiContext extends Hashtable<Object, Object> {
   private static final Supplier<DocumentReferenceResolver<String>> currentMixedDocumentReferenceResolver = () -> Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
+  private static final Supplier<XWikiProvider> xwikiProvider = () -> Utils
+      .getComponent(XWikiProvider.class);
+
   public XWikiContext() {}
 
+  /**
+   * @deprecated instead use {@link XWikiProvider}
+   */
+  @Deprecated
   public XWiki getWiki() {
-    return this.wiki;
+    if (wiki == null) {
+      wiki = xwikiProvider.get().get().orElse(null);
+    }
+    return wiki;
   }
 
   public Util getUtil() {
@@ -173,6 +185,12 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public XWikiRequest getRequest() {
     return this.request;
+  }
+
+  public boolean hasRequest() {
+    return (request != null) && !(request instanceof XWikiServletRequestStub)
+        && (request.getHttpServletRequest() != null)
+        && !(request.getHttpServletRequest() instanceof XWikiServletRequestStub);
   }
 
   public void setRequest(XWikiRequest request) {
@@ -360,20 +378,44 @@ public class XWikiContext extends Hashtable<Object, Object> {
     this.mode = mode;
   }
 
+  /**
+   * @deprecated since 6.0 instead use {@link #getUri()}
+   */
+  @Deprecated
   public URL getURL() {
-    return this.url;
+    try {
+      return getUri().toURL();
+    } catch (MalformedURLException exc) {
+      throw new IllegalArgumentException(exc);
+    }
   }
 
+  public URI getUri() {
+    return this.uri;
+  }
+
+  /**
+   * @deprecated since 6.0 instead use {@link #getUri()}
+   */
+  @Deprecated
   public void setURL(URL url) {
-    this.url = url;
+    try {
+      setUri(url.toURI());
+    } catch (URISyntaxException exc) {
+      throw new IllegalArgumentException(exc);
+    }
+  }
+
+  public void setUri(URI uri) {
+    this.uri = uri;
   }
 
   public XWikiURLFactory getURLFactory() {
-    return this.URLFactory;
+    return this.urlFactory;
   }
 
-  public void setURLFactory(XWikiURLFactory URLFactory) {
-    this.URLFactory = URLFactory;
+  public void setURLFactory(XWikiURLFactory urlFactory) {
+    this.urlFactory = urlFactory;
   }
 
   public XWikiForm getForm() {
@@ -390,22 +432,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public void setFinished(boolean finished) {
     this.finished = finished;
-  }
-
-  public void setWikiOwner(String wikiOwner) {
-    this.wikiOwner = wikiOwner;
-  }
-
-  public String getWikiOwner() {
-    return this.wikiOwner;
-  }
-
-  public void setWikiServer(XWikiDocument doc) {
-    this.wikiServer = doc;
-  }
-
-  public XWikiDocument getWikiServer() {
-    return this.wikiServer;
   }
 
   public int getCacheDuration() {

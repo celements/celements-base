@@ -1,6 +1,5 @@
 package com.celements.query;
 
-import static com.google.common.base.MoreObjects.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
@@ -8,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -21,13 +21,13 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 
-import com.celements.model.access.ContextExecutor;
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.web.Utils;
 
 @Component
 public class QueryExecutionService implements IQueryExecutionServiceRole {
@@ -129,7 +129,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
 
   private Session getNewHibSession() throws XWikiException, HibernateException {
     Session session = getHibStore().getSessionFactory().openSession();
-    getHibStore().setDatabase(session, context.getXWikiContext());
+    getHibStore().setDatabase(session, context.getWikiRef());
     return session;
   }
 
@@ -141,14 +141,9 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
   @Override
   public int executeWriteHQL(final String hql, final Map<String, Object> binds,
       WikiReference wikiRef) throws XWikiException {
-    return new ContextExecutor<Integer, XWikiException>() {
-
-      @Override
-      protected Integer call() throws XWikiException {
-        HibernateCallback<Integer> callback = new ExecuteWriteCallback(hql, binds);
-        return getHibStore().executeWrite(context.getXWikiContext(), true, callback);
-      }
-    }.inWiki(firstNonNull(wikiRef, context.getWikiRef())).execute();
+    wikiRef = Optional.ofNullable(wikiRef).orElse(context.getWikiRef());
+    HibernateCallback<Integer> callback = new ExecuteWriteCallback(hql, binds);
+    return getHibStore().executeWrite(wikiRef, true, callback);
   }
 
   @Override
@@ -181,7 +176,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
   }
 
   private XWikiHibernateStore getHibStore() {
-    return context.getXWikiContext().getWiki().getHibernateStore();
+    return Utils.getComponent(XWikiHibernateStore.class);
   }
 
   @Override

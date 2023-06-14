@@ -56,13 +56,13 @@ import com.celements.model.field.XObjectStringFieldAccessor;
 import com.celements.model.object.ObjectFetcher;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.object.xwiki.XWikiObjectFetcher;
-import com.celements.model.reference.ReferenceProvider;
 import com.celements.model.util.ClassFieldValue;
 import com.celements.model.util.ModelUtils;
 import com.celements.model.util.ReferenceSerializationMode;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
+import com.celements.wiki.WikiService;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -97,7 +97,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   protected ModelContext context;
 
   @Requirement
-  protected ReferenceProvider refProvider;
+  protected WikiService wikiService;
 
   @Requirement(XObjectFieldAccessor.NAME)
   protected FieldAccessor<BaseObject> xObjFieldAccessor;
@@ -154,7 +154,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   private XWikiDocument getDocumentInternal(DocumentReference docRef, String lang)
       throws DocumentNotExistsException {
-    XWikiDocument doc = refProvider.getAllWikis().contains(docRef.getWikiReference())
+    XWikiDocument doc = wikiService.hasWiki(docRef.getWikiReference())
         ? strategy.getDocument(docRef, lang)
         : null;
     if ((doc != null) && !doc.isNew()) { // faster than exists check when doc exists
@@ -217,7 +217,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Override
   public boolean exists(DocumentReference docRef) {
-    if ((docRef != null) && refProvider.getAllWikis().contains(docRef.getWikiReference())) {
+    if ((docRef != null) && wikiService.hasWiki(docRef.getWikiReference())) {
       return strategy.exists(docRef);
     }
     return false;

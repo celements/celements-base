@@ -1,5 +1,3 @@
-org.xwiki.action.internal.ErrorAction
-org.xwiki.action.internal.DefaultActionManager
 org.xwiki.context.internal.DefaultExecution
 org.xwiki.context.internal.DefaultExecutionContextManager
 org.xwiki.container.internal.DefaultContainer

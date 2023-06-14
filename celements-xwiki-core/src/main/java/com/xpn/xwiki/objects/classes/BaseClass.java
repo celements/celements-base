@@ -36,10 +36,7 @@ import org.dom4j.dom.DOMElement;
 import org.dom4j.io.SAXReader;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.model.reference.EntityReferenceSerializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -52,7 +49,6 @@ import com.xpn.xwiki.objects.meta.MetaClass;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
 import com.xpn.xwiki.validation.XWikiValidationInterface;
 import com.xpn.xwiki.validation.XWikiValidationStatus;
-import com.xpn.xwiki.web.Utils;
 
 /**
  * Represents an XClass, and contains XClass properties. Each field from {@link BaseCollection} is
@@ -75,25 +71,6 @@ public class BaseClass extends BaseCollection implements ClassInterface {
   private String validationScript;
 
   private String nameField;
-
-  @SuppressWarnings("unchecked")
-  private EntityReferenceSerializer<EntityReference> localReferenceEntityReferenceSerializer = Utils
-      .getComponent(EntityReferenceSerializer.class, "local/reference");
-
-  /**
-   * Used to resolve a reference into a proper Document Reference using the current document's
-   * reference to fill the blanks, except for the page name for which the default page name is used
-   * instead and for the wiki name for which the current wiki is used instead of the current
-   * document reference's wiki.
-   */
-  private DocumentReferenceResolver<EntityReference> currentMixedDocRefResolver = Utils
-      .getComponent(DocumentReferenceResolver.class, "currentmixed/reference");
-
-  /**
-   * Used here to merge setName() and setWiki() calls into the DocumentReference.
-   */
-  private EntityReferenceResolver<String> relativeEntityRefResolver = Utils.getComponent(
-      EntityReferenceResolver.class, "relative");
 
   /**
    * {@inheritDoc} Note: This method is overridden to add the deprecation warning so that code using
@@ -120,9 +97,9 @@ public class BaseClass extends BaseCollection implements ClassInterface {
     if ((this instanceof MetaClass) || (this instanceof PropertyMetaClass)) {
       super.setName(name);
     } else if (StringUtils.isNotBlank(name) && !name.equals(getName())) {
-      EntityReference ref = relativeEntityRefResolver.resolve(name, EntityType.DOCUMENT);
+      EntityReference ref = relativeEntityRefResolver.get().resolve(name, EntityType.DOCUMENT);
       if (ref.extractReference(EntityType.WIKI) == null) {
-        setDocumentReference(currentMixedDocRefResolver.resolve(ref, getDocumentReference()));
+        setDocumentReference(currentMixedDocRefResolver.get().resolve(ref, getDocumentReference()));
       } else {
         throw new IllegalArgumentException("name may not contain wiki: " + name);
       }
@@ -335,9 +312,8 @@ public class BaseClass extends BaseCollection implements ClassInterface {
   @Deprecated
   public BaseCollection newObject(XWikiContext context) throws XWikiException {
     BaseObject bobj = newCustomClassInstance(context);
-    bobj.setXClassReference(
-        this.localReferenceEntityReferenceSerializer.serialize(getDocumentReference()));
-
+    bobj.setXClassReference(localRefEntityRefSerializer.get()
+        .serialize(getDocumentReference()));
     return bobj;
   }
 

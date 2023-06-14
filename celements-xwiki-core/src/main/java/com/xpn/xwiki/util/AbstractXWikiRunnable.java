@@ -58,9 +58,9 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    */
   protected ExecutionContext initExecutionContext() throws ExecutionContextException {
     ExecutionContext executionContext = new ExecutionContext();
+    Utils.getComponent(Execution.class).setContext(executionContext);
     Utils.getComponent(ExecutionContextManager.class).initialize(executionContext);
     executionContext.setProperties(properties);
-    Utils.getComponent(Execution.class).setContext(executionContext);
     return executionContext;
   }
 
@@ -83,5 +83,6 @@ public abstract class AbstractXWikiRunnable implements Runnable {
     }
   }
 
-  protected abstract void runInternal();
+  protected abstract void runInternal() throws Exception;
+
 }

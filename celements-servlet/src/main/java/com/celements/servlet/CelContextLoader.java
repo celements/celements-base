@@ -1,5 +1,6 @@
 package com.celements.servlet;
 
+import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.google.common.collect.ImmutableList.*;
 
@@ -63,6 +64,10 @@ public class CelContextLoader extends ContextLoader {
             .destroyApplicationContext();
       } catch (Exception exc) {
         LOGGER.error("contextDestroyed - failed closeXWikiAppContext", exc);
+        tryCast(context, CelSpringWebContext.class)
+            .map(c -> c.firstClosingStackTrace.get())
+            .ifPresent(stackTrace -> LOGGER.error("contextDestroyed - spring app context "
+                + "was closed prematurely by:", stackTrace));
       } finally {
         context = null;
         closeWebApplicationContext(servletContext);
