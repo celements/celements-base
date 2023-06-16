@@ -12,4 +12,9 @@ public class CelMySQLDialect extends MySQLInnoDBDialect {
     registerHibernateType(Types.LONGVARCHAR, Hibernate.TEXT.getName());
   }
 
+  @Override
+  public String getTableTypeString() {
+    return " engine=InnoDB";
+  }
+
 }

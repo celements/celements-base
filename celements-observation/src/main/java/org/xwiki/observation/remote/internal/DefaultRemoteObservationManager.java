@@ -103,11 +103,6 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
    */
   private NetworkAdapter networkAdapter;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.component.phase.Initializable#initialize()
-   */
   @Override
   public void initialize() throws InitializationException {
     try {
@@ -128,11 +123,6 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.observation.remote.RemoteObservationManager#notify(org.xwiki.observation.remote.LocalEventData)
-   */
   @Override
   public void notify(LocalEventData localEvent) {
     if (this.remoteEventManagerContext.isRemoteState()) {
@@ -157,63 +147,41 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.observation.remote.RemoteObservationManager#notify(org.xwiki.observation.remote.RemoteEventData)
-   */
   @Override
   public void notify(RemoteEventData remoteEvent) {
-    // Make sure the Execution context is properly initialized
-    initiContext();
-
-    LocalEventData localEvent = this.eventConverterManager.createLocalEventData(remoteEvent);
-
-    // send event
-    if (localEvent != null) {
-      // indicate all the following events are remote events
-      this.remoteEventManagerContext.pushRemoteState();
-
-      this.observationManager.notify(localEvent.getEvent(), localEvent.getSource(),
-          localEvent.getData());
-
-      // indicate all the following events are remote events
-      this.remoteEventManagerContext.popRemoteState();
+    LocalEventData localEvent = null;
+    try {
+      initEContext();
+      localEvent = eventConverterManager.createLocalEventData(remoteEvent);
+      if (localEvent != null) {
+        remoteEventManagerContext.pushRemoteState();
+        observationManager.notify(localEvent.getEvent(), localEvent.getSource(),
+            localEvent.getData());
+      }
+    } catch (ExecutionContextException e) {
+      LOGGER.error("Failed to initialize execution context", e);
+    } finally {
+      if (localEvent != null) {
+        remoteEventManagerContext.popRemoteState();
+      }
+      execution.removeContext();
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.observation.remote.RemoteObservationManager#startChannel(java.lang.String)
-   */
   @Override
   public void startChannel(String channelId) throws RemoteEventException {
     this.networkAdapter.startChannel(channelId);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.observation.remote.RemoteObservationManager#stopChannel(java.lang.String)
-   */
   @Override
   public void stopChannel(String channelId) throws RemoteEventException {
     this.networkAdapter.stopChannel(channelId);
   }
 
-  /**
-   * Make sure an ExecutionContext initialized for remote->local thread.
-   */
-  private void initiContext() {
-    if (execution.getContext() == null) {
-      ExecutionContext context = new ExecutionContext();
-      execution.setContext(context);
-      try {
-        executionContextManager.initialize(context);
-      } catch (ExecutionContextException e) {
-        LOGGER.error("failed to initialize execution context", e);
-      }
-    }
+  private void initEContext() throws ExecutionContextException {
+    ExecutionContext executionContext = new ExecutionContext();
+    execution.setContext(executionContext);
+    executionContextManager.initialize(executionContext);
   }
+
 }

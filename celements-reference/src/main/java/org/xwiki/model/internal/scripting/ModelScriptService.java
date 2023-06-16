@@ -20,6 +20,7 @@
 package org.xwiki.model.internal.scripting;
 
 import static com.celements.model.util.EntityTypeUtil.*;
+import static com.google.common.base.Strings.*;
 
 import java.util.Arrays;
 
@@ -279,7 +280,7 @@ public class ModelScriptService implements ScriptService {
   private <T extends EntityReference> T resolve(Class<T> type, String stringRepresentation,
       String hint, Object... parameters) {
     try {
-      if (determineEntityTypeFromName(stringRepresentation).orElse(null) != null) {
+      if (determineEntityTypeFromName(nullToEmpty(stringRepresentation)).orElse(null) != null) {
         return RefBuilder.from(componentManager.lookup(EntityReferenceResolver.class, hint)
             .resolve(stringRepresentation, getEntityTypeForClassOrThrow(type), parameters))
             .build(type);

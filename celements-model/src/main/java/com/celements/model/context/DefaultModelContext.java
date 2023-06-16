@@ -1,5 +1,6 @@
 package com.celements.model.context;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
 
 import java.net.URL;
@@ -58,7 +59,7 @@ public class DefaultModelContext implements ModelContext {
   }
 
   private XWikiContext getXWikiContextFromExecution() {
-    return (XWikiContext) execution.getContext().getProperty(XWikiContext.EXECUTIONCONTEXT_KEY);
+    return execution.getContext().get(XWIKI_CONTEXT).orElseThrow();
   }
 
   @Override
