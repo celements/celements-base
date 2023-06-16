@@ -491,14 +491,6 @@
       <artifactId>jdom</artifactId>
     </dependency>
     <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xmlParserAPIs</artifactId>
-    </dependency>
-    <dependency>
       <groupId>xpp3</groupId>
       <artifactId>xpp3</artifactId>
     </dependency>
@@ -567,13 +559,6 @@
       <artifactId>groovy-all</artifactId>
     </dependency>
 
-    <!-- Barcode generation -->
-    <dependency>
-      <groupId>org.apache.avalon.framework</groupId>
-      <artifactId>avalon-framework-impl</artifactId>
-      <version>4.3.1</version>
-    </dependency>
-
     <!-- testing -->
     <dependency>
       <groupId>com.celements</groupId>
@@ -606,7 +591,6 @@
     <dependency>
       <groupId>jmock</groupId>
       <artifactId>jmock-cglib</artifactId>
-      <version>1.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
