@@ -176,7 +176,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
   }
 
   private XWikiHibernateStore getHibStore() {
-    return Utils.getComponent(XWikiHibernateStore.class);
+    return Utils.getComponent(XWikiHibernateStore.class, "hibernate");
   }
 
   @Override

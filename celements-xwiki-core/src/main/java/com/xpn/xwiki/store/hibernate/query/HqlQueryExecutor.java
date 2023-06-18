@@ -156,7 +156,7 @@ public class HqlQueryExecutor implements QueryExecutor, Initializable {
   }
 
   protected XWikiHibernateStore getStore() {
-    return Utils.getComponent(XWikiHibernateStore.class);
+    return Utils.getComponent(XWikiHibernateStore.class, "hibernate");
   }
 
   protected XWikiContext getXContext() {
