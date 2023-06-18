@@ -7203,7 +7203,7 @@ public class XWikiDocument implements DocumentModelBridge {
 
   @Override
   public String toString() {
-    return getPrefixedFullName();
+    return getFullName();
   }
 
   /**
