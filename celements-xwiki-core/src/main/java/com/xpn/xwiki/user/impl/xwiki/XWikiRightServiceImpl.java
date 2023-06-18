@@ -974,11 +974,8 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       }
 
       // programming rights can only been given for user of the main wiki
-      if (context.getWiki().isVirtualMode()) {
-        String maindb = context.getWiki().getDatabase();
-        if ((maindb == null) || (!username.startsWith(maindb))) {
-          return false;
-        }
+      if (context.getWiki().isVirtualMode() && !context.isMainWiki(username.split(":")[0])) {
+        return false;
       }
 
       return hasAccessLevel("programming", username, docname, context);
