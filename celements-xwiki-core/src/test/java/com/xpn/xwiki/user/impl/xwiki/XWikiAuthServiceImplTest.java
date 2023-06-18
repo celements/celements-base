@@ -19,17 +19,21 @@
  */
 package com.xpn.xwiki.user.impl.xwiki;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.net.URL;
 import java.security.Principal;
 
-import org.jmock.Mock;
+import org.junit.Before;
+import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.user.api.XWikiRightService;
 
 /**
@@ -37,26 +41,20 @@ import com.xpn.xwiki.user.api.XWikiRightService;
  *
  * @version $Id$
  */
-public class XWikiAuthServiceImplTest extends AbstractBridgedXWikiComponentTestCase {
+public class XWikiAuthServiceImplTest extends AbstractComponentTest {
 
   private XWikiAuthServiceImpl authService;
+  private DocumentReference userClassDocRef;
 
-  private Mock mockXWiki;
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
     this.authService = new XWikiAuthServiceImpl();
-
-    this.mockXWiki = mock(XWiki.class);
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
-
+    userClassDocRef = new DocumentReference(getContext().getDatabase(), "XWiki", "XWikiUsers");
     BaseClass userClass = new BaseClass();
-    userClass.setDocumentReference(
-        new DocumentReference(getContext().getDatabase(), "XWiki", "XWikiUsers"));
+    userClass.setDocumentReference(userClassDocRef);
     userClass.addPasswordField("password", "Password", 10);
-
-    this.mockXWiki.stubs().method("getUserClass").will(returnValue(userClass));
+    expect(getMock(XWiki.class).getUserClass(getContext())).andReturn(userClass).anyTimes();
+    getXWikiCfg().setProperty("xwiki.virtual", "1");
   }
 
   /**
@@ -64,11 +62,13 @@ public class XWikiAuthServiceImplTest extends AbstractBridgedXWikiComponentTestC
    * configuration is turned
    * off.
    */
+  @Test
   public void testAuthenticateWithSuperAdminWhenSuperAdminPasswordIsTurnedOff() throws Exception {
-    this.mockXWiki.expects(once()).method("Param").with(eq("xwiki.superadminpassword"))
-        .will(returnValue(null));
+    expect(getMock(XWiki.class).Param("xwiki.superadminpassword")).andReturn(null);
+    replayDefault();
     Principal principal = this.authService.authenticate(XWikiRightService.SUPERADMIN_USER,
         "whatever", getContext());
+    verifyDefault();
     assertNull(principal);
   }
 
@@ -77,34 +77,38 @@ public class XWikiAuthServiceImplTest extends AbstractBridgedXWikiComponentTestC
    * configuration is turned
    * off.
    */
+  @Test
   public void testAuthenticateWithSuperAdminPrefixedWithXWikiWhenSuperAdminPasswordIsTurnedOff()
       throws Exception {
-    this.mockXWiki.stubs().method("Param").with(eq("xwiki.superadminpassword"))
-        .will(returnValue(null));
+    expect(getMock(XWiki.class).Param("xwiki.superadminpassword")).andReturn(null);
+    replayDefault();
     Principal principal = this.authService.authenticate(XWikiRightService.SUPERADMIN_USER_FULLNAME,
         "whatever", getContext());
+    verifyDefault();
     assertNull(principal);
   }
 
+  @Test
   public void testAuthenticateWithSuperAdminWithWhiteSpacesWhenSuperAdminPasswordIsTurnedOff()
       throws Exception {
-    this.mockXWiki.stubs().method("Param").with(eq("xwiki.superadminpassword"))
-        .will(returnValue(null));
-    Principal principal = this.authService
-        .authenticate(" " + XWikiRightService.SUPERADMIN_USER + " ", "whatever", getContext());
+    expect(getMock(XWiki.class).Param("xwiki.superadminpassword")).andReturn(null);
+    replayDefault();
+    Principal principal = authService.authenticate(" " + XWikiRightService.SUPERADMIN_USER + " ",
+        "whatever", getContext());
+    verifyDefault();
     assertNull(principal);
   }
 
   /**
    * Test that superadmin is authenticated as superadmin whatever the case.
    */
+  @Test
   public void testAuthenticateWithSuperAdminWithDifferentCase() throws Exception {
-    this.mockXWiki.stubs().method("Param").with(eq("xwiki.superadminpassword"))
-        .will(returnValue("pass"));
-    this.mockXWiki.stubs().method("isVirtualMode").will(returnValue(false));
-
-    Principal principal = this.authService
-        .authenticate(XWikiRightService.SUPERADMIN_USER.toUpperCase(), "pass", getContext());
+    expect(getMock(XWiki.class).Param("xwiki.superadminpassword")).andReturn("pass");
+    replayDefault();
+    Principal principal = authService.authenticate(XWikiRightService.SUPERADMIN_USER.toUpperCase(),
+        "pass", getContext());
+    verifyDefault();
     assertNotNull(principal);
     assertEquals(XWikiRightService.SUPERADMIN_USER_FULLNAME, principal.getName());
   }
@@ -113,15 +117,14 @@ public class XWikiAuthServiceImplTest extends AbstractBridgedXWikiComponentTestC
    * Test that SomeUser is correctly authenticated as XWiki.SomeUser when xwiki:SomeUser is entered
    * as username.
    */
+  @Test
   public void testLoginWithWikiPrefix() throws Exception {
     // Setup a simple user profile document
     XWikiDocument userDoc = new XWikiDocument("XWiki", "SomeUser");
-    // Mock the XWikiUsers object, since a real objects requires more mocking on the XWiki object
-    Mock mockUserObj = mock(BaseObject.class, new Class[] {}, new Object[] {});
-    mockUserObj.stubs().method("setDocumentReference");
-    mockUserObj.stubs().method("setNumber");
-    mockUserObj.stubs().method("getStringValue").with(eq("password")).will(returnValue("pass"));
-    userDoc.addObject("XWiki.XWikiUsers", (BaseObject) mockUserObj.proxy());
+    BaseObject userObj = new BaseObject();
+    userObj.setXClassReference(userClassDocRef);
+    userObj.setStringValue("password", "pass");
+    userDoc.addXObject(userObj);
 
     // Make a simple XWiki.XWikiUsers class that will contain a default password field
     BaseClass userClass = new BaseClass();
@@ -129,16 +132,15 @@ public class XWikiAuthServiceImplTest extends AbstractBridgedXWikiComponentTestC
     userClass.setClassName("XWiki.XWikiUsers");
 
     // Prepare the XWiki mock
-    this.mockXWiki.stubs().method("getDocument").with(eq("XWiki.SomeUser"), eq(this.getContext()))
-        .will(returnValue(userDoc));
-    this.mockXWiki.stubs().method("getClass").with(eq("XWiki.XWikiUsers"), eq(this.getContext()))
-        .will(returnValue(userClass));
-    this.mockXWiki.stubs().method("exists").will(returnValue(true));
-    this.mockXWiki.stubs().method("isVirtualMode").will(returnValue(false));
+    expect(getMock(XWiki.class).exists(userDoc.getDocRef(), getContext()))
+        .andReturn(true);
+    expect(getMock(XWiki.class).getDocument("XWiki.SomeUser", getContext())).andReturn(userDoc);
 
+    replayDefault();
     // Finally run the test: Using xwiki:Admin should correctly authenticate the Admin user
     Principal principal = this.authService.authenticate("xwiki:SomeUser", "pass",
         this.getContext());
+    verifyDefault();
     assertNotNull(principal);
     assertEquals("xwiki:XWiki.SomeUser", principal.getName());
   }
@@ -148,6 +150,7 @@ public class XWikiAuthServiceImplTest extends AbstractBridgedXWikiComponentTestC
    * exists and the username
    * contains a wiki prefix.
    */
+  @Test
   public void testLogintoVirtualXwikiWithWikiPrefixUsername() throws Exception {
     // Setup simple user profile documents
     XWikiDocument userDocLocal = new XWikiDocument("local", "XWiki", "Admin");
@@ -157,53 +160,51 @@ public class XWikiAuthServiceImplTest extends AbstractBridgedXWikiComponentTestC
     userClass.addPasswordField("password", "Password", 20);
     userClass.setClassName("XWiki.XWikiUsers");
 
-    // Mock the XWikiUsers object, since a real objects requires more mocking on the XWiki object
-    Mock mockUserObj = mock(BaseObject.class, new Class[] {}, new Object[] {});
-    mockUserObj.stubs().method("setDocumentReference");
-    mockUserObj.stubs().method("setNumber");
-    mockUserObj.stubs().method("getStringValue").with(eq("password")).will(returnValue("admin"));
-    userDocLocal.addObject("XWiki.XWikiUsers", (BaseObject) mockUserObj.proxy());
+    BaseObject userObj = new BaseObject();
+    userObj.setXClassReference(userClassDocRef);
+    userObj.setStringValue("password", "admin");
+    userDocLocal.addXObject(userObj);
 
     // Prepare the XWiki mock for local
-    this.mockXWiki.stubs().method("getDocument").with(eq("XWiki.Admin"), ANYTHING)
-        .will(returnValue(userDocLocal));
-    this.mockXWiki.stubs().method("getClass").with(eq("XWiki.XWikiUsers"), eq(this.getContext()))
-        .will(returnValue(userClass));
-    this.mockXWiki.stubs().method("exists").will(returnValue(true));
-    this.mockXWiki.stubs().method("isVirtualMode").will(returnValue(false));
+    expect(getMock(XWiki.class).exists(anyObject(DocumentReference.class), same(getContext())))
+        .andReturn(true).times(2);
+    expect(getMock(XWiki.class).getDocument("XWiki.Admin", getContext()))
+        .andReturn(userDocLocal).times(2);
 
+    replayDefault();
     // Run the test: Using Xwiki.Admin should correctly authenticate the Admin user
     Principal principalLocal = this.authService.authenticate("XWiki.Admin", "admin",
         this.getContext());
-    assertNotNull(principalLocal);
-    assertEquals("XWiki.Admin", principalLocal.getName());
-
     // Set the database name to local.
     this.getContext().setDatabase("local");
-
-    // Prepare the XWiki mock for virtual
-    this.mockXWiki.stubs().method("isVirtualMode").will(returnValue(true));
-
     // Finally run the test: Using xwiki:Xwiki.Admin should correctly authenticate the Admin user
     Principal principalVirtual = this.authService.authenticate("xwiki:XWiki.Admin", "admin",
         this.getContext());
+    verifyDefault();
+
+    assertNotNull(principalLocal);
+    assertEquals("XWiki.Admin", principalLocal.getName());
     assertNotNull(principalVirtual);
     assertEquals("xwiki:XWiki.Admin", principalVirtual.getName());
   }
 
+  @Test
   public void testStripContextPathFromURLWithSlashAfter() throws Exception {
-    this.mockXWiki.stubs().method("getWebAppPath").will(returnValue("xwiki/"));
+    expect(getMock(XWiki.class).getWebAppPath(getContext())).andReturn("xwiki/");
 
-    assertEquals("/something",
-        this.authService.stripContextPathFromURL(new URL("http://localhost:8080/xwiki/something"),
-            getContext()));
+    replayDefault();
+    assertEquals("/something", authService.stripContextPathFromURL(
+        new URL("http://localhost:8080/xwiki/something"), getContext()));
+    verifyDefault();
   }
 
+  @Test
   public void testStripContextPathFromURLWithSlashBefore() throws Exception {
-    this.mockXWiki.stubs().method("getWebAppPath").will(returnValue("/xwiki"));
+    expect(getMock(XWiki.class).getWebAppPath(getContext())).andReturn("/xwiki");
 
-    assertEquals("/something",
-        this.authService.stripContextPathFromURL(new URL("http://localhost:8080/xwiki/something"),
-            getContext()));
+    replayDefault();
+    assertEquals("/something", authService.stripContextPathFromURL(
+        new URL("http://localhost:8080/xwiki/something"), getContext()));
+    verifyDefault();
   }
 }
