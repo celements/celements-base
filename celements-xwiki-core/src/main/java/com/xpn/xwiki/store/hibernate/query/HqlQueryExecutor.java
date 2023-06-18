@@ -42,6 +42,7 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
@@ -156,7 +157,7 @@ public class HqlQueryExecutor implements QueryExecutor, Initializable {
   }
 
   protected XWikiHibernateStore getStore() {
-    return Utils.getComponent(XWikiHibernateStore.class, "hibernate");
+    return (XWikiHibernateStore) Utils.getComponent(XWikiStoreInterface.class, "hibernate");
   }
 
   protected XWikiContext getXContext() {

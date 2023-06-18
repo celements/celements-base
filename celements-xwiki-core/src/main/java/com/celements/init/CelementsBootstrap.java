@@ -33,6 +33,7 @@ import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.internal.XWikiExecutionContextInitializer;
 import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
 
 @Immutable
@@ -60,7 +61,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
       Execution execution,
       ExecutionContextManager executionManager,
       ComponentManager componentManager,
-      @Named("hibernate") XWikiHibernateStore hibernateStore,
+      @Named("hibernate") XWikiStoreInterface hibernateStore,
       WikiService wikiService,
       WikiUpdater wikiUpdater,
       XWikiConfigSource xwikiCfg,
@@ -69,7 +70,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
     this.execution = execution;
     this.executionManager = executionManager;
     this.componentManager = componentManager;
-    this.hibernateStore = hibernateStore;
+    this.hibernateStore = (XWikiHibernateStore) hibernateStore;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiCfg = xwikiCfg;

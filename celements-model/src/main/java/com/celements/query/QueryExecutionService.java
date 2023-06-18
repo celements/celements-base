@@ -27,6 +27,7 @@ import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
 
 @Component
@@ -176,7 +177,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
   }
 
   private XWikiHibernateStore getHibStore() {
-    return Utils.getComponent(XWikiHibernateStore.class, "hibernate");
+    return (XWikiHibernateStore) Utils.getComponent(XWikiStoreInterface.class, "hibernate");
   }
 
   @Override
