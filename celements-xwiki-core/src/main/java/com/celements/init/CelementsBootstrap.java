@@ -123,7 +123,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
 
   private void triggerWikiUpdates() {
     try {
-      if (Boolean.TRUE.equals(cfgSrc.getProperty("celements.init.updatedatabases"))
+      if (Boolean.TRUE.equals(cfgSrc.getProperty("celements.init.updatedatabases", Boolean.class))
           && xwikiCfg.isVirtualMode()) {
         wikiService.streamAllWikis()
             .forEach(wikiUpdater::updateAsync);
