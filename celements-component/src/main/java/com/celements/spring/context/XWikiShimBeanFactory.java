@@ -1,6 +1,7 @@
 package com.celements.spring.context;
 
 import static com.celements.common.MoreOptional.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.List;
@@ -67,11 +68,14 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
 
   private List<Class<?>> getComponentRoles(BeanDefinition beanDefinition) {
     try {
-      return Stream.of(Class.forName(beanDefinition.getBeanClassName()).getInterfaces())
+      return Optional.ofNullable(beanDefinition.getBeanClassName())
+          .map(rethrowFunction(Class::forName))
+          .map(Class::getInterfaces)
+          .map(Stream::of).orElse(Stream.empty())
           .filter(this::isComponentRole)
           .collect(toList());
     } catch (ClassNotFoundException exc) {
-      throw new BeanDefinitionStoreException("", exc);
+      throw new BeanDefinitionStoreException("failed loading class for: " + beanDefinition, exc);
     }
   }
 
