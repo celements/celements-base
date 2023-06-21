@@ -1,7 +1,9 @@
 package com.celements.spring.context;
 
 import static com.celements.common.MoreOptional.*;
+import static java.util.stream.Collectors.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -12,9 +14,11 @@ import javax.inject.Named;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.TypeConverter;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.stereotype.Component;
@@ -37,6 +41,38 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
 
   public XWikiShimBeanFactory(@Nullable BeanFactory parentBeanFactory) {
     super(parentBeanFactory);
+  }
+
+  @Override
+  public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
+      throws BeanDefinitionStoreException {
+    super.registerBeanDefinition(determineBeanName(beanDefinition, beanName), beanDefinition);
+  }
+
+  private String determineBeanName(BeanDefinition beanDefinition, String beanName) {
+    if (beanName.contains(ComponentRole.BEAN_NAME_SEPARATOR)) {
+      return beanName;
+    }
+    List<Class<?>> roles = getComponentRoles(beanDefinition);
+    if (roles.size() > 1) {
+      throw new IllegalStateException("multiple roles found for class ["
+          + beanDefinition.getBeanClassName() + "]: " + roles);
+    }
+    return roles.stream()
+        .map(role -> new DefaultComponentRole<>(role, beanName))
+        .map(ComponentRole::getBeanName)
+        .findAny()
+        .orElse(beanName);
+  }
+
+  private List<Class<?>> getComponentRoles(BeanDefinition beanDefinition) {
+    try {
+      return Stream.of(Class.forName(beanDefinition.getBeanClassName()).getInterfaces())
+          .filter(this::isComponentRole)
+          .collect(toList());
+    } catch (ClassNotFoundException exc) {
+      throw new BeanDefinitionStoreException("", exc);
+    }
   }
 
   /**

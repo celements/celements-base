@@ -96,11 +96,12 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
   private void assertMap(Map<String, TestComponentRole> map, String prefix) {
     assertNotNull(map);
     assertEquals(5, map.size());
+    System.out.println(map);
     assertSame(defaultFromSpring, map.get(prefix + "default"));
-    assertSame(springFromXWiki, map.get(TestSpringSingletonComponent.NAME));
+    assertSame(springFromXWiki, map.get(prefix + TestSpringSingletonComponent.NAME));
     assertSame(xwikiFromSpring, map.get(prefix + TestXWikiSingletonComponent.NAME));
     assertSame(TestSpringPerLookupComponent.class,
-        map.get(TestSpringPerLookupComponent.NAME).getClass());
+        map.get(prefix + TestSpringPerLookupComponent.NAME).getClass());
     assertSame(TestXWikiPerLookupComponent.class,
         map.get(prefix + TestXWikiPerLookupComponent.NAME).getClass());
   }
