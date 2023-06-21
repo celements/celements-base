@@ -44,6 +44,10 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
     super(parentBeanFactory);
   }
 
+  /**
+   * Register beans implementing a {@link ComponentRole} with the
+   * {@link ComponentRole#getBeanName()}.
+   */
   @Override
   public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
       throws BeanDefinitionStoreException {
