@@ -1,4 +1,4 @@
-package org.xwiki.component.spring;
+package com.celements.spring.config;
 
 import java.io.IOException;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.celements.servlet;
 
-import static org.xwiki.component.spring.XWikiSpringConfig.*;
+import static com.celements.spring.config.XWikiSpringConfig.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,11 +15,8 @@ import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import org.xwiki.component.spring.XWikiSpringConfig;
 
-import com.celements.spring.CelSpringConfig;
 import com.celements.spring.context.XWikiShimBeanFactory;
-import com.google.common.collect.ImmutableList;
 
 public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
 
@@ -28,9 +25,7 @@ public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
   final AtomicReference<Exception> firstClosingStackTrace = new AtomicReference<>();
 
   public CelSpringWebContext() {
-    this(ImmutableList.of(
-        XWikiSpringConfig.class,
-        CelSpringConfig.class));
+    this(List.of());
   }
 
   public CelSpringWebContext(@NotNull List<Class<?>> configs) {
@@ -42,7 +37,11 @@ public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
       @NotNull List<Class<?>> configs) {
     super();
     setBeanNameGenerator(beanNameGenerator);
-    register(configs.toArray(new Class[configs.size()]));
+    if (configs.isEmpty()) {
+      scan("com.celements.spring.config");
+    } else {
+      register(configs.toArray(new Class[configs.size()]));
+    }
     LOGGER.info("initializing configs: {}", configs);
   }
 
