@@ -84,6 +84,8 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.HeaderBlock;
 import org.xwiki.rendering.block.LinkBlock;
@@ -1075,6 +1077,10 @@ public class XWikiDocument implements DocumentModelBridge {
     return documentReference;
   }
 
+  public DocumentReference getDocRef() {
+    return documentReference;
+  }
+
   /**
    * @return the document's space + page name (eg "space.page")
    * @deprecated since 2.2M1 use {@link #getDocumentReference()} instead
@@ -1153,12 +1159,16 @@ public class XWikiDocument implements DocumentModelBridge {
    * {@inheritDoc}
    *
    * @see DocumentModelBridge#getWikiName()
-   * @deprecated since 2.2M1 use {@link #getDocumentReference()} instead
+   * @deprecated since 2.2M1 use {@link #getWikiRef()} instead
    */
   @Override
   @Deprecated
   public String getWikiName() {
     return getDatabase();
+  }
+
+  public WikiReference getWikiRef() {
+    return getDocRef().getWikiReference();
   }
 
   /**
@@ -1171,6 +1181,10 @@ public class XWikiDocument implements DocumentModelBridge {
   @Deprecated
   public String getSpaceName() {
     return this.getSpace();
+  }
+
+  public SpaceReference getSpaceRef() {
+    return getDocRef().getLastSpaceReference();
   }
 
   /**
