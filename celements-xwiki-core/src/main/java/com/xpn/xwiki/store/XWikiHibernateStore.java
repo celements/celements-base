@@ -1011,25 +1011,24 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     // explicitely the current space to the render() method.
     ExecutionContext econtext = new ExecutionContext();
     Execution execution = Utils.getComponent(Execution.class);
-    execution.pushContext(econtext);
     List<String> links;
     try {
       // Create new clean context to avoid wiki manager plugin requests in same session
       XWikiContext renderContext = (XWikiContext) context.clone();
-
       renderContext.setDoc(doc);
       econtext.set(XWIKI_CONTEXT, renderContext);
       Utils.getComponent(ExecutionContextManager.class).initialize(econtext);
-
-      XWikiRenderer renderer = renderContext.getWiki().getRenderingEngine().getRenderer("wiki");
-      renderer.render(doc.getContent(), doc, doc, renderContext);
-
-      links = (List<String>) renderContext.get("links");
+      execution.pushContext(econtext);
+      try {
+        XWikiRenderer renderer = renderContext.getWiki().getRenderingEngine().getRenderer("wiki");
+        renderer.render(doc.getContent(), doc, doc, renderContext);
+        links = (List<String>) renderContext.get("links");
+      } finally {
+        execution.popContext();
+      }
     } catch (Exception e) {
       // If the rendering fails lets forget backlinks without errors
       links = Collections.emptyList();
-    } finally {
-      execution.popContext();
     }
 
     if (links != null) {
