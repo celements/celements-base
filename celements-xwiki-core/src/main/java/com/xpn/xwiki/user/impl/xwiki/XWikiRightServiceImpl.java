@@ -22,7 +22,6 @@
 package com.xpn.xwiki.user.impl.xwiki;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,8 +32,8 @@ import java.util.Vector;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -60,11 +59,10 @@ import com.xpn.xwiki.web.Utils;
  */
 public class XWikiRightServiceImpl implements XWikiRightService {
 
-  private static final Log LOG = LogFactory.getLog(XWikiRightServiceImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiRightServiceImpl.class);
 
-  private static final List<String> ALLLEVELS = Arrays.asList("admin", "view", "edit", "comment",
-      "delete",
-      "undelete", "register", "programming");
+  private static final List<String> ALLLEVELS = List.of("admin", "view", "edit", "comment",
+      "delete", "undelete", "register", "programming");
 
   private static final EntityReference DEFAULTUSERSPACE = new EntityReference("XWiki",
       EntityType.SPACE);
@@ -75,8 +73,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
    * Used to convert a string into a proper Document Reference.
    */
   private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
-      .getComponent(
-          DocumentReferenceResolver.class, "currentmixed");
+      .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
   /**
    * Used to convert a proper Document Name to string.
@@ -956,36 +953,23 @@ public class XWikiRightServiceImpl implements XWikiRightService {
         // If no context document is set, then check the rights of the current user
         return isSuperAdminOrProgramming(context.getUser(), null, "programming", true, context);
       }
-
       String username = doc.getContentAuthor();
-
       if (username == null) {
         return false;
       }
-
-      String docname;
-      if (doc.getDatabase() != null) {
-        docname = doc.getDatabase() + ":" + doc.getFullName();
-        if (username.indexOf(":") == -1) {
-          username = doc.getDatabase() + ":" + username;
-        }
+      String userdb = doc.getWikiRef().getName();
+      if (username.indexOf(":") == -1) {
+        username = userdb + ":" + username;
       } else {
-        docname = doc.getFullName();
+        userdb = username.split(":")[0];
       }
-
       // programming rights can only been given for user of the main wiki
-      if (context.getWiki().isVirtualMode()) {
-        String maindb = context.getWiki().getDatabase();
-        if ((maindb == null) || (!username.startsWith(maindb))) {
-          return false;
-        }
+      if (context.getWiki().isVirtualMode() && !context.isMainWiki(userdb)) {
+        return false;
       }
-
-      return hasAccessLevel("programming", username, docname, context);
+      return hasAccessLevel("programming", username, doc.getPrefixedFullName(), context);
     } catch (Exception e) {
-      LOG.error("Faile to check programming right for document [" + doc.getPrefixedFullName() + "]",
-          e);
-
+      LOG.error("Failed to check programming right for document [{}]", doc, e);
       return false;
     }
   }

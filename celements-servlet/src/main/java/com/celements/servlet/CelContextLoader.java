@@ -1,19 +1,9 @@
 package com.celements.servlet;
 
 import static com.celements.common.MoreObjectsCel.*;
-import static com.celements.common.lambda.LambdaExceptionUtil.*;
-import static com.google.common.collect.ImmutableList.*;
-
-import java.net.MalformedURLException;
-import java.util.List;
-import java.util.Objects;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.ConfigurationRuntimeException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -38,21 +28,7 @@ public class CelContextLoader extends ContextLoader {
   @Override
   protected ConfigurableWebApplicationContext createWebApplicationContext(
       ServletContext servletContext) {
-    return new CelSpringWebContext(loadSpringConfigs(servletContext));
-  }
-
-  protected List<Class<?>> loadSpringConfigs(ServletContext servletContext) {
-    try {
-      Configuration springProperties = new PropertiesConfiguration(servletContext.getResource(
-          "/WEB-INF/spring.properties"));
-      List<?> configNames = springProperties.getList("spring.config");
-      return configNames.stream()
-          .map(Objects::toString)
-          .map(rethrowFunction(Class::forName))
-          .collect(toImmutableList());
-    } catch (MalformedURLException | ConfigurationException | ClassNotFoundException exc) {
-      throw new ConfigurationRuntimeException(exc);
-    }
+    return new CelSpringWebContext();
   }
 
   public void closeAppContext(ServletContext servletContext) {

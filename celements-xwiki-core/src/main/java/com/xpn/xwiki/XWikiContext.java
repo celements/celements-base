@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.apache.commons.collections.map.LRUMap;
@@ -114,8 +115,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
   private static final String LANGUAGE_KEY = "language";
 
   private String interfaceLanguage;
-
-  private int mode;
 
   private URI uri;
 
@@ -306,8 +305,11 @@ public class XWikiContext extends Hashtable<Object, Object> {
    * @return true it's main wiki's context, false otherwise.
    */
   public boolean isMainWiki(String wikiName) {
-    return !getWiki().isVirtualMode()
-        || (wikiName == null ? getMainXWiki() == null : wikiName.equalsIgnoreCase(getMainXWiki()));
+    String mainWiki = Optional.ofNullable(getMainXWiki())
+        .orElse(XWikiConstant.MAIN_WIKI.getName());
+    return !getXWikiCfg().isVirtualMode()
+        || mainWiki.equalsIgnoreCase(wikiName)
+        || getXWikiCfg().getProperty("xwiki.db", mainWiki).equalsIgnoreCase(wikiName);
   }
 
   public XWikiDocument getDoc() {
@@ -575,5 +577,9 @@ public class XWikiContext extends Hashtable<Object, Object> {
     // this.virtual = virtual;
   }
   // END XWikiContextCompatibilityAspect
+
+  private XWikiConfigSource getXWikiCfg() {
+    return Utils.getComponent(XWikiConfigSource.class);
+  }
 
 }
