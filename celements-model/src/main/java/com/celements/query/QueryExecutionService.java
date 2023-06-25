@@ -23,10 +23,12 @@ import org.xwiki.query.QueryException;
 
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
+import com.celements.store.DefaultHibernateStore;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
 
 @Component
@@ -176,7 +178,8 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
   }
 
   private XWikiHibernateStore getHibStore() {
-    return Utils.getComponent(XWikiHibernateStore.class);
+    return (XWikiHibernateStore) Utils.getComponent(XWikiStoreInterface.class,
+        DefaultHibernateStore.NAME);
   }
 
   @Override

@@ -12,10 +12,12 @@ import org.junit.Test;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
+import com.celements.store.DefaultHibernateStore;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
 
 public class QueryExecutionServiceTest extends AbstractComponentTest {
@@ -25,7 +27,8 @@ public class QueryExecutionServiceTest extends AbstractComponentTest {
 
   @Before
   public void setUp_CelementsWebScriptServiceTest() throws Exception {
-    storeMock = registerComponentMock(XWikiHibernateStore.class);
+    storeMock = createDefaultMock(XWikiHibernateStore.class);
+    registerComponentMock(XWikiStoreInterface.class, DefaultHibernateStore.NAME, storeMock);
     queryExecService = (QueryExecutionService) Utils.getComponent(IQueryExecutionServiceRole.class);
     expect(getMock(XWiki.class).getHibernateStore()).andReturn(storeMock).anyTimes();
   }

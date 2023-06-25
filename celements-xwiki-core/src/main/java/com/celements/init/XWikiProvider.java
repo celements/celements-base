@@ -57,6 +57,7 @@ public class XWikiProvider {
   }
 
   private Optional<XWiki> getFromSContext() {
+    LOGGER.trace("getFromSContext - noawait");
     return Optional.ofNullable(getXWikiServletFuture())
         .filter(future -> future.isDone() && !future.isCompletedExceptionally())
         .map(CompletableFuture::join);
@@ -64,7 +65,7 @@ public class XWikiProvider {
 
   private Optional<XWiki> getFromSContext(Duration awaitDuration) throws ExecutionException {
     try {
-      LOGGER.trace("getFromSContext");
+      LOGGER.trace("getFromSContext - await [{}]", awaitDuration);
       CompletableFuture<XWiki> future = getXWikiServletFuture();
       checkState(future != null, "should not happen, are we before ApplicationStartedEvent?");
       long awaitSeconds = Optional.ofNullable(awaitDuration)

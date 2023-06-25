@@ -29,8 +29,11 @@ import com.celements.servlet.CelementsLifecycleEvent;
 import com.celements.wiki.WikiService;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.internal.XWikiExecutionContextInitializer;
+import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
 
 @Immutable
@@ -46,6 +49,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
   private final Execution execution;
   private final ExecutionContextManager executionManager;
   private final ComponentManager componentManager;
+  private final XWikiHibernateStore hibernateStore;
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiConfigSource xwikiCfg;
@@ -57,6 +61,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
       Execution execution,
       ExecutionContextManager executionManager,
       ComponentManager componentManager,
+      @Named("hibernate") XWikiStoreInterface hibernateStore,
       WikiService wikiService,
       WikiUpdater wikiUpdater,
       XWikiConfigSource xwikiCfg,
@@ -65,6 +70,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
     this.execution = execution;
     this.executionManager = executionManager;
     this.componentManager = componentManager;
+    this.hibernateStore = (XWikiHibernateStore) hibernateStore;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiCfg = xwikiCfg;
@@ -98,6 +104,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
   private XWiki bootstrapXWiki() throws XWikiException, ExecutionContextException {
     Utils.setComponentManager(componentManager);
     ExecutionContext executionCtx = initExecutionContext();
+    hibernateStore.checkHibernate(XWikiConstant.MAIN_WIKI);
     XWiki xwiki = new XWiki(true);
     executionCtx.set(XWIKI, xwiki);
     xwiki.loadPlugins();
@@ -116,7 +123,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
 
   private void triggerWikiUpdates() {
     try {
-      if (Boolean.TRUE.equals(cfgSrc.getProperty("celements.init.updatedatabases"))
+      if (Boolean.TRUE.equals(cfgSrc.getProperty("celements.init.updatedatabases", Boolean.class))
           && xwikiCfg.isVirtualMode()) {
         wikiService.streamAllWikis()
             .forEach(wikiUpdater::updateAsync);
