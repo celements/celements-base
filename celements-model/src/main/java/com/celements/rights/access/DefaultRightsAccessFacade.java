@@ -15,13 +15,13 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 
 import com.celements.auth.user.User;
+import com.celements.init.XWikiProvider;
 import com.celements.model.context.ModelContext;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
 import com.celements.rights.access.internal.IEntityReferenceRandomCompleterRole;
 import com.celements.web.classes.oldcore.XWikiUsersClass.Type;
 import com.google.common.base.Optional;
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 import com.xpn.xwiki.user.api.XWikiRightService;
@@ -35,32 +35,26 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
   private final IEntityReferenceRandomCompleterRole randomCompleter;
   private final ModelUtils modelUtils;
   private final ModelContext context;
+  private final XWikiProvider xwiki;
 
   @Inject
   public DefaultRightsAccessFacade(IEntityReferenceRandomCompleterRole randomCompleter,
-      ModelUtils modelUtils, ModelContext context) {
+      ModelUtils modelUtils, ModelContext context, XWikiProvider xwiki) {
     super();
     this.randomCompleter = randomCompleter;
     this.modelUtils = modelUtils;
     this.context = context;
-  }
-
-  /**
-   * @deprecated instead use {@link #context}
-   */
-  @Deprecated
-  private XWikiContext getContext() {
-    return context.getXWikiContext();
+    this.xwiki = xwiki;
   }
 
   @Override
   public XWikiRightService getRightsService() {
-    return getContext().getWiki().getRightService();
+    return xwiki.get().orElseThrow().getRightService();
   }
 
   private XWikiGroupService getGroupService() {
     try {
-      return getContext().getWiki().getGroupService(getContext());
+      return xwiki.get().orElseThrow().getGroupService(context.getXWikiContext());
     } catch (XWikiException xwe) {
       throw new IllegalStateException("failed getting GroupService", xwe);
     }
@@ -119,7 +113,8 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
       if (userDocRef != null) {
         accountName = modelUtils.serializeRef(userDocRef);
       }
-      return getRightsService().hasAccessLevel(level, accountName, fullName, getContext());
+      return getRightsService().hasAccessLevel(level, accountName, fullName,
+          context.getXWikiContext());
     } catch (XWikiException xwe) {
       // already being catched in XWikiRightServiceImpl.hasAccessLevel()
       LOGGER.error("should not happen", xwe);
@@ -131,7 +126,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
   public boolean isInGroup(DocumentReference groupDocRef, User user) {
     try {
       return (user != null) && getGroupService().getAllGroupsReferencesForMember(user.getDocRef(),
-          0, 0, getContext()).contains(groupDocRef);
+          0, 0, context.getXWikiContext()).contains(groupDocRef);
     } catch (XWikiException xwe) {
       LOGGER.warn("isInGroup: failed for user [{}], group [{}]", user, groupDocRef, xwe);
       return false;
@@ -168,8 +163,8 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
   private boolean hasAdminRightsOnPreferences(User user) {
     boolean ret = false;
     ret = hasAccessLevelInternal("XWiki.XWikiPreferences", "admin", user.getDocRef());
-    if (!ret && context.getCurrentDoc().isPresent()) {
-      String spacePrefFullName = context.getCurrentSpaceRef().get().getName() + ".WebPreferences";
+    if (!ret && context.getDocument().isPresent()) {
+      String spacePrefFullName = context.getSpaceRef().orElseThrow().getName() + ".WebPreferences";
       ret = hasAccessLevelInternal(spacePrefFullName, "admin", user.getDocRef());
     }
     return ret;
@@ -177,7 +172,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   @Override
   public boolean isAdvancedAdmin() {
-    return isAdvancedAdmin(context.getCurrentUser().orNull());
+    return isAdvancedAdmin(context.user().orElse(null));
   }
 
   @Override
@@ -189,7 +184,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   @Override
   public boolean isSuperAdmin() {
-    return isSuperAdmin(context.getCurrentUser().orNull());
+    return isSuperAdmin(context.user().orElse(null));
   }
 
   @Override
@@ -201,7 +196,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   @Override
   public boolean isLayoutEditor() {
-    return isLayoutEditor(context.getCurrentUser().orNull());
+    return isLayoutEditor(context.user().orElse(null));
   }
 
   @Override
@@ -223,7 +218,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
           .getAllGroupsReferencesForMember(user.getDocRef(), 0, 0, context.getXWikiContext());
       return groupRefList.stream();
     } catch (XWikiException xwe) {
-      LOGGER.error("generating groupRefList failed for {}", xwe);
+      LOGGER.error("generating groupRefList failed for {}", user, xwe);
       return Stream.empty();
     }
 
