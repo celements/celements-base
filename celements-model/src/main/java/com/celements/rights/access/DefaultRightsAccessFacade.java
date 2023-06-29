@@ -2,6 +2,7 @@ package com.celements.rights.access;
 
 import static com.xpn.xwiki.user.api.XWikiRightService.*;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -213,7 +214,15 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
   @Override
   public List<DocumentReference> getGroupRefsForUser(User user) {
     // TODO Auto-generated method stub
-    return null;
+    DocumentReference userDocRef = null;
+    try {
+      Collection<DocumentReference> groupRefList = getGroupService()
+          .getAllGroupsReferencesForMember(userDocRef, 0, 0, getContext());
+      return (List<DocumentReference>) groupRefList;
+    } catch (XWikiException xwe) {
+      return null;
+    }
+
   }
 
 }
