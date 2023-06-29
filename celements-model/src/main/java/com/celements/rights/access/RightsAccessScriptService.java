@@ -1,11 +1,14 @@
 package com.celements.rights.access;
 
+import java.util.List;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.script.service.ScriptService;
 
+import com.celements.auth.user.User;
 import com.celements.rights.publication.EPubUnpub;
 import com.celements.rights.publication.IPublicationServiceRole;
 import com.xpn.xwiki.user.api.XWikiRightService;
@@ -75,4 +78,12 @@ public class RightsAccessScriptService implements ScriptService {
   public boolean isLayoutEditor() {
     return rightsAccess.isLayoutEditor();
   }
+
+  List<DocumentReference> getGroupRefsForUser(DocumentReference userDocRef) {
+    // TODO convert userDocRef in User
+    User user = null;
+
+    return rightsAccess.getGroupRefsForUser(user);
+  }
+
 }

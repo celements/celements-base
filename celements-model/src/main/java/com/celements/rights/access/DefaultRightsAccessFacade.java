@@ -2,6 +2,8 @@ package com.celements.rights.access;
 
 import static com.xpn.xwiki.user.api.XWikiRightService.*;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
@@ -206,6 +208,12 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
   private DocumentReference getLayoutEditorsGroupDocRef() {
     return new RefBuilder().doc("LayoutEditorsGroup").space("XWiki").with(
         context.getWikiRef()).build(DocumentReference.class);
+  }
+
+  @Override
+  public List<DocumentReference> getGroupRefsForUser(User user) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
