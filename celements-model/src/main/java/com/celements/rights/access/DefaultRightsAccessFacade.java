@@ -5,10 +5,11 @@ import static com.xpn.xwiki.user.api.XWikiRightService.*;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.stereotype.Component;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -31,14 +32,18 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultRightsAccessFacade.class);
 
-  @Requirement
-  IEntityReferenceRandomCompleterRole randomCompleter;
+  private final IEntityReferenceRandomCompleterRole randomCompleter;
+  private final ModelUtils modelUtils;
+  private final ModelContext context;
 
-  @Requirement
-  private ModelUtils modelUtils;
-
-  @Requirement
-  private ModelContext context;
+  @Inject
+  public DefaultRightsAccessFacade(IEntityReferenceRandomCompleterRole randomCompleter,
+      ModelUtils modelUtils, ModelContext context) {
+    super();
+    this.randomCompleter = randomCompleter;
+    this.modelUtils = modelUtils;
+    this.context = context;
+  }
 
   /**
    * @deprecated instead use {@link #context}
