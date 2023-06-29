@@ -40,12 +40,14 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   private XWikiGroupService groupSrvMock;
   private ModelContext modelContext;
   private ModelUtils modelUtils;
+  private IEntityReferenceRandomCompleterRole randomCompleterMock;
 
   @Before
   public void prepareTest() throws Exception {
     registerComponentMock(UserService.class);
     context = getContext();
     xwiki = getWikiMock();
+    randomCompleterMock = registerComponentMock(IEntityReferenceRandomCompleterRole.class);
     rightsAccess = (DefaultRightsAccessFacade) Utils.getComponent(IRightsAccessFacadeRole.class);
     modelContext = Utils.getComponent(ModelContext.class);
     modelUtils = Utils.getComponent(ModelUtils.class);
@@ -184,9 +186,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     SpaceReference spaceRef = new SpaceReference("MySpace", modelContext.getWikiRef());
     DocumentReference docRef = new DocumentReference("untitled1", spaceRef);
     EAccessLevel level = EAccessLevel.EDIT;
-    IEntityReferenceRandomCompleterRole randomCompleterMock = createDefaultMock(
-        IEntityReferenceRandomCompleterRole.class);
-    rightsAccess.randomCompleter = randomCompleterMock;
+
     expect(randomCompleterMock.randomCompleteSpaceRef(eq(spaceRef))).andReturn(docRef).once();
     expect(expectRightsServiceMock().hasAccessLevel(eq(level.getIdentifier()), eq(
         getContext().getUser()), eq(modelUtils.serializeRef(docRef)), same(context))).andReturn(
