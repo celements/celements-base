@@ -3,7 +3,7 @@ package com.celements.rights.access;
 import static com.xpn.xwiki.user.api.XWikiRightService.*;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -217,15 +217,14 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
   }
 
   @Override
-  public List<DocumentReference> getGroupRefsForUser(User user) {
-    // TODO Auto-generated method stub
-    DocumentReference userDocRef = null;
+  public Stream<DocumentReference> getGroupRefsForUser(User user) {
     try {
       Collection<DocumentReference> groupRefList = getGroupService()
-          .getAllGroupsReferencesForMember(userDocRef, 0, 0, getContext());
-      return (List<DocumentReference>) groupRefList;
+          .getAllGroupsReferencesForMember(user.getDocRef(), 0, 0, context.getXWikiContext());
+      return groupRefList.stream();
     } catch (XWikiException xwe) {
-      return null;
+      LOGGER.error("generating groupRefList failed for {}", xwe);
+      return Stream.empty();
     }
 
   }

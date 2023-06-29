@@ -1,6 +1,6 @@
 package com.celements.rights.access;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
@@ -51,6 +51,6 @@ public interface IRightsAccessFacadeRole {
 
   boolean isLayoutEditor(User user);
 
-  List<DocumentReference> getGroupRefsForUser(User user);
+  Stream<DocumentReference> getGroupRefsForUser(User user);
 
 }
