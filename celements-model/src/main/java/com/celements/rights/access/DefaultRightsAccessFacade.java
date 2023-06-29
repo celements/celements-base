@@ -221,7 +221,6 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
       LOGGER.error("generating groupRefList failed for {}", user, xwe);
       return Stream.empty();
     }
-
   }
 
 }
