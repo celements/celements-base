@@ -95,7 +95,7 @@ public class RightsAccessScriptService implements ScriptService {
     return rightsAccess.isLayoutEditor();
   }
 
-  List<DocumentReference> getGroupRefsForUser(DocumentReference userDocRef) {
+  public List<DocumentReference> getGroupRefsForUser(DocumentReference userDocRef) {
     try {
       User user = userService.getUser(userDocRef);
       return rightsAccess.getGroupRefsForUser(user).collect(Collectors.toList());
