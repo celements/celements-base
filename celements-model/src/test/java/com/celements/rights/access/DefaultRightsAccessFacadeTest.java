@@ -7,6 +7,8 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Before;
@@ -25,7 +27,6 @@ import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
 import com.celements.rights.access.internal.IEntityReferenceRandomCompleterRole;
 import com.celements.web.classes.oldcore.XWikiUsersClass.Type;
-import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -484,15 +485,12 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
   @Test
   public void test_getGroupRefsForUser() throws Exception {
     User user = expectUser("XWiki.XWikiTest");
-    DocumentReference userDocRef = RefBuilder.create().wiki(context.getDatabase()).space("XWiki")
-        .doc("XWikiTest").build(DocumentReference.class);
-    DocumentReference groupRef1 = RefBuilder.create().wiki(context.getDatabase()).space("XWiki")
-        .doc("group1").build(DocumentReference.class);
-    DocumentReference groupRef2 = RefBuilder.create().wiki(context.getDatabase()).space("XWiki")
-        .doc("group2").build(DocumentReference.class);
-    DocumentReference groupRef3 = RefBuilder.create().wiki(context.getDatabase()).space("XWiki")
-        .doc("group3").build(DocumentReference.class);
-    Collection<DocumentReference> groupDocRefCollection = ImmutableList.of(groupRef1, groupRef2,
+    RefBuilder refBuilder = RefBuilder.create().wiki(context.getDatabase()).space("XWiki");
+    DocumentReference userDocRef = refBuilder.doc("XWikiTest").build(DocumentReference.class);
+    DocumentReference groupRef1 = refBuilder.doc("group1").build(DocumentReference.class);
+    DocumentReference groupRef2 = refBuilder.doc("group2").build(DocumentReference.class);
+    DocumentReference groupRef3 = refBuilder.doc("group3").build(DocumentReference.class);
+    Collection<DocumentReference> groupDocRefCollection = List.of(groupRef1, groupRef2,
         groupRef3);
 
     expect(groupSrvMock.getAllGroupsReferencesForMember(userDocRef, 0, 0, context))
@@ -502,7 +500,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     Stream<DocumentReference> groupRefStream = rightsAccess.getGroupRefsForUser(user);
     verifyDefault();
 
-    // assertEquals(Stream.class, groupRefStream.getClass());
+    assertEquals(groupDocRefCollection, groupRefStream.collect(Collectors.toList()));
 
   }
 
