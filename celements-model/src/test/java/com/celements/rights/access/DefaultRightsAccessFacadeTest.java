@@ -501,7 +501,6 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     verifyDefault();
 
     assertEquals(groupDocRefCollection, groupRefStream.collect(Collectors.toList()));
-
   }
 
   @Test
@@ -518,7 +517,6 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     verifyDefault();
 
     assertTrue(groupRefStream.collect(Collectors.toList()).isEmpty());
-
   }
 
   private void expectHasAdminRights(String accountName, boolean hasAdminXWikiPref,
