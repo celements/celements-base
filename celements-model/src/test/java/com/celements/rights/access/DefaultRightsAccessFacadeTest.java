@@ -504,6 +504,23 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
 
   }
 
+  @Test
+  public void test_getGroupRefsForUser_XWikiException() throws Exception {
+    User user = expectUser("XWiki.XWikiTest");
+    RefBuilder refBuilder = RefBuilder.create().wiki(context.getDatabase()).space("XWiki");
+    DocumentReference userDocRef = refBuilder.doc("XWikiTest").build(DocumentReference.class);
+
+    expect(groupSrvMock.getAllGroupsReferencesForMember(userDocRef, 0, 0, context))
+        .andThrow(new XWikiException());
+
+    replayDefault();
+    Stream<DocumentReference> groupRefStream = rightsAccess.getGroupRefsForUser(user);
+    verifyDefault();
+
+    assertTrue(groupRefStream.collect(Collectors.toList()).isEmpty());
+
+  }
+
   private void expectHasAdminRights(String accountName, boolean hasAdminXWikiPref,
       Boolean hasAdminWebPref) throws XWikiException {
     accountName = getContext().getDatabase() + ":" + accountName;
