@@ -29,13 +29,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.securityfilter.authenticator.Authenticator;
 import org.securityfilter.authenticator.FormAuthenticator;
 import org.securityfilter.filter.SecurityRequestWrapper;
 import org.securityfilter.filter.URLPatternMatcher;
 import org.securityfilter.realm.SimplePrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.container.servlet.filters.SavedRequestManager;
 
 import com.xpn.xwiki.XWikiContext;
@@ -43,7 +43,7 @@ import com.xpn.xwiki.XWikiException;
 
 public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthenticator {
 
-  private static final Log LOG = LogFactory.getLog(MyFormAuthenticator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MyFormAuthenticator.class);
 
   /**
    * Show the login page.
@@ -96,9 +96,10 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
       redirectBack.append(delimiter);
       redirectBack.append(sridParameter);
     }
-    response.sendRedirect(response.encodeRedirectURL(request.getContextPath() + this.loginPage
-        + "?" + sridParameter + "&xredirect="
-        + URLEncoder.encode(redirectBack.toString(), "UTF-8")));
+    String redirectUrl = response.encodeRedirectURL(this.loginPage + "?" + sridParameter
+        + "&xredirect=" + URLEncoder.encode(redirectBack.toString(), "UTF-8"));
+    LOGGER.trace("showLogin - redirect to {}", redirectUrl);
+    response.sendRedirect(redirectUrl);
   }
 
   /**
@@ -134,6 +135,7 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
       throws Exception {
     try {
       Principal principal = MyBasicAuthenticator.checkLogin(request, response, context);
+      LOGGER.trace("processLogin - {}", principal);
       if (principal != null) {
         return false;
       }
@@ -162,9 +164,7 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
         principal = authenticate(username, password, context);
 
         if (principal != null) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("User " + principal.getName() + " has been authentified from cookie");
-          }
+          LOGGER.debug("User {} has been authentified from cookie", principal.getName());
 
           // make sure the Principal contains wiki name information
           if (!StringUtils.contains(principal.getName(), ':')) {
@@ -213,9 +213,7 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
     Principal principal = authenticate(username, password, context);
     if (principal != null) {
       // login successful
-      if (LOG.isInfoEnabled()) {
-        LOG.info("User " + principal.getName() + " has been logged-in");
-      }
+      LOGGER.error("User {} has been logged-in", principal.getName());
 
       // invalidate old session if the user was already authenticated, and they logged in as a
       // different user
@@ -250,9 +248,7 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
     } else {
       // login failed
       // set response status and forward to error page
-      if (LOG.isInfoEnabled()) {
-        LOG.info("User " + username + " login has failed");
-      }
+      LOGGER.info("User {} login has failed", username);
 
       String returnCode = context.getWiki().Param("xwiki.authentication.unauthorized_code");
       int rCode = HttpServletResponse.SC_UNAUTHORIZED;
@@ -286,7 +282,7 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
     if (!StringUtils.isEmpty(savedURL)) {
       return savedURL;
     }
-    return request.getContextPath() + this.defaultPage;
+    return this.defaultPage;
   }
 
   public static Principal authenticate(String username, String password, XWikiContext context)
