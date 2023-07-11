@@ -21,8 +21,9 @@
 
 package com.xpn.xwiki.user.impl.xwiki;
 
+import static com.google.common.base.Strings.*;
+
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,6 +37,7 @@ import org.securityfilter.filter.URLPatternMatcher;
 import org.securityfilter.realm.SimplePrincipal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.xwiki.container.servlet.filters.SavedRequestManager;
 
 import com.xpn.xwiki.XWikiContext;
@@ -68,36 +70,23 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.securityfilter.authenticator.Authenticator#showLogin(HttpServletRequest,
-   *      HttpServletResponse)
-   */
   @Override
   public void showLogin(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    String savedRequestId = request.getParameter(SavedRequestManager.getSavedRequestIdentifier());
-    if (StringUtils.isEmpty(savedRequestId)) {
-      // Save this request
+    String savedRequestKey = SavedRequestManager.getSavedRequestIdentifier();
+    String savedRequestId = request.getParameter(savedRequestKey);
+    if (nullToEmpty(savedRequestId).isBlank()) {
       savedRequestId = SavedRequestManager.saveRequest(request);
     }
-    String sridParameter = SavedRequestManager.getSavedRequestIdentifier() + "=" + savedRequestId;
-
-    // Redirect to login page
-    StringBuilder redirectBack = new StringBuilder(request.getRequestURI());
-    redirectBack.append('?');
-    String delimiter = "";
-    if (StringUtils.isNotEmpty(request.getQueryString())) {
-      redirectBack.append(request.getQueryString());
-      delimiter = "&";
+    var redirectUriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURI())
+        .query(request.getQueryString());
+    if (!request.getParameterMap().containsKey(savedRequestKey)) {
+      redirectUriBuilder.queryParam(savedRequestKey, savedRequestId);
     }
-    if (!request.getParameterMap().containsKey(SavedRequestManager.getSavedRequestIdentifier())) {
-      redirectBack.append(delimiter);
-      redirectBack.append(sridParameter);
-    }
-    String redirectUrl = response.encodeRedirectURL(this.loginPage + "?" + sridParameter
-        + "&xredirect=" + URLEncoder.encode(redirectBack.toString(), "UTF-8"));
+    String redirectUrl = UriComponentsBuilder.fromUriString(loginPage)
+        .queryParam(savedRequestKey, savedRequestId)
+        .queryParam("xredirect", redirectUriBuilder.toUriString())
+        .build().toUriString();
     LOGGER.trace("showLogin - redirect to {}", redirectUrl);
     response.sendRedirect(redirectUrl);
   }
@@ -213,7 +202,7 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
     Principal principal = authenticate(username, password, context);
     if (principal != null) {
       // login successful
-      LOGGER.error("User {} has been logged-in", principal.getName());
+      LOGGER.info("User {} has been logged-in", principal.getName());
 
       // invalidate old session if the user was already authenticated, and they logged in as a
       // different user
