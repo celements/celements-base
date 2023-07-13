@@ -33,8 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xwiki.model.reference.WikiReference;
 
-import com.celements.model.reference.RefBuilder;
 import com.celements.wiki.WikiService;
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiConfigSource;
@@ -124,13 +124,13 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
       protocol = context.getRequest().getScheme();
       if ("http".equalsIgnoreCase(protocol) && context.getRequest().isSecure()) {
         // This can happen in reverse proxy mode, if the proxy server receives HTTPS requests and
-        // forwards them
-        // as HTTP to the internal web server running XWiki.
+        // forwards them as HTTP to the internal web server running XWiki.
         protocol = "https";
       }
+    } else {
+      protocol = xwikiCfg.getProperty("xwiki.url.protocol", protocol);
     }
-    // Detected protocol can be overwritten by configuration.
-    return xwikiCfg.getProperty("xwiki.url.protocol", protocol);
+    return protocol;
   }
 
   /**
@@ -159,15 +159,16 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
   }
 
   public URL getServerURL(String xwikidb, XWikiContext context) throws MalformedURLException {
+    if (Strings.isNullOrEmpty(xwikidb) || xwikidb.equals(context.getOriginalDatabase())) {
+      return this.serverURL; // serverURL is the request URL, see #init
+    }
     if (context.isMainWiki(xwikidb)) {
       String surl = xwikiCfg.getProperty("xwiki.home", null);
       if (!StringUtils.isEmpty(surl)) {
         return new URL(surl);
       }
     }
-    return RefBuilder.create().wiki(xwikidb).buildOpt(WikiReference.class)
-        .map(wikiService::streamUrisForWiki)
-        .stream().flatMap(s -> s)
+    return wikiService.streamUrisForWiki(new WikiReference(xwikidb))
         .map(rethrowFunction(URI::toURL))
         .findFirst().orElse(serverURL);
   }
