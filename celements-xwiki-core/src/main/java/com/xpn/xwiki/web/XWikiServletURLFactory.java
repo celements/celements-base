@@ -33,8 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.model.reference.RefBuilder;
 import com.celements.wiki.WikiService;
-import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiConfigSource;
@@ -153,51 +153,31 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
     return url.getHost() + (url.getPort() < 0 ? "" : (":" + url.getPort()));
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#getServerURL(com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL getServerURL(XWikiContext context) throws MalformedURLException {
     return getServerURL(context.getDatabase(), context);
   }
 
   public URL getServerURL(String xwikidb, XWikiContext context) throws MalformedURLException {
-    if (Strings.isNullOrEmpty(xwikidb) || xwikidb.equals(context.getOriginalDatabase())) {
-      return this.serverURL;
-    }
     if (context.isMainWiki(xwikidb)) {
       String surl = xwikiCfg.getProperty("xwiki.home", null);
       if (!StringUtils.isEmpty(surl)) {
         return new URL(surl);
       }
     }
-    return wikiService.streamUrisForWiki(new WikiReference(xwikidb))
+    return RefBuilder.create().wiki(xwikidb).buildOpt(WikiReference.class)
+        .map(wikiService::streamUrisForWiki)
+        .stream().flatMap(s -> s)
         .map(rethrowFunction(URI::toURL))
         .findFirst().orElse(serverURL);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#createURL(java.lang.String, java.lang.String,
-   *      java.lang.String, boolean,
-   *      com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL createURL(String web, String name, String action, boolean redirect,
       XWikiContext context) {
     return createURL(web, name, action, context);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#createURL(java.lang.String, java.lang.String,
-   *      java.lang.String,
-   *      java.lang.String, java.lang.String, java.lang.String, com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL createURL(String web, String name, String action, String querystring, String anchor,
       String xwikidb, XWikiContext context) {
