@@ -39,7 +39,7 @@ import com.xpn.xwiki.web.Utils;
 @Immutable
 @Singleton
 @Component
-public class CelementsBootstrap implements ApplicationListener<CelementsInitialisedEvent>, Ordered {
+public class CelementsBootstrap implements ApplicationListener<CelementsStartedEvent>, Ordered {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(CelementsBootstrap.class);
 
@@ -86,7 +86,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsInitiali
   }
 
   @Override
-  public void onApplicationEvent(CelementsInitialisedEvent event) {
+  public void onApplicationEvent(CelementsStartedEvent event) {
     checkState(!INIT_FLAG.getAndSet(true), "already initialised");
     checkState(servletContext.getAttribute(XWiki.SERVLET_CONTEXT_KEY) == null);
     CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
