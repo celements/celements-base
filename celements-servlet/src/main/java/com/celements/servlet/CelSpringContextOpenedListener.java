@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 import org.xwiki.container.servlet.ServletContainerInitializer;
 
-import com.celements.servlet.CelementsLifecycleEvent.State;
+import com.celements.init.CelementsStartedEvent;
 
 @Component
 @Profile("!test")
@@ -30,7 +30,7 @@ public class CelSpringContextOpenedListener implements ApplicationListener<Conte
       context.getBean(ServletContainerInitializer.class)
           .initializeApplicationContext(servletContext);
     }
-    context.publishEvent(new CelementsLifecycleEvent(this, State.STARTED));
+    context.publishEvent(new CelementsStartedEvent(this));
     LOGGER.info("opened {}", event);
   }
 

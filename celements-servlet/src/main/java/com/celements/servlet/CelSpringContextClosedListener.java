@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 import org.xwiki.container.servlet.ServletContainerInitializer;
 
-import com.celements.servlet.CelementsLifecycleEvent.State;
+import com.celements.init.CelementsStoppedEvent;
 
 @Component
 @Profile("!test")
@@ -23,7 +23,7 @@ public class CelSpringContextClosedListener implements ApplicationListener<Conte
   public void onApplicationEvent(ContextClosedEvent event) {
     LOGGER.debug("closing {}", event);
     ApplicationContext context = event.getApplicationContext();
-    context.publishEvent(new CelementsLifecycleEvent(this, State.STOPPED));
+    context.publishEvent(new CelementsStoppedEvent(this));
     if (context instanceof WebApplicationContext) {
       context.getBean(ServletContainerInitializer.class)
           .destroyApplicationContext();

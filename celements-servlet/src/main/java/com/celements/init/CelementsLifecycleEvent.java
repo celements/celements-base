@@ -1,28 +1,27 @@
-package com.celements.servlet;
+package com.celements.init;
 
 import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Strings.*;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.context.ApplicationEvent;
 
 public class CelementsLifecycleEvent extends ApplicationEvent {
 
-  private static final long serialVersionUID = 20230430012323L;
+  private static final long serialVersionUID = 202307171847L;
 
-  public enum State {
-    STARTED, INITIALISED, STOPPED;
-  }
+  private final String state;
 
-  private final State state;
-
-  public CelementsLifecycleEvent(@NotNull Object source, @NotNull State type) {
+  public CelementsLifecycleEvent(@NotNull Object source, @NotEmpty String state) {
     super(source);
-    this.state = checkNotNull(type);
+    checkArgument(!nullToEmpty(state).isEmpty());
+    this.state = state;
   }
 
-  @NotNull
-  public State getType() {
+  @NotEmpty
+  public String getState() {
     return state;
   }
 
