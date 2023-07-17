@@ -51,6 +51,7 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
   protected void beforeSpringContextRefresh() {
     getBeanFactory().registerSingleton(MockServletContext.class.getName(),
         new MockServletContext(getSpringContext()));
+    getSpringContext().getEnvironment().setActiveProfiles("test");
   }
 
   @Before

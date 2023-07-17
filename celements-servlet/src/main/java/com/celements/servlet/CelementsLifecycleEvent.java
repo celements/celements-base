@@ -11,7 +11,7 @@ public class CelementsLifecycleEvent extends ApplicationEvent {
   private static final long serialVersionUID = 20230430012323L;
 
   public enum State {
-    STARTED, STOPPED;
+    STARTED, INITIALISED, STOPPED;
   }
 
   private final State state;
