@@ -41,6 +41,8 @@ import com.xpn.xwiki.web.Utils;
 @Component
 public class CelementsBootstrap implements ApplicationListener<CelementsStartedEvent>, Ordered {
 
+  public static final int ORDER = -1000; // high precedence
+
   protected static final Logger LOGGER = LoggerFactory.getLogger(CelementsBootstrap.class);
 
   private static final AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
@@ -82,7 +84,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
 
   @Override
   public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE;
+    return ORDER;
   }
 
   @Override
