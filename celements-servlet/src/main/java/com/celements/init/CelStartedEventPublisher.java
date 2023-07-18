@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Profile("!test")
-public class CelStartedEventConverter implements ApplicationListener<ContextRefreshedEvent> {
+public class CelStartedEventPublisher implements ApplicationListener<ContextRefreshedEvent> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CelStartedEventConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CelStartedEventPublisher.class);
 
   @Override
   public void onApplicationEvent(ContextRefreshedEvent event) {
