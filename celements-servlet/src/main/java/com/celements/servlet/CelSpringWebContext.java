@@ -3,7 +3,6 @@ package com.celements.servlet;
 import static com.celements.spring.config.XWikiSpringConfig.*;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.validation.constraints.NotNull;
 
@@ -21,8 +20,6 @@ import com.celements.spring.context.XWikiShimBeanFactory;
 public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CelSpringWebContext.class);
-
-  final AtomicReference<Exception> firstClosingStackTrace = new AtomicReference<>();
 
   public CelSpringWebContext() {
     this(List.of());
@@ -58,13 +55,6 @@ public class CelSpringWebContext extends AnnotationConfigWebApplicationContext {
       LOGGER.debug("loadBeanDefinitions: xwiki {} as {}", descriptor, beanDef);
       beanFactory.registerBeanDefinition(descriptor.getBeanName(), beanDef);
     });
-  }
-
-  @Override
-  public void close() {
-    // let's remember the first closing stacktrace to debug early closing
-    firstClosingStackTrace.compareAndSet(null, new Exception());
-    super.close();
   }
 
 }
