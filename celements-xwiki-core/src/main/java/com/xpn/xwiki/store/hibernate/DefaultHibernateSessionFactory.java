@@ -33,7 +33,7 @@ import org.hibernate.impl.SessionFactoryImpl;
 import org.springframework.context.ApplicationListener;
 import org.xwiki.component.annotation.Component;
 
-import com.celements.servlet.CelementsLifecycleEvent;
+import com.celements.init.CelementsStoppedEvent;
 import com.xpn.xwiki.util.Util;
 
 /**
@@ -43,7 +43,7 @@ import com.xpn.xwiki.util.Util;
  */
 @Component
 public class DefaultHibernateSessionFactory implements HibernateSessionFactory,
-    ApplicationListener<CelementsLifecycleEvent> {
+    ApplicationListener<CelementsStoppedEvent> {
 
   /**
    * Hibernate configuration object.
@@ -143,12 +143,10 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory,
   }
 
   @Override
-  public void onApplicationEvent(CelementsLifecycleEvent event) {
-    if (event.getType() == CelementsLifecycleEvent.State.STOPPED) {
-      tryCast(getSessionFactory(), SessionFactoryImpl.class)
-          .map(SessionFactoryImpl::getConnectionProvider)
-          .ifPresent(ConnectionProvider::close);
-    }
+  public void onApplicationEvent(CelementsStoppedEvent event) {
+    tryCast(getSessionFactory(), SessionFactoryImpl.class)
+        .map(SessionFactoryImpl::getConnectionProvider)
+        .ifPresent(ConnectionProvider::close);
   }
 
 }

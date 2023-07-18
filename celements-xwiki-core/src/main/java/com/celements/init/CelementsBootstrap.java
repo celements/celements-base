@@ -15,6 +15,7 @@ import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,6 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 
-import com.celements.servlet.CelementsLifecycleEvent;
 import com.celements.wiki.WikiService;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
@@ -39,7 +39,9 @@ import com.xpn.xwiki.web.Utils;
 @Immutable
 @Singleton
 @Component
-public class CelementsBootstrap implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
+public class CelementsBootstrap implements ApplicationListener<CelementsStartedEvent>, Ordered {
+
+  public static final int ORDER = -1000; // high precedence
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(CelementsBootstrap.class);
 
@@ -54,6 +56,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
   private final WikiUpdater wikiUpdater;
   private final XWikiConfigSource xwikiCfg;
   private final ConfigurationSource cfgSrc;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Inject
   public CelementsBootstrap(
@@ -65,7 +68,8 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
       WikiService wikiService,
       WikiUpdater wikiUpdater,
       XWikiConfigSource xwikiCfg,
-      @Named("allproperties") ConfigurationSource cfgSrc) {
+      @Named("allproperties") ConfigurationSource cfgSrc,
+      ApplicationEventPublisher eventPublisher) {
     this.servletContext = servletContext;
     this.execution = execution;
     this.executionManager = executionManager;
@@ -75,29 +79,29 @@ public class CelementsBootstrap implements ApplicationListener<CelementsLifecycl
     this.wikiUpdater = wikiUpdater;
     this.xwikiCfg = xwikiCfg;
     this.cfgSrc = cfgSrc;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
   public int getOrder() {
-    return Ordered.HIGHEST_PRECEDENCE;
+    return ORDER;
   }
 
   @Override
-  public void onApplicationEvent(CelementsLifecycleEvent event) {
-    if (event.getType() == CelementsLifecycleEvent.State.STARTED) {
-      checkState(!INIT_FLAG.getAndSet(true), "already initialised");
-      checkState(servletContext.getAttribute(XWiki.SERVLET_CONTEXT_KEY) == null);
-      CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
-      servletContext.setAttribute(XWiki.SERVLET_CONTEXT_KEY, xwikiFuture);
-      try {
-        XWiki xwiki = bootstrapXWiki();
-        // make XWiki available to all requests via servlet context, see {@link XWikiProvider}
-        xwikiFuture.complete(xwiki);
-        LOGGER.info("XWiki published");
-      } catch (Exception exc) {
-        xwikiFuture.completeExceptionally(exc);
-        throw new CelementsBootstrapException(exc);
-      }
+  public void onApplicationEvent(CelementsStartedEvent event) {
+    checkState(!INIT_FLAG.getAndSet(true), "already initialised");
+    checkState(servletContext.getAttribute(XWiki.SERVLET_CONTEXT_KEY) == null);
+    CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
+    servletContext.setAttribute(XWiki.SERVLET_CONTEXT_KEY, xwikiFuture);
+    try {
+      XWiki xwiki = bootstrapXWiki();
+      // make XWiki available to all requests via servlet context, see {@link XWikiProvider}
+      xwikiFuture.complete(xwiki);
+      eventPublisher.publishEvent(new CelementsInitialisedEvent(this));
+      LOGGER.info("XWiki published");
+    } catch (Exception exc) {
+      xwikiFuture.completeExceptionally(exc);
+      throw new CelementsBootstrapException(exc);
     }
   }
 
