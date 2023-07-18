@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component;
 @Component
 public final class SpringContextProvider implements ApplicationContextAware {
 
-  private static final AtomicReference<ApplicationContext> context = new AtomicReference<>();
+  private static final AtomicReference<ApplicationContext> CONTEXT = new AtomicReference<>();
 
   public static ApplicationContext getSpringContext() {
-    var context = SpringContextProvider.context.get();
+    var context = CONTEXT.get();
     checkState(context != null, "context not set");
     return context;
   }
@@ -32,7 +32,7 @@ public final class SpringContextProvider implements ApplicationContextAware {
 
   @Override
   public void setApplicationContext(ApplicationContext context) throws BeansException {
-    checkState(SpringContextProvider.context.compareAndSet(null, context), "context already set");
+    CONTEXT.set(checkNotNull(context));
   }
 
 }
