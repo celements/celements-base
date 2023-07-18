@@ -1,5 +1,6 @@
 package org.xwiki.container.servlet;
 
+import javax.inject.Inject;
 import javax.servlet.ServletContext;
 
 import org.springframework.context.ApplicationListener;
@@ -17,6 +18,7 @@ public class ServletContainerInitListener
   private final ServletContext servletContext;
   private final ServletContainerInitializer containerInitializer;
 
+  @Inject
   public ServletContainerInitListener(ServletContext servletContext,
       ServletContainerInitializer containerInitializer) {
     this.servletContext = servletContext;

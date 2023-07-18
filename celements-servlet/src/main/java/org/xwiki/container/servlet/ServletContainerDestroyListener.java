@@ -1,18 +1,22 @@
 package org.xwiki.container.servlet;
 
+import javax.inject.Inject;
+
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
+import com.celements.init.CelementsStoppedEvent;
+
 @Component
 public class ServletContainerDestroyListener
-    implements ApplicationListener<ContextClosedEvent>, Ordered {
+    implements ApplicationListener<CelementsStoppedEvent>, Ordered {
 
   public static final int ORDER = 2000; // very low precedence
 
   private final ServletContainerInitializer containerInitializer;
 
+  @Inject
   public ServletContainerDestroyListener(ServletContainerInitializer containerInitializer) {
     this.containerInitializer = containerInitializer;
   }
@@ -23,7 +27,7 @@ public class ServletContainerDestroyListener
   }
 
   @Override
-  public void onApplicationEvent(ContextClosedEvent event) {
+  public void onApplicationEvent(CelementsStoppedEvent event) {
     containerInitializer.destroyApplicationContext();
   }
 
