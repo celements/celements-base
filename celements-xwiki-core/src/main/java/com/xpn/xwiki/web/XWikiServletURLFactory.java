@@ -124,13 +124,13 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
       protocol = context.getRequest().getScheme();
       if ("http".equalsIgnoreCase(protocol) && context.getRequest().isSecure()) {
         // This can happen in reverse proxy mode, if the proxy server receives HTTPS requests and
-        // forwards them
-        // as HTTP to the internal web server running XWiki.
+        // forwards them as HTTP to the internal web server running XWiki.
         protocol = "https";
       }
+    } else {
+      protocol = xwikiCfg.getProperty("xwiki.url.protocol", protocol);
     }
-    // Detected protocol can be overwritten by configuration.
-    return xwikiCfg.getProperty("xwiki.url.protocol", protocol);
+    return protocol;
   }
 
   /**
@@ -153,11 +153,6 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
     return url.getHost() + (url.getPort() < 0 ? "" : (":" + url.getPort()));
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#getServerURL(com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL getServerURL(XWikiContext context) throws MalformedURLException {
     return getServerURL(context.getDatabase(), context);
@@ -165,7 +160,7 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
 
   public URL getServerURL(String xwikidb, XWikiContext context) throws MalformedURLException {
     if (Strings.isNullOrEmpty(xwikidb) || xwikidb.equals(context.getOriginalDatabase())) {
-      return this.serverURL;
+      return this.serverURL; // serverURL is the request URL, see #init
     }
     if (context.isMainWiki(xwikidb)) {
       String surl = xwikiCfg.getProperty("xwiki.home", null);
@@ -178,26 +173,12 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
         .findFirst().orElse(serverURL);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#createURL(java.lang.String, java.lang.String,
-   *      java.lang.String, boolean,
-   *      com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL createURL(String web, String name, String action, boolean redirect,
       XWikiContext context) {
     return createURL(web, name, action, context);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#createURL(java.lang.String, java.lang.String,
-   *      java.lang.String,
-   *      java.lang.String, java.lang.String, java.lang.String, com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL createURL(String web, String name, String action, String querystring, String anchor,
       String xwikidb, XWikiContext context) {

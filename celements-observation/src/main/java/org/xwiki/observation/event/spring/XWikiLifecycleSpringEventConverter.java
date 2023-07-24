@@ -11,7 +11,8 @@ import org.xwiki.observation.event.ApplicationStartedEvent;
 import org.xwiki.observation.event.ApplicationStoppedEvent;
 import org.xwiki.observation.event.Event;
 
-import com.celements.servlet.CelementsLifecycleEvent;
+import com.celements.init.CelementsLifecycleEvent;
+import com.celements.init.CelementsStartedEvent;
 
 @Component
 @Lazy // otherwise ObservationManager will be eagerly initialised causing issues
@@ -27,7 +28,7 @@ public class XWikiLifecycleSpringEventConverter
 
   @Override
   public void onApplicationEvent(CelementsLifecycleEvent event) {
-    Event xwikiEvent = (event.getType() == CelementsLifecycleEvent.State.STARTED)
+    Event xwikiEvent = (event.getState().equals(CelementsStartedEvent.STATE))
         ? new ApplicationStartedEvent()
         : new ApplicationStoppedEvent();
     observationManager.notify(xwikiEvent, this);

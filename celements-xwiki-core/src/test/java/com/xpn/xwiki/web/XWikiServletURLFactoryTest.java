@@ -35,7 +35,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
       throws XWikiException {
     if (!this.databases.containsKey(database)) {
       if (create) {
-        this.databases.put(database, new HashMap<String, XWikiDocument>());
+        this.databases.put(database, new HashMap<>());
       } else {
         throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
             XWikiException.ERROR_XWIKI_UNKNOWN,
@@ -67,7 +67,7 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
 
   @Before
   public void setUp() throws Exception {
-    this.databases.put(MAIN_WIKI_NAME, new HashMap<String, XWikiDocument>());
+    this.databases.put(MAIN_WIKI_NAME, new HashMap<>());
     registerComponentMock(WikiService.class);
     urlFactory = new XWikiServletURLFactory();
 
@@ -99,6 +99,8 @@ public class XWikiServletURLFactoryTest extends AbstractComponentTest {
     getContext().setRequest(requestMock);
 
     // Create sub-wikis.
+    expect(getMock(WikiService.class).streamUrisForWiki(new WikiReference(MAIN_WIKI_NAME)))
+        .andAnswer(() -> Stream.empty()).anyTimes();
     expect(getMock(WikiService.class).streamUrisForWiki(new WikiReference("wiki1")))
         .andAnswer(() -> Stream.of(URI.create("http://wiki1.celements.com")))
         .anyTimes();

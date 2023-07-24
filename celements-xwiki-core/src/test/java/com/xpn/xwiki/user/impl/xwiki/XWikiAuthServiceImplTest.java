@@ -22,7 +22,6 @@ package com.xpn.xwiki.user.impl.xwiki;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
-import java.net.URL;
 import java.security.Principal;
 
 import org.junit.Before;
@@ -188,23 +187,4 @@ public class XWikiAuthServiceImplTest extends AbstractComponentTest {
     assertEquals("xwiki:XWiki.Admin", principalVirtual.getName());
   }
 
-  @Test
-  public void testStripContextPathFromURLWithSlashAfter() throws Exception {
-    expect(getMock(XWiki.class).getWebAppPath(getContext())).andReturn("xwiki/");
-
-    replayDefault();
-    assertEquals("/something", authService.stripContextPathFromURL(
-        new URL("http://localhost:8080/xwiki/something"), getContext()));
-    verifyDefault();
-  }
-
-  @Test
-  public void testStripContextPathFromURLWithSlashBefore() throws Exception {
-    expect(getMock(XWiki.class).getWebAppPath(getContext())).andReturn("/xwiki");
-
-    replayDefault();
-    assertEquals("/something", authService.stripContextPathFromURL(
-        new URL("http://localhost:8080/xwiki/something"), getContext()));
-    verifyDefault();
-  }
 }
