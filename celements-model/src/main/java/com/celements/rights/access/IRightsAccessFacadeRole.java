@@ -2,6 +2,8 @@ package com.celements.rights.access;
 
 import java.util.stream.Stream;
 
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -51,6 +53,13 @@ public interface IRightsAccessFacadeRole {
 
   boolean isLayoutEditor(User user);
 
-  Stream<DocumentReference> getGroupRefsForUser(User user);
+  /**
+   * Gets all DocumentReferences for all groups a user belongs to and returns them in a Stream.
+   *
+   * @param user
+   * @return a Stream of Document References
+   */
+  @NotNull
+  Stream<DocumentReference> getGroupRefsForUser(@NotNull User user);
 
 }
