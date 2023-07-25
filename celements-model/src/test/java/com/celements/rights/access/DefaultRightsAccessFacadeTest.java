@@ -198,8 +198,8 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     prepareSpaceRights(spaceRef);
     expect(randomCompleterMock.randomCompleteSpaceRef(eq(docRef))).andReturn(docRef).atLeastOnce();
     expect(rightsSrvMock.hasAccessLevel(eq(EAccessLevel.EDIT.getIdentifier()),
-            eq("xwikidb:XWiki.XWikiGuest"), eq(modelUtils.serializeRef(docRef)), same(context)))
-                .andReturn(false).once();
+        eq("xwikidb:XWiki.XWikiGuest"), eq(modelUtils.serializeRef(docRef)), same(context)))
+            .andReturn(false).once();
 
     replayDefault();
     assertFalse(rightsAccess.hasAccessLevel(docRef, EAccessLevel.EDIT, user));
@@ -516,6 +516,16 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     verifyDefault();
 
     assertTrue(groupRefStream.collect(Collectors.toList()).isEmpty());
+  }
+
+  @Test
+  public void test_getGroupRefsForUser_userNull() {
+    User user = null;
+    Exception e = assertThrows(NullPointerException.class, () -> {
+      rightsAccess.getGroupRefsForUser(user);
+    });
+
+    assertEquals("User may not be null.", e.getMessage());
   }
 
   private void expectHasAdminRights(String accountName, boolean hasAdminXWikiPref,
