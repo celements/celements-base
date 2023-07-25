@@ -2,6 +2,7 @@ package com.celements.rights.access;
 
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
@@ -23,9 +24,10 @@ public interface IRightsAccessFacadeRole {
 
   XWikiRightService getRightsService();
 
-  boolean hasAccessLevel(EntityReference ref, EAccessLevel level);
+  boolean hasAccessLevel(@Nullable EntityReference ref, @Nullable EAccessLevel level);
 
-  boolean hasAccessLevel(EntityReference ref, EAccessLevel level, User user);
+  boolean hasAccessLevel(@Nullable EntityReference ref, @Nullable EAccessLevel level,
+      @Nullable User user);
 
   /**
    * instead use hasAccessLevel(EntityReference, EAccessLevel, User)
@@ -33,25 +35,25 @@ public interface IRightsAccessFacadeRole {
   @Deprecated
   boolean hasAccessLevel(EntityReference ref, EAccessLevel level, XWikiUser xUser);
 
-  boolean isInGroup(DocumentReference groupDocRef, User user);
+  boolean isInGroup(@Nullable DocumentReference groupDocRef, @Nullable User user);
 
   boolean isLoggedIn();
 
   boolean isAdmin();
 
-  boolean isAdmin(User user);
+  boolean isAdmin(@Nullable User user);
 
   boolean isAdvancedAdmin();
 
-  boolean isAdvancedAdmin(User user);
+  boolean isAdvancedAdmin(@Nullable User user);
 
   boolean isSuperAdmin();
 
-  boolean isSuperAdmin(User user);
+  boolean isSuperAdmin(@Nullable User user);
 
   boolean isLayoutEditor();
 
-  boolean isLayoutEditor(User user);
+  boolean isLayoutEditor(@Nullable User user);
 
   /**
    * Gets the DocumentReferences for all groups a user belongs to and returns them in a Stream.
