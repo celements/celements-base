@@ -54,7 +54,7 @@ public interface IRightsAccessFacadeRole {
   boolean isLayoutEditor(User user);
 
   /**
-   * Gets all DocumentReferences for all groups a user belongs to and returns them in a Stream.
+   * Gets the DocumentReferences for all groups a user belongs to and returns them in a Stream.
    *
    * @param user
    * @return a Stream of Document References
