@@ -22,6 +22,7 @@ import com.celements.model.util.ModelUtils;
 import com.celements.rights.access.internal.IEntityReferenceRandomCompleterRole;
 import com.celements.web.classes.oldcore.XWikiUsersClass.Type;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 import com.xpn.xwiki.user.api.XWikiRightService;
@@ -213,6 +214,7 @@ public class DefaultRightsAccessFacade implements IRightsAccessFacadeRole {
 
   @Override
   public Stream<DocumentReference> getGroupRefsForUser(User user) {
+    Preconditions.checkNotNull(user, "User may not be null.");
     try {
       Collection<DocumentReference> groupRefList = getGroupService()
           .getAllGroupsReferencesForMember(user.getDocRef(), 0, 0, context.getXWikiContext());
