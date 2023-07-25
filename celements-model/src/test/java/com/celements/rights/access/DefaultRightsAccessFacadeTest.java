@@ -197,8 +197,7 @@ public class DefaultRightsAccessFacadeTest extends AbstractComponentTest {
     prepareMasterRights();
     prepareSpaceRights(spaceRef);
     expect(randomCompleterMock.randomCompleteSpaceRef(eq(docRef))).andReturn(docRef).atLeastOnce();
-    expect(
-        rightsSrvMock.hasAccessLevel(eq(EAccessLevel.EDIT.getIdentifier()),
+    expect(rightsSrvMock.hasAccessLevel(eq(EAccessLevel.EDIT.getIdentifier()),
             eq("xwikidb:XWiki.XWikiGuest"), eq(modelUtils.serializeRef(docRef)), same(context)))
                 .andReturn(false).once();
 
