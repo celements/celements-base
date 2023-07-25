@@ -96,13 +96,16 @@ public class RightsAccessScriptService implements ScriptService {
   }
 
   public List<DocumentReference> getGroupRefsForUser(DocumentReference userDocRef) {
-    try {
-      User user = userService.getUser(userDocRef);
-      return rightsAccess.getGroupRefsForUser(user).collect(Collectors.toList());
-    } catch (UserInstantiationException uie) {
-      LOGGER.error("could not instantiate user for {}", userDocRef, uie);
-      return new ArrayList<>();
+    if (userDocRef != null) {
+      try {
+        User user = userService.getUser(userDocRef);
+        return rightsAccess.getGroupRefsForUser(user).collect(Collectors.toList());
+      } catch (UserInstantiationException uie) {
+        LOGGER.error("could not instantiate user for {}", userDocRef, uie);
+        return new ArrayList<>();
+      }
     }
+    return new ArrayList<>();
   }
 
 }
