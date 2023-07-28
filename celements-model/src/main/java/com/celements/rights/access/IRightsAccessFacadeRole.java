@@ -22,7 +22,7 @@ public interface IRightsAccessFacadeRole {
   @Deprecated
   boolean hasAccessLevel(String right, XWikiUser user, EntityReference entityRef);
 
-  XWikiRightService getRightsService();
+  @NotNull XWikiRightService getRightsService();
 
   boolean hasAccessLevel(@Nullable EntityReference ref, @Nullable EAccessLevel level);
 
