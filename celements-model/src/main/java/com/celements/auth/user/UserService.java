@@ -122,6 +122,15 @@ public interface UserService {
       throws DocumentSaveException;
 
   /**
+   * adds the given user to defined default groups and at least to the XWikiAllGroup.
+   *
+   * @return true if the user could be added to at least one of the default groups.
+   * @throws DocumentSaveException
+   *           if unable to save the group document
+   */
+  boolean addUserToDefaultGroups(@NotNull User user) throws DocumentSaveException;
+
+  /**
    * looks up the user by the given login value with {@link #getPossibleLoginFields()}
    *
    * @param login
