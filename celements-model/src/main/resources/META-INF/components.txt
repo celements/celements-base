@@ -6,11 +6,9 @@ com.celements.common.observation.converter.AnnotationEventConverter
 com.celements.xwikiPatches.SpacePreferencesConfigurationSource
 com.celements.model.access.DefaultModelAccessFacade
 com.celements.model.access.ModelAccessScriptService
-com.celements.rights.access.DefaultRightsAccessFacade
 com.celements.rights.access.internal.EntityReferenceRandomCompleter
 com.celements.model.util.DefaultXObjectUpdateService
 com.celements.filebase.matcher.AttNameWithoutExtMatcher
-com.celements.rights.access.RightsAccessScriptService
 com.celements.configuration.CelementsPropertiesConfigurationSource
 com.celements.configuration.CelementsDefaultConfigurationSource
 com.celements.configuration.CelementsAllConfigurationSource
