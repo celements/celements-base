@@ -28,7 +28,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-xwiki-core</artifactId>
-  <version>6.0</version>
+  <version>6.1-SNAPSHOT</version>
   <description>Celements XWiki</description>
   <dependencies>
     <dependency>
@@ -613,7 +613,7 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-xwiki-core</url>
-    <tag>celements-xwiki-core-6.0</tag>
+    <tag>HEAD</tag>
   </scm>
   <build>
     <pluginManagement>
