@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-config-source-api</artifactId>
-  <version>6.0-SNAPSHOT</version>
+  <version>6.0</version>
   <description>Celements Configuration Source API</description>
   <dependencies>
 
@@ -30,6 +30,6 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-config-source-api</url>
-    <tag>HEAD</tag>
+    <tag>celements-config-source-api-6.0</tag>
   </scm>
 </project>
