@@ -62,7 +62,7 @@ import com.xpn.xwiki.web.XWikiMessageTool;
  */
 public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
 
-  private static final String DOCWIKI = "Wiki";
+  private static final String DOCWIKI = "wiki";
 
   private static final String DOCSPACE = "Space";
 
@@ -783,108 +783,6 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("content not in section\n\n= header 1 =\n\nheader 1 content", content3);
   }
 
-  public void testDisplay10() {
-    this.mockXWiki.stubs().method("getCurrentContentSyntaxId").will(returnValue("xwiki/1.0"));
-
-    assertEquals("string", this.document.display("string", "view", getContext()));
-    assertEquals(
-        "{pre}<input size='30' id='Space.Page_0_string' value='string' name='Space.Page_0_string' type='text'/>{/pre}",
-        this.document.display("string", "edit", getContext()));
-
-    this.mockXWikiRenderingEngine.expects(once()).method("renderText")
-        .with(eq("area"), ANYTHING, ANYTHING).will(
-            returnValue("area"));
-
-    assertEquals("area", this.document.display("area", "view", getContext()));
-  }
-
-  public void testDisplay() {
-    this.mockXWiki.stubs().method("getCurrentContentSyntaxId").will(returnValue("xwiki/2.0"));
-
-    this.document.setSyntaxId("xwiki/2.0");
-
-    assertEquals("string", this.document.display("string", "view", getContext()));
-    assertEquals(
-        "{{html clean=\"false\" wiki=\"false\"}}<pre><input size='30' id='Space.Page_0_string' value='string' name='Space.Page_0_string' type='text'/></pre>{{/html}}",
-        this.document.display("string", "edit", getContext()));
-
-    assertEquals("{{html clean=\"false\" wiki=\"false\"}}<p>area</p>{{/html}}",
-        this.document.display("area",
-            "view", getContext()));
-  }
-
-  public void testDisplay1020() {
-    this.mockXWiki.stubs().method("getCurrentContentSyntaxId").will(returnValue("xwiki/1.0"));
-
-    XWikiDocument doc10 = new XWikiDocument();
-    doc10.setSyntaxId("xwiki/1.0");
-    getContext().setDoc(doc10);
-
-    this.document.setSyntaxId("xwiki/2.0");
-
-    assertEquals("string", this.document.display("string", "view", getContext()));
-    assertEquals(
-        "{pre}<input size='30' id='Space.Page_0_string' value='string' name='Space.Page_0_string' type='text'/>{/pre}",
-        this.document.display("string", "edit", getContext()));
-
-    assertEquals("<p>area</p>", this.document.display("area", "view", getContext()));
-  }
-
-  public void testDisplay2010() {
-    this.mockXWiki.stubs().method("getCurrentContentSyntaxId").will(returnValue("xwiki/2.0"));
-
-    XWikiDocument doc10 = new XWikiDocument();
-    doc10.setSyntaxId("xwiki/2.0");
-    getContext().setDoc(doc10);
-
-    assertEquals("string", this.document.display("string", "view", getContext()));
-    assertEquals(
-        "{{html clean=\"false\" wiki=\"false\"}}<pre><input size='30' id='Space.Page_0_string' value='string' name='Space.Page_0_string' type='text'/></pre>{{/html}}",
-        this.document.display("string", "edit", getContext()));
-
-    this.mockXWikiRenderingEngine.expects(once()).method("renderText")
-        .with(eq("area"), ANYTHING, ANYTHING).will(
-            returnValue("area"));
-
-    assertEquals("area", this.document.display("area", "view", getContext()));
-  }
-
-  public void testDisplayTemplate10() {
-    this.mockXWiki.stubs().method("getCurrentContentSyntaxId").will(returnValue("xwiki/1.0"));
-    this.mockXWiki.stubs().method("getSkin").will(returnValue("colibri"));
-    this.mockXWiki.stubs().method("getSkinFile").will(returnValue(""));
-
-    getContext().put("isInRenderingEngine", false);
-
-    assertEquals("string", this.document.display("string", "view", getContext()));
-    assertEquals(
-        "<input size='30' id='Space.Page_0_string' value='string' name='Space.Page_0_string' type='text'/>",
-        this.document.display("string", "edit", getContext()));
-
-    this.mockXWikiRenderingEngine.expects(once()).method("renderText")
-        .with(eq("area"), ANYTHING, ANYTHING).will(
-            returnValue("area"));
-
-    assertEquals("area", this.document.display("area", "view", getContext()));
-  }
-
-  public void testDisplayTemplate20() {
-    this.mockXWiki.stubs().method("getCurrentContentSyntaxId").will(returnValue("xwiki/2.0"));
-    this.mockXWiki.stubs().method("getSkin").will(returnValue("colibri"));
-    this.mockXWiki.stubs().method("getSkinFile").will(returnValue(""));
-
-    getContext().put("isInRenderingEngine", false);
-
-    this.document.setSyntaxId("xwiki/2.0");
-
-    assertEquals("string", this.document.display("string", "view", getContext()));
-    assertEquals(
-        "<pre><input size='30' id='Space.Page_0_string' value='string' name='Space.Page_0_string' type='text'/></pre>",
-        this.document.display("string", "edit", getContext()));
-
-    assertEquals("<p>area</p>", this.document.display("area", "view", getContext()));
-  }
-
   public void testConvertSyntax() throws XWikiException {
     this.document.setContent("content not in section\n" + "1 header 1\nheader 1 content\n"
         + "1.1 header 2\nheader 2 content");
@@ -1019,7 +917,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
         getContext());
 
     // Test links
-    assertEquals("[[Wiki:Space.pageinsamespace]]", this.document.getContent());
+    assertEquals("[[wiki:Space.pageinsamespace]]", this.document.getContent());
     assertEquals("[[newwikiname:newspace.newpage]] " + "[[someName>>newwikiname:newspace.newpage]] "
         + "[[newwikiname:newspace.newpage]]", doc1.getContent());
     assertEquals("[[newspace.newpage]]", doc2.getContent());

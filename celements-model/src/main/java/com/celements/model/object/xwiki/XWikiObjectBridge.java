@@ -2,7 +2,6 @@ package com.celements.model.object.xwiki;
 
 import static com.celements.logging.LogUtils.*;
 import static com.celements.model.access.IModelAccessFacade.*;
-import static com.celements.model.util.References.*;
 import static com.google.common.base.MoreObjects.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -71,7 +70,7 @@ public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject
 
   @Override
   public DocumentReference getDocRef(XWikiDocument doc) {
-    return cloneRef(doc.getDocumentReference(), DocumentReference.class);
+    return doc.getDocumentReference();
   }
 
   @Override
@@ -115,10 +114,7 @@ public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject
 
   @Override
   public BaseObject cloneObject(BaseObject obj) {
-    BaseObject clone = (BaseObject) obj.clone();
-    // BaseObject.clone does not properly clone document reference
-    clone.setDocumentReference(cloneRef(obj.getDocumentReference(), DocumentReference.class));
-    return clone;
+    return (BaseObject) obj.clone();
   }
 
   @Override

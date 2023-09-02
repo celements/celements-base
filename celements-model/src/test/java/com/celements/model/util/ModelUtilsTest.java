@@ -15,6 +15,8 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.context.ModelContext;
+import com.xpn.xwiki.XWikiConfigSource;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.web.Utils;
 
 public class ModelUtilsTest extends AbstractComponentTest {
@@ -29,18 +31,23 @@ public class ModelUtilsTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     Utils.getComponent(ModelContext.class).setWikiRef(wikiRef);
+    registerComponentMock(XWikiConfigSource.class);
     modelUtils = Utils.getComponent(ModelUtils.class);
   }
 
   @Test
   public void test_getMainWikiRef() {
-    assertEquals("xwiki", modelUtils.getMainWikiRef().getName());
+    WikiReference mainWiki = new WikiReference("main");
+    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db")).andReturn(mainWiki.getName());
+    replayDefault();
+    assertEquals(mainWiki, modelUtils.getMainWikiRef());
+    verifyDefault();
   }
 
   @Test
   public void test_getDatabaseName() {
     String prefix = "cel_";
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn(prefix).once();
+    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db.prefix", "")).andReturn(prefix);
 
     replayDefault();
     assertEquals(prefix + wikiRef.getName(), modelUtils.getDatabaseName(wikiRef));
@@ -50,12 +57,12 @@ public class ModelUtilsTest extends AbstractComponentTest {
   @Test
   public void test_getDatabaseName_main() {
     String dbName = "main";
-    expect(getWikiMock().Param("xwiki.db", "")).andReturn(dbName).once();
+    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db", "")).andReturn(dbName);
     String prefix = "cel_";
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn(prefix).once();
+    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db.prefix", "")).andReturn(prefix);
 
     replayDefault();
-    assertEquals(prefix + dbName, modelUtils.getDatabaseName(modelUtils.getMainWikiRef()));
+    assertEquals(prefix + dbName, modelUtils.getDatabaseName(XWikiConstant.MAIN_WIKI));
     verifyDefault();
   }
 
@@ -155,6 +162,17 @@ public class ModelUtilsTest extends AbstractComponentTest {
     assertEquals("de", modelUtils.normalizeLang("de"));
     assertEquals("de_CH", modelUtils.normalizeLang("de_CH"));
     assertThrows(IllegalArgumentException.class, () -> modelUtils.normalizeLang("invalid"));
+  }
+
+  @Test
+  public void test_isMainWiki() {
+    WikiReference mainWiki = new WikiReference("main");
+    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db")).andReturn(mainWiki.getName());
+    replayDefault();
+    assertTrue(modelUtils.isMainWiki(mainWiki));
+    assertTrue(modelUtils.isMainWiki(XWikiConstant.MAIN_WIKI));
+    assertFalse(modelUtils.isMainWiki(new WikiReference("other")));
+    verifyDefault();
   }
 
 }

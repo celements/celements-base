@@ -3,11 +3,11 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>6.0-SNAPSHOT</version>
+    <version>6.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-reference</artifactId>
-  <version>6.0-SNAPSHOT</version>
+  <version>6.1-SNAPSHOT</version>
   <description>Celements Reference</description>
   <dependencies>
 
@@ -15,28 +15,29 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-servlet</artifactId>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
 
     <!-- XWiki -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-context</artifactId>
-      <scope>provided</scope>
-    </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-script</artifactId>
@@ -80,11 +81,31 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- testing -->
+    <!-- xwiki legacy testing -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-shared-tests</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>jmock</groupId>
+      <artifactId>jmock</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jmock</groupId>
+      <artifactId>jmock-legacy</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>jmock</groupId>
+      <artifactId>jmock-cglib</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.jmock</groupId>
       <artifactId>jmock-junit4</artifactId>
-      <version>2.12.0</version>
+      <version>2.5.1</version>
       <scope>test</scope>
     </dependency>
 

@@ -20,8 +20,6 @@ import javax.inject.Singleton;
 import org.hibernate.HibernateException;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.reference.DocumentReference;
@@ -47,7 +45,6 @@ import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
-import com.xpn.xwiki.store.DatabaseProduct;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 
 import one.util.streamex.EntryStream;
@@ -58,8 +55,6 @@ import one.util.streamex.StreamEx;
 public class CelHibernateStore extends XWikiHibernateStore {
 
   public static final String NAME = "celHibernate";
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CelHibernateStore.class);
 
   @Requirement(UniqueHashIdComputer.NAME)
   private CelementsIdComputer idComputer;
@@ -332,11 +327,11 @@ public class CelHibernateStore extends XWikiHibernateStore {
   }
 
   public void log(LogLevel level, String msg, Object obj) {
-    LogUtils.log(LOGGER, level, () -> buildLogMessage(msg, obj));
+    LogUtils.log(logger, level, () -> buildLogMessage(msg, obj));
   }
 
   public void logError(String msg, Object obj, Throwable cause) {
-    LogUtils.log(LOGGER, LogLevel.ERROR, () -> buildLogMessage(msg, obj), cause);
+    LogUtils.log(logger, LogLevel.ERROR, () -> buildLogMessage(msg, obj), cause);
   }
 
   public XWikiException newXWikiException(String msg, Object obj, Throwable cause, int code) {
@@ -380,16 +375,13 @@ public class CelHibernateStore extends XWikiHibernateStore {
   @Override
   public boolean isWikiNameAvailable(String wikiName, XWikiContext context) throws XWikiException {
     boolean available;
-
     boolean bTransaction = true;
-    String database = context.getDatabase();
-
     try {
       bTransaction = beginTransaction(context);
       Session session = getSession(context);
-
-      context.setDatabase(wikiName);
+      String database = context.getDatabase();
       try {
+        context.setDatabase(wikiName);
         setDatabase(session, context);
         SQLQuery query = session.createSQLQuery(
             "select TABLE_NAME from information_schema.tables where table_schema = :dbname");
@@ -399,6 +391,9 @@ public class CelHibernateStore extends XWikiHibernateStore {
       } catch (XWikiException | HibernateException e) {
         // Failed to switch to database. Assume it means database does not exists.
         available = true;
+      } finally {
+        context.setDatabase(database);
+        setDatabase(session, context);
       }
     } catch (XWikiException e) {
       Object[] args = { wikiName };
@@ -406,43 +401,12 @@ public class CelHibernateStore extends XWikiHibernateStore {
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_CHECK_EXISTS_DATABASE,
           "Exception while listing databases to search for {0}", e, args);
     } finally {
-      context.setDatabase(database);
       if (bTransaction) {
         endTransaction(context, false);
       }
     }
-
+    logger.trace("isWikiNameAvailable - [{}] [{}]", wikiName, available);
     return available;
-  }
-
-  /**
-   * Convert wiki name in database/schema name.
-   *
-   * @param wikiName
-   *          the wiki name to convert.
-   * @param databaseProduct
-   *          the database engine type.
-   * @param context
-   *          the XWiki context.
-   * @return the database/schema name.
-   */
-  @Override
-  protected String getSchemaFromWikiName(String wikiName, DatabaseProduct databaseProduct,
-      XWikiContext context) {
-    if (wikiName == null) {
-      return null;
-    }
-    String schemaName = null;
-    if (context.isMainWiki(wikiName)) {
-      schemaName = context.getWiki().Param("xwiki.db");
-    }
-    if (schemaName == null) {
-      schemaName = wikiName;
-    }
-    return (context.getWiki().Param("xwiki.db.prefix", "") + schemaName)
-        .toLowerCase()
-        .replace('-', '_')
-        .replaceAll("[^a-z0-9_]", "");
   }
 
 }

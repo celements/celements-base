@@ -25,7 +25,7 @@ import org.jmock.core.Invocation;
 import org.jmock.core.stub.CustomStub;
 
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.render.XWikiRenderingEngine;
 import com.xpn.xwiki.store.XWikiHibernateStore;
@@ -45,11 +45,10 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
 
     getContext().setDoc(new XWikiDocument());
 
-    XWiki xwiki = new XWiki();
+    XWiki xwiki = new XWiki(false);
+    xwiki.setConfig(new XWikiConfig());
 
-    Mock mockXWikiStore = mock(XWikiHibernateStore.class,
-        new Class[] { XWiki.class, XWikiContext.class }, new Object[] { xwiki,
-            getContext() });
+    Mock mockXWikiStore = mock(XWikiHibernateStore.class, new Class[] {}, new Object[] {});
     xwiki.setStore((XWikiStoreInterface) mockXWikiStore.proxy());
 
     Mock mockXWikiRenderingEngine = mock(XWikiRenderingEngine.class);

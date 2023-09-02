@@ -8,12 +8,14 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.reference.RefBuilder;
+import com.celements.model.reference.ReferenceProvider;
 import com.google.common.base.Optional;
 
 @ComponentRole
@@ -22,12 +24,26 @@ public interface ModelUtils {
   @NotNull
   WikiReference getMainWikiRef();
 
+  boolean isMainWiki(@Nullable WikiReference wikiRef);
+
+  /**
+   * @deprecated since 6.0 instead use {@link ReferenceProvider#getAllWikis}
+   */
+  @Deprecated
   @NotNull
   Stream<WikiReference> getAllWikis();
 
+  /**
+   * @deprecated since 6.0 instead use {@link ReferenceProvider#getAllSpaces}
+   */
+  @Deprecated
   @NotNull
   Stream<SpaceReference> getAllSpaces(@NotNull WikiReference wikiRef);
 
+  /**
+   * @deprecated since 6.0 instead use {@link ReferenceProvider#getAllDocsForSpace}
+   */
+  @Deprecated
   @NotNull
   Stream<DocumentReference> getAllDocsForSpace(@NotNull SpaceReference spaceRef);
 
@@ -173,6 +189,10 @@ public interface ModelUtils {
   @NotNull
   String normalizeLang(@Nullable String lang);
 
+  /**
+   * @deprecated since 6.0 instead use {@link ExecutionContext#computeIfAbsent}
+   */
+  @Deprecated
   <T> @Nullable T computeExecPropIfAbsent(@NotEmpty String key, @NotNull Supplier<T> defaultSetter);
 
 }

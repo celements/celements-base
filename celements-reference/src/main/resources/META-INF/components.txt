@@ -18,3 +18,8 @@ org.xwiki.model.internal.reference.ExplicitReferenceDocumentReferenceResolver
 org.xwiki.model.internal.DefaultModelConfiguration
 org.xwiki.model.internal.DefaultModelContext
 org.xwiki.model.internal.scripting.ModelScriptService
+org.xwiki.url.internal.DefaultURLConfiguration
+org.xwiki.url.internal.standard.URLXWikiURLSerializer
+org.xwiki.url.internal.standard.StandardXWikiURLFactory
+org.xwiki.url.internal.standard.DefaultStandardURLConfiguration
+org.xwiki.url.internal.standard.EntityXWikiURLBuilder

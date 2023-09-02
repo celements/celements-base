@@ -21,27 +21,19 @@
 
 package com.xpn.xwiki;
 
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 
-import javax.servlet.ServletException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.velocity.exception.MethodInvocationException;
-import org.hibernate.JDBCException;
-
 public class XWikiException extends Exception {
 
-  private static final Log log = LogFactory.getLog(XWikiException.class);
+  private static final long serialVersionUID = 1L;
 
-  private int module;
-  private int code;
-  private Throwable exception;
-  private Object[] args;
-  private String message;
+  private final int module;
+  private final int code;
+  private final Throwable exception;
+  private final Object[] args;
+  private final String message;
 
   // Module list
   public static final int MODULE_XWIKI = 0;
@@ -123,28 +115,6 @@ public class XWikiException extends Exception {
   public static final int ERROR_XWIKI_STORE_HIBERNATE_DELETE_DATABASE = 3402;
   public static final int ERROR_XWIKI_STORE_HIBERNATE_CHECK_EXISTS_DATABASE = 3403;
 
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_DOC = 3501;
-  public static final int ERROR_XWIKI_STORE_JCR_READING_DOC = 3502;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_DOC = 3503;
-  public static final int ERROR_XWIKI_STORE_JCR_CANNOT_DELETE_UNLOADED_DOC = 3504;
-  public static final int ERROR_XWIKI_STORE_JCR_READING_REVISIONS = 3503;
-  public static final int ERROR_XWIKI_STORE_JCR_READING_VERSION = 3504;
-  public static final int ERROR_XWIKI_STORE_JCR_UNEXISTANT_VERSION = 3505;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_OBJECT = 3511;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_OBJECT = 3512;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_OBJECT = 3513;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_CLASS = 3521;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_CLASS = 3522;
-  public static final int ERROR_XWIKI_STORE_JCR_SEARCH = 3523;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_ATTACHMENT = 3531;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_ATTACHMENT = 3532;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_ATTACHMENT = 3533;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_ATTACHMENT_LIST = 3534;
-  public static final int ERROR_XWIKI_STORE_JCR_SEARCHING_ATTACHMENT = 3535;
-  public static final int ERROR_XWIKI_STORE_JCR_CHECK_EXISTS_DOC = 3536;
-  public static final int ERROR_XWIKI_STORE_JCR_SWITCH_DATABASE = 3601;
-  public static final int ERROR_XWIKI_STORE_JCR_CREATE_DATABASE = 3701;
-
   public static final int ERROR_XWIKI_RENDERING_VELOCITY_EXCEPTION = 4001;
   public static final int ERROR_XWIKI_RENDERING_GROOVY_EXCEPTION = 4002;
 
@@ -216,17 +186,6 @@ public class XWikiException extends Exception {
   public static final int ERROR_XWIKI_DIFF_ATTACHMENT_ERROR = 13026;
   public static final int ERROR_XWIKI_DIFF_XML_ERROR = 13027;
 
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_LOCK = 13106;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_LOCK = 13107;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_LOCK = 13108;
-  public static final int ERROR_XWIKI_STORE_JCR_INVALID_MAPPING = 13109;
-  public static final int ERROR_XWIKI_STORE_JCR_MAPPING_INJECTION_FAILED = 13110;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_LINKS = 13111;
-  public static final int ERROR_XWIKI_STORE_JCR_SAVING_LINKS = 13112;
-  public static final int ERROR_XWIKI_STORE_JCR_DELETING_LINKS = 13113;
-  public static final int ERROR_XWIKI_STORE_JCR_LOADING_BACKLINKS = 13114;
-  public static final int ERROR_XWIKI_STORE_JCR_OTHER = 13130; // temporary
-
   public static final int ERROR_XWIKI_STORE_SEARCH_NOTIMPL = 13200;
 
   public static final int ERROR_XWIKI_GROOVY_COMPILE_FAILED = 14001;
@@ -241,14 +200,12 @@ public class XWikiException extends Exception {
   public static final int ERROR_XWIKI_CONTENT_LINK_INVALID_URI = 22001;
 
   public XWikiException(int module, int code, String message, Throwable e, Object[] args) {
-    setModule(module);
-    setCode(code);
-    setException(e);
-    setArgs(args);
-    setMessage(message);
-    if (log.isTraceEnabled()) {
-      log.trace(getMessage(), e);
-    }
+    super(e);
+    this.module = module;
+    this.code = code;
+    this.exception = e;
+    this.args = args;
+    this.message = message;
   }
 
   public XWikiException(int module, int code, String message, Throwable e) {
@@ -259,7 +216,9 @@ public class XWikiException extends Exception {
     this(module, code, message, null, null);
   }
 
-  public XWikiException() {}
+  public XWikiException() {
+    this(0, 0, null);
+  }
 
   public int getModule() {
     return module;
@@ -269,36 +228,16 @@ public class XWikiException extends Exception {
     return "" + module;
   }
 
-  public void setModule(int module) {
-    this.module = module;
-  }
-
   public int getCode() {
     return code;
-  }
-
-  public void setCode(int code) {
-    this.code = code;
   }
 
   public Throwable getException() {
     return exception;
   }
 
-  public void setException(Throwable exception) {
-    this.exception = exception;
-  }
-
   public Object[] getArgs() {
     return args;
-  }
-
-  public void setArgs(Object[] args) {
-    this.args = args;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
   }
 
   @Override
@@ -344,56 +283,10 @@ public class XWikiException extends Exception {
     return buffer.toString();
   }
 
-  @Override
-  public void printStackTrace(PrintWriter s) {
-    super.printStackTrace(s);
-    if (exception != null) {
-      s.write("\n\nWrapped Exception:\n\n");
-      if (exception.getCause() != null) {
-        exception.getCause().printStackTrace(s);
-      } else if (exception instanceof org.hibernate.JDBCException) {
-        (((JDBCException) exception).getSQLException()).printStackTrace(s);
-      } else if (exception instanceof MethodInvocationException) {
-        (((MethodInvocationException) exception).getWrappedThrowable()).printStackTrace(s);
-      } else if (exception instanceof ServletException) {
-        (((ServletException) exception).getRootCause()).printStackTrace(s);
-      } else {
-        exception.printStackTrace(s);
-      }
-    }
-  }
-
-  @Override
-  public void printStackTrace(PrintStream s) {
-    super.printStackTrace(s);
-    if (exception != null) {
-      s.print("\n\nWrapped Exception:\n\n");
-      if (exception.getCause() != null) {
-        exception.getCause().printStackTrace(s);
-      } else if (exception instanceof org.hibernate.JDBCException) {
-        (((JDBCException) exception).getSQLException()).printStackTrace(s);
-      } else if (exception instanceof MethodInvocationException) {
-        (((MethodInvocationException) exception).getWrappedThrowable()).printStackTrace(s);
-      } else if (exception instanceof ServletException) {
-        (((ServletException) exception).getRootCause()).printStackTrace(s);
-      } else {
-        exception.printStackTrace(s);
-      }
-    }
-  }
-
   public String getStackTraceAsString() {
     StringWriter swriter = new StringWriter();
     PrintWriter pwriter = new PrintWriter(swriter);
     printStackTrace(pwriter);
-    pwriter.flush();
-    return swriter.getBuffer().toString();
-  }
-
-  public String getStackTraceAsString(Throwable e) {
-    StringWriter swriter = new StringWriter();
-    PrintWriter pwriter = new PrintWriter(swriter);
-    e.printStackTrace(pwriter);
     pwriter.flush();
     return swriter.getBuffer().toString();
   }

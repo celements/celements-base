@@ -1,4 +1,3 @@
-com.xpn.xwiki.ServerUrlUtils
 com.celements.store.id.XWikiDocumentIdComputer
 com.xpn.xwiki.doc.DefaultDocumentAccessBridge
 com.xpn.xwiki.DefaultSkinAccessBridge
@@ -15,13 +14,7 @@ com.xpn.xwiki.store.VoidAttachmentVersioningStore
 com.xpn.xwiki.store.XWikiHibernateRecycleBinStore
 com.xpn.xwiki.store.hibernate.HibernateAttachmentRecycleBinStore
 com.xpn.xwiki.internal.DefaultCoreConfiguration
-com.xpn.xwiki.internal.ComponentManagerBridgeEventListener
-com.xpn.xwiki.internal.CoreWikiMacroBindingInitializer
-com.xpn.xwiki.internal.DefaultWikiMacroFactory
-com.xpn.xwiki.internal.DefaultWikiMacroInitializer
-com.xpn.xwiki.internal.WikiMacroExecutionEventListener
 com.xpn.xwiki.internal.XWikiStubContextInitializer
-com.xpn.xwiki.internal.DefaultXWikiStubContextProvider
 com.xpn.xwiki.internal.model.reference.CompactStringEntityReferenceSerializer
 com.xpn.xwiki.internal.model.reference.CompactWikiStringEntityReferenceSerializer
 com.xpn.xwiki.internal.model.reference.CurrentEntityReferenceValueProvider
@@ -42,4 +35,3 @@ com.xpn.xwiki.internal.observation.remote.converter.ActionExecutionEventConverte
 com.xpn.xwiki.internal.cache.DefaultDocumentCache
 com.xpn.xwiki.internal.cache.rendering.DefaultRenderingCache
 com.xpn.xwiki.internal.cache.rendering.DefaultRenderingCacheConfiguration
-com.xpn.xwiki.internal.RegisterMacrosOnImportListener

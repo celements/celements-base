@@ -1,6 +1,5 @@
 package com.celements.store;
 
-import static com.celements.common.test.CelementsTestUtils.*;
 import static com.celements.store.TestHibernateQuery.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -32,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.cache.CacheFactory;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
@@ -47,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
+import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -74,7 +73,7 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
 
   private final String wikiName = "testWiki";
   private final String testFullName = "TestSpace.TestDoc";
-  private XWikiConfig configMock;
+  private XWikiConfig config;
   private SessionFactory sessionFactoryMock;
 
   /**
@@ -93,27 +92,18 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
 
   @Before
   public void setUp_ConcurrentCacheTest() throws Exception {
-    getContext().setDatabase(wikiName);
-    sessionFactoryMock = createMockAndAddToDefault(SessionFactory.class);
+    getXContext().setDatabase(wikiName);
+    sessionFactoryMock = createDefaultMock(SessionFactory.class);
     Utils.getComponent(HibernateSessionFactory.class).setSessionFactory(sessionFactoryMock);
     testDocRef = new DocumentReference(wikiName, "TestSpace", "TestDoc");
-    configMock = createMockAndAddToDefault(XWikiConfig.class);
-    expect(getWikiMock().getConfig()).andReturn(configMock).anyTimes();
-    expect(configMock.getProperty(eq("xwiki.store.hibernate.path"), eq(
-        "/WEB-INF/hibernate.cfg.xml"))).andReturn("testhibernate.cfg.xml");
+    config = Utils.getComponent(XWikiConfigSource.class).getXWikiConfig();
+    config.setProperty("xwiki.store.hibernate.path", "testhibernate.cfg.xml");
     registerComponentMock(ConfigurationSource.class, CelementsAllPropertiesConfigurationSource.NAME,
         getConfigurationSource());
     getConfigurationSource().setProperty(DocumentCacheStore.PARAM_EXIST_CACHE_CAPACITY, 10000);
     getConfigurationSource().setProperty(DocumentCacheStore.PARAM_DOC_CACHE_CAPACITY, 100);
-    CacheFactory cacheFactory = Utils.getComponent(CacheFactory.class, "jbosscache");
-    expect(getWikiMock().getCacheFactory()).andReturn(cacheFactory).anyTimes();
-    expect(getWikiMock().getPlugin(eq("monitor"), isA(XWikiContext.class))).andReturn(
-        null).anyTimes();
-    expect(getWikiMock().hasDynamicCustomMappings()).andReturn(false).anyTimes();
-    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
-    expect(getWikiMock().Param(eq("xwiki.store.hibernate.useclasstables.read"), eq("1"))).andReturn(
-        "0").anyTimes();
-    expect(getWikiMock().getXClass(isA(DocumentReference.class), isA(
+    expect(getMock(XWiki.class).hasDynamicCustomMappings()).andReturn(false).anyTimes();
+    expect(getMock(XWiki.class).getXClass(isA(DocumentReference.class), isA(
         XWikiContext.class))).andStubDelegateTo(new TestXWiki());
     createBaseObjects();
     createPropertiesMap();
@@ -207,13 +197,13 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
   }
 
   private void setupTestMocks() {
-    Session sessionMock = createMockAndAddToDefault(Session.class);
+    Session sessionMock = createDefaultMock(Session.class);
     expect(sessionFactoryMock.openSession()).andReturn(sessionMock).anyTimes();
     sessionMock.setFlushMode(eq(FlushMode.COMMIT));
     expectLastCall().atLeastOnce();
     sessionMock.setFlushMode(eq(FlushMode.MANUAL));
     expectLastCall().atLeastOnce();
-    Transaction transactionMock = createMockAndAddToDefault(Transaction.class);
+    Transaction transactionMock = createDefaultMock(Transaction.class);
     expect(sessionMock.beginTransaction()).andReturn(transactionMock).anyTimes();
     transactionMock.rollback();
     expectLastCall().anyTimes();
@@ -383,7 +373,7 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
   }
 
   private void initStorePrepareMultiThreadMocks() throws XWikiException {
-    defaultContext = (XWikiContext) getContext().clone();
+    defaultContext = (XWikiContext) getXContext().clone();
     cacheStore = (DocumentCacheStore) Utils.getComponent(XWikiStoreInterface.class,
         DocumentCacheStore.COMPONENT_NAME);
     cacheStore.initalize(); // ensure cache is initialized
@@ -556,7 +546,7 @@ public class ConcurrentCacheTest extends AbstractComponentTest {
       try {
         XWikiDocument myDoc = new XWikiDocument(testDocRef);
         try {
-          loadedXWikiDoc = getStore().loadXWikiDoc(myDoc, getContext());
+          loadedXWikiDoc = getStore().loadXWikiDoc(myDoc, getXContext());
         } catch (XWikiException exp) {
           throw new IllegalStateException(exp);
         }

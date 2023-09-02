@@ -29,6 +29,7 @@ import org.xwiki.bridge.event.DocumentUpdatingEvent;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.rendering.syntax.Syntax;
 
@@ -57,6 +58,7 @@ import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
 import com.celements.store.ModelAccessStore;
+import com.celements.wiki.WikiService;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.XWikiException;
@@ -84,7 +86,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     registerComponentMocks(XWikiRecycleBinStoreInterface.class, ObservationManager.class,
-        IRightsAccessFacadeRole.class, UserService.class);
+        IRightsAccessFacadeRole.class, UserService.class, WikiService.class);
     registerComponentMock(XWikiDocumentCreator.class, "default", new TestXWikiDocumentCreator());
     registerComponentMock(ConfigurationSource.class, "all", getConfigurationSource());
     registerComponentMock(ConfigurationSource.class, CelementsFromWikiConfigurationSource.NAME,
@@ -96,12 +98,12 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     doc.setDefaultLanguage(getConfigurationSource().getProperty(ModelContext.CFG_KEY_DEFAULT_LANG));
     doc.setSyntax(Syntax.XWIKI_1_0);
     doc.setMetaDataDirty(false);
-    storeMock = createMockAndAddToDefault(XWikiStoreInterface.class);
+    storeMock = createDefaultMock(XWikiStoreInterface.class);
     doc.setStore(storeMock);
     doc.setNew(false);
     doc.setOriginalDocument(new XWikiDocument(doc.getDocumentReference()));
     doc.getOriginalDocument().setNew(false);
-    ModelAccessStore modelAccessStoreMock = createMockAndAddToDefault(ModelAccessStore.class);
+    ModelAccessStore modelAccessStoreMock = createDefaultMock(ModelAccessStore.class);
     registerComponentMock(XWikiStoreInterface.class, ModelAccessStore.NAME, modelAccessStoreMock);
     getConfigurationSource().setProperty("celements.store.main", ModelAccessStore.NAME);
     expect(modelAccessStoreMock.getBackingStore()).andReturn(storeMock).anyTimes();
@@ -113,6 +115,8 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     getContext().setDatabase("db");
     getContext().setUser("user");
     modelAccess = (DefaultModelAccessFacade) Utils.getComponent(IModelAccessFacade.class);
+    expect(getMock(WikiService.class).hasWiki(new WikiReference("db")))
+        .andReturn(true).anyTimes();
   }
 
   @Test
@@ -1575,7 +1579,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   @Test
   public void test_setProperty_getProperty_customField() throws Exception {
     ClassField<DocumentReference> field = FIELD_MY_DOCREF;
-    DocumentReference toStoreRef = new DocumentReference("myDB", "mySpace", "myDoc");
+    DocumentReference toStoreRef = new DocumentReference("mydb", "mySpace", "myDoc");
 
     BaseClass bClass = expectNewBaseObject(field.getClassReference().getDocRef());
     expectPropertyClass(bClass, field.getName(), new StringClass());

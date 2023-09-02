@@ -19,77 +19,78 @@
  */
 package com.xpn.xwiki.internal;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.logging.AbstractLogEnabled;
+import static com.celements.execution.XWikiExecutionProp.*;
 
+import java.net.URI;
+
+import javax.inject.Inject;
+import javax.servlet.ServletContext;
+
+import org.springframework.stereotype.Component;
+import org.xwiki.context.ExecutionContext;
+import org.xwiki.model.reference.WikiReference;
+
+import com.celements.wiki.WikiService;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
+import com.xpn.xwiki.web.ViewAction;
+import com.xpn.xwiki.web.XWikiServletContext;
 import com.xpn.xwiki.web.XWikiServletRequest;
 import com.xpn.xwiki.web.XWikiServletRequestStub;
+import com.xpn.xwiki.web.XWikiServletResponse;
+import com.xpn.xwiki.web.XWikiServletResponseStub;
+import com.xpn.xwiki.web.XWikiURLFactoryService;
 
 /**
  * Default implementation of XWikiStubContextProvider.
  *
- * @todo make DefaultXWikiStubContextProvider able to generate a stub context from scratch some way,
- *       it will need some
- *       refactor around XWiki class for this to be possible. The current limitation is that without
- *       a first request
- *       this provider is unusable.
- * @version $Id$
  * @since 2.0M3
  */
 @Component
-public class DefaultXWikiStubContextProvider extends AbstractLogEnabled
-    implements XWikiStubContextProvider {
+public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider {
 
-  /**
-   * The initial stub XWikiContext.
-   */
-  private XWikiContext stubContext;
+  private static final URI LOCALHOST = URI.create("http://localhost");
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.util.XWikiStubContextProvider#initialize(com.xpn.xwiki.XWikiContext)
-   */
-  @Override
-  public void initialize(XWikiContext context) {
-    this.stubContext = (XWikiContext) context.clone();
+  private final ServletContext servletContext;
+  private final WikiService wikiService;
+  private final XWikiURLFactoryService urlFactoryService;
 
-    // We are sure the context request is a real servlet request
-    // So we force the dummy request with the current host
-    XWikiServletRequestStub dummy = new XWikiServletRequestStub();
-    if (context.getRequest() != null) {
-      dummy.setHost(context.getRequest().getHeader("x-forwarded-host"));
-      dummy.setScheme(context.getRequest().getScheme());
-    }
-    XWikiServletRequest request = new XWikiServletRequest(dummy);
-    this.stubContext.setRequest(request);
-
-    this.stubContext.setCacheDuration(0);
-
-    this.stubContext.setUser(null);
-    this.stubContext.setLanguage(null);
-    this.stubContext.setDatabase(context.getMainXWiki());
-    this.stubContext.setDoc(new XWikiDocument());
-
-    this.stubContext.flushClassCache();
-    this.stubContext.flushArchiveCache();
-
-    getLogger().debug("Stub context initialized.");
+  @Inject
+  public DefaultXWikiStubContextProvider(
+      ServletContext servletContext,
+      WikiService wikiService,
+      XWikiURLFactoryService urlFactoryService) {
+    this.servletContext = servletContext;
+    this.wikiService = wikiService;
+    this.urlFactoryService = urlFactoryService;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.util.XWikiStubContextProvider#createStubContext()
-   */
   @Override
-  public XWikiContext createStubContext() {
-    // TODO: we need to find a way to create a usable XWikiContext from scratch even if it will not
-    // contains
-    // information related to the URL
-    return this.stubContext == null ? null : (XWikiContext) this.stubContext.clone();
+  public XWikiContext createStubContext(ExecutionContext execContext) {
+    XWikiContext ctx = new XWikiContext();
+    ctx.setEngineContext(new XWikiServletContext(servletContext));
+    ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
+    WikiReference wikiRef = execContext.computeIfAbsent(WIKI, () -> XWikiConstant.MAIN_WIKI);
+    ctx.setDatabase(wikiRef.getName());
+    ctx.setOriginalDatabase(wikiRef.getName());
+    ctx.setUri(execContext.computeIfAbsent(XWIKI_REQUEST_URI,
+        () -> wikiService.streamUrisForWiki(wikiRef).findFirst().orElse(LOCALHOST)));
+    ctx.setRequest(execContext.computeIfAbsent(XWIKI_REQUEST, () -> {
+      XWikiServletRequestStub stub = new XWikiServletRequestStub();
+      stub.setHost(ctx.getUri().getHost());
+      stub.setScheme(ctx.getUri().getScheme());
+      return new XWikiServletRequest(stub);
+    }));
+    ctx.setResponse(execContext.computeIfAbsent(XWIKI_RESPONSE, () -> {
+      XWikiServletResponseStub stub = new XWikiServletResponseStub();
+      return new XWikiServletResponse(stub);
+    }));
+    ctx.setAction(execContext.computeIfAbsent(XWIKI_REQUEST_ACTION, () -> ViewAction.VIEW_ACTION));
+    ctx.setDoc(execContext.computeIfAbsent(DOC, XWikiDocument::new));
+    ctx.setURLFactory(urlFactoryService.createURLFactory(ctx));
+    return ctx;
   }
+
 }

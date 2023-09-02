@@ -19,6 +19,7 @@
  */
 package com.celements.xwikiPatches;
 
+import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -27,14 +28,14 @@ import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.celements.common.test.AbstractBridgedComponentTestCase;
+import com.celements.common.test.AbstractComponentTest;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
 
-public class SpacePreferencesConfigurationSourceTest extends AbstractBridgedComponentTestCase {
+public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTest {
 
   private XWikiContext context;
   private SpacePreferencesConfigurationSource spacePrefConfig;

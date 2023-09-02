@@ -150,17 +150,6 @@ public class ActionFilterFBHack implements Filter {
     // don't use 'view' as a target.
     int index = path.indexOf(PATH_SEPARATOR, 1);
 
-    // We need to also get rid of the wiki name in case of a XEM in usepath mode
-    if ("1".equals(XWikiConfigurationService.getProperty("xwiki.virtual.usepath", "0",
-        this.servletContext))) {
-      if (servletPath.equals(PATH_SEPARATOR + XWikiConfigurationService.getProperty(
-          "xwiki.virtual.usepath.servletpath", "wiki", this.servletContext))) {
-        // Move the wiki name together with the servlet path
-        servletPath += path.substring(0, index);
-        index = path.indexOf(PATH_SEPARATOR, index + 1);
-      }
-    }
-
     String document = path.substring(index);
 
     // Compose the target URL starting with the servlet path.

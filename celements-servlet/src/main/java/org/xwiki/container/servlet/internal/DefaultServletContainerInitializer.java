@@ -24,6 +24,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentManager;
@@ -37,12 +39,13 @@ import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.container.servlet.ServletRequest;
 import org.xwiki.container.servlet.ServletResponse;
 import org.xwiki.container.servlet.ServletSession;
-import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
-import org.xwiki.context.ExecutionContextManager;
 
 @Component
 public class DefaultServletContainerInitializer implements ServletContainerInitializer {
+
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(DefaultServletContainerInitializer.class);
+
   // Implementation note: It's important that we don't use @Requirement annotations here
   // for RequestInitializerManager and ExecutionContextManager since we can have
   // RequestInitializer and ExecutionContextInitializer components which try to access
@@ -57,9 +60,6 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
   private Container container;
 
   @Requirement
-  private Execution execution;
-
-  @Requirement
   private ComponentManager componentManager;
 
   @Override
@@ -67,6 +67,7 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     ApplicationContext applicationContext = new ServletApplicationContext(servletContext);
     this.container.setApplicationContext(applicationContext);
     this.applicationContextListenerManager.initializeApplicationContext(applicationContext);
+    LOGGER.trace("initializeApplicationContext - done");
   }
 
   @Override
@@ -74,26 +75,16 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     ApplicationContext applicationContext = container.getApplicationContext();
     applicationContextListenerManager.destroyApplicationContext(applicationContext);
     container.setApplicationContext(null);
+    LOGGER.trace("destroyApplicationContext - done");
   }
 
   @Override
-  public void initializeRequest(HttpServletRequest httpServletRequest, Object xwikiContext)
+  public void initializeRequest(HttpServletRequest httpServletRequest)
       throws ServletContainerException {
     // 1) Create an empty request. From this point forward request initializers can use the
     // Container object to get any data they want from the Request.
     this.container.setRequest(new ServletRequest(httpServletRequest));
-
-    // 2) Create an empty Execution context so that the Container initializers can put things in the
-    // execution context when they execute.
-    this.execution.setContext(new ExecutionContext());
-
-    // 3) Bridge with old code to play well with new components. Old code relies on the
-    // XWikiContext object whereas new code uses the Container component.
-    if (xwikiContext != null) {
-      this.execution.getContext().setProperty("xwikicontext", xwikiContext);
-    }
-
-    // 4) Call the request initializers to populate the Request.
+    // 2) Call the request initializers to populate the Request.
     // TODO: This is where the URL should be converted to a XWikiURL and the wiki, space,
     // document, skin and possibly other parameters are put in the Execution Context by proper
     // initializers.
@@ -104,37 +95,26 @@ public class DefaultServletContainerInitializer implements ServletContainerIniti
     } catch (Exception e) {
       throw new ServletContainerException("Failed to initialize request", e);
     }
-
-    // 5) Call Execution Context initializers to perform further Execution Context initializations
-    try {
-      ExecutionContextManager manager = this.componentManager.lookup(ExecutionContextManager.class);
-      manager.initialize(this.execution.getContext());
-    } catch (Exception e) {
-      throw new ServletContainerException("Failed to initialize Execution Context", e);
-    }
-  }
-
-  @Override
-  public void initializeRequest(HttpServletRequest httpServletRequest)
-      throws ServletContainerException {
-    initializeRequest(httpServletRequest, null);
+    LOGGER.trace("initializeRequest - done");
   }
 
   @Override
   public void initializeResponse(HttpServletResponse httpServletResponse) {
     this.container.setResponse(new ServletResponse(httpServletResponse));
+    LOGGER.trace("initializeResponse - done");
   }
 
   @Override
   public void initializeSession(HttpServletRequest httpServletRequest) {
     this.container.setSession(new ServletSession(httpServletRequest));
+    LOGGER.trace("initializeSession - done");
   }
 
   @Override
-  public void cleanupSession() {
+  public void cleanup() {
     container.removeRequest();
     container.removeResponse();
     container.removeSession();
-    execution.removeContext();
+    LOGGER.trace("cleanup - done");
   }
 }

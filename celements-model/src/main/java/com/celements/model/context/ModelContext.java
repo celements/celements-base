@@ -13,7 +13,6 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.auth.user.User;
-import com.celements.model.util.ModelUtils;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.user.api.XWikiUser;
@@ -56,13 +55,6 @@ public interface ModelContext {
    * @return true if the current context wiki is main
    */
   boolean isMainWiki();
-
-  /**
-   * @deprecated since 3.0, instead use {@link ModelUtils#getMainWikiRef()}
-   */
-  @Deprecated
-  @NotNull
-  WikiReference getMainWikiRef();
 
   /**
    * @deprecated since 3.6, instead use {@link #getDocument}

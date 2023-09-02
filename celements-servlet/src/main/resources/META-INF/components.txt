@@ -1,3 +1,5 @@
+org.xwiki.context.internal.DefaultExecution
+org.xwiki.context.internal.DefaultExecutionContextManager
 org.xwiki.container.internal.DefaultContainer
 org.xwiki.container.internal.DefaultRequestInitializerManager
 org.xwiki.container.internal.DefaultApplicationContextListenerManager

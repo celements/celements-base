@@ -62,6 +62,7 @@ import com.celements.model.util.ReferenceSerializationMode;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
+import com.celements.wiki.WikiService;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -94,6 +95,9 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Requirement
   protected ModelContext context;
+
+  @Requirement
+  protected WikiService wikiService;
 
   @Requirement(XObjectFieldAccessor.NAME)
   protected FieldAccessor<BaseObject> xObjFieldAccessor;
@@ -150,11 +154,14 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   private XWikiDocument getDocumentInternal(DocumentReference docRef, String lang)
       throws DocumentNotExistsException {
-    XWikiDocument doc = strategy.getDocument(docRef, lang);
-    if (doc.isNew()) { // faster than exists check when doc exists
+    XWikiDocument doc = wikiService.hasWiki(docRef.getWikiReference())
+        ? strategy.getDocument(docRef, lang)
+        : null;
+    if ((doc != null) && !doc.isNew()) { // faster than exists check when doc exists
+      return doc;
+    } else {
       throw new DocumentNotExistsException(docRef, lang);
     }
-    return doc;
   }
 
   @Override
@@ -210,7 +217,7 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Override
   public boolean exists(DocumentReference docRef) {
-    if (docRef != null) {
+    if ((docRef != null) && wikiService.hasWiki(docRef.getWikiReference())) {
       return strategy.exists(docRef);
     }
     return false;

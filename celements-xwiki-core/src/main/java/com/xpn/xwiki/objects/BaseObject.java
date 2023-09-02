@@ -33,36 +33,16 @@ import org.dom4j.Element;
 import org.dom4j.dom.DOMElement;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceResolver;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
-import com.xpn.xwiki.web.Utils;
 
 public class BaseObject extends BaseCollection implements ObjectInterface, Serializable, Cloneable {
 
   private String guid = UUID.randomUUID().toString();
-
-  /**
-   * Used to resolve a reference into a proper Document Reference using the current document's
-   * reference to fill the blanks, except for the page name for which the default page name is used
-   * instead and for the wiki name for which the current wiki is used instead of the current
-   * document reference's wiki.
-   */
-  private DocumentReferenceResolver<EntityReference> currentMixedDocRefResolver = Utils
-      .getComponent(DocumentReferenceResolver.class, "currentmixed/reference");
-
-  // TODO make static, check parents
-
-  /**
-   * Used here to merge setName() and setWiki() calls into the DocumentReference.
-   */
-  private EntityReferenceResolver<String> relativeEntityRefResolver = Utils.getComponent(
-      EntityReferenceResolver.class, "relative");
 
   /**
    * Note: This method is overridden to add the deprecation warning so that code using it can see
@@ -87,9 +67,9 @@ public class BaseObject extends BaseCollection implements ObjectInterface, Seria
   @Override
   public void setName(String name) {
     if (StringUtils.isNotBlank(name) && !name.equals(getName())) {
-      EntityReference ref = relativeEntityRefResolver.resolve(name, EntityType.DOCUMENT);
+      EntityReference ref = relativeEntityRefResolver.get().resolve(name, EntityType.DOCUMENT);
       if (ref.extractReference(EntityType.WIKI) == null) {
-        setDocumentReference(currentMixedDocRefResolver.resolve(ref, getDocumentReference()));
+        setDocumentReference(currentMixedDocRefResolver.get().resolve(ref, getDocumentReference()));
       } else {
         throw new IllegalArgumentException("name may not contain wiki: " + name);
       }

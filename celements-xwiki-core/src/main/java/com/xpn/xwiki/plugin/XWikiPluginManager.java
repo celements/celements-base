@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -37,7 +37,7 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 public class XWikiPluginManager {
 
   /** Log helper for logging messages in this class. */
-  private static final Log LOG = LogFactory.getLog(XWikiPluginManager.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiPluginManager.class);
 
   private Vector<String> plugins = new Vector<>();
 

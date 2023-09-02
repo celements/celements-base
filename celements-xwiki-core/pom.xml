@@ -24,47 +24,53 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>6.0-SNAPSHOT</version>
+    <version>6.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-xwiki-core</artifactId>
-  <version>6.0-SNAPSHOT</version>
+  <version>6.1-SNAPSHOT</version>
   <description>Celements XWiki</description>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-observation</artifactId>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -90,6 +96,10 @@
     </dependency>
 
     <!-- Commons -->
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
@@ -173,27 +183,11 @@
     <!-- Other XWiki modules -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-local</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-observation-remote</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-velocity</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-script</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-context</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -226,15 +220,7 @@
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-rendering-macro-wikibridge</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-csrf</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-url-default</artifactId>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
@@ -327,6 +313,10 @@
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -370,6 +360,10 @@
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
           <artifactId>xwiki-core-component-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xwiki.platform</groupId>
+          <artifactId>xwiki-core-context</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.xwiki.platform</groupId>
@@ -447,27 +441,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.jackrabbit</groupId>
-      <artifactId>jackrabbit-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google</groupId>
-      <artifactId>googleapi</artifactId>
-      <classifier>xwiki</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.portals</groupId>
-      <artifactId>graffito-jcr-mapping</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.transaction</groupId>
-      <artifactId>jta</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.jcr</groupId>
-      <artifactId>jcr</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.novell.ldap</groupId>
       <artifactId>jldap</artifactId>
     </dependency>
@@ -510,20 +483,20 @@
           <groupId>dom4j</groupId>
           <artifactId>dom4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis-ext</artifactId>
+        </exclusion>
       </exclusions>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>jdom</groupId>
       <artifactId>jdom</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xmlParserAPIs</artifactId>
     </dependency>
     <dependency>
       <groupId>xpp3</groupId>
@@ -594,18 +567,11 @@
       <artifactId>groovy-all</artifactId>
     </dependency>
 
-    <!-- Barcode generation -->
-    <dependency>
-      <groupId>org.apache.avalon.framework</groupId>
-      <artifactId>avalon-framework-impl</artifactId>
-      <version>4.3.1</version>
-    </dependency>
-
     <!-- testing -->
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
-      <version>6.0-SNAPSHOT</version>
+      <version>6.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -633,7 +599,6 @@
     <dependency>
       <groupId>jmock</groupId>
       <artifactId>jmock-cglib</artifactId>
-      <version>1.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -645,9 +610,9 @@
 
   </dependencies>
   <scm>
-    <connection>scm:git:git@github.com:celements/celements-xwiki.git</connection>
-    <developerConnection>scm:git:git@github.com:celements/celements-xwiki.git</developerConnection>
-    <url>https://github.com/celements/celements-xwiki</url>
+    <connection>scm:git:git@github.com:celements/celements-base.git</connection>
+    <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
+    <url>https://github.com/celements/celements-base/celements-xwiki-core</url>
     <tag>HEAD</tag>
   </scm>
   <build>

@@ -10,8 +10,10 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.springframework.context.ApplicationContext;
 import org.xwiki.component.annotation.Requirement;
 
+import com.celements.spring.context.CelSpringContext;
 import com.google.common.collect.ImmutableSet;
 
 public abstract class TestAbstractCompositeComponent implements TestCompositeComponentRole {
@@ -48,6 +50,12 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
   @Requirement
   private Map<String, TestComponentRole> mapFromXWiki;
 
+  @Inject
+  private ApplicationContext springCtxFromSpring;
+
+  @Requirement
+  private ApplicationContext springCtxFromXWiki;
+
   @Override
   public void assertComposition() {
     assertNotNull(defaultFromSpring);
@@ -68,6 +76,10 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
     assertList(listFromXWiki);
     assertMap(mapFromSpring, TestComponentRole.class.getName() + "|||");
     assertMap(mapFromXWiki, "");
+    assertNotNull(springCtxFromSpring);
+    assertSame(CelSpringContext.class, springCtxFromSpring.getClass());
+    assertNotNull(springCtxFromXWiki);
+    assertSame(CelSpringContext.class, springCtxFromXWiki.getClass());
   }
 
   private void assertList(Collection<TestComponentRole> list) {

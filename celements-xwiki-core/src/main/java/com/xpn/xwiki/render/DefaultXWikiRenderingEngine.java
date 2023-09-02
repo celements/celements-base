@@ -40,9 +40,7 @@ import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.monitor.api.MonitorPlugin;
 import com.xpn.xwiki.render.groovy.XWikiGroovyRenderer;
-import com.xpn.xwiki.util.Util;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiRequest;
 
@@ -246,16 +244,10 @@ public class DefaultXWikiRenderingEngine implements XWikiRenderingEngine {
         }
       } catch (Exception e) {}
 
-      MonitorPlugin monitor = Util.getMonitorPlugin(context);
       try {
         // We need to make sure we don't use the cache duretion currently in the system
-        context
-            .setCacheDuration(
-                (int) context.getWiki().ParamAsLong("xwiki.rendering.defaultCacheDuration", 0));
-        // Start monitoring timer
-        if (monitor != null) {
-          monitor.startTimer("rendering");
-        }
+        context.setCacheDuration((int) context.getWiki().ParamAsLong(
+            "xwiki.rendering.defaultCacheDuration", 0));
 
         String content = text;
 
@@ -268,7 +260,9 @@ public class DefaultXWikiRenderingEngine implements XWikiRenderingEngine {
         context.put("sdoc", contentdoc);
 
         // Let's call the beginRendering loop
-        context.getWiki().getPluginManager().beginRendering(context);
+        if (context.getWiki().getPluginManager() != null) {
+          context.getWiki().getPluginManager().beginRendering(context);
+        }
 
         try {
           for (XWikiRenderer element : this.renderers) {
@@ -308,7 +302,9 @@ public class DefaultXWikiRenderingEngine implements XWikiRenderingEngine {
           }
 
           // Let's call the endRendering loop
-          context.getWiki().getPluginManager().endRendering(context);
+          if (context.getWiki().getPluginManager() != null) {
+            context.getWiki().getPluginManager().endRendering(context);
+          }
         }
 
         try {
@@ -325,10 +321,6 @@ public class DefaultXWikiRenderingEngine implements XWikiRenderingEngine {
       } finally {
         // We need to make sure we reset the cache Duration
         context.setCacheDuration(currentCacheDuration);
-
-        if (monitor != null) {
-          monitor.endTimer("rendering");
-        }
       }
     }
   }

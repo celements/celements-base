@@ -25,5 +25,9 @@ import com.xpn.xwiki.XWikiContext;
 
 public interface XWikiURLFactoryService {
 
+  XWikiURLFactory createURLFactory(XWikiContext context);
+
+  @Deprecated
   XWikiURLFactory createURLFactory(int mode, XWikiContext context);
+
 }

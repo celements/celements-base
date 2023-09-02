@@ -27,7 +27,8 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.WikiReference;
-import org.xwiki.test.AbstractComponentTestCase;
+
+import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
 
 /**
  * Unit tests for
@@ -36,7 +37,8 @@ import org.xwiki.test.AbstractComponentTestCase;
  * @version $Id: 28161a91ce952dbe3defd0070657aa419de9e5f9 $
  * @since 2.2M1
  */
-public class CompactWikiStringEntityReferenceSerializerTest extends AbstractComponentTestCase {
+public class CompactWikiStringEntityReferenceSerializerTest
+    extends AbstractBridgedComponentTestCase {
 
   private EntityReferenceSerializer<EntityReference> serializer;
 

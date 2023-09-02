@@ -1,15 +1,15 @@
 package com.xpn.xwiki.util;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 
+import com.google.common.collect.ImmutableMap;
 import com.xpn.xwiki.web.Utils;
 
 /**
@@ -23,12 +23,12 @@ public abstract class AbstractXWikiRunnable implements Runnable {
   /**
    * Logging tools.
    */
-  private static final Log LOG = LogFactory.getLog(AbstractXWikiRunnable.class);
+  protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-  private Map<String, Object> properties = new HashMap<>();
+  private final Map<String, Object> properties;
 
   protected AbstractXWikiRunnable() {
-
+    properties = ImmutableMap.of();
   }
 
   /**
@@ -38,7 +38,7 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    *          the value of the property to put in the initialized context
    */
   protected AbstractXWikiRunnable(String propertyName, Object propertyValue) {
-    this.properties.put(propertyName, propertyValue);
+    properties = ImmutableMap.of(propertyName, propertyValue);
   }
 
   /**
@@ -46,7 +46,7 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    *          properties to put in the initialized context
    */
   protected AbstractXWikiRunnable(Map<String, Object> properties) {
-    this.properties.putAll(properties);
+    this.properties = ImmutableMap.copyOf(properties);
   }
 
   /**
@@ -57,50 +57,32 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    *           error when try to initialize execution context
    */
   protected ExecutionContext initExecutionContext() throws ExecutionContextException {
-    ExecutionContextManager ecim = Utils.getComponent(ExecutionContextManager.class);
-    Execution execution = Utils.getComponent(Execution.class);
-
-    ExecutionContext ec = new ExecutionContext();
-
-    ecim.initialize(ec);
-
-    ec.setProperties(this.properties);
-
-    execution.setContext(ec);
-
-    return ec;
+    ExecutionContext executionContext = new ExecutionContext();
+    Utils.getComponent(Execution.class).setContext(executionContext);
+    Utils.getComponent(ExecutionContextManager.class).initialize(executionContext);
+    executionContext.setProperties(properties);
+    return executionContext;
   }
 
   protected void cleanupExecutionContext() {
-    Execution ech = Utils.getComponent(Execution.class);
     // We must ensure we clean the ThreadLocal variables located in the Execution
     // component as otherwise we will have a potential memory leak.
-    ech.removeContext();
+    Utils.getComponent(Execution.class).removeContext();
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see java.lang.Runnable#run()
-   */
   @Override
   public final void run() {
     try {
-      // initialize execution context
       initExecutionContext();
-    } catch (ExecutionContextException e) {
-      LOG.error("Failed to initialize execution context", e);
-      return;
-    }
-
-    try {
-      // call run
       runInternal();
+    } catch (Exception e) {
+      logger.error("Failed to initialize execution context", e);
+      throw new RuntimeException(e);
     } finally {
-      // cleanup execution context
       cleanupExecutionContext();
     }
   }
 
-  protected abstract void runInternal();
+  protected abstract void runInternal() throws Exception;
+
 }

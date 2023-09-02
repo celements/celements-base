@@ -33,11 +33,15 @@ import org.securityfilter.authenticator.BasicAuthenticator;
 import org.securityfilter.filter.SecurityFilter;
 import org.securityfilter.filter.SecurityRequestWrapper;
 import org.securityfilter.realm.SimplePrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 
 public class MyBasicAuthenticator extends BasicAuthenticator implements XWikiAuthenticator {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MyBasicAuthenticator.class);
 
   @Override
   public boolean processLogin(SecurityRequestWrapper request, HttpServletResponse response)
@@ -50,14 +54,13 @@ public class MyBasicAuthenticator extends BasicAuthenticator implements XWikiAut
       XWikiContext context)
       throws Exception {
     Principal principal = checkLogin(request, response, context);
-
+    LOGGER.trace("processLogin - {}", principal);
     if (principal == null) {
       // login failed
       // show the basic authentication window again.
       showLogin(request.getCurrentRequest(), response);
       return true;
     }
-
     return false;
   }
 

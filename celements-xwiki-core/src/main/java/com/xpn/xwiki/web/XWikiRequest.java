@@ -21,14 +21,31 @@
 
 package com.xpn.xwiki.web;
 
+import java.net.URI;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.base.Strings;
+
 public interface XWikiRequest extends HttpServletRequest {
+
+  String EXEC_CONTEXT_KEY = "xwiki.request";
+  String URI_EXEC_CONTEXT_KEY = "xwiki.request.uri";
+  String ACTION_EXEC_CONTEXT_KEY = "xwiki.request.action";
 
   String get(String name);
 
   HttpServletRequest getHttpServletRequest();
 
   Cookie getCookie(String cookieName);
+
+  default URI getUri() {
+    String requestURL = getRequestURL().toString();
+    if (!Strings.isNullOrEmpty(getQueryString())) {
+      requestURL += "?" + getQueryString();
+    }
+    return URI.create(requestURL);
+  }
+
 }

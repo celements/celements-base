@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.store.hibernate.query;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -29,16 +31,21 @@ import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryExecutor;
 
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
 import com.xpn.xwiki.store.XWikiHibernateStore;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
 import com.xpn.xwiki.util.Util;
+import com.xpn.xwiki.web.Utils;
 
 /**
  * QueryExecutor implementation for Hibernate Store.
@@ -82,12 +89,13 @@ public class HqlQueryExecutor implements QueryExecutor, Initializable {
    */
   @Override
   public <T> List<T> execute(final Query query) throws QueryException {
-    String olddatabase = getContext().getDatabase();
     try {
-      if (query.getWiki() != null) {
-        getContext().setDatabase(query.getWiki());
+      String wikiName = query.getWiki();
+      if (Strings.isNullOrEmpty(query.getWiki()) && (getXContext() != null)) {
+        wikiName = getXContext().getDatabase();
       }
-      return getStore().executeRead(getContext(), true, new HibernateCallback<List<T>>() {
+      WikiReference wikiRef = new WikiReference(wikiName);
+      return getStore().executeRead(wikiRef, true, new HibernateCallback<List<T>>() {
 
         @Override
         @SuppressWarnings("unchecked")
@@ -99,8 +107,6 @@ public class HqlQueryExecutor implements QueryExecutor, Initializable {
       });
     } catch (XWikiException e) {
       throw new QueryException("Exception while execute query", query, e);
-    } finally {
-      getContext().setDatabase(olddatabase);
     }
   }
 
@@ -150,17 +156,16 @@ public class HqlQueryExecutor implements QueryExecutor, Initializable {
     }
   }
 
-  /**
-   * @return Store component
-   */
   protected XWikiHibernateStore getStore() {
-    return getContext().getWiki().getHibernateStore();
+    return (XWikiHibernateStore) Utils.getComponent(XWikiStoreInterface.class, "hibernate");
   }
 
-  /**
-   * @return XWiki Context
-   */
-  protected XWikiContext getContext() {
-    return (XWikiContext) execution.getContext().getProperty("xwikicontext");
+  protected XWikiContext getXContext() {
+    return getEContext().get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
+
+  protected ExecutionContext getEContext() {
+    return execution.getContext();
+  }
+
 }

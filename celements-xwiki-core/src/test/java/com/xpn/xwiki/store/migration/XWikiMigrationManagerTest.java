@@ -41,7 +41,7 @@ public class XWikiMigrationManagerTest extends AbstractBridgedXWikiComponentTest
   protected void setUp() throws Exception {
     super.setUp();
     XWikiConfig config = new XWikiConfig();
-    getContext().setWiki(new XWiki());
+    getContext().setWiki(new XWiki(false));
     getContext().getWiki().setConfig(config);
   }
 

@@ -84,6 +84,8 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.HeaderBlock;
 import org.xwiki.rendering.block.LinkBlock;
@@ -138,7 +140,6 @@ import com.xpn.xwiki.objects.classes.ListClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 import com.xpn.xwiki.objects.classes.StaticListClass;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
 import com.xpn.xwiki.render.XWikiVelocityRenderer;
 import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
@@ -174,6 +175,8 @@ public class XWikiDocument implements DocumentModelBridge {
   public static final String XWIKI10_SYNTAXID = Syntax.XWIKI_1_0.toIdString();
 
   public static final String XWIKI20_SYNTAXID = Syntax.XWIKI_2_0.toIdString();
+
+  public static String EXEC_CONTEXT_KEY = "xwiki.doc";
 
   private String title;
 
@@ -1072,6 +1075,10 @@ public class XWikiDocument implements DocumentModelBridge {
     return documentReference;
   }
 
+  public DocumentReference getDocRef() {
+    return documentReference;
+  }
+
   /**
    * @return the document's space + page name (eg "space.page")
    * @deprecated since 2.2M1 use {@link #getDocumentReference()} instead
@@ -1150,12 +1157,16 @@ public class XWikiDocument implements DocumentModelBridge {
    * {@inheritDoc}
    *
    * @see DocumentModelBridge#getWikiName()
-   * @deprecated since 2.2M1 use {@link #getDocumentReference()} instead
+   * @deprecated since 2.2M1 use {@link #getWikiRef()} instead
    */
   @Override
   @Deprecated
   public String getWikiName() {
     return getDatabase();
+  }
+
+  public WikiReference getWikiRef() {
+    return getDocRef().getWikiReference();
   }
 
   /**
@@ -1168,6 +1179,10 @@ public class XWikiDocument implements DocumentModelBridge {
   @Deprecated
   public String getSpaceName() {
     return this.getSpace();
+  }
+
+  public SpaceReference getSpaceRef() {
+    return getDocRef().getLastSpaceReference();
   }
 
   /**
@@ -2814,21 +2829,6 @@ public class XWikiDocument implements DocumentModelBridge {
         if (is10Syntax(wrappingSyntaxId) && isInRenderingEngine) {
           result.append("{/pre}");
         }
-      } else if (type.equals("search")) {
-        // If the Syntax id is "xwiki/1.0" then use the old rendering subsystem and prevent wiki
-        // syntax
-        // rendering using the pre macro. In the new rendering system it's the XWiki Class itself
-        // that does the
-        // escaping. For example for a textarea check the TextAreaClass class.
-        if (is10Syntax(wrappingSyntaxId) && isInRenderingEngine) {
-          result.append("{pre}");
-        }
-        prefix = obj.getXClass(context).getName() + "_";
-        pclass.displaySearch(result, fieldname, prefix, (XWikiCriteria) context.get("query"),
-            context);
-        if (is10Syntax(wrappingSyntaxId) && isInRenderingEngine) {
-          result.append("{/pre}");
-        }
       } else {
         pclass.displayView(result, fieldname, prefix, obj, context);
       }
@@ -3953,12 +3953,7 @@ public class XWikiDocument implements DocumentModelBridge {
 
     // Add Content
     el = new DOMElement("content");
-
-    // Filter filter = new CharacterFilter();
-    // String newcontent = filter.process(getContent());
-    // String newcontent = encodedXMLStringAsUTF8(getContent());
-    String newcontent = this.content;
-    el.addText(newcontent);
+    el.addText(this.content);
     wr.write(el);
 
     if (bWithRendering) {
@@ -4777,12 +4772,6 @@ public class XWikiDocument implements DocumentModelBridge {
   public String displayHidden(PropertyClass pclass, String prefix, BaseCollection object,
       XWikiContext context) {
     return (pclass == null) ? "" : pclass.displayHidden(pclass.getName(), prefix, object, context);
-  }
-
-  public String displaySearch(PropertyClass pclass, String prefix, XWikiCriteria criteria,
-      XWikiContext context) {
-    return (pclass == null) ? ""
-        : pclass.displaySearch(pclass.getName(), prefix, criteria, context);
   }
 
   public XWikiAttachment getAttachment(String filename) {

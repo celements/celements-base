@@ -21,18 +21,14 @@ package com.xpn.xwiki.objects.classes;
 
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.ecs.xhtml.option;
-import org.apache.ecs.xhtml.select;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -40,10 +36,7 @@ import org.dom4j.dom.DOMElement;
 import org.dom4j.io.SAXReader;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceResolver;
-import org.xwiki.model.reference.EntityReferenceSerializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -54,12 +47,8 @@ import com.xpn.xwiki.objects.ObjectDiff;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.meta.MetaClass;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
-import com.xpn.xwiki.plugin.query.OrderClause;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
-import com.xpn.xwiki.plugin.query.XWikiQuery;
 import com.xpn.xwiki.validation.XWikiValidationInterface;
 import com.xpn.xwiki.validation.XWikiValidationStatus;
-import com.xpn.xwiki.web.Utils;
 
 /**
  * Represents an XClass, and contains XClass properties. Each field from {@link BaseCollection} is
@@ -82,25 +71,6 @@ public class BaseClass extends BaseCollection implements ClassInterface {
   private String validationScript;
 
   private String nameField;
-
-  @SuppressWarnings("unchecked")
-  private EntityReferenceSerializer<EntityReference> localReferenceEntityReferenceSerializer = Utils
-      .getComponent(EntityReferenceSerializer.class, "local/reference");
-
-  /**
-   * Used to resolve a reference into a proper Document Reference using the current document's
-   * reference to fill the blanks, except for the page name for which the default page name is used
-   * instead and for the wiki name for which the current wiki is used instead of the current
-   * document reference's wiki.
-   */
-  private DocumentReferenceResolver<EntityReference> currentMixedDocRefResolver = Utils
-      .getComponent(DocumentReferenceResolver.class, "currentmixed/reference");
-
-  /**
-   * Used here to merge setName() and setWiki() calls into the DocumentReference.
-   */
-  private EntityReferenceResolver<String> relativeEntityRefResolver = Utils.getComponent(
-      EntityReferenceResolver.class, "relative");
 
   /**
    * {@inheritDoc} Note: This method is overridden to add the deprecation warning so that code using
@@ -127,9 +97,9 @@ public class BaseClass extends BaseCollection implements ClassInterface {
     if ((this instanceof MetaClass) || (this instanceof PropertyMetaClass)) {
       super.setName(name);
     } else if (StringUtils.isNotBlank(name) && !name.equals(getName())) {
-      EntityReference ref = relativeEntityRefResolver.resolve(name, EntityType.DOCUMENT);
+      EntityReference ref = relativeEntityRefResolver.get().resolve(name, EntityType.DOCUMENT);
       if (ref.extractReference(EntityType.WIKI) == null) {
-        setDocumentReference(currentMixedDocRefResolver.resolve(ref, getDocumentReference()));
+        setDocumentReference(currentMixedDocRefResolver.get().resolve(ref, getDocumentReference()));
       } else {
         throw new IllegalArgumentException("name may not contain wiki: " + name);
       }
@@ -342,9 +312,8 @@ public class BaseClass extends BaseCollection implements ClassInterface {
   @Deprecated
   public BaseCollection newObject(XWikiContext context) throws XWikiException {
     BaseObject bobj = newCustomClassInstance(context);
-    bobj.setXClassReference(
-        this.localReferenceEntityReferenceSerializer.serialize(getDocumentReference()));
-
+    bobj.setXClassReference(localRefEntityRefSerializer.get()
+        .serialize(getDocumentReference()));
     return bobj;
   }
 
@@ -441,7 +410,9 @@ public class BaseClass extends BaseCollection implements ClassInterface {
       return false;
     }
 
-    if (!getDefaultWeb().equals(bclass.getDefaultWeb()) || !getValidationScript().equals(bclass.getValidationScript()) || !getNameField().equals(bclass.getNameField())) {
+    if (!getDefaultWeb().equals(bclass.getDefaultWeb())
+        || !getValidationScript().equals(bclass.getValidationScript())
+        || !getNameField().equals(bclass.getNameField())) {
       return false;
     }
 
@@ -1050,87 +1021,6 @@ public class BaseClass extends BaseCollection implements ClassInterface {
 
   public void setNameField(String nameField) {
     this.nameField = nameField;
-  }
-
-  public String makeQuery(XWikiCriteria query) {
-    List<String> criteriaList = new ArrayList<>();
-    for (PropertyClass property : (Collection<PropertyClass>) getFieldList()) {
-      String name = property.getName();
-      Map<String, Object> map = query.getParameters(getName() + "_" + name);
-      if (map.size() > 0) {
-        property.makeQuery(map, "", query, criteriaList);
-      }
-    }
-
-    return StringUtils.join(criteriaList.toArray(), " and ");
-  }
-
-  public String displaySearchColumns(String prefix, XWikiQuery query, XWikiContext context) {
-    select select = new select(prefix + "searchcolumns", 5);
-    select.setMultiple(true);
-    select.setName(prefix + "searchcolumns");
-    select.setID(prefix + "searchcolumns");
-
-    List<String> list = Arrays.asList(getPropertyNames());
-    Map<String, String> prettynamesmap = new HashMap<>();
-    for (int i = 0; i < list.size(); i++) {
-      String propname = list.get(i);
-      list.set(i, prefix + propname);
-      prettynamesmap.put(prefix + propname, ((PropertyClass) get(propname)).getPrettyName());
-    }
-
-    List<String> selectlist = query.getDisplayProperties();
-
-    // Add options from Set
-    for (String string : list) {
-      String value = string.toString();
-      String displayValue = prettynamesmap.get(value);
-      option option = new option(displayValue, displayValue);
-      option.addElement(displayValue);
-      option.setValue(value);
-      if (selectlist.contains(value)) {
-        option.setSelected(true);
-      }
-      select.addElement(option);
-    }
-
-    return select.toString();
-  }
-
-  public String displaySearchOrder(String prefix, XWikiQuery query, XWikiContext context) {
-    select select = new select(prefix + "searchorder", 5);
-    select.setMultiple(true);
-    select.setName(prefix + "searchorder");
-    select.setID(prefix + "searchorder");
-
-    List<String> list = Arrays.asList(getPropertyNames());
-    Map<String, String> prettynamesmap = new HashMap<>();
-    for (int i = 0; i < list.size(); i++) {
-      String propname = list.get(i);
-      list.set(i, prefix + propname);
-      prettynamesmap.put(prefix + propname, ((PropertyClass) get(propname)).getPrettyName());
-    }
-
-    OrderClause order = null;
-    if ((query != null) && (query.getOrderProperties() != null)
-        && (query.getOrderProperties().size() > 0)) {
-      order = query.getOrderProperties().get(0);
-    }
-
-    // Add options from Set
-    for (String string : list) {
-      String value = string.toString();
-      String displayValue = prettynamesmap.get(value);
-      option option = new option(displayValue, displayValue);
-      option.addElement(displayValue);
-      option.setValue(value);
-      if ((order != null) && (value.equals(order.getProperty()))) {
-        option.setSelected(true);
-      }
-      select.addElement(option);
-    }
-
-    return select.toString();
   }
 
   public void setValidationScript(String validationScript) {
