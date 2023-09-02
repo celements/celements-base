@@ -1597,7 +1597,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public String getSpaceCopyright(XWikiContext context) {
-    String defaultValue = "Copyright 2007-" + Calendar.getInstance().get(Calendar.YEAR) + " XWiki";
+    String defaultValue = "Copyright 2007-" + Calendar.getInstance().get(Calendar.YEAR)
+        + " Synventis";
     return getSpacePreference("webcopyright", defaultValue, context);
   }
 
