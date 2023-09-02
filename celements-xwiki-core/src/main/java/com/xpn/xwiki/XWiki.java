@@ -535,7 +535,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   /**
    * @return the cache containing the names of the wikis already initialized.
    * @since 1.5M2.
-   *
    * @deprecated since 6.0, instead use {@link WikiService}
    */
   @Deprecated
@@ -1598,7 +1597,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   public String getSpaceCopyright(XWikiContext context) {
-    String defaultValue = "Copyright 2004-" + Calendar.getInstance().get(Calendar.YEAR) + " XWiki";
+    String defaultValue = "Copyright 2007-" + Calendar.getInstance().get(Calendar.YEAR) + " XWiki";
     return getSpacePreference("webcopyright", defaultValue, context);
   }
 
@@ -3850,7 +3849,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   /**
    * @return true for multi-wiki/false for mono-wiki
-   *
    * @deprecated since 6.0 instead use {@link XWikiConfigSource#isVirtualMode()}
    */
   @Deprecated
