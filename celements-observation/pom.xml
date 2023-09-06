@@ -80,6 +80,13 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- testing -->
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- xwiki legacy testing -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>

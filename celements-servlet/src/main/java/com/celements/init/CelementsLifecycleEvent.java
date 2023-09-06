@@ -25,4 +25,9 @@ public class CelementsLifecycleEvent extends ApplicationEvent {
     return state;
   }
 
+  @Override
+  public String toString() {
+    return getState();
+  }
+
 }
