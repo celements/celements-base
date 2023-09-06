@@ -36,7 +36,7 @@ public class XWikiLifecycleSpringEventConverter
   public void onApplicationEvent(CelementsLifecycleEvent event) {
     Event xwikiEvent = getXWikiEvent(event);
     if (xwikiEvent != null) {
-      LOGGER.info("lifecycle event [{}] fired", event);
+      LOGGER.info("firing [{}]", xwikiEvent);
       observationManager.notify(xwikiEvent, this);
     } else {
       LOGGER.info("unable to convert lifecycle event [{}] to an xwiki event", event);
