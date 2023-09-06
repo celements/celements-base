@@ -530,13 +530,4 @@ public class LazyXWikiDocument extends XWikiDocument {
             context);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.doc.XWikiDocument#getWikiNode()
-   */
-  @Override
-  public Object getWikiNode() {
-    return getDocument().getWikiNode();
-  }
 }

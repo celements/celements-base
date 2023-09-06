@@ -20,6 +20,8 @@ import org.suigeneris.jrcs.rcs.Version;
 import org.xwiki.bridge.DocumentName;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.SpaceReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.syntax.Syntax;
 
@@ -37,7 +39,6 @@ import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.ObjectDiff;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
 import com.xpn.xwiki.web.EditForm;
 
 public class XWikiDocumentProxy extends XWikiDocument {
@@ -248,6 +249,11 @@ public class XWikiDocumentProxy extends XWikiDocument {
   }
 
   @Override
+  public DocumentReference getDocRef() {
+    return getReadDoc().getDocRef();
+  }
+
+  @Override
   public String getFullName() {
     return getReadDoc().getFullName();
   }
@@ -283,8 +289,18 @@ public class XWikiDocumentProxy extends XWikiDocument {
   }
 
   @Override
+  public WikiReference getWikiRef() {
+    return getReadDoc().getWikiRef();
+  }
+
+  @Override
   public String getSpaceName() {
     return getReadDoc().getSpaceName();
+  }
+
+  @Override
+  public SpaceReference getSpaceRef() {
+    return getReadDoc().getSpaceRef();
   }
 
   @Override
@@ -1301,12 +1317,6 @@ public class XWikiDocumentProxy extends XWikiDocument {
   }
 
   @Override
-  public String displaySearch(PropertyClass pclass, String prefix, XWikiCriteria criteria,
-      XWikiContext context) {
-    return getReadDoc().displaySearch(pclass, prefix, criteria, context);
-  }
-
-  @Override
   public XWikiAttachment getAttachment(String filename) {
     return super.getAttachment(filename);
   }
@@ -1681,18 +1691,23 @@ public class XWikiDocumentProxy extends XWikiDocument {
   }
 
   @Override
+  public XWikiLock getLock(XWikiContext context) throws XWikiException {
+    return getReadDoc().getLock(context);
+  }
+
+  @Override
+  public void setLock(String userName, XWikiContext context) throws XWikiException {
+    getReadDoc().setLock(userName, context); // no doc state changes
+  }
+
+  @Override
+  public void removeLock(XWikiContext context) throws XWikiException {
+    getReadDoc().removeLock(context); // no doc state changes
+  }
+
+  @Override
   public void insertText(String text, String marker, XWikiContext context) throws XWikiException {
     getEditDoc().insertText(text, marker, context);
-  }
-
-  @Override
-  public Object getWikiNode() {
-    return super.getWikiNode();
-  }
-
-  @Override
-  public void setWikiNode(Object wikiNode) {
-    getEditDoc().setWikiNode(wikiNode);
   }
 
   @Override

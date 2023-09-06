@@ -338,8 +338,6 @@ public class XWikiDocument implements DocumentModelBridge {
 
   private String validationScript;
 
-  private Object wikiNode;
-
   /**
    * We are using a SoftReference which will allow the archive to be discarded by the Garbage
    * collector as long as the context is closed (usually during the request)
@@ -520,14 +518,26 @@ public class XWikiDocument implements DocumentModelBridge {
     xObjectsToRemove = null;
   }
 
+  /**
+   * @deprecated since 6.1, instead use {@link XWiki#getStore()}
+   **/
+  @Deprecated
   public XWikiStoreInterface getStore(XWikiContext context) {
     return context.getWiki().getStore();
   }
 
+  /**
+   * @deprecated since 6.1, instead use {@link XWiki#getAttachmentStore()}
+   **/
+  @Deprecated
   public XWikiAttachmentStoreInterface getAttachmentStore(XWikiContext context) {
     return context.getWiki().getAttachmentStore();
   }
 
+  /**
+   * @deprecated since 6.1, instead use {@link XWiki#getVersioningStore()}
+   **/
+  @Deprecated
   public XWikiVersioningStoreInterface getVersioningStore(XWikiContext context) {
     return context.getWiki().getVersioningStore();
   }
@@ -786,7 +796,6 @@ public class XWikiDocument implements DocumentModelBridge {
     }
     if (!content.equals(this.content)) {
       setContentDirty(true);
-      setWikiNode(null);
     }
     this.content = content;
 
@@ -3222,7 +3231,7 @@ public class XWikiDocument implements DocumentModelBridge {
             // We might have received the object from the cache and the template objects might have
             // been
             // copied already we need to remove them
-            setXObjects(new TreeMap<DocumentReference, List<BaseObject>>());
+            setXObjects(new TreeMap<>());
           }
           // Merge the external objects.
           // Currently the choice is not to merge the base class and object because it is not the
@@ -5849,14 +5858,6 @@ public class XWikiDocument implements DocumentModelBridge {
     context.getWiki().saveDocument(this, context);
   }
 
-  public Object getWikiNode() {
-    return this.wikiNode;
-  }
-
-  public void setWikiNode(Object wikiNode) {
-    this.wikiNode = wikiNode;
-  }
-
   /**
    * @since 2.2M1
    */
@@ -7158,6 +7159,7 @@ public class XWikiDocument implements DocumentModelBridge {
     }
   }
 
+  @Deprecated
   public void setAsContextDoc(XWikiContext context) {
     try {
       context.setDoc(this);
