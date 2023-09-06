@@ -7,20 +7,18 @@ import org.junit.Test;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ApplicationStartedEvent;
 import org.xwiki.observation.event.ApplicationStoppedEvent;
-import org.xwiki.test.AbstractComponentTestCase;
 
 import com.celements.init.CelementsLifecycleEvent;
 import com.celements.init.CelementsStartedEvent;
 import com.celements.init.CelementsStoppedEvent;
 
-public class XWikiLifecycleSpringEventConverterTest extends AbstractComponentTestCase {
+public class XWikiLifecycleSpringEventConverterTest {
 
   XWikiLifecycleSpringEventConverter converter;
   ObservationManager observationManagerMock;
 
-  @Override
   @Before
-  public void setUp() throws Exception {
+  public void prepare() throws Exception {
     observationManagerMock = createMock(ObservationManager.class);
     converter = new XWikiLifecycleSpringEventConverter(observationManagerMock);
   }
