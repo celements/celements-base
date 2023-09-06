@@ -15,7 +15,7 @@ public class CelStartedEventPublisher implements ApplicationListener<ContextRefr
 
   @Override
   public void onApplicationEvent(ContextRefreshedEvent event) {
-    LOGGER.info("started {}", event);
+    LOGGER.info("Celements started from {}", event);
     event.getApplicationContext().publishEvent(new CelementsStartedEvent(this));
   }
 

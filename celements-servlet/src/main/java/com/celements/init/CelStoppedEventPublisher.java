@@ -15,7 +15,7 @@ public class CelStoppedEventPublisher implements ApplicationListener<ContextClos
 
   @Override
   public void onApplicationEvent(ContextClosedEvent event) {
-    LOGGER.info("stopped {}", event);
+    LOGGER.info("Celements stopped from {}", event);
     event.getApplicationContext().publishEvent(new CelementsStoppedEvent(this));
   }
 
