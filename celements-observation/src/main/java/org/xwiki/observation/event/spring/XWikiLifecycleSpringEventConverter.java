@@ -2,6 +2,8 @@ package org.xwiki.observation.event.spring;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
@@ -13,11 +15,15 @@ import org.xwiki.observation.event.Event;
 
 import com.celements.init.CelementsLifecycleEvent;
 import com.celements.init.CelementsStartedEvent;
+import com.celements.init.CelementsStoppedEvent;
 
 @Component
 @Lazy // otherwise ObservationManager will be eagerly initialised causing issues
 public class XWikiLifecycleSpringEventConverter
     implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
+
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(XWikiLifecycleSpringEventConverter.class);
 
   private final ObservationManager observationManager;
 
@@ -28,10 +34,24 @@ public class XWikiLifecycleSpringEventConverter
 
   @Override
   public void onApplicationEvent(CelementsLifecycleEvent event) {
-    Event xwikiEvent = (event.getState().equals(CelementsStartedEvent.STATE))
-        ? new ApplicationStartedEvent()
-        : new ApplicationStoppedEvent();
-    observationManager.notify(xwikiEvent, this);
+    Event xwikiEvent = getXWikiEvent(event);
+    if (xwikiEvent != null) {
+      LOGGER.info("lifecycle event [{}] fired", event);
+      observationManager.notify(xwikiEvent, this);
+    } else {
+      LOGGER.info("unable to convert lifecycle event [{}] to an xwiki event", event);
+    }
+  }
+
+  private Event getXWikiEvent(CelementsLifecycleEvent event) {
+    switch (event.getState()) {
+      case CelementsStartedEvent.STATE:
+        return new ApplicationStartedEvent();
+      case CelementsStoppedEvent.STATE:
+        return new ApplicationStoppedEvent();
+      default:
+        return null;
+    }
   }
 
   @Override
