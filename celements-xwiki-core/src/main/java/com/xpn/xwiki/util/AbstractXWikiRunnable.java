@@ -28,7 +28,7 @@ public abstract class AbstractXWikiRunnable implements Runnable {
   private final Map<String, Object> properties;
 
   protected AbstractXWikiRunnable() {
-    properties = ImmutableMap.of();
+    properties = Map.of();
   }
 
   /**
@@ -38,7 +38,7 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    *          the value of the property to put in the initialized context
    */
   protected AbstractXWikiRunnable(String propertyName, Object propertyValue) {
-    properties = ImmutableMap.of(propertyName, propertyValue);
+    properties = Map.of(propertyName, propertyValue);
   }
 
   /**
@@ -58,9 +58,9 @@ public abstract class AbstractXWikiRunnable implements Runnable {
    */
   protected ExecutionContext initExecutionContext() throws ExecutionContextException {
     ExecutionContext executionContext = new ExecutionContext();
+    executionContext.setProperties(properties);
     Utils.getComponent(Execution.class).setContext(executionContext);
     Utils.getComponent(ExecutionContextManager.class).initialize(executionContext);
-    executionContext.setProperties(properties);
     return executionContext;
   }
 

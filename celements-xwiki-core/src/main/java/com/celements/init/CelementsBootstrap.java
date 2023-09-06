@@ -89,6 +89,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
 
   @Override
   public void onApplicationEvent(CelementsStartedEvent event) {
+    LOGGER.info("Celements bootstrap start");
     checkState(!INIT_FLAG.getAndSet(true), "already initialised");
     checkState(servletContext.getAttribute(XWiki.SERVLET_CONTEXT_KEY) == null);
     CompletableFuture<XWiki> xwikiFuture = new CompletableFuture<>();
@@ -97,22 +98,30 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
       XWiki xwiki = bootstrapXWiki();
       // make XWiki available to all requests via servlet context, see {@link XWikiProvider}
       xwikiFuture.complete(xwiki);
+      LOGGER.info("XWiki initialised");
       eventPublisher.publishEvent(new CelementsInitialisedEvent(this));
-      LOGGER.info("XWiki published");
+      LOGGER.info("Celements initialised");
     } catch (Exception exc) {
       xwikiFuture.completeExceptionally(exc);
+      LOGGER.error("Celements bootstrap failed");
       throw new CelementsBootstrapException(exc);
     }
+    LOGGER.info("Celements bootstrap done");
   }
 
   private XWiki bootstrapXWiki() throws XWikiException, ExecutionContextException {
     Utils.setComponentManager(componentManager);
+    LOGGER.debug("initialising ExecutionContext...");
     ExecutionContext executionCtx = initExecutionContext();
+    LOGGER.debug("checkHibernate...");
     hibernateStore.checkHibernate(XWikiConstant.MAIN_WIKI);
+    LOGGER.debug("initialising XWiki...");
     XWiki xwiki = new XWiki(true);
     executionCtx.set(XWIKI, xwiki);
+    LOGGER.debug("loading Plugins...");
     xwiki.loadPlugins();
-    triggerWikiUpdates();
+    LOGGER.debug("triggering startup tasks...");
+    triggerStartupTasks();
     return xwiki;
   }
 
@@ -125,20 +134,26 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
     return executionCtx;
   }
 
-  private void triggerWikiUpdates() {
+  private void triggerStartupTasks() {
     try {
       if (Boolean.TRUE.equals(cfgSrc.getProperty("celements.init.updatedatabases", Boolean.class))
           && xwikiCfg.isVirtualMode()) {
+        LOGGER.info("triggering wiki updates");
         wikiService.streamAllWikis()
             .forEach(wikiUpdater::updateAsync);
+      } else {
+        LOGGER.trace("skipping wiki updates");
       }
       if (Boolean.TRUE.equals(Optional
           .ofNullable(cfgSrc.getProperty("celements.init.migration", Boolean.class))
           .orElseGet(() -> "1".equals(xwikiCfg.getProperty("xwiki.store.migration", "0"))))) {
+        LOGGER.info("triggering migrations");
         wikiUpdater.runAllMigrationsAsync();
+      } else {
+        LOGGER.trace("skipping migrations");
       }
     } finally {
-      wikiUpdater.shutdown();
+      wikiUpdater.shutdown(); // no new tasks will be accepted
     }
   }
 
