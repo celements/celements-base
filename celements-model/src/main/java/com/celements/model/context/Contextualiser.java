@@ -96,6 +96,10 @@ public class Contextualiser {
     return this;
   }
 
+  public <T> Contextualiser withExecContext(ExecutionContext.Property<T> prop, T val) {
+    return withExecContext(prop.getName(), val);
+  }
+
   public Contextualiser withXWikiContext(String key, Object val) {
     xCtxMod.ifPresent(mod -> mod.with(key, val));
     return this;
