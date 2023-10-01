@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-observation</artifactId>
-  <version>6.1-SNAPSHOT</version>
+  <version>6.2-SNAPSHOT</version>
   <description>Celements Observation</description>
   <dependencies>
 
@@ -33,7 +33,7 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>6.0</version>
+      <version>6.1</version>
       <scope>provided</scope>
     </dependency>
 

@@ -75,7 +75,7 @@ public class CelementsRequestFilter {
     XWikiContext xContext = eContext.get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
     xwiki.prepareResources(xContext);
-    LOGGER.info("request initialized");
+    LOGGER.debug("request initialized");
     return eContext;
   }
 
@@ -118,7 +118,7 @@ public class CelementsRequestFilter {
   }
 
   public void postExecute() {
-    LOGGER.info("postExecute");
+    LOGGER.debug("postExecute");
     containerInitializer.cleanup();
     execution.removeContext();
   }
