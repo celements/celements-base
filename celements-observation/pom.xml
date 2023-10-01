@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-observation</artifactId>
-  <version>6.1-SNAPSHOT</version>
+  <version>6.1</version>
   <description>Celements Observation</description>
   <dependencies>
 
@@ -120,6 +120,6 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-observation</url>
-    <tag>HEAD</tag>
+    <tag>celements-observation-6.1</tag>
   </scm>
 </project>
