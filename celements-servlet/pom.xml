@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-servlet</artifactId>
-  <version>6.1</version>
+  <version>6.2-SNAPSHOT</version>
   <description>Celements Servlet</description>
   <dependencies>
 
@@ -98,6 +98,6 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-servlet</url>
-    <tag>celements-servlet-6.1</tag>
+    <tag>HEAD</tag>
   </scm>
 </project>
