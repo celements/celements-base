@@ -79,7 +79,7 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
       savedRequestId = SavedRequestManager.saveRequest(request);
     }
     var redirectUriBuilder = UriComponentsBuilder.fromUriString(request.getRequestURI())
-        .query(request.getQueryString());
+        .query(nullToEmpty(request.getQueryString())); // null clears the query string
     if (!request.getParameterMap().containsKey(savedRequestKey)) {
       redirectUriBuilder.queryParam(savedRequestKey, savedRequestId);
     }
