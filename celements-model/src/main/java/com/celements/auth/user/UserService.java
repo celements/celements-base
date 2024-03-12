@@ -15,6 +15,7 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.access.exception.DocumentSaveException;
 import com.google.common.base.Optional;
+import com.xpn.xwiki.XWikiException;
 
 @ComponentRole
 public interface UserService {
@@ -161,5 +162,13 @@ public interface UserService {
    * @return true if successfully sent
    */
   boolean sendValidationMail(@NotNull User user);
+
+  /**
+   * gets the user name for valid tokens
+   *
+   * @return user doc full name
+   */
+  @NotNull
+  String getUsernameForToken(@Nullable String userToken) throws XWikiException;
 
 }
