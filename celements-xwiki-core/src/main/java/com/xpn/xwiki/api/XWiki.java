@@ -126,7 +126,9 @@ public class XWiki extends Api {
    *          the full name of the XWiki document to be loaded
    * @return a Document object or null if it is not accessible
    * @throws XWikiException
+   * @Deprecated instead use {@link ModelAccessScriptService#getDocument(DocumentReference)}
    */
+  @Deprecated(since = "6.1", forRemoval = true)
   public Document getDocument(String fullName) throws XWikiException {
     DocumentReference reference;
 
@@ -152,7 +154,9 @@ public class XWiki extends Api {
    * @return a Document object or null if it is not accessible
    * @throws XWikiException
    * @since 2.3M1
+   * @Deprecated instead use {@link ModelAccessScriptService#getDocument(DocumentReference)}
    */
+  @Deprecated(since = "6.1", forRemoval = true)
   public Document getDocument(DocumentReference reference) throws XWikiException {
     try {
       XWikiDocument doc = this.xwiki.getDocument(reference, getXWikiContext());
@@ -361,7 +365,9 @@ public class XWiki extends Api {
    *          Fullname of the XWiki document to be loaded
    * @return true if the document exists, false if not
    * @throws XWikiException
+   * @Deprecated instead use {@link ModelAccessScriptService#exists(DocumentReference)}
    */
+  @Deprecated(since = "6.1", forRemoval = true)
   public boolean exists(String fullname) throws XWikiException {
     return this.xwiki.exists(fullname, getXWikiContext());
   }
@@ -373,7 +379,9 @@ public class XWiki extends Api {
    *          the reference of the document to check for its existence
    * @return true if the document exists, false if not
    * @since 2.3M2
+   * @Deprecated instead use {@link ModelAccessScriptService#exists(DocumentReference)}
    */
+  @Deprecated(since = "6.1", forRemoval = true)
   public boolean exists(DocumentReference reference) throws XWikiException {
     return this.xwiki.exists(reference, getXWikiContext());
   }
@@ -407,7 +415,9 @@ public class XWiki extends Api {
    *          the full name or relative name of the document to load
    * @return a Document object or null if it is not accessible
    * @throws XWikiException
+   * @Deprecated instead use {@link ModelAccessScriptService#getDocument(DocumentReference)}
    */
+  @Deprecated(since = "6.1", forRemoval = true)
   public Document getDocument(String space, String fullname) throws XWikiException {
     XWikiDocument doc = this.xwiki.getDocument(space, fullname, getXWikiContext());
     if (!this.xwiki.getRightService().hasAccessLevel("view", getXWikiContext().getUser(),
@@ -455,7 +465,9 @@ public class XWiki extends Api {
    * @param content
    *          text to transform
    * @return encoded result
+   * @Deprecated instead use {@link EscapeTool#xml(String))}
    */
+  @Deprecated(since = "6.1", forRemoval = true)
   public String getFormEncoded(String content) {
     return com.xpn.xwiki.XWiki.getFormEncoded(content);
   }
@@ -468,7 +480,9 @@ public class XWiki extends Api {
    * @param content
    *          text to transform
    * @return encoded result
+   * @Deprecated instead use {@link EscapeTool#xml(String))}
    */
+  @Deprecated(since = "6.1", forRemoval = true)
   public String getXMLEncoded(String content) {
     return com.xpn.xwiki.XWiki.getXMLEncoded(content);
   }
