@@ -6,8 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.celements.store.DelegateStore;
 
-@Component
-@Named("com.xpn.xwiki.store.XWikiStoreInterface|||AtlasStore")
+@Component("com.xpn.xwiki.store.XWikiStoreInterface|||AtlasStore")
 public class AtlasDocumentStore extends DelegateStore {
 
     @Override
