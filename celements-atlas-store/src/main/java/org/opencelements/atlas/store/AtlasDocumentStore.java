@@ -1,12 +1,9 @@
 package org.opencelements.atlas.store;
 
-import javax.inject.Named;
-
 import org.springframework.stereotype.Component;
-
 import com.celements.store.DelegateStore;
 
-@Component("com.xpn.xwiki.store.XWikiStoreInterface|||AtlasStore")
+@Component("AtlasStore")
 public class AtlasDocumentStore extends DelegateStore {
 
     @Override
