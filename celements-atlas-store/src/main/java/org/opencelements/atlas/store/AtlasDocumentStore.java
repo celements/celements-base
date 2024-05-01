@@ -1,6 +1,7 @@
 package org.opencelements.atlas.store;
 
-import org.springframework.stereotype.Component;
+import org.xwiki.component.annotation.Component;
+
 import com.celements.store.DelegateStore;
 
 @Component("AtlasStore")
