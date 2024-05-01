@@ -10,7 +10,6 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 
 import com.celements.store.DelegateStore;
-import com.celements.store.DocumentCacheStore;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -29,8 +28,10 @@ public class AtlasDocumentStore extends DelegateStore {
 
     public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
         if ("AtlasTestDocs".equals(getSpaceName(doc))) {
-            LOGGER.info("AtlasStore load {}", doc.getDocRef());
+            LOGGER.info("AtlasStore load for {}", doc.getDocRef());
             // TODO
+        } else {
+            LOGGER.info("AtlasStore delegate load for {}", doc.getDocRef());
         }
         return this.getBackingStore().loadXWikiDoc(doc, context);
     }
@@ -39,6 +40,8 @@ public class AtlasDocumentStore extends DelegateStore {
         if ("AtlasTestDocs".equals(getSpaceName(doc))) {
             LOGGER.info("AtlasStore exists check for {}", doc.getDocRef());
             // TODO
+        } else {
+            LOGGER.info("AtlasStore delegate exists check for {}", doc.getDocRef());
         }
         return this.getBackingStore().exists(doc, context);
     }
