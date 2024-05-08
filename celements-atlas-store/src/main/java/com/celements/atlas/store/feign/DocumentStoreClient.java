@@ -11,16 +11,16 @@ import feign.RequestLine;
 
 public interface DocumentStoreClient {
 
-    @RequestLine("POST /create")
+    @RequestLine("POST /api/documents/create")
     @Headers("Content-Type: " + MediaType.APPLICATION_JSON_VALUE)
     String create(List<ObjectDto> objectData);
 
-    @RequestLine("PUT /{id}")
+    @RequestLine("PUT /api/documents/{id}")
     @Headers("Content-Type: " + MediaType.APPLICATION_JSON_VALUE)
     void update(@Param("id") String id,
             @RequestBody List<ObjectDto> objectData);
 
-    @RequestLine("GET /{id}")
+    @RequestLine("GET /api/documents/{id}")
     @Headers("Content-Type: " + MediaType.APPLICATION_JSON_VALUE)
     DocumentDto get(@Param("id") String id);
 
