@@ -72,7 +72,7 @@ public class AtlasDocumentStore extends DelegateStore {
 
     private Optional<DocumentDto> getAtlasDoc(String docId) {
         DocumentDto atlasDoc = getAtlasDocClient().get(docId);
-        LOGGER.info("AtlasStore loaded {} and got {}", doc.getDocRef().getName(), atlasDoc);
+        LOGGER.info("AtlasStore loaded {} and got {}", docId, atlasDoc);
         return Optional.ofNullable(atlasDoc);
     }
 
