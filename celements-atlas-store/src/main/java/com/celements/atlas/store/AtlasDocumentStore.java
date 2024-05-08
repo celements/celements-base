@@ -3,6 +3,7 @@ package com.celements.atlas.store;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class AtlasDocumentStore extends DelegateStore {
     private final ConfigurationSource cfgSource;
 
     @Inject
-    public AtlasDocumentStore(ConfigurationSource cfgSource) {
+    public AtlasDocumentStore(@Named("all")ConfigurationSource cfgSource) {
         super();
         this.cfgSource = cfgSource;
     }
