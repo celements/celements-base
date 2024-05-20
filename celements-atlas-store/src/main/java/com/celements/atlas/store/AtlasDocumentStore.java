@@ -22,6 +22,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 import feign.Feign;
+import feign.FeignException;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
 import feign.okhttp.OkHttpClient;
@@ -77,9 +78,13 @@ public class AtlasDocumentStore extends DelegateStore {
     }
 
     private Optional<DocumentDto> getAtlasDoc(String docId) {
-        DocumentDto atlasDoc = getAtlasDocClient().get(docId);
-        LOGGER.info("AtlasStore loaded {} and got {}", docId, atlasDoc);
-        return Optional.ofNullable(atlasDoc);
+        try {
+            DocumentDto atlasDoc = getAtlasDocClient().get(docId);
+            LOGGER.info("AtlasStore loaded {} and got {}", docId, atlasDoc);
+            return Optional.ofNullable(atlasDoc);
+        } catch(FeignException.NotFound notFoundExp) {
+            return Optional.empty();
+        }
     }
 
     private DocumentStoreClient getAtlasDocClient() {
