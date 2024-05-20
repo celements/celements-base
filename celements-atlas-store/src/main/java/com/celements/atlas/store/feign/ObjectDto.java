@@ -1,9 +1,11 @@
 package com.celements.atlas.store.feign;
 
+import java.util.Map;
+
 public class ObjectDto {
 
   private String id;
-  private String data;
+  private Map<String, Object> data;
 
   public ObjectDto(String id) {
     setId(id);
@@ -17,11 +19,11 @@ public class ObjectDto {
     this.id = id;
   }
 
-  public String data() {
+  public Map<String, Object> data() {
     return data;
   }
 
-  public void setData(String data) {
+  public void setData(Map<String, Object> data) {
     this.data = data;
   }
 

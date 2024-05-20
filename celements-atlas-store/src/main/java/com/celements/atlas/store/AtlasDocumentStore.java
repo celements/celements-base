@@ -111,7 +111,7 @@ public class AtlasDocumentStore extends DelegateStore {
         doc.setContent(
             atlasDoc.objects().stream()
                 .findFirst()
-                .map(obj -> obj.data())
+                .map(obj -> obj.data().toString())
                 .orElse(""));
         return doc;
     }
