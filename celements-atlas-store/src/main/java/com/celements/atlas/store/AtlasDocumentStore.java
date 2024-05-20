@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.xwiki.model.reference.SpaceReference;
 
 import com.celements.atlas.store.feign.DocumentDto;
 import com.celements.atlas.store.feign.DocumentStoreClient;
+import com.celements.model.reference.RefBuilder;
 import com.celements.store.DelegateStore;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -27,6 +29,8 @@ import feign.slf4j.Slf4jLogger;
 
 @Component("AtlasStore")
 public class AtlasDocumentStore extends DelegateStore {
+
+    private static final String ATLAS_TEST_DOCS = "AtlasTestDocs";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AtlasDocumentStore.class);
 
@@ -47,10 +51,11 @@ public class AtlasDocumentStore extends DelegateStore {
 
     public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context
         ) throws XWikiException {
-        if ("AtlasTestDocs".equals(getSpaceName(doc))) {
+        if (ATLAS_TEST_DOCS.equals(getSpaceName(doc))) {
             LOGGER.info("AtlasStore load for {}", doc.getDocRef());
-            Optional<DocumentDto> atlasDocOpt = getAtlasDoc(doc.getDocRef().getName());
-            // TODO convert to XWikiDocument
+            return getAtlasDoc(doc.getDocRef().getName())
+             .map(atlasDoc -> convertToXWikiDocument(atlasDoc, doc.getDocRef()))
+             .orElse(null);
         } else {
             LOGGER.info("AtlasStore delegate load for {}", doc.getDocRef());
         }
@@ -59,7 +64,7 @@ public class AtlasDocumentStore extends DelegateStore {
 
     public boolean exists(XWikiDocument doc, XWikiContext context
     ) throws XWikiException {
-        if ("AtlasTestDocs".equals(getSpaceName(doc))) {
+        if (ATLAS_TEST_DOCS.equals(getSpaceName(doc))) {
             LOGGER.info("AtlasStore exists check for {}", doc.getDocRef());
             Optional<DocumentDto> atlasDocOpt = getAtlasDoc(doc.getDocRef().getName());
             LOGGER.debug("AtlasStore exists check for {} returning {}",
@@ -94,6 +99,16 @@ public class AtlasDocumentStore extends DelegateStore {
                 .map(DocumentReference::getLastSpaceReference)
                 .map(SpaceReference::getName)
                 .orElse(null);
+    }
+
+    private XWikiDocument convertToXWikiDocument(@NotNull DocumentDto atlasDoc, DocumentReference docRef) {
+        XWikiDocument doc = new XWikiDocument(docRef);
+        doc.setContent(
+            atlasDoc.objects().stream()
+                .findFirst()
+                .map(obj -> obj.data())
+                .orElse(""));
+        return doc;
     }
 
 }
