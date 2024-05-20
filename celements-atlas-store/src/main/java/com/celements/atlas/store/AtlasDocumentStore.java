@@ -106,8 +106,12 @@ public class AtlasDocumentStore extends DelegateStore {
                 .orElse(null);
     }
 
-    private XWikiDocument convertToXWikiDocument(@NotNull DocumentDto atlasDoc, DocumentReference docRef) {
+    private XWikiDocument convertToXWikiDocument(
+        @NotNull DocumentDto atlasDoc, DocumentReference docRef) {
+
         XWikiDocument doc = new XWikiDocument(docRef);
+        LOGGER.info("convertToXWikiDocument from {} to {}",
+            atlasDoc, docRef);
         doc.setContent(
             atlasDoc.objects().stream()
                 .findFirst()
