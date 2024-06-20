@@ -171,4 +171,12 @@ public interface UserService {
   @NotNull
   String getUsernameForToken(@Nullable String userToken) throws XWikiException;
 
+  /**
+   * checks if a user exists with given userData
+   *
+   * @param userData
+   * @return An Optional with the existing user. If no users exists an empty Optional.
+   */
+  public Optional<User> checkIdentifiersForExistingUser(Map<String, String> userData);
+
 }
