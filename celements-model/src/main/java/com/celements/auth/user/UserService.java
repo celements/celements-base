@@ -177,6 +177,6 @@ public interface UserService {
    * @param userData
    * @return An Optional with the existing user. If no users exists an empty Optional.
    */
-  public Optional<User> checkIdentifiersForExistingUser(Map<String, String> userData);
+  public java.util.Optional<User> checkIdentifiersForExistingUser(Map<String, String> userData);
 
 }
