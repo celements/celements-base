@@ -137,7 +137,7 @@ public interface UserService {
    * @param login
    *          the login value
    * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
-   *         unique
+   *         unique. Excludes suspended Users from the return value.
    */
   @NotNull
   Optional<User> getUserForLoginField(@NotNull String login);
@@ -150,10 +150,30 @@ public interface UserService {
    * @param possibleLoginFields
    *          list of user fields for which one can login, e.g. 'name', 'email' or 'validkey'
    * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
-   *         unique
+   *         unique. Excludes suspended Users from the return value.
    */
+  /**
+   * @deprecated instead use {@link #getPossibleUserForLoginField} with
+   *             {@link User#isSuspended()}
+   * @since 6.5
+   */
+  @Deprecated(since = "6.5", forRemoval = true)
   @NotNull
   Optional<User> getUserForLoginField(@NotNull String login,
+      @Nullable Collection<String> possibleLoginFields);
+
+  /**
+   * looks up the user by the given login value with the possible login fields.
+   *
+   * @param login
+   *          the login value
+   * @param possibleLoginFields
+   *          list of user fields for which one can login, e.g. 'name', 'email' or 'validkey'
+   * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
+   *         unique. includes suspended Users in return value.
+   */
+  @NotNull
+  java.util.Optional<User> getPossibleUserForLoginField(@NotNull String login,
       @Nullable Collection<String> possibleLoginFields);
 
   /**
@@ -170,13 +190,5 @@ public interface UserService {
    */
   @NotNull
   String getUsernameForToken(@Nullable String userToken) throws XWikiException;
-
-  /**
-   * checks if a user exists with given userData
-   *
-   * @param userData
-   * @return An Optional with the existing user. If no users exists an empty Optional.
-   */
-  public java.util.Optional<User> checkIdentifiersForExistingUser(Map<String, String> userData);
 
 }
