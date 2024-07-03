@@ -12,13 +12,10 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.xwiki.bridge.event.WikiCreatedEvent;
 import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.observation.ObservationManager;
 
 import com.celements.execution.XWikiExecutionProp;
 import com.celements.wiki.WikiService;
-import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.web.Utils;
 
@@ -27,12 +24,12 @@ public class CentralWikiCreator implements ApplicationListener<CelementsInitiali
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CentralWikiCreator.class);
 
-  private final ExecutionContext eCtx;
+  private final Execution execution;
   private final WikiService wikiService;
 
   @Inject
   public CentralWikiCreator(Execution execution, WikiService wikiService) {
-    this.eCtx = execution.getContext();
+    this.execution = execution;
     this.wikiService = wikiService;
   }
 
@@ -44,9 +41,10 @@ public class CentralWikiCreator implements ApplicationListener<CelementsInitiali
   @Override
   public void onApplicationEvent(CelementsInitialisedEvent event) {
     if (!wikiService.hasWiki(CENTRAL_WIKI)) {
-      XWiki xwiki = eCtx.get(XWikiExecutionProp.XWIKI).orElseThrow();
-      XWikiContext context = eCtx.get(XWIKI_CONTEXT).orElseThrow();
-      String wikiName = CENTRAL_WIKI.getName();
+      var eCtx = execution.getContext();
+      var xwiki = eCtx.get(XWikiExecutionProp.XWIKI).orElseThrow();
+      var context = eCtx.get(XWIKI_CONTEXT).orElseThrow();
+      var wikiName = CENTRAL_WIKI.getName();
       try {
         xwiki.getStore().createWiki(wikiName, context);
         xwiki.updateDatabase(wikiName, true, true, context);
