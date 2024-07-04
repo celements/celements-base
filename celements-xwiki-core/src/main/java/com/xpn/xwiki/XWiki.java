@@ -370,34 +370,43 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
   }
 
   protected void initXWiki() throws XWikiException {
+    LOG.debug("XWiki init start");
     XWikiContext context = getContext();
     getContext().setWiki(this); // needed for calls below using the context to reference this
 
     // Create the notification manager
     setNotificationManager(new XWikiNotificationManager());
 
+    LOG.trace("initialising HibernateStore...");
     setStore(StoreFactory.getMainStore());
 
+    LOG.trace("initialising CriteriaService...");
     setCriteriaService((XWikiCriteriaService) createClassFromConfig("xwiki.criteria.class",
         "com.xpn.xwiki.criteria.impl.XWikiCriteriaServiceImpl", context));
 
+    LOG.trace("initialising AttachmentStore...");
     setAttachmentStore(Utils.getComponent(XWikiAttachmentStoreInterface.class, Param(
         "xwiki.store.attachment.hint")));
 
+    LOG.trace("initialising VersioningStore...");
     setVersioningStore(Utils.getComponent(XWikiVersioningStoreInterface.class, Param(
         "xwiki.store.versioning.hint")));
 
+    LOG.trace("initialising AttachmentVersioningStore...");
     setAttachmentVersioningStore(Utils.getComponent(AttachmentVersioningStore.class,
         hasAttachmentVersioning(context) ? Param("xwiki.store.attachment.versioning.hint")
             : "void"));
 
+    LOG.trace("initialising RecycleBinStore...");
     StoreFactory.getRecycleBinStore().ifPresent(this::setRecycleBinStore);
 
     if (hasAttachmentRecycleBin(context)) {
+      LOG.trace("initialising AttachmentRecycleBinStore...");
       setAttachmentRecycleBinStore(Utils.getComponent(AttachmentRecycleBinStore.class, Param(
           "xwiki.store.attachment.recyclebin.hint")));
     }
 
+    LOG.trace("initialising RenderingEngine...");
     resetRenderingEngine(context);
 
     // Add a notification rule if the preference property plugin is modified
@@ -405,6 +414,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
         "XWiki.XWikiPreferences", "plugin"));
 
     // Make sure these classes exists
+    LOG.trace("initialising mandatory classes...");
     initializeMandatoryClasses(context);
 
     // Add a notification for notifications
@@ -423,6 +433,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     this.configuredSyntaxes = Arrays.asList(StringUtils.split(syntaxes, " ,"));
 
     Utils.getComponent(ObservationManager.class).addListener(this);
+    LOG.debug("XWiki init done");
   }
 
   /**
