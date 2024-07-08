@@ -301,11 +301,12 @@ public class XWikiHibernateBaseStore implements Initializable {
     if (schemaName.isEmpty()) {
       schemaName = wikiRef.getName();
     }
-    logger.trace("getSchemaFromWikiName {} - {}", wikiRef, schemaName);
-    return (xwikiCfg.getProperty("xwiki.db.prefix", "") + schemaName)
+    schemaName = (xwikiCfg.getProperty("xwiki.db.prefix", "") + schemaName)
         .toLowerCase()
         .replace('-', '_')
         .replaceAll("[^a-z0-9_]", "");
+    logger.trace("getSchemaFromWikiName {} - {} ", wikiRef, schemaName);
+    return schemaName;
   }
 
   /**
