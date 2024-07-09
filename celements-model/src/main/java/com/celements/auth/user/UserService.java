@@ -2,6 +2,7 @@ package com.celements.auth.user;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -14,7 +15,6 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.access.exception.DocumentSaveException;
-import com.google.common.base.Optional;
 import com.xpn.xwiki.XWikiException;
 
 @ComponentRole
@@ -140,7 +140,7 @@ public interface UserService {
    *         unique. Excludes suspended Users from the return value.
    */
   @NotNull
-  Optional<User> getUserForLoginField(@NotNull String login);
+  com.google.common.base.Optional<User> getUserForLoginField(@NotNull String login);
 
   /**
    * looks up the user by the given login value with the possible login fields.
@@ -159,7 +159,7 @@ public interface UserService {
    */
   @Deprecated(since = "6.5", forRemoval = true)
   @NotNull
-  Optional<User> getUserForLoginField(@NotNull String login,
+  com.google.common.base.Optional<User> getUserForLoginField(@NotNull String login,
       @Nullable Collection<String> possibleLoginFields);
 
   /**
@@ -173,7 +173,7 @@ public interface UserService {
    *         unique. includes suspended Users in return value.
    */
   @NotNull
-  java.util.Optional<User> getPossibleUserForLoginField(@NotNull String login,
+  Optional<User> getPossibleUserForLoginField(@NotNull String login,
       @Nullable Collection<String> possibleLoginFields);
 
   /**
