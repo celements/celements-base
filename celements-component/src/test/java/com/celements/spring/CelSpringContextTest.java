@@ -74,4 +74,12 @@ public class CelSpringContextTest {
     ctx.getBean(TestXWikiCompositeComponent.NAME, TestCompositeComponentRole.class)
         .assertComposition();
   }
+
+  @Test
+  public void test_fqn() {
+    assertSame(ctx.getBean(TestSpringSingletonComponent.class),
+        ctx.getBean(TestSpringSingletonComponent.class.getName()));
+    assertSame(ctx.getBean(TestXWikiSingletonComponent.class),
+        ctx.getBean(TestXWikiSingletonComponent.class.getName()));
+  }
 }

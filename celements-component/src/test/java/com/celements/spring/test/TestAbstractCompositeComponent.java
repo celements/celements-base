@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -74,8 +75,9 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
     assertSame(xwikiFromSpring, xwikiFromXWiki);
     assertList(listFromSpring);
     assertList(listFromXWiki);
-    assertMap(mapFromSpring, TestComponentRole.class.getName() + "|||");
-    assertMap(mapFromXWiki, "");
+    // XXX: @Inject a map will always get you the beanName and not the hint like for @Requirement
+    assertMap(mapFromSpring, i -> i.getClass().getName());
+    assertMap(mapFromXWiki, i -> i.getter());
     assertNotNull(springCtxFromSpring);
     assertSame(CelSpringContext.class, springCtxFromSpring.getClass());
     assertNotNull(springCtxFromXWiki);
@@ -93,16 +95,17 @@ public abstract class TestAbstractCompositeComponent implements TestCompositeCom
         list.stream().map(o -> o.getClass()).collect(Collectors.toSet()));
   }
 
-  private void assertMap(Map<String, TestComponentRole> map, String prefix) {
+  private void assertMap(Map<String, TestComponentRole> map,
+      Function<TestComponentRole, String> keyGetter) {
     assertNotNull(map);
     assertEquals(5, map.size());
-    assertSame(defaultFromSpring, map.get(prefix + "default"));
-    assertSame(springFromXWiki, map.get(TestSpringSingletonComponent.NAME));
-    assertSame(xwikiFromSpring, map.get(prefix + TestXWikiSingletonComponent.NAME));
+    assertSame(defaultFromSpring, map.get(keyGetter.apply(defaultFromSpring)));
+    assertSame(springFromXWiki, map.get(keyGetter.apply(springFromXWiki)));
+    assertSame(xwikiFromSpring, map.get(keyGetter.apply(xwikiFromSpring)));
     assertSame(TestSpringPerLookupComponent.class,
-        map.get(TestSpringPerLookupComponent.NAME).getClass());
+        map.get(keyGetter.apply(new TestSpringPerLookupComponent())).getClass());
     assertSame(TestXWikiPerLookupComponent.class,
-        map.get(prefix + TestXWikiPerLookupComponent.NAME).getClass());
+        map.get(keyGetter.apply(new TestXWikiPerLookupComponent())).getClass());
   }
 
 }

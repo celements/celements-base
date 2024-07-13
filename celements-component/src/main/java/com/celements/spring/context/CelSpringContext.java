@@ -17,7 +17,7 @@ import org.xwiki.component.descriptor.ComponentDescriptor;
 /**
  * Extension of the {@link AnnotationConfigApplicationContext} ensuring backwards compatibility with
  * XWiki components by registering not only {@link org.springframework.stereotype.Component} but
- * also {@link org.xwiki.component.annotation.Component}, see {@link #registerXWiki()}.
+ * also {@link org.xwiki.component.annotation.Component}, see {@link #registerXWikiComponent()}.
  */
 public class CelSpringContext extends AnnotationConfigApplicationContext {
 

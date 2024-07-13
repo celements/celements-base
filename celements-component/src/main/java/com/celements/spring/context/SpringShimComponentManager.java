@@ -4,6 +4,7 @@ import static com.celements.common.MoreObjectsCel.*;
 import static com.google.common.base.Predicates.*;
 import static java.util.stream.Collectors.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,7 +33,6 @@ import org.xwiki.component.manager.ComponentRepositoryException;
 import com.celements.common.MoreOptional;
 import com.google.common.base.Strings;
 
-import one.util.streamex.EntryStream;
 import one.util.streamex.StreamEx;
 
 /**
@@ -68,8 +68,13 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> boolean hasComponent(Class<T> role, String hint) {
-    ComponentRole<?> compRole = new DefaultComponentRole<>(role, hint);
-    return Stream.of(beanFactory.getBeanNamesForType(role))
+    String[] beanNames = beanFactory.getBeanNamesForType(role);
+    if (Strings.isNullOrEmpty(hint)) {
+      return beanNames.length > 0;
+    }
+    ComponentRole<?> compRole = resolveComponentRole(role, hint);
+    return Stream.of(beanNames)
+        .flatMap(name -> StreamEx.of(name).append(beanFactory.getAliases(name)))
         .anyMatch(name -> name.equals(hint) || name.equals(compRole.getBeanName()))
         || role.isInstance(springContext); // context isn't in beanFactory
   }
@@ -81,7 +86,7 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> T lookup(Class<T> role, String hint) throws ComponentLookupException {
-    ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
+    ComponentRole<T> compRole = resolveComponentRole(role, hint);
     try {
       return getBean(compRole)
           .or(() -> tryCast(springContext, role)) // context isn't in beanFactory
@@ -111,27 +116,21 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> Map<String, T> lookupMap(Class<T> role) throws ComponentLookupException {
-    return lookupEntries(role)
-        .mapKeys(ComponentRole::getRoleHint)
-        .toMap();
+    return getBeansOfType(role);
   }
 
   @Override
   public <T> List<T> lookupList(Class<T> role) throws ComponentLookupException {
-    return lookupEntries(role)
-        .values()
-        .toList();
+    return getBeansOfType(role).values().stream().collect(toList());
   }
 
-  private <T> EntryStream<ComponentRole<T>, T> lookupEntries(Class<T> role)
-      throws ComponentLookupException {
+  private <T> Map<String, T> getBeansOfType(Class<T> role) throws ComponentLookupException {
     try {
-      return EntryStream.of(beanFactory.getBeansOfType(role))
-          .mapKeys(beanName -> ComponentRole.<T>fromBeanName(beanName)
-              .orElseGet(() -> new DefaultComponentRole<>(role, beanName)))
-          .filterKeys(compRole -> compRole.getRole() == role)
-          .ifEmpty(StreamEx.of(tryCast(springContext, role)) // context isn't in beanFactory
-              .mapToEntry(ctx -> new DefaultComponentRole<>(role), ctx -> ctx));
+      return Optional.of(beanFactory.getBeansOfType(role))
+          .filter(not(Map::isEmpty))
+          .orElseGet(() -> StreamEx.of(tryCast(springContext, role)) // context isn't in beanFactory
+              .mapToEntry(ctx -> ctx.getClass().getName(), ctx -> ctx)
+              .toCustomMap(() -> new LinkedHashMap<>(1)));
     } catch (BeansException exc) {
       throw new ComponentLookupException("lookupEntries - failed for [" + role + "]", exc);
     }
@@ -143,10 +142,13 @@ public class SpringShimComponentManager implements ComponentManager {
     registerComponent(descriptor, null);
   }
 
+  // TODO test
   @Override
   public <T> void registerComponent(ComponentDescriptor<T> descriptor, T component)
       throws ComponentRepositoryException {
     try {
+      // TODO this bean descriptor name is wrong for spring beans without @ComponentRole annotation
+      // there the bean name isnt Role|||hint but the FQN.
       String beanName = descriptor.getBeanName();
       beanFactory.registerBeanDefinition(beanName, descriptor.asBeanDefinition());
       if (component != null) {
@@ -158,9 +160,10 @@ public class SpringShimComponentManager implements ComponentManager {
     }
   }
 
+  // TODO test
   @Override
   public void unregisterComponent(Class<?> role, String hint) {
-    ComponentRole<?> compRole = new DefaultComponentRole<>(role, hint);
+    ComponentRole<?> compRole = resolveComponentRole(role, hint);
     try {
       beanFactory.removeBeanDefinition(compRole.getBeanName());
     } catch (NoSuchBeanDefinitionException exc) {
@@ -183,7 +186,7 @@ public class SpringShimComponentManager implements ComponentManager {
 
   @Override
   public <T> ComponentDescriptor<T> getComponentDescriptor(Class<T> role, String hint) {
-    ComponentRole<T> compRole = new DefaultComponentRole<>(role, hint);
+    ComponentRole<T> compRole = resolveComponentRole(role, hint);
     return Optional.ofNullable(createComponentDescriptor(role, compRole.getBeanName()))
         .orElseGet(() -> createComponentDescriptor(role, hint));
   }
@@ -198,10 +201,11 @@ public class SpringShimComponentManager implements ComponentManager {
 
   private <T> ComponentDescriptor<T> createComponentDescriptor(Class<T> role, String beanName) {
     try {
-      String beanClassName = beanFactory.getBeanDefinition(beanName).getBeanClassName();
+      String canonicalBeanName = beanFactory.canonicalName(beanName);
+      String beanClassName = beanFactory.getBeanDefinition(canonicalBeanName).getBeanClassName();
       Class<? extends T> instanceClass = classForName(role, beanClassName);
       if (instanceClass != null) {
-        String hint = ComponentRole.fromBeanName(beanName)
+        String hint = beanFactory.<T>resolveXWikiComponentRole(beanName)
             .map(ComponentRole::getRoleHint)
             .orElse(beanName);
         return descriptorFactory.create(instanceClass, role, hint);
@@ -222,6 +226,11 @@ public class SpringShimComponentManager implements ComponentManager {
       }
     }
     return null;
+  }
+
+  private <T> ComponentRole<T> resolveComponentRole(Class<T> role, String hint) {
+    return beanFactory.<T>resolveXWikiComponentRole(hint)
+        .orElseGet(() -> new DefaultComponentRole<>(role, hint));
   }
 
   @Deprecated

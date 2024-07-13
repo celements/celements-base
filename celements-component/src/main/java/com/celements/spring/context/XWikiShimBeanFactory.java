@@ -1,7 +1,11 @@
 package com.celements.spring.context;
 
 import static com.celements.common.MoreOptional.*;
+import static java.util.stream.Collectors.*;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -12,16 +16,23 @@ import javax.inject.Named;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.TypeConverter;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.DependencyDescriptor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ClassUtils;
 import org.xwiki.component.descriptor.ComponentRole;
 import org.xwiki.component.descriptor.DefaultComponentRole;
 
 import com.celements.common.lambda.LambdaExceptionUtil.ThrowingFunction;
+import com.google.common.base.Strings;
+
+import one.util.streamex.EntryStream;
+import one.util.streamex.StreamEx;
 
 /**
  * Extension of the {@link DefaultListableBeanFactory} ensuring backwards compatibility with XWiki
@@ -37,6 +48,58 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
 
   public XWikiShimBeanFactory(@Nullable BeanFactory parentBeanFactory) {
     super(parentBeanFactory);
+  }
+
+  // TODO merge with getComponentRoles?
+  public <T> Optional<ComponentRole<T>> resolveXWikiComponentRole(String beanName) {
+    var beanNames = Stream.<String>empty();
+    if (!Strings.isNullOrEmpty(beanName)) {
+      String canonicalName = canonicalName(beanName);
+      beanNames = StreamEx.of(canonicalName)
+          .append(getAliases(canonicalName));
+    }
+    return beanNames.map(ComponentRole::<T>fromBeanName)
+        .flatMap(Optional::stream)
+        .findFirst();
+  }
+
+  @Override
+  public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
+      throws BeanDefinitionStoreException {
+    try {
+      var beanClass = Class.forName(beanDefinition.getBeanClassName());
+      var beanFqn = beanClass.getName();
+      List<ComponentRole<?>> roles = determineXWikiComponentRoles(beanName, beanClass);
+      if (!roles.isEmpty()) {
+        // component serving xwiki roles, register beanDef with class FQN
+        super.registerBeanDefinition(beanFqn, beanDefinition);
+        roles.stream() // and all role bean names as aliases
+            .map(ComponentRole::getBeanName)
+            .forEach(alias -> registerAlias(beanFqn, alias));
+      } else {
+        // default component, register beanDef with given beanName
+        super.registerBeanDefinition(beanName, beanDefinition);
+        registerAlias(beanName, beanFqn); // and class FQN as alias
+      }
+    } catch (ClassNotFoundException e) {
+      super.registerBeanDefinition(beanName, beanDefinition);
+    }
+  }
+
+  private List<ComponentRole<?>> determineXWikiComponentRoles(String beanName, Class<?> beanClass) {
+    if (beanClass.getAnnotation(org.xwiki.component.annotation.Component.class) != null) {
+      // XWiki Components are registered once per XWiki Role, thus we expect the specific role this
+      // instance is registered for to be contained in the beanName
+      // see CelSpringContext#registerXWikiComponent
+      return List.of(ComponentRole.fromBeanName(beanName).orElseThrow());
+    } else {
+      // A Spring Component may serve many XWiki Roles, thus register all of them as aliases
+      return Stream.of(ClassUtils.getAllInterfacesForClass(beanClass))
+          .distinct()
+          .filter(this::isComponentRole)
+          .map(role -> new DefaultComponentRole<>(role, beanName))
+          .collect(toUnmodifiableList());
+    }
   }
 
   /**
@@ -56,6 +119,17 @@ public class XWikiShimBeanFactory extends DefaultListableBeanFactory {
           .flatMap(asOpt(n -> super.doGetBean(n, requiredType, args, typeCheckOnly)))
           .orElseThrow(() -> exc);
     }
+  }
+
+  @Override
+  public <T> Map<String, T> getBeansOfType(@Nullable Class<T> type, boolean includeNonSingletons,
+      boolean allowEagerInit) throws BeansException {
+    var beans = super.getBeansOfType(type, includeNonSingletons, allowEagerInit);
+    return EntryStream.of(beans)
+        .mapKeys(beanName -> resolveXWikiComponentRole(beanName)
+            .map(ComponentRole::getRoleHint)
+            .orElse(beanName))
+        .toCustomMap(() -> new LinkedHashMap<>(beans.size()));
   }
 
   /**

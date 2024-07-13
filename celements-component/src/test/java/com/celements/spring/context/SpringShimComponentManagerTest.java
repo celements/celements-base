@@ -16,6 +16,7 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
 
 import com.celements.spring.test.TestComponentRole;
+import com.celements.spring.test.TestComponentWithoutInterface;
 import com.celements.spring.test.TestDefaultComponent;
 import com.celements.spring.test.TestSpringPerLookupComponent;
 import com.celements.spring.test.TestSpringSingletonComponent;
@@ -27,12 +28,20 @@ public class SpringShimComponentManagerTest {
 
   private CelSpringContext ctx;
   private ComponentManager cm;
+  TestComponentRole cDefault;
+  TestComponentRole cXWiki;
+  TestComponentRole cSpring;
+  TestComponentWithoutInterface cNoInterface;
 
   @Before
   public void prepare() {
     ctx = new CelSpringContext();
     ctx.refresh();
     cm = ctx.getBean(SpringShimComponentManager.NAME, ComponentManager.class);
+    cDefault = ctx.getBean(TestComponentRole.class);
+    cXWiki = ctx.getBean(TestXWikiSingletonComponent.class);
+    cSpring = ctx.getBean(TestSpringSingletonComponent.class);
+    cNoInterface = ctx.getBean(TestComponentWithoutInterface.class);
   }
 
   @After
@@ -48,21 +57,40 @@ public class SpringShimComponentManagerTest {
     assertTrue(cm.hasComponent(TestComponentRole.class, "default"));
     assertSame(cm.hasComponent(TestComponentRole.class),
         cm.hasComponent(TestComponentRole.class, "default"));
+    assertTrue(cm.hasComponent(TestXWikiSingletonComponent.class));
     assertTrue(cm.hasComponent(TestComponentRole.class, TestXWikiSingletonComponent.NAME));
+    assertTrue(cm.hasComponent(TestComponentRole.class, TestXWikiSingletonComponent.class
+        .getName()));
+    assertTrue(cm.hasComponent(TestXWikiPerLookupComponent.class));
     assertTrue(cm.hasComponent(TestComponentRole.class, TestXWikiPerLookupComponent.NAME));
+    assertTrue(cm.hasComponent(TestComponentRole.class, TestXWikiPerLookupComponent.class
+        .getName()));
+    assertTrue(cm.hasComponent(TestSpringSingletonComponent.class));
     assertTrue(cm.hasComponent(TestComponentRole.class, TestSpringSingletonComponent.NAME));
+    assertTrue(cm.hasComponent(TestComponentRole.class, TestSpringSingletonComponent.class
+        .getName()));
+    assertTrue(cm.hasComponent(TestSpringPerLookupComponent.class));
     assertTrue(cm.hasComponent(TestComponentRole.class, TestSpringPerLookupComponent.NAME));
+    assertTrue(cm.hasComponent(TestComponentRole.class, TestSpringPerLookupComponent.class
+        .getName()));
     assertFalse(cm.hasComponent(TestComponentRole.class, "asdf"));
   }
 
   @Test
   public void test_lookup() throws Exception {
-    assertSame(cm.lookup(TestComponentRole.class), ctx.getBean(TestComponentRole.class));
-    assertSame(cm.lookup(TestComponentRole.class, "default"), ctx.getBean(TestComponentRole.class));
-    assertSame(cm.lookup(TestComponentRole.class, TestXWikiSingletonComponent.NAME),
-        ctx.getBean(TestXWikiSingletonComponent.NAME, TestComponentRole.class));
-    assertSame(cm.lookup(TestComponentRole.class, TestSpringSingletonComponent.NAME),
-        ctx.getBean(TestSpringSingletonComponent.NAME, TestComponentRole.class));
+    assertSame(cm.lookup(TestComponentRole.class), cDefault);
+    assertSame(cm.lookup(TestComponentRole.class, "default"), cDefault);
+    assertSame(cm.lookup(TestComponentRole.class, TestXWikiSingletonComponent.NAME), cXWiki);
+    assertSame(cm.lookup(TestXWikiSingletonComponent.class), cXWiki);
+    assertSame(cm.lookup(TestComponentRole.class, TestXWikiSingletonComponent.class.getName()),
+        cXWiki);
+    assertSame(cm.lookup(TestComponentRole.class, TestSpringSingletonComponent.NAME), cSpring);
+    assertSame(cm.lookup(TestSpringSingletonComponent.class), cSpring);
+    assertSame(cm.lookup(TestComponentRole.class, TestSpringSingletonComponent.class.getName()),
+        cSpring);
+    assertSame(cm.lookup(TestComponentWithoutInterface.class), cNoInterface);
+    assertSame(cm.lookup(TestComponentWithoutInterface.class,
+        TestComponentWithoutInterface.class.getName()), cNoInterface);
   }
 
   @Test
@@ -87,6 +115,8 @@ public class SpringShimComponentManagerTest {
 
   @Test
   public void test_lookupList() throws Exception {
+    assertEquals(List.of(cSpring), cm.lookupList(TestSpringSingletonComponent.class));
+    assertEquals(List.of(cXWiki), cm.lookupList(TestXWikiSingletonComponent.class));
     List<TestComponentRole> ret = cm.lookupList(TestComponentRole.class);
     assertNotNull(ret);
     assertEquals(5, ret.size());
@@ -98,6 +128,10 @@ public class SpringShimComponentManagerTest {
 
   @Test
   public void test_lookupMap() throws Exception {
+    assertEquals(Map.of(TestSpringSingletonComponent.NAME, cSpring),
+        cm.lookupMap(TestSpringSingletonComponent.class));
+    assertEquals(Map.of(TestXWikiSingletonComponent.NAME, cXWiki),
+        cm.lookupMap(TestXWikiSingletonComponent.class));
     Map<String, TestComponentRole> ret = cm.lookupMap(TestComponentRole.class);
     assertNotNull(ret);
     assertEquals(5, ret.size());
