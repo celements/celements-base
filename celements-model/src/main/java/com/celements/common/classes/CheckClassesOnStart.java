@@ -5,10 +5,10 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
-import com.celements.common.classes.IClassesCompositorComponent;
 import com.celements.init.CelementsStartedEvent;
 import com.celements.wiki.WikiService;
 import com.xpn.xwiki.XWikiConfigSource;
@@ -25,7 +25,7 @@ public class CheckClassesOnStart implements ApplicationListener<CelementsStarted
   @Inject
   public CheckClassesOnStart(
       XWikiConfigSource xwikiCfg,
-      WikiService wikiService,
+      @Lazy WikiService wikiService,
       IClassesCompositorComponent classesCompositor) {
     this.xwikiCfg = xwikiCfg;
     this.wikiService = wikiService;
