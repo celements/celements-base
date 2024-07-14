@@ -19,6 +19,8 @@
  */
 package com.celements.mandatory;
 
+import static java.util.stream.Collectors.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -64,7 +66,11 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
   }
 
   List<String> getMandatoryDocumentsList() {
-    Collection<String> mandatoryDocElemKeys = new ArrayList<>(mandatoryDocumentsMap.keySet());
+    Collection<String> mandatoryDocElemKeys = mandatoryDocumentsMap.keySet().stream()
+        .sorted((k1, k2) -> Integer.compare(
+            mandatoryDocumentsMap.get(k1).order(),
+            mandatoryDocumentsMap.get(k1).order()))
+        .collect(toList());
     List<String> mandatoryDocExecList = new ArrayList<>();
     do {
       for (String mandatoryDocElemKey : mandatoryDocElemKeys) {
