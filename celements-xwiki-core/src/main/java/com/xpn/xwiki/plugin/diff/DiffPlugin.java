@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.diff.Diff;
 import org.suigeneris.jrcs.diff.Revision;
 import org.suigeneris.jrcs.diff.delta.Chunk;
@@ -30,7 +31,7 @@ public class DiffPlugin extends XWikiDefaultPlugin {
   /**
    * Log4J logger object to log messages in this class.
    */
-  private static final Logger LOG = Logger.getLogger(DiffPlugin.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DiffPlugin.class);
 
   /**
    * {@inheritDoc}

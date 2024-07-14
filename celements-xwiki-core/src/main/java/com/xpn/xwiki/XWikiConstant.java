@@ -1,9 +1,6 @@
 package com.xpn.xwiki;
 
-import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
-
-import com.celements.model.reference.RefBuilder;
 
 public final class XWikiConstant {
 
@@ -17,12 +14,6 @@ public final class XWikiConstant {
   public static final String TAG_CLASS = XWIKI_SPACE + ".TagClass";
   public static final String TAG_CLASS_PROP_TAGS = "tags";
   public static final String SHEET_CLASS = XWIKI_SPACE + ".SheetClass";
-
-  public static final DocumentReference SERVER_CLASS_DOCREF = RefBuilder.create()
-      .with(XWikiConstant.MAIN_WIKI)
-      .space(XWikiConstant.XWIKI_SPACE)
-      .doc("XWikiServerClass")
-      .build(DocumentReference.class);
 
   private XWikiConstant() {}
 

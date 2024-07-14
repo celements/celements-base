@@ -20,10 +20,11 @@
 package com.xpn.xwiki.store;
 
 import static com.celements.execution.XWikiExecutionProp.*;
+import static com.google.common.base.Preconditions.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.FlushMode;
+import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -60,6 +62,7 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryManager;
 
+import com.celements.wiki.WikiMissingException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -153,131 +156,110 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     this.validTypesMap.put("com.xpn.xwiki.objects.classes.BooleanClass", boolean_types);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.store.XWikiStoreInterface#isWikiNameAvailable(java.lang.String,
-   *      com.xpn.xwiki.XWikiContext)
-   */
   @Override
+  @Deprecated
   public boolean isWikiNameAvailable(String wikiName, XWikiContext context) throws XWikiException {
-    boolean available;
+    return !existsWiki(new WikiReference(wikiName));
+  }
 
+  @Override
+  public boolean existsWiki(WikiReference wikiRef) throws XWikiException {
     boolean bTransaction = true;
-    String database = context.getDatabase();
-
     try {
-      bTransaction = beginTransaction(context);
-      Session session = getSession(context);
-
-      context.setDatabase(wikiName);
-      try {
-        setDatabase(session, context);
-        available = false;
-      } catch (XWikiException e) {
-        // Failed to switch to database. Assume it means database does not exists.
-        available = true;
-      }
-    } catch (Exception e) {
-      Object[] args = { wikiName };
+      bTransaction = beginTransaction();
+      Session session = getSession();
+      setDatabase(session, wikiRef);
+      return true;
+    } catch (WikiMissingException e) {
+      logger.debug("Failed to switch to database [{}]", wikiRef.getName(), e);
+      return false;
+    } catch (XWikiException | HibernateException e) {
       throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_CHECK_EXISTS_DATABASE,
-          "Exception while listing databases to search for {0}", e, args);
+          "Exception while listing databases to search for {0}", e, new Object[] { wikiRef });
     } finally {
-      context.setDatabase(database);
-      try {
-        if (bTransaction) {
-          endTransaction(context, false);
-        }
-      } catch (Exception e) {}
+      if (bTransaction) {
+        endTransaction(false);
+      }
     }
-
-    return available;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.store.XWikiStoreInterface#createWiki(java.lang.String,
-   *      com.xpn.xwiki.XWikiContext)
-   */
-  @Override
-  public void createWiki(String wikiName, XWikiContext context) throws XWikiException {
+  public boolean isWikiEmpty(WikiReference wikiRef) throws WikiMissingException, XWikiException {
     boolean bTransaction = true;
-    String database = context.getDatabase();
-    Statement stmt = null;
     try {
-      bTransaction = beginTransaction(context);
-      Session session = getSession(context);
-      Connection connection = session.connection();
-      stmt = connection.createStatement();
-      String schema = getSchemaFromWikiName(wikiName, context);
-      String escapedSchema = escapeSchema(schema, context);
-      if (context.getWiki().getEncoding().equals("UTF-8")) {
-        stmt.execute("create database " + escapedSchema + " CHARACTER SET utf8 COLLATE utf8_bin");
-      } else {
-        stmt.execute("create database " + escapedSchema);
+      bTransaction = beginTransaction(wikiRef);
+      try (Statement stmt = getSession().connection().createStatement()) {
+        return !stmt.executeQuery("show tables").next();
       }
-      endTransaction(context, true);
-    } catch (Exception e) {
-      Object[] args = { wikiName };
+    } catch (XWikiException | HibernateException | SQLException e) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_CHECK_EXISTS_DATABASE,
+          "Exception while showing tables for wiki {0}", e, new Object[] { wikiRef });
+    } finally {
+      if (bTransaction) {
+        endTransaction(false);
+      }
+    }
+  }
+
+  @Override
+  @Deprecated
+  public void createWiki(String wikiName, XWikiContext context) throws XWikiException {
+    createWiki(new WikiReference(wikiName));
+  }
+
+  @Override
+  public void createWiki(WikiReference wikiRef) throws XWikiException {
+    checkNotNull(wikiRef);
+    boolean bTransaction = true;
+    try {
+      bTransaction = beginTransaction();
+      try (Statement stmt = getSession().connection().createStatement()) {
+        String schema = getSchemaFromWikiName(wikiRef);
+        String escapedSchema = escapeSchema(schema);
+        if (xwikiCfg.getEncoding().equals("UTF-8")) {
+          stmt.execute("create database " + escapedSchema + " CHARACTER SET utf8 COLLATE utf8_bin");
+        } else {
+          stmt.execute("create database " + escapedSchema);
+        }
+        endTransaction(true);
+      }
+    } catch (XWikiException | HibernateException | SQLException e) {
       throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_CREATE_DATABASE,
-          "Exception while create wiki database {0}",
-          e, args);
+          "Exception while create wiki database {0}", e, new Object[] { wikiRef });
     } finally {
-      context.setDatabase(database);
-      try {
-        if (stmt != null) {
-          stmt.close();
-        }
-      } catch (Exception e) {}
-      try {
-        if (bTransaction) {
-          endTransaction(context, false);
-        }
-      } catch (Exception e) {}
+      if (bTransaction) {
+        endTransaction(false);
+      }
     }
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.store.XWikiStoreInterface#deleteWiki(java.lang.String,
-   *      com.xpn.xwiki.XWikiContext)
-   */
   @Override
+  @Deprecated
   public void deleteWiki(String wikiName, XWikiContext context) throws XWikiException {
+    deleteWiki(new WikiReference(wikiName));
+  }
+
+  @Override
+  public void deleteWiki(WikiReference wikiRef) throws XWikiException {
     boolean bTransaction = true;
-    String database = context.getDatabase();
-    Statement stmt = null;
     try {
-      bTransaction = beginTransaction(context);
-      Session session = getSession(context);
-      Connection connection = session.connection();
-      stmt = connection.createStatement();
-      String schema = getSchemaFromWikiName(wikiName, context);
-      String escapedSchema = escapeSchema(schema, context);
-      stmt.execute("DROP DATABASE " + escapedSchema);
-      endTransaction(context, true);
-    } catch (Exception e) {
-      Object[] args = { wikiName };
+      bTransaction = beginTransaction();
+      try (Statement stmt = getSession().connection().createStatement()) {
+        String schema = getSchemaFromWikiName(wikiRef);
+        String escapedSchema = escapeSchema(schema);
+        stmt.execute("DROP DATABASE " + escapedSchema);
+        endTransaction(true);
+      }
+    } catch (XWikiException | HibernateException | SQLException e) {
       throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_DELETE_DATABASE,
-          "Exception while delete wiki database {0}",
-          e, args);
+          "Exception while delete wiki database {0}", e, new Object[] { wikiRef });
     } finally {
-      context.setDatabase(database);
-      try {
-        if (stmt != null) {
-          stmt.close();
-        }
-      } catch (Exception e) {}
-      try {
-        if (bTransaction) {
-          endTransaction(context, false);
-        }
-      } catch (Exception e) {}
+      if (bTransaction) {
+        endTransaction(false);
+      }
     }
   }
 
@@ -381,7 +363,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
             deleteXWikiObject(bobj, context, false);
           }
         }
-        doc.setObjectsToRemove(new ArrayList<BaseObject>());
+        doc.setObjectsToRemove(new ArrayList<>());
       }
       for (List<BaseObject> objects : doc.getXObjects().values()) {
         for (BaseObject obj : objects) {

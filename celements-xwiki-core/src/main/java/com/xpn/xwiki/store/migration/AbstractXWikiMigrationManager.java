@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -121,8 +120,8 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
       String currentOriginalDatabase = context.getOriginalDatabase();
 
       try {
-        for (Iterator it = getDatabasesToMigrate(context).iterator(); it.hasNext();) {
-          String database = (String) it.next();
+        for (Object element : getDatabasesToMigrate(context)) {
+          String database = (String) element;
           LOG.info(new Formatter().format("Starting migration for database  [%s]...",
               database));
           // Set up the context so that it points to the virtual wiki corresponding to the
@@ -130,14 +129,6 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
           context.setDatabase(database);
           context.setOriginalDatabase(database);
           try {
-            // Force the schema update since it's not been executed yet for sub wikis
-            // databases.
-            // TODO: In the future intead of doing this, move all the database schema
-            // update + migrations into XWiki's init (see
-            // http://jira.xwiki.org/jira/browse/XWIKI-2075).
-            context.getWiki().getHibernateStore().updateSchema(context, false);
-
-            // Run the migrations on the current database
             startMigrationsForDatabase(context);
           } catch (XWikiException e) {
             LOG.info(new Formatter().format("Failed to migrate database [%s]...",
@@ -237,8 +228,8 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
       Set ignoredMigrations = new HashSet(Arrays.asList(context.getWiki().getConfig()
           .getPropertyAsList("xwiki.store.migration.ignored")));
       List allMigrations = getAllMigrations(context);
-      for (Iterator it = allMigrations.iterator(); it.hasNext();) {
-        XWikiMigratorInterface migrator = (XWikiMigratorInterface) it.next();
+      for (Object migration2 : allMigrations) {
+        XWikiMigratorInterface migrator = (XWikiMigratorInterface) migration2;
         if (ignoredMigrations.contains(migrator.getClass().getName())
             || ignoredMigrations.contains(migrator.getVersion().toString())) {
           continue;
@@ -255,8 +246,8 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
       if (!neededMigrations.isEmpty()) {
         LOG.info("Current storage version = [" + curversion.toString() + "]");
         LOG.info("List of migrations that will be executed:");
-        for (Iterator it = neededMigrationsAsCollection.iterator(); it.hasNext();) {
-          XWikiMigration migration = (XWikiMigration) it.next();
+        for (Object element : neededMigrationsAsCollection) {
+          XWikiMigration migration = (XWikiMigration) element;
           if (migration.isForced || migration.migrator.shouldExecute(this.startupVersion)) {
             LOG.info(
                 "  " + migration.migrator.getName() + " - " + migration.migrator.getDescription()
@@ -296,8 +287,8 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
   protected void startMigrations(Collection migrations, XWikiContext context)
       throws Exception {
     XWikiDBVersion curversion = getDBVersion(context);
-    for (Iterator it = migrations.iterator(); it.hasNext();) {
-      XWikiMigration migration = (XWikiMigration) it.next();
+    for (Object migration2 : migrations) {
+      XWikiMigration migration = (XWikiMigration) migration2;
 
       if (migration.isForced || migration.migrator.shouldExecute(this.startupVersion)) {
         if (LOG.isInfoEnabled()) {

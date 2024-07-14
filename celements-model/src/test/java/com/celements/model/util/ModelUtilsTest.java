@@ -38,7 +38,7 @@ public class ModelUtilsTest extends AbstractComponentTest {
   @Test
   public void test_getMainWikiRef() {
     WikiReference mainWiki = new WikiReference("main");
-    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db")).andReturn(mainWiki.getName());
+    expect(getMock(XWikiConfigSource.class).getMainWikiName()).andReturn(mainWiki.getName());
     replayDefault();
     assertEquals(mainWiki, modelUtils.getMainWikiRef());
     verifyDefault();
@@ -57,7 +57,7 @@ public class ModelUtilsTest extends AbstractComponentTest {
   @Test
   public void test_getDatabaseName_main() {
     String dbName = "main";
-    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db", "")).andReturn(dbName);
+    expect(getMock(XWikiConfigSource.class).getMainWikiName()).andReturn(dbName);
     String prefix = "cel_";
     expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db.prefix", "")).andReturn(prefix);
 
@@ -167,7 +167,7 @@ public class ModelUtilsTest extends AbstractComponentTest {
   @Test
   public void test_isMainWiki() {
     WikiReference mainWiki = new WikiReference("main");
-    expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db")).andReturn(mainWiki.getName());
+    expect(getMock(XWikiConfigSource.class).getMainWikiName()).andReturn(mainWiki.getName());
     replayDefault();
     assertTrue(modelUtils.isMainWiki(mainWiki));
     assertTrue(modelUtils.isMainWiki(XWikiConstant.MAIN_WIKI));

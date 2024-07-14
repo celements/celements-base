@@ -365,10 +365,11 @@ public class BaseObject extends BaseCollection implements ObjectInterface, Seria
         prop.setValue(value);
       }
     }
-
     if (prop != null) {
       safeput(fieldname, prop);
     }
+    logger.trace("set - fieldname: [{}], value: [{}], bclass: [{}], pclass: [{}], prop: [{}]",
+        fieldname, value, bclass, pclass, prop);
   }
 
   public String getGuid() {

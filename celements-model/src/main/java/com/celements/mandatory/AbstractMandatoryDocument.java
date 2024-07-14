@@ -61,7 +61,7 @@ public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRol
     if (!skip()) {
       XWikiDocument doc = getDoc();
       boolean dirty;
-      if (notMainWiki()) {
+      if (!modelUtils.isMainWiki(modelContext.getWikiRef())) {
         dirty = checkDocuments(doc);
       } else {
         dirty = checkDocumentsMain(doc);
@@ -71,12 +71,6 @@ public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRol
       getLogger().debug("skipping mandatory '{}' for db '{}'", getName(), getWiki());
     }
     getLogger().debug("end mandatory '{}' for db '{}'", getName(), getWiki());
-  }
-
-  boolean notMainWiki() {
-    boolean notMainWiki = (getWiki() != null) && !getWiki().equals(getContext().getMainXWiki());
-    getLogger().debug("not main wiki '{}': {}", getWiki(), notMainWiki);
-    return notMainWiki;
   }
 
   private XWikiDocument getDoc() throws XWikiException {
@@ -95,12 +89,12 @@ public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRol
     if (dirty) {
       try {
         modelAccess.saveDocument(doc, "autocreate mandatory " + getName());
-        getLogger().info("updated doc '{}' for '{}'", doc, getName());
+        getLogger().info("updated doc '{}' for '{}'", doc.getDocRef(), getName());
       } catch (DocumentSaveException exc) {
         throw new XWikiException(0, 0, "failed to save doc", exc);
       }
     } else {
-      getLogger().debug("is uptodate '{}' for '{}'", doc, getName());
+      getLogger().debug("is uptodate '{}' for '{}'", doc.getDocRef(), getName());
     }
   }
 

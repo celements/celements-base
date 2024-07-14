@@ -36,7 +36,8 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -75,7 +76,7 @@ public class XWikiMessageTool {
   /**
    * Log4J logger object to log messages in this class.
    */
-  private static final Logger LOG = Logger.getLogger(XWikiMessageTool.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiMessageTool.class);
 
   /**
    * Property name used to defined internationalization document bundles in either XWikiProperties
@@ -234,10 +235,8 @@ public class XWikiMessageTool {
             }
             result.add(docBundle);
           } else {
-            // The document listed as a document bundle doesn't exist. Do nothing
-            // and log.
-            LOG.warn("The document [" + docBundle.getFullName() + "] is listed "
-                + "as an internationalization document bundle but it does not " + "exist.");
+            LOG.debug("The document [{}] is listed as an internationalization document bundle "
+                + "but it does not exist.", docBundle);
           }
         }
       }

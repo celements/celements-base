@@ -13,6 +13,7 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.auth.user.User;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.user.api.XWikiUser;
@@ -22,9 +23,12 @@ import com.xpn.xwiki.web.XWikiResponse;
 @ComponentRole
 public interface ModelContext {
 
-  String XWIKI_SPACE = "XWiki";
-  String WEB_PREF_DOC_NAME = "WebPreferences";
-  String XWIKI_PREF_DOC_NAME = "XWikiPreferences";
+  @Deprecated
+  String XWIKI_SPACE = XWikiConstant.XWIKI_SPACE;
+  @Deprecated
+  String WEB_PREF_DOC_NAME = XWikiConstant.WEB_PREF_DOC_NAME;
+  @Deprecated
+  String XWIKI_PREF_DOC_NAME = XWikiConstant.XWIKI_PREF_DOC_NAME;
   String CFG_KEY_DEFAULT_LANG = "default_language";
   String FALLBACK_DEFAULT_LANG = "en";
 

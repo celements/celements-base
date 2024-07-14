@@ -37,8 +37,6 @@ import org.securityfilter.authenticator.FormAuthenticator;
 import org.securityfilter.config.SecurityConfig;
 import org.securityfilter.filter.SecurityRequestWrapper;
 import org.securityfilter.realm.SimplePrincipal;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
@@ -59,8 +57,6 @@ import com.xpn.xwiki.web.Utils;
  * @version $Id$
  */
 public class XWikiAuthServiceImpl extends AbstractXWikiAuthService {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(XWikiAuthServiceImpl.class);
 
   /**
    * Used to convert a string into a proper Document Name.
@@ -427,6 +423,7 @@ public class XWikiAuthServiceImpl extends AbstractXWikiAuthService {
 
     // Trim the username to allow users to enter their names with spaces before or after
     String cannonicalUsername = username.replaceAll(" ", "");
+    LOGGER.debug("Try authenticating user [{}]", cannonicalUsername);
 
     // Check for empty usernames
     if (cannonicalUsername.equals("")) {
