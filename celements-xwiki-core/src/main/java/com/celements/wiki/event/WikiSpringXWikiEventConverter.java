@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.xwiki.observation.ObservationManager;
 
 @Component
-@Lazy // otherwise ObservationManager will be eagerly initialised causing issues
 public class WikiSpringXWikiEventConverter
     implements ApplicationListener<WikiEvent>, Ordered {
 
@@ -21,7 +20,8 @@ public class WikiSpringXWikiEventConverter
   private final ObservationManager observationManager;
 
   @Inject
-  public WikiSpringXWikiEventConverter(ObservationManager observationManager) {
+  public WikiSpringXWikiEventConverter(
+      @Lazy ObservationManager observationManager) {
     this.observationManager = observationManager;
   }
 
