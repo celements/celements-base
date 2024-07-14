@@ -21,6 +21,8 @@ package com.celements.mandatory;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
 
 import com.xpn.xwiki.XWikiException;
@@ -28,8 +30,17 @@ import com.xpn.xwiki.XWikiException;
 @ComponentRole
 public interface IMandatoryDocumentRole {
 
-  public List<String> dependsOnMandatoryDocuments();
+  /**
+   * initial ordering value (low first, high last),
+   * but {@link #dependsOnMandatoryDocuments()} takes precedence
+   */
+  default int order() {
+    return 0;
+  }
 
-  public void checkDocuments() throws XWikiException;
+  @NotNull
+  List<String> dependsOnMandatoryDocuments();
+
+  void checkDocuments() throws XWikiException;
 
 }
