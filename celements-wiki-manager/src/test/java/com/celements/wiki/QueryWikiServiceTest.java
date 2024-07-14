@@ -1,5 +1,6 @@
 package com.celements.wiki;
 
+import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -13,11 +14,11 @@ import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
+import com.celements.common.test.AbstractComponentTest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.xpn.xwiki.XWikiConstant;
-import com.xpn.xwiki.test.AbstractComponentTest;
 
 public class QueryWikiServiceTest extends AbstractComponentTest {
 
