@@ -69,7 +69,7 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
     Collection<String> mandatoryDocElemKeys = mandatoryDocumentsMap.keySet().stream()
         .sorted((k1, k2) -> Integer.compare(
             mandatoryDocumentsMap.get(k1).order(),
-            mandatoryDocumentsMap.get(k1).order()))
+            mandatoryDocumentsMap.get(k2).order()))
         .collect(toList());
     List<String> mandatoryDocExecList = new ArrayList<>();
     do {
