@@ -20,9 +20,13 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import org.xwiki.bridge.event.AbstractDocumentEvent;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.bridge.event.DocumentCreatingEvent;
@@ -30,8 +34,6 @@ import org.xwiki.bridge.event.DocumentDeletedEvent;
 import org.xwiki.bridge.event.DocumentDeletingEvent;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.bridge.event.DocumentUpdatingEvent;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -81,29 +83,34 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelAccessFacade.class);
 
-  @Requirement
-  protected ModelAccessStrategy strategy;
+  protected final ModelAccessStrategy strategy;
+  protected final XWikiDocumentCreator docCreator;
+  protected final IRightsAccessFacadeRole rightsAccess;
+  protected final ModelUtils modelUtils;
+  protected final ModelContext context;
+  protected final WikiService wikiService;
+  protected final FieldAccessor<BaseObject> xObjFieldAccessor;
+  protected final StringFieldAccessor<BaseObject> xObjStrFieldAccessor;
 
-  @Requirement
-  protected XWikiDocumentCreator docCreator;
-
-  @Requirement
-  protected IRightsAccessFacadeRole rightsAccess;
-
-  @Requirement
-  protected ModelUtils modelUtils;
-
-  @Requirement
-  protected ModelContext context;
-
-  @Requirement
-  protected WikiService wikiService;
-
-  @Requirement(XObjectFieldAccessor.NAME)
-  protected FieldAccessor<BaseObject> xObjFieldAccessor;
-
-  @Requirement(XObjectStringFieldAccessor.NAME)
-  protected StringFieldAccessor<BaseObject> xObjStrFieldAccessor;
+  @Inject
+  public DefaultModelAccessFacade(
+      ModelAccessStrategy strategy,
+      XWikiDocumentCreator docCreator,
+      IRightsAccessFacadeRole rightsAccess,
+      ModelUtils modelUtils,
+      ModelContext context,
+      @Lazy WikiService wikiService,
+      @Named(XObjectFieldAccessor.NAME) FieldAccessor<BaseObject> xObjFieldAccessor,
+      @Named(XObjectStringFieldAccessor.NAME) StringFieldAccessor<BaseObject> xObjStrFieldAccessor) {
+    this.strategy = strategy;
+    this.docCreator = docCreator;
+    this.rightsAccess = rightsAccess;
+    this.modelUtils = modelUtils;
+    this.context = context;
+    this.wikiService = wikiService;
+    this.xObjFieldAccessor = xObjFieldAccessor;
+    this.xObjStrFieldAccessor = xObjStrFieldAccessor;
+  }
 
   @Override
   public XWikiDocument getDocument(DocumentReference docRef) throws DocumentNotExistsException {

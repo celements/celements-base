@@ -4,12 +4,14 @@ import static com.google.common.base.Predicates.*;
 import static com.google.common.collect.ImmutableSet.*;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
@@ -18,7 +20,6 @@ import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
 import com.celements.wiki.WikiService;
-import com.google.common.collect.ImmutableSet;
 
 @Component
 public class ReferenceProvider {
@@ -29,7 +30,9 @@ public class ReferenceProvider {
   private final WikiService wikiService;
 
   @Inject
-  public ReferenceProvider(QueryManager queryManager, WikiService wikiService) {
+  public ReferenceProvider(
+      QueryManager queryManager,
+      @Lazy WikiService wikiService) {
     this.queryManager = queryManager;
     this.wikiService = wikiService;
   }
@@ -45,7 +48,7 @@ public class ReferenceProvider {
       return querySpaces(wikiRef);
     } catch (QueryException exc) {
       LOGGER.error("getAllSpaces - failed for [{}]", wikiRef, exc);
-      return ImmutableSet.of();
+      return Set.of();
     }
   }
 
@@ -65,7 +68,7 @@ public class ReferenceProvider {
       return queryDocs(spaceRef);
     } catch (QueryException exc) {
       LOGGER.error("getAllDocsForSpace - failed for [{}]", spaceRef, exc);
-      return ImmutableSet.of();
+      return Set.of();
     }
   }
 
