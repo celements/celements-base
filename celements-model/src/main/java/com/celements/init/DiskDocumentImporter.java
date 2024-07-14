@@ -16,6 +16,7 @@ import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
@@ -49,7 +50,7 @@ public class DiskDocumentImporter {
   public DiskDocumentImporter(
       ServletContext servletContext,
       Execution execution,
-      WikiService wikiService,
+      @Lazy WikiService wikiService,
       ModelUtils modelUtils,
       IModelAccessFacade modelAccess) {
     this.servletContext = servletContext;
