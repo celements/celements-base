@@ -19,6 +19,8 @@
  */
 package com.celements.mandatory;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +31,10 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
+import org.xwiki.model.reference.WikiReference;
 
+import com.celements.init.WikiUpdater;
+import com.celements.model.context.Contextualiser;
 import com.xpn.xwiki.XWikiContext;
 
 @Component
@@ -41,6 +46,9 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
   Map<String, IMandatoryDocumentRole> mandatoryDocumentsMap;
 
   @Requirement
+  private WikiUpdater wikiUpdater;
+
+  @Requirement
   Execution execution;
 
   protected XWikiContext getContext() {
@@ -49,6 +57,21 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
 
   @Override
   public void checkAllMandatoryDocuments() {
+    execution.getContext().get(WIKI)
+        .ifPresent(this::checkAllMandatoryDocuments);
+  }
+
+  @Override
+  public void checkAllMandatoryDocuments(WikiReference wikiRef) {
+    Runnable checker = new Contextualiser()
+        .withWiki(wikiRef)
+        .wrap(this::checkAllMandatoryDocumentsForContext);
+    wikiUpdater.getFuture(wikiRef).ifPresentOrElse(
+        future -> future.thenAccept(v -> checker.run()),
+        checker);
+  }
+
+  private void checkAllMandatoryDocumentsForContext() {
     LOGGER.info("checkAllMandatoryDocuments for wiki [{}] ", getContext().getDatabase());
     for (String mandatoryDocKey : getMandatoryDocumentsList()) {
       IMandatoryDocumentRole mandatoryDoc = mandatoryDocumentsMap.get(mandatoryDocKey);

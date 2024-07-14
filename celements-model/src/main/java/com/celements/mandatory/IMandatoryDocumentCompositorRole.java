@@ -19,11 +19,16 @@
  */
 package com.celements.mandatory;
 
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
+import org.xwiki.model.reference.WikiReference;
 
 @ComponentRole
 public interface IMandatoryDocumentCompositorRole {
 
-  public void checkAllMandatoryDocuments();
+  void checkAllMandatoryDocuments();
+
+  void checkAllMandatoryDocuments(@NotNull WikiReference wikiRef);
 
 }

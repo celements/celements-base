@@ -140,7 +140,7 @@ public class WikiUpdater {
         LOGGER.debug("updateWiki - starting [{}]", wikiRef.getName());
         Stopwatch t = Stopwatch.createStarted();
         XWiki xwiki = wikiProvider.get().orElseThrow(IllegalStateException::new);
-        xwiki.updateDatabase(wikiRef.getName(), false, getContext());
+        xwiki.updateDatabase(wikiRef.getName(), false, false, getContext());
         wikiUpdates.remove(wikiRef);
         LOGGER.info("updateWiki - done [{}], took {}", wikiRef.getName(), t.elapsed());
       } catch (HibernateException | XWikiException exc) {
