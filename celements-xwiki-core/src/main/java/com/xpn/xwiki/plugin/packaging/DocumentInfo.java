@@ -34,6 +34,8 @@ public class DocumentInfo {
 
   private XWikiDocument doc;
 
+  private boolean checkEditRights = true;
+
   private int installable = INSTALL_IMPOSSIBLE;
 
   private int action = ACTION_NOT_DEFINED;
@@ -60,8 +62,9 @@ public class DocumentInfo {
 
   public final static int INSTALL_ERROR = 4;
 
-  public DocumentInfo(XWikiDocument doc) {
+  public DocumentInfo(XWikiDocument doc, boolean checkEditRights) {
     this.doc = doc;
+    this.checkEditRights = checkEditRights;
   }
 
   public XWikiDocument getDoc() {
@@ -113,7 +116,8 @@ public class DocumentInfo {
         return installable;
       }
       try {
-        if ((!isAdmin) && (!context.getWiki().checkAccess("edit", this.doc, context))) {
+        if (checkEditRights && (!isAdmin)
+            && (!context.getWiki().checkAccess("edit", this.doc, context))) {
           return installable;
         }
         XWikiDocument doc1 = context.getWiki().getDocument(doc.getFullName(), context);
