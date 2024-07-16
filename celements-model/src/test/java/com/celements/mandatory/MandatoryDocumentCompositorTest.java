@@ -4,7 +4,6 @@ import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,19 +38,27 @@ public class MandatoryDocumentCompositorTest extends AbstractComponentTest {
   public void testGetMandatoryDocumentsList() {
     // use LinkedHashMap to preserve inserting order.
     mdCompositor.mandatoryDocumentsMap = new LinkedHashMap<>();
-    IMandatoryDocumentRole mockA_mandDoc = createDefaultMock(IMandatoryDocumentRole.class);
-    expect(mockA_mandDoc.dependsOnMandatoryDocuments()).andReturn(
-        Collections.<String>emptyList()).atLeastOnce();
-    IMandatoryDocumentRole mockB_mandDocDepA = createDefaultMock(
-        IMandatoryDocumentRole.class);
-    expect(mockB_mandDocDepA.dependsOnMandatoryDocuments()).andReturn(Arrays.asList(
-        "A_mandDoc")).atLeastOnce();
-    mdCompositor.mandatoryDocumentsMap.put("B_mandDocDepA", mockB_mandDocDepA);
-    mdCompositor.mandatoryDocumentsMap.put("A_mandDoc", mockA_mandDoc);
+
+    IMandatoryDocumentRole mandDocMockA = createDefaultMock(IMandatoryDocumentRole.class);
+    expect(mandDocMockA.dependsOnMandatoryDocuments()).andReturn(List.of()).atLeastOnce();
+    expect(mandDocMockA.order()).andReturn(2).anyTimes();
+    mdCompositor.mandatoryDocumentsMap.put("mandDocMockA", mandDocMockA);
+
+    IMandatoryDocumentRole mandDocMockB = createDefaultMock(IMandatoryDocumentRole.class);
+    expect(mandDocMockB.dependsOnMandatoryDocuments())
+        .andReturn(List.of("mandDocMockA")).atLeastOnce();
+    expect(mandDocMockB.order()).andReturn(1).anyTimes();
+    mdCompositor.mandatoryDocumentsMap.put("mandDocMockB", mandDocMockB);
+
+    IMandatoryDocumentRole mandDocMockC = createDefaultMock(IMandatoryDocumentRole.class);
+    expect(mandDocMockC.dependsOnMandatoryDocuments()).andReturn(List.of()).atLeastOnce();
+    expect(mandDocMockC.order()).andReturn(0).anyTimes();
+    mdCompositor.mandatoryDocumentsMap.put("mandDocMockC", mandDocMockC);
+
     replayDefault();
-    List<String> expectedExedList = Arrays.asList("A_mandDoc", "B_mandDocDepA");
-    assertFalse("check precondition", expectedExedList.equals(new ArrayList<>(
-        mdCompositor.mandatoryDocumentsMap.keySet())));
+    List<String> expectedExedList = List.of("mandDocMockC", "mandDocMockA", "mandDocMockB");
+    assertNotEquals("check precondition", expectedExedList,
+        new ArrayList<>(mdCompositor.mandatoryDocumentsMap.keySet()));
     assertEquals(expectedExedList, mdCompositor.getMandatoryDocumentsList());
     verifyDefault();
   }
