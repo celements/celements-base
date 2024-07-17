@@ -2,6 +2,7 @@ package com.celements.auth.user;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -14,7 +15,6 @@ import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.access.exception.DocumentSaveException;
-import com.google.common.base.Optional;
 import com.xpn.xwiki.XWikiException;
 
 @ComponentRole
@@ -137,10 +137,10 @@ public interface UserService {
    * @param login
    *          the login value
    * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
-   *         unique
+   *         unique. Excludes suspended Users from the return value.
    */
   @NotNull
-  Optional<User> getUserForLoginField(@NotNull String login);
+  com.google.common.base.Optional<User> getUserForLoginField(@NotNull String login);
 
   /**
    * looks up the user by the given login value with the possible login fields.
@@ -150,10 +150,30 @@ public interface UserService {
    * @param possibleLoginFields
    *          list of user fields for which one can login, e.g. 'name', 'email' or 'validkey'
    * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
-   *         unique
+   *         unique. Excludes suspended Users from the return value.
+   */
+  /**
+   * @deprecated instead use {@link #getPossibleUserForLoginField} with
+   *             {@link User#isSuspended()}
+   * @since 6.5
+   */
+  @Deprecated(since = "6.5", forRemoval = true)
+  @NotNull
+  com.google.common.base.Optional<User> getUserForLoginField(@NotNull String login,
+      @Nullable Collection<String> possibleLoginFields);
+
+  /**
+   * looks up the user by the given login value with the possible login fields.
+   *
+   * @param login
+   *          the login value
+   * @param possibleLoginFields
+   *          list of user fields for which one can login, e.g. 'name', 'email' or 'validkey'
+   * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
+   *         unique. includes suspended Users in return value.
    */
   @NotNull
-  Optional<User> getUserForLoginField(@NotNull String login,
+  Optional<User> getPossibleUserForLoginField(@NotNull String login,
       @Nullable Collection<String> possibleLoginFields);
 
   /**
