@@ -67,9 +67,7 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
     Runnable checker = new Contextualiser()
         .withWiki(wikiRef)
         .wrap(this::checkAllMandatoryDocumentsForContext);
-    wikiUpdater.getFuture(wikiRef).ifPresentOrElse(
-        future -> future.thenAccept(v -> checker.run()),
-        checker);
+    wikiUpdater.runUpdateAsync(wikiRef, checker);
   }
 
   private void checkAllMandatoryDocumentsForContext() {

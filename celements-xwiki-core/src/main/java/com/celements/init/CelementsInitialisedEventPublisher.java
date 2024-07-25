@@ -1,7 +1,5 @@
 package com.celements.init;
 
-import java.util.concurrent.CompletableFuture;
-
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -37,8 +35,8 @@ public class CelementsInitialisedEventPublisher
   @Override
   public void onApplicationEvent(CelementsStartedEvent event) {
     LOGGER.info("awaiting all wiki updates...");
-    wikiUpdater.getAllFutures().forEach(CompletableFuture::join);
     wikiUpdater.shutdown();
+    wikiUpdater.awaitAll();
     LOGGER.info("Celements initialised");
     eventPublisher.publishEvent(new CelementsInitialisedEvent(event));
   }
