@@ -26,7 +26,7 @@ public interface IClassesCompositorComponent {
   /**
    * @deprecated instead use {@link #checkClasses()} or {@link #checkClasses(WikiReference)}
    */
-  @Deprecated
+  @Deprecated(since = "3.0", forRemoval = true)
   void checkAllClassCollections();
 
   boolean isActivated(@NotEmpty String name);
