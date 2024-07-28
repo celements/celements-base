@@ -68,8 +68,9 @@ public class QueryWikiService implements WikiService {
 
   @Override
   public boolean hasWiki(WikiReference wikiRef) {
+    wikiRef = convertMainWiki(wikiRef);
     return XWikiConstant.MAIN_WIKI.equals(wikiRef)
-        || getWikiMap().containsKey(convertMainWiki(wikiRef));
+        || getWikiMap().containsKey(wikiRef);
   }
 
   @Override
@@ -97,7 +98,7 @@ public class QueryWikiService implements WikiService {
   public WikiReference determineWiki(URI url) throws WikiMissingException {
     String host = Strings.nullToEmpty(url.getHost());
     checkArgument(!host.isEmpty());
-    if (!xwikiCfg.isVirtualMode() || LOCAL_HOSTS.contains(host)) {
+    if (LOCAL_HOSTS.contains(host)) {
       return XWikiConstant.MAIN_WIKI;
     }
     WikiReference wikiRef = findWikis(u -> u.getHost().equals(host)).findFirst()
@@ -152,7 +153,7 @@ public class QueryWikiService implements WikiService {
   }
 
   private WikiReference convertMainWiki(WikiReference wikiRef) {
-    if ((wikiRef != null) && wikiRef.getName().equals(xwikiCfg.getProperty("xwiki.db"))) {
+    if ((wikiRef != null) && wikiRef.getName().equals(xwikiCfg.getMainWikiName())) {
       return XWikiConstant.MAIN_WIKI;
     }
     return wikiRef;
