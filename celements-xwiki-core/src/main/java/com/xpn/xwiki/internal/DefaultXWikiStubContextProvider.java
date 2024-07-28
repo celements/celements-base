@@ -71,7 +71,6 @@ public class DefaultXWikiStubContextProvider implements XWikiStubContextProvider
   public XWikiContext createStubContext(ExecutionContext execContext) {
     XWikiContext ctx = new XWikiContext();
     ctx.setEngineContext(new XWikiServletContext(servletContext));
-    ctx.setMainXWiki(XWikiConstant.MAIN_WIKI.getName());
     WikiReference wikiRef = execContext.computeIfAbsent(WIKI, () -> XWikiConstant.MAIN_WIKI);
     ctx.setDatabase(wikiRef.getName());
     ctx.setOriginalDatabase(wikiRef.getName());

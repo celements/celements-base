@@ -9,13 +9,14 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.tool.hbm2ddl.DatabaseMetadata;
 import org.slf4j.Logger;
@@ -27,13 +28,13 @@ import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.wiki.WikiMissingException;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.hibernate.HibernateSessionFactory;
-import com.xpn.xwiki.web.Utils;
 
 public class XWikiHibernateBaseStore implements Initializable {
 
@@ -89,16 +90,9 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @throws org.hibernate.HibernateException
    */
-  private synchronized void initHibernate(WikiReference wikiRef) throws HibernateException {
+  public synchronized void initHibernate() throws HibernateException {
+    checkState(getSessionFactory() == null, "initHibernate - already initialized");
     getConfiguration().configure(getPath());
-    if ((xwikiCfg.getProperty("xwiki.db") != null) && !xwikiCfg.isVirtualMode()) {
-      String schemaName = getSchemaFromWikiName(wikiRef);
-      getConfiguration().setProperty(Environment.DEFAULT_CATALOG, schemaName);
-      getConfiguration().setProperty(Environment.DEFAULT_SCHEMA, schemaName);
-    }
-    if (this.sessionFactory == null) {
-      this.sessionFactory = Utils.getComponent(HibernateSessionFactory.class);
-    }
     setSessionFactory(getConfiguration().buildSessionFactory());
   }
 
@@ -296,7 +290,7 @@ public class XWikiHibernateBaseStore implements Initializable {
     }
     String schemaName = "";
     if (XWikiConstant.MAIN_WIKI.equals(wikiRef)) {
-      schemaName = xwikiCfg.getProperty("xwiki.db", "").trim();
+      schemaName = xwikiCfg.getMainWikiName().trim();
     }
     if (schemaName.isEmpty()) {
       schemaName = wikiRef.getName();
@@ -431,29 +425,19 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   @Deprecated
   public void checkHibernate(XWikiContext context) throws HibernateException {
-    checkHibernate(getWikiRef(context));
+    checkHibernate();
   }
 
   /**
    * Initializes hibernate and calls updateSchema if necessary
    *
    * @throws HibernateException
+   *
+   * @deprecated noop, bootstrap ensures hibernate is initialized
    */
-  public void checkHibernate(WikiReference wikiRef) throws HibernateException {
-    // Note : double locking is not a recommended pattern and is not guaranteed to work on all
-    // machines. See for example http://www.ibm.com/developerworks/java/library/j-dcl.html
-    if (getSessionFactory() == null) {
-      synchronized (this) {
-        if (getSessionFactory() == null) {
-
-          initHibernate(wikiRef);
-          /* Check Schema */
-          if (getSessionFactory() != null) {
-            updateSchema(wikiRef);
-          }
-        }
-      }
-    }
+  @Deprecated(since = "6.5")
+  public void checkHibernate() throws HibernateException {
+    checkState(getSessionFactory() != null, "checkHibernate - sessionFactory not initialized");
   }
 
   /**
@@ -482,7 +466,14 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   @Deprecated
   public void setDatabase(Session session, XWikiContext context) throws XWikiException {
-    setDatabase(session, getWikiRef(context));
+    var wikiRef = getWikiRef(context);
+    try {
+      setDatabase(session, wikiRef);
+    } catch (WikiMissingException e) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SWITCH_DATABASE,
+          "Exception while switching to database {0}", e, new Object[] { wikiRef });
+    }
   }
 
   /**
@@ -490,24 +481,24 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @throws XWikiException
    */
-  public void setDatabase(Session session, WikiReference wikiRef) throws XWikiException {
-    if (xwikiCfg.isVirtualMode()) {
+  public void setDatabase(Session session, WikiReference wikiRef)
+      throws WikiMissingException, XWikiException {
+    if (wikiRef != null) {
       try {
-        if (wikiRef != null) {
-          logger.trace("setDatabase - {} ", wikiRef);
-          String schemaName = getSchemaFromWikiName(wikiRef);
-          Connection connection = session.connection();
-          if (!schemaName.equals(getCurrentSchema(connection))) {
-            logger.debug("setDatabase - setting catalog to {} ", schemaName);
-            connection.setCatalog(schemaName);
-          }
-          setCurrentWiki(wikiRef);
+        logger.trace("setDatabase - {} ", wikiRef);
+        String schemaName = getSchemaFromWikiName(wikiRef);
+        Connection connection = session.connection();
+        if (!schemaName.equals(getCurrentSchema(connection))) {
+          logger.debug("setDatabase - setting catalog to {} ", schemaName);
+          connection.setCatalog(schemaName);
         }
-      } catch (HibernateException | SQLException e) {
-        Object[] args = { wikiRef };
+        setCurrentWiki(wikiRef);
+      } catch (SQLException e) {
+        throw new WikiMissingException(wikiRef, e);
+      } catch (HibernateException e) {
         throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
             XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SWITCH_DATABASE,
-            "Exception while switching to database {0}", e, args);
+            "Exception while switching to database {0}", e, new Object[] { wikiRef });
       }
     }
   }
@@ -554,6 +545,20 @@ public class XWikiHibernateBaseStore implements Initializable {
   }
 
   /**
+   * Begins a transaction for the current database
+   *
+   */
+  public boolean beginTransaction() throws HibernateException, XWikiException {
+    try {
+      return beginTransaction((WikiReference) null);
+    } catch (WikiMissingException wme) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SWITCH_DATABASE,
+          "Exception while switching to context database", wme);
+    }
+  }
+
+  /**
    * Begins a transaction
    *
    * @param context
@@ -574,7 +579,8 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @throws XWikiException
    *
    */
-  public boolean beginTransaction(WikiReference wikiRef) throws HibernateException, XWikiException {
+  public boolean beginTransaction(@Nullable WikiReference wikiRef)
+      throws HibernateException, WikiMissingException, XWikiException {
     return beginTransaction(null, wikiRef);
   }
 
@@ -625,7 +631,13 @@ public class XWikiHibernateBaseStore implements Initializable {
   @Deprecated
   public boolean beginTransaction(SessionFactory sfactory, XWikiContext context)
       throws HibernateException, XWikiException {
-    return beginTransaction(sfactory, getWikiRef(context));
+    try {
+      return beginTransaction(sfactory, getWikiRef(context));
+    } catch (WikiMissingException wme) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SWITCH_DATABASE,
+          "Exception while switching to context database", wme);
+    }
   }
 
   /**
@@ -635,8 +647,10 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @throws XWikiException
    *
    */
-  public boolean beginTransaction(SessionFactory sfactory, WikiReference wikiRef)
-      throws HibernateException, XWikiException {
+  public boolean beginTransaction(
+      @Nullable SessionFactory sfactory,
+      @Nullable WikiReference wikiRef)
+      throws HibernateException, WikiMissingException, XWikiException {
     Transaction transaction = getTransaction();
     Session session = getSession();
     checkState(((session == null) != (transaction != null)), // XNOR
@@ -865,7 +879,7 @@ public class XWikiHibernateBaseStore implements Initializable {
       HibernateCallback<T> cb) throws XWikiException {
     try {
       if (bTransaction) {
-        checkHibernate(wikiRef);
+        checkHibernate();
         bTransaction = beginTransaction(wikiRef);
       }
       if ((wikiRef != null) && !wikiRef.equals(getCurrentWiki())) {

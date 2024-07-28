@@ -55,7 +55,7 @@ public class DefaultModelUtils implements ModelUtils {
 
   private final Supplier<WikiReference> mainWikiRef = Suppliers
       .memoize(() -> RefBuilder.create()
-          .wiki(xwikiCfg.getProperty("xwiki.db"))
+          .wiki(xwikiCfg.getMainWikiName())
           .buildOpt(WikiReference.class)
           .orElse(XWikiConstant.MAIN_WIKI));
 
@@ -157,7 +157,7 @@ public class DefaultModelUtils implements ModelUtils {
     checkNotNull(wikiRef);
     String database = "";
     if (XWikiConstant.MAIN_WIKI.equals(wikiRef)) {
-      database = xwikiCfg.getProperty("xwiki.db", "").trim();
+      database = xwikiCfg.getMainWikiName().trim();
     }
     if (database.isEmpty()) {
       database = wikiRef.getName().replace('-', '_');

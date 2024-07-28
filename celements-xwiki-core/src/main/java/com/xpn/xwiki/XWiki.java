@@ -100,6 +100,7 @@ import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
+import com.celements.logging.LogUtils;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.StoreFactory;
 import com.celements.wiki.WikiService;
@@ -122,13 +123,8 @@ import com.xpn.xwiki.internal.event.AttachmentUpdatedEvent;
 import com.xpn.xwiki.internal.event.CommentAddedEvent;
 import com.xpn.xwiki.internal.event.CommentDeletedEvent;
 import com.xpn.xwiki.internal.event.CommentUpdatedEvent;
-import com.xpn.xwiki.notify.DocObjectChangedRule;
-import com.xpn.xwiki.notify.PropertyChangedRule;
-import com.xpn.xwiki.notify.XWikiActionRule;
 import com.xpn.xwiki.notify.XWikiDocChangeNotificationInterface;
 import com.xpn.xwiki.notify.XWikiNotificationManager;
-import com.xpn.xwiki.notify.XWikiNotificationRule;
-import com.xpn.xwiki.notify.XWikiPageNotification;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.ObjectDiff;
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -173,15 +169,11 @@ import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiURLFactory;
 import com.xpn.xwiki.web.XWikiURLFactoryService;
 
-public class XWiki implements XWikiDocChangeNotificationInterface, EventListener {
+public class XWiki implements EventListener {
 
   public static final String SERVLET_CONTEXT_KEY = "xwiki.instance";
 
   protected static final Logger LOG = LoggerFactory.getLogger(XWiki.class);
-
-  /** Frequently used Document reference, the class which holds virtual wiki definitions. */
-  static final DocumentReference VIRTUAL_WIKI_DEFINITION_CLASS_REFERENCE = new DocumentReference(
-      "xwiki", "XWiki", "XWikiServerClass");
 
   /** XWiki configuration loaded from xwiki.cfg. */
   private XWikiConfig config;
@@ -377,7 +369,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     // Create the notification manager
     setNotificationManager(new XWikiNotificationManager());
 
-    LOG.trace("initialising HibernateStore...");
+    LOG.trace("initialising MainStore...");
     setStore(StoreFactory.getMainStore());
 
     LOG.trace("initialising CriteriaService...");
@@ -409,21 +401,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     LOG.trace("initialising RenderingEngine...");
     resetRenderingEngine(context);
 
-    // Add a notification rule if the preference property plugin is modified
-    getNotificationManager().addNamedRule("XWiki.XWikiPreferences", new PropertyChangedRule(this,
-        "XWiki.XWikiPreferences", "plugin"));
-
-    // Make sure these classes exists
-    LOG.trace("initialising mandatory classes...");
-    initializeMandatoryClasses(context);
-
-    // Add a notification for notifications
-    getNotificationManager().addGeneralRule(new XWikiActionRule(new XWikiPageNotification()));
-
-    // Add rule to get informed of new servers
-    getNotificationManager().addGeneralRule(new DocObjectChangedRule(this,
-        "XWiki.XWikiServerClass"));
-
     String ro = Param("xwiki.readonly", "no");
     this.isReadOnly = ("yes".equalsIgnoreCase(ro) || "true".equalsIgnoreCase(ro)
         || "1".equalsIgnoreCase(ro));
@@ -433,6 +410,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     this.configuredSyntaxes = Arrays.asList(StringUtils.split(syntaxes, " ,"));
 
     Utils.getComponent(ObservationManager.class).addListener(this);
+
     LOG.debug("XWiki init done");
   }
 
@@ -441,7 +419,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    * if they don't exist.
    */
   // TODO merge with ClassesCompositor
-  protected void initializeMandatoryClasses(XWikiContext context) throws XWikiException {
+  public void initializeMandatoryClasses(XWikiContext context) throws XWikiException {
+    context = (context != null) ? context : getContext();
     getPrefsClass(context);
     getUserClass(context);
     getTagClass(context);
@@ -481,6 +460,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
 
   public void updateDatabase(String wikiName, boolean force, boolean initClasses,
       XWikiContext context) throws HibernateException, XWikiException {
+    context = (context != null) ? context : getContext();
     String database = context.getDatabase();
     try {
       context.setDatabase(wikiName);
@@ -562,7 +542,9 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
       if (doc.isNew()) {
         return "";
       }
-      String wikiOwner = doc.getStringValue(VIRTUAL_WIKI_DEFINITION_CLASS_REFERENCE, "owner");
+      String wikiOwner = doc.getStringValue(RefBuilder.from(doc.getDocRef())
+          .space(XWikiConstant.XWIKI_SPACE).doc("XWikiServerClass")
+          .build(DocumentReference.class), "owner");
       if (wikiOwner.indexOf(":") == -1) {
         wikiOwner = context.getMainXWiki() + ":" + wikiOwner;
       }
@@ -2258,22 +2240,6 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     this.notificationManager = notificationManager;
   }
 
-  @Override
-  public void notify(XWikiNotificationRule rule, XWikiDocument newdoc, XWikiDocument olddoc,
-      int event, XWikiContext context) {
-    if (!isVirtualMode() && newdoc.getFullName().equals("XWiki.XWikiPreferences")) {
-      // If the XWikiPreferences document is modified, reload all plugins. The reason is that
-      // plugins may
-      // cache data taken from XWikiPreferences during their initialization.
-      // TODO: Fix the plugins, they should implement Observation listeners if they want to be
-      // aware of a
-      // change in the XWikiPreferences document but we should definitely not reinitialize all
-      // plugins like
-      // this.
-      loadPlugins();
-    }
-  }
-
   /**
    * Verify if the <code>XWiki.TagClass</code> page exists and that it contains all the required
    * configuration properties to make the tag feature work properly. If some properties are missing
@@ -3723,6 +3689,10 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     return copySpaceBetweenWikis(null, sourceWiki, targetWiki, language, context);
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConfigSource#getEncoding()}
+   */
+  @Deprecated(since = "6.5")
   public String getEncoding() {
     return Param("xwiki.encoding", "UTF-8");
   }
@@ -3865,7 +3835,7 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
    */
   @Deprecated
   public boolean isVirtualMode() {
-    return "1".equals(Param("xwiki.virtual"));
+    return true;
   }
 
   @Deprecated
@@ -4824,7 +4794,8 @@ public class XWiki implements XWikiDocChangeNotificationInterface, EventListener
     if (bclass != null) {
       return bclass;
     }
-
+    LOG.debug("getXClass - doc [{}] exists [{}]", documentReference,
+        LogUtils.defer(rethrowSupplier(() -> exists(documentReference, context))));
     return getDocument(documentReference, context).getXClass();
   }
 

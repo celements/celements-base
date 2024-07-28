@@ -444,13 +444,16 @@ public class XWikiContext extends Hashtable<Object, Object> {
     this.cacheDuration = cacheDuration;
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConstant.MAIN_WIKI}
+   */
+  @Deprecated(since = "6.5")
   public String getMainXWiki() {
-    return (String) get("mainxwiki");
+    return XWikiConstant.MAIN_WIKI.getName();
   }
 
-  public void setMainXWiki(String str) {
-    put("mainxwiki", str);
-  }
+  @Deprecated(since = "6.5")
+  public void setMainXWiki(String str) {}
 
   // Used to avoid recursive loading of documents if there are recursives usage of classes
   public void addBaseClass(BaseClass bclass) {

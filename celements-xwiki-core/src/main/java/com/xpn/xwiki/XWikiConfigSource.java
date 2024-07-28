@@ -1,5 +1,7 @@
 package com.xpn.xwiki;
 
+import static com.xpn.xwiki.XWikiConstant.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -63,8 +65,20 @@ public class XWikiConfigSource implements ConfigurationSource {
     return false;
   }
 
+  /**
+   * @deprecated always returns true
+   */
+  @Deprecated(since = "6.5")
   public boolean isVirtualMode() {
-    return "1".equals(getProperty("xwiki.virtual"));
+    return true;
+  }
+
+  public String getEncoding() {
+    return getProperty("xwiki.encoding", "UTF-8");
+  }
+
+  public String getMainWikiName() {
+    return getProperty("xwiki.db", MAIN_WIKI.getName());
   }
 
 }

@@ -13,6 +13,7 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryManager;
 
 import com.celements.configuration.CelementsAllPropertiesConfigurationSource;
@@ -350,8 +351,13 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
-  public synchronized void cleanUp(XWikiContext context) {
+  public void cleanUp(XWikiContext context) {
     getBackingStore().cleanUp(context);
+  }
+
+  @Override
+  public boolean existsWiki(WikiReference wikiRef) throws XWikiException {
+    return getBackingStore().existsWiki(wikiRef);
   }
 
   @Override
@@ -360,12 +366,22 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
-  public synchronized void createWiki(String wikiName, XWikiContext context) throws XWikiException {
+  public void createWiki(WikiReference wikiRef) throws XWikiException {
+    getBackingStore().createWiki(wikiRef);
+  }
+
+  @Override
+  public void createWiki(String wikiName, XWikiContext context) throws XWikiException {
     getBackingStore().createWiki(wikiName, context);
   }
 
   @Override
-  public synchronized void deleteWiki(String wikiName, XWikiContext context) throws XWikiException {
+  public void deleteWiki(WikiReference wikiRef) throws XWikiException {
+    getBackingStore().deleteWiki(wikiRef);
+  }
+
+  @Override
+  public void deleteWiki(String wikiName, XWikiContext context) throws XWikiException {
     getBackingStore().deleteWiki(wikiName, context);
   }
 
@@ -375,7 +391,7 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
-  public synchronized void injectCustomMappings(XWikiContext context) throws XWikiException {
+  public void injectCustomMappings(XWikiContext context) throws XWikiException {
     getBackingStore().injectCustomMappings(context);
   }
 
