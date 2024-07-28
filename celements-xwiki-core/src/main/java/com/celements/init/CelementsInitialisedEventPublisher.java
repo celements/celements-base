@@ -35,8 +35,7 @@ public class CelementsInitialisedEventPublisher
   @Override
   public void onApplicationEvent(CelementsStartedEvent event) {
     LOGGER.info("awaiting all wiki updates...");
-    wikiUpdater.shutdown();
-    wikiUpdater.awaitAll();
+    wikiUpdater.shutdownAwait();
     LOGGER.info("Celements initialised");
     eventPublisher.publishEvent(new CelementsInitialisedEvent(event));
   }

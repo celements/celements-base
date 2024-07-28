@@ -14,7 +14,6 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -22,6 +21,7 @@ import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.lambda.LambdaExceptionUtil.ThrowingRunnable;
 import com.celements.execution.XWikiExecutionProp;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -76,39 +76,46 @@ public class WikiUpdater {
     getAllFutures().forEach(CompletableFuture::join);
   }
 
-  public CompletableFuture<Void> updateAsync(WikiReference wikiRef) {
-    XWiki xwiki = wikiProvider.get().orElseThrow(IllegalStateException::new);
-    return runUpdateAsync(wikiRef, new WikiUpdateRunnable(wikiRef, xwiki));
+  public CompletableFuture<Void> runUpdateAsync(WikiReference wikiRef, Runnable action) {
+    return runUpdateAsyncExc(wikiRef, action::run);
   }
 
-  public CompletableFuture<Void> runUpdateAsync(WikiReference wikiRef, Runnable action) {
+  public CompletableFuture<Void> runUpdateAsyncExc(WikiReference wikiRef,
+      ThrowingRunnable<Exception> action) {
     checkNotNull(wikiRef);
     checkState(!executor.isShutdown());
+    var wikiUpdateAction = new WikiUpdateRunnable(action);
     return wikiUpdates.compute(wikiRef,
         (wiki, future) -> (future == null) || future.isDone()
-            ? CompletableFuture.runAsync(action, executor)
-            : future.thenRunAsync(action, executor));
+            ? CompletableFuture.runAsync(wikiUpdateAction, executor)
+            : future.thenRunAsync(wikiUpdateAction, executor));
   }
 
-  // TODO start migration per wiki within updateAsync
-  public void runAllMigrationsAsync() {
-    CompletableFuture.runAsync(new AbstractXWikiRunnable() {
+  public CompletableFuture<Void> updateAsync(WikiReference wikiRef) {
+    return runUpdateAsyncExc(wikiRef, () -> {
+      LOGGER.debug("updateWiki - starting [{}]", wikiRef.getName());
+      Stopwatch t = Stopwatch.createStarted();
+      XWiki xwiki = wikiProvider.get().orElseThrow(IllegalStateException::new);
+      xwiki.updateDatabase(wikiRef.getName(), false, false, getContext());
+      LOGGER.info("updateWiki - done [{}], took {}", wikiRef.getName(), t.elapsed());
+    });
+  }
 
-      @Override
-      protected void runInternal() throws XWikiException {
-        LOGGER.debug("runMigrations - waiting for all wiki updates to finish...");
-        awaitAll();
-        LOGGER.debug("runMigrations - wiki updates finished, starting migrations");
-        getMigrationManager(getContext()).startMigrations(getContext());
-        if (Boolean.TRUE.equals(Optional
-            .ofNullable(cfgSrc.getProperty("celements.init.migration.exitAfterEnd", Boolean.class))
-            .orElseGet(() -> "1".equals(xwikiCfg.getProperty(
-                "xwiki.store.migration.exitAfterEnd", "0"))))) {
-          LOGGER.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
-          System.exit(0); // so brutal
-        }
+  public void runAllMigrationsAsync() {
+    var wikiUpdateAction = new WikiUpdateRunnable(() -> {
+      LOGGER.debug("runMigrations - waiting for all wiki updates to finish...");
+      awaitAll(); // TODO instead awaitAll start migration per wiki with runUpdateAsync
+      LOGGER.debug("runMigrations - wiki updates finished, starting migrations");
+      getMigrationManager(getContext()).startMigrations(getContext());
+      if (Boolean.TRUE.equals(Optional
+          .ofNullable(cfgSrc.getProperty("celements.init.migration.exitAfterEnd", Boolean.class))
+          .orElseGet(() -> "1".equals(xwikiCfg.getProperty(
+              "xwiki.store.migration.exitAfterEnd", "0"))))) {
+        LOGGER.error("Exiting because xwiki.store.migration.exitAfterEnd is set");
+        System.exit(0); // so brutal
       }
-    }, executor);
+    });
+    CompletableFuture.runAsync(wikiUpdateAction, executor);
   }
 
   // TODO refactor to component
@@ -135,41 +142,28 @@ public class WikiUpdater {
     executor.shutdown();
   }
 
+  public void shutdownAwait() {
+    awaitAll(); // wait for all tasks to finish
+    shutdown(); // tell the executor to stop accepting new tasks
+    awaitAll(); // wait for potential new tasks to finish
+  }
+
   private class WikiUpdateRunnable extends AbstractXWikiRunnable {
 
-    private final WikiReference wikiRef;
+    private final ThrowingRunnable<Exception> action;
 
-    WikiUpdateRunnable(WikiReference wikiRef, XWiki xwiki) {
+    WikiUpdateRunnable(ThrowingRunnable<Exception> action) {
       // make XWiki available in the runnable's execution context since it's not necessarily
       // already available in the servlet context, see XWikiProvider
-      super(XWikiExecutionProp.XWIKI.getName(), xwiki);
-      this.wikiRef = wikiRef;
+      super(XWikiExecutionProp.XWIKI.getName(),
+          wikiProvider.get().orElseThrow(IllegalStateException::new));
+      this.action = action;
     }
 
     @Override
-    protected void runInternal() {
-      try {
-        LOGGER.debug("updateWiki - starting [{}]", wikiRef.getName());
-        Stopwatch t = Stopwatch.createStarted();
-        XWiki xwiki = wikiProvider.get().orElseThrow(IllegalStateException::new);
-        xwiki.updateDatabase(wikiRef.getName(), false, false, getContext());
-        wikiUpdates.remove(wikiRef);
-        LOGGER.info("updateWiki - done [{}], took {}", wikiRef.getName(), t.elapsed());
-      } catch (HibernateException | XWikiException exc) {
-        throw new DatabaseUpdateException(exc);
-      }
+    protected void runInternal() throws Exception {
+      action.run();
     }
-
-  }
-
-  public class DatabaseUpdateException extends RuntimeException {
-
-    private static final long serialVersionUID = 1L;
-
-    DatabaseUpdateException(Throwable cause) {
-      super(cause);
-    }
-
   }
 
 }
