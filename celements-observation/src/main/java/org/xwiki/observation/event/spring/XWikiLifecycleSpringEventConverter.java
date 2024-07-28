@@ -18,7 +18,6 @@ import com.celements.init.CelementsStartedEvent;
 import com.celements.init.CelementsStoppedEvent;
 
 @Component
-@Lazy // otherwise ObservationManager will be eagerly initialised causing issues
 public class XWikiLifecycleSpringEventConverter
     implements ApplicationListener<CelementsLifecycleEvent>, Ordered {
 
@@ -28,7 +27,8 @@ public class XWikiLifecycleSpringEventConverter
   private final ObservationManager observationManager;
 
   @Inject
-  public XWikiLifecycleSpringEventConverter(ObservationManager observationManager) {
+  public XWikiLifecycleSpringEventConverter(
+      @Lazy ObservationManager observationManager) {
     this.observationManager = observationManager;
   }
 

@@ -19,16 +19,21 @@
  */
 package com.celements.common.classes;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
+import org.springframework.stereotype.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
+import org.xwiki.model.reference.WikiReference;
 
+import com.celements.init.WikiUpdater;
 import com.celements.model.classes.ClassPackage;
+import com.celements.model.context.Contextualiser;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.web.Utils;
@@ -48,14 +53,30 @@ public class ClassesCompositorComponent implements IClassesCompositorComponent {
   private List<ICelementsClassCollection> classCollectionsOld;
 
   @Requirement
+  private WikiUpdater wikiUpdater;
+
+  @Requirement
   private Execution execution;
 
   protected XWikiContext getContext() {
-    return (XWikiContext) execution.getContext().getProperty("xwikicontext");
+    return execution.getContext().get(XWIKI_CONTEXT).orElseThrow();
   }
 
   @Override
   public void checkClasses() {
+    execution.getContext().get(WIKI)
+        .ifPresent(this::checkClasses);
+  }
+
+  @Override
+  public void checkClasses(WikiReference wikiRef) {
+    Runnable checkClasses = new Contextualiser()
+        .withWiki(wikiRef)
+        .wrap(this::checkClassesForContext);
+    wikiUpdater.runUpdateAsync(wikiRef, checkClasses);
+  }
+
+  private void checkClassesForContext() {
     LOGGER.info("start checkClasses for wiki '{}'", getContext().getDatabase());
     classCreator.createXClasses();
     checkClassCollections();

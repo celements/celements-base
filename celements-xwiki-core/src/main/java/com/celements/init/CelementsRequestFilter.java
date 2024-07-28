@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
@@ -52,7 +53,7 @@ public class CelementsRequestFilter {
       Execution execution,
       ExecutionContextManager execContextManager,
       ServletContainerInitializer containerInitializer,
-      WikiService wikiService,
+      @Lazy WikiService wikiService,
       WikiUpdater wikiUpdater,
       XWikiProvider xwikiProvider) {
     this.execution = execution;

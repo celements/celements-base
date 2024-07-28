@@ -68,14 +68,26 @@ public class WikiUpdater {
     return wikiUpdates.values().stream();
   }
 
+  public void await(WikiReference wiki) {
+    getFuture(wiki).ifPresent(CompletableFuture::join);
+  }
+
+  public void awaitAll() {
+    getAllFutures().forEach(CompletableFuture::join);
+  }
+
   public CompletableFuture<Void> updateAsync(WikiReference wikiRef) {
+    XWiki xwiki = wikiProvider.get().orElseThrow(IllegalStateException::new);
+    return runUpdateAsync(wikiRef, new WikiUpdateRunnable(wikiRef, xwiki));
+  }
+
+  public CompletableFuture<Void> runUpdateAsync(WikiReference wikiRef, Runnable action) {
     checkNotNull(wikiRef);
     checkState(!executor.isShutdown());
-    XWiki xwiki = wikiProvider.get().orElseThrow(IllegalStateException::new);
     return wikiUpdates.compute(wikiRef,
         (wiki, future) -> (future == null) || future.isDone()
-            ? CompletableFuture.runAsync(new WikiUpdateRunnable(wikiRef, xwiki), executor)
-            : future);
+            ? CompletableFuture.runAsync(action, executor)
+            : future.thenRunAsync(action, executor));
   }
 
   // TODO start migration per wiki within updateAsync
@@ -85,7 +97,7 @@ public class WikiUpdater {
       @Override
       protected void runInternal() throws XWikiException {
         LOGGER.debug("runMigrations - waiting for all wiki updates to finish...");
-        getAllFutures().forEach(CompletableFuture::join);
+        awaitAll();
         LOGGER.debug("runMigrations - wiki updates finished, starting migrations");
         getMigrationManager(getContext()).startMigrations(getContext());
         if (Boolean.TRUE.equals(Optional
@@ -140,7 +152,7 @@ public class WikiUpdater {
         LOGGER.debug("updateWiki - starting [{}]", wikiRef.getName());
         Stopwatch t = Stopwatch.createStarted();
         XWiki xwiki = wikiProvider.get().orElseThrow(IllegalStateException::new);
-        xwiki.updateDatabase(wikiRef.getName(), false, getContext());
+        xwiki.updateDatabase(wikiRef.getName(), false, false, getContext());
         wikiUpdates.remove(wikiRef);
         LOGGER.info("updateWiki - done [{}], took {}", wikiRef.getName(), t.elapsed());
       } catch (HibernateException | XWikiException exc) {

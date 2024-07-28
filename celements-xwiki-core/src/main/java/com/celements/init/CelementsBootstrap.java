@@ -1,10 +1,12 @@
 package com.celements.init;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.spring.context.SpringContextProvider.*;
 import static com.google.common.base.Preconditions.*;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.concurrent.Immutable;
@@ -13,25 +15,29 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 
+import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
+import org.xwiki.model.reference.WikiReference;
 
-import com.celements.wiki.WikiService;
+import com.celements.common.lambda.LambdaExceptionUtil.ThrowingConsumer;
+import com.celements.wiki.WikiMissingException;
+import com.celements.wiki.event.WikiCreatedEvent;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
-import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.internal.XWikiExecutionContextInitializer;
+import com.xpn.xwiki.store.XWikiCacheStoreInterface;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
@@ -52,11 +58,9 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
   private final ExecutionContextManager executionManager;
   private final ComponentManager componentManager;
   private final XWikiHibernateStore hibernateStore;
-  private final WikiService wikiService;
-  private final WikiUpdater wikiUpdater;
   private final XWikiConfigSource xwikiCfg;
-  private final ConfigurationSource cfgSrc;
   private final ApplicationEventPublisher eventPublisher;
+  private final ListableBeanFactory beanFactory;
 
   @Inject
   public CelementsBootstrap(
@@ -65,21 +69,17 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
       ExecutionContextManager executionManager,
       ComponentManager componentManager,
       @Named("hibernate") XWikiStoreInterface hibernateStore,
-      WikiService wikiService,
-      WikiUpdater wikiUpdater,
       XWikiConfigSource xwikiCfg,
-      @Named("allproperties") ConfigurationSource cfgSrc,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      ListableBeanFactory beanFactory) {
     this.servletContext = servletContext;
     this.execution = execution;
     this.executionManager = executionManager;
     this.componentManager = componentManager;
     this.hibernateStore = (XWikiHibernateStore) hibernateStore;
-    this.wikiService = wikiService;
-    this.wikiUpdater = wikiUpdater;
     this.xwikiCfg = xwikiCfg;
-    this.cfgSrc = cfgSrc;
     this.eventPublisher = eventPublisher;
+    this.beanFactory = beanFactory;
   }
 
   @Override
@@ -99,8 +99,6 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
       // make XWiki available to all requests via servlet context, see {@link XWikiProvider}
       xwikiFuture.complete(xwiki);
       LOGGER.info("XWiki initialised");
-      eventPublisher.publishEvent(new CelementsInitialisedEvent(this));
-      LOGGER.info("Celements initialised");
     } catch (Exception exc) {
       xwikiFuture.completeExceptionally(exc);
       LOGGER.error("Celements bootstrap failed");
@@ -110,50 +108,63 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
   }
 
   private XWiki bootstrapXWiki() throws XWikiException, ExecutionContextException {
+    ExecutionContext eCtx = createExecutionContext();
     Utils.setComponentManager(componentManager);
+    LOGGER.debug("initialising hibernate...");
+    hibernateStore.initHibernate();
+    var initMainWiki = initMainWiki();
     LOGGER.debug("initialising ExecutionContext...");
-    ExecutionContext executionCtx = initExecutionContext();
-    LOGGER.debug("checkHibernate...");
-    hibernateStore.checkHibernate(XWikiConstant.MAIN_WIKI);
+    executionManager.initialize(eCtx);
     LOGGER.debug("initialising XWiki...");
     XWiki xwiki = new XWiki(true);
-    executionCtx.set(XWIKI, xwiki);
+    eCtx.set(XWIKI, xwiki);
     LOGGER.debug("loading Plugins...");
     xwiki.loadPlugins();
-    LOGGER.debug("triggering startup tasks...");
-    triggerStartupTasks();
+    if (initMainWiki != null) {
+      initMainWiki.accept(xwiki);
+    }
     return xwiki;
   }
 
-  public ExecutionContext initExecutionContext() throws ExecutionContextException {
+  public ExecutionContext createExecutionContext() {
     ExecutionContext executionCtx = new ExecutionContext();
     execution.setContext(executionCtx);
     // disable awaiting XWiki instance in this bootstrap execution
     executionCtx.set(XWikiExecutionContextInitializer.NO_AWAIT, true);
-    executionManager.initialize(executionCtx);
     return executionCtx;
   }
 
-  private void triggerStartupTasks() {
+  private ThrowingConsumer<XWiki, XWikiException> initMainWiki() throws XWikiException {
+    var mainWiki = new WikiReference(xwikiCfg.getMainWikiName());
+    // main wiki must already be created on startup, but might be empty
     try {
-      if (Boolean.TRUE.equals(cfgSrc.getProperty("celements.init.updatedatabases", Boolean.class))
-          && xwikiCfg.isVirtualMode()) {
-        LOGGER.info("triggering wiki updates");
-        wikiService.streamAllWikis()
-            .forEach(wikiUpdater::updateAsync);
-      } else {
-        LOGGER.trace("skipping wiki updates");
+      if (hibernateStore.isWikiEmpty(mainWiki)) {
+        LOGGER.debug("initialising main wiki...");
+        hibernateStore.updateSchema(mainWiki, true);
+        return (xwiki) -> {
+          LOGGER.debug("creating main classes...");
+          createMainClasses(xwiki);
+          LOGGER.debug("notifying main wiki creation...");
+          eventPublisher.publishEvent(new WikiCreatedEvent(mainWiki));
+          LOGGER.debug("flushing store caches...");
+          // prevents borked XWikiPreferences
+          beanFactory.getBeansOfType(XWikiCacheStoreInterface.class).values()
+              .forEach(XWikiCacheStoreInterface::flushCache);
+        };
       }
-      if (Boolean.TRUE.equals(Optional
-          .ofNullable(cfgSrc.getProperty("celements.init.migration", Boolean.class))
-          .orElseGet(() -> "1".equals(xwikiCfg.getProperty("xwiki.store.migration", "0"))))) {
-        LOGGER.info("triggering migrations");
-        wikiUpdater.runAllMigrationsAsync();
-      } else {
-        LOGGER.trace("skipping migrations");
-      }
-    } finally {
-      wikiUpdater.shutdown(); // no new tasks will be accepted
+    } catch (HibernateException | WikiMissingException | XWikiException e) {
+      throw new XWikiException(0, 0, "failed to init main wiki", e);
+    }
+    return null;
+  }
+
+  private void createMainClasses(XWiki xwiki) throws XWikiException {
+    xwiki.initializeMandatoryClasses(null);
+    try {
+      getSpringContext().getBeansOfType(MainXClassInitializer.class).values()
+          .forEach(rethrowConsumer(MainXClassInitializer::run));
+    } catch (ExecutionException exc) {
+      throw new XWikiException(0, 0, "failed to create main classes", exc);
     }
   }
 

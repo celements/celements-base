@@ -1,6 +1,10 @@
 package com.celements.common.classes;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
+import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.classes.ClassDefinition;
 
@@ -9,16 +13,22 @@ public interface IClassesCompositorComponent {
 
   /**
    * loads all {@link ClassDefinition} and {@link IClassCollectionRole} (deprecated) and creates
-   * XClasses from them if they don't exist yet
+   * XClasses from them if they don't exist yet in the current wiki
    */
-  public void checkClasses();
+  void checkClasses();
 
   /**
-   * @deprecated instead use {@link #checkClasses()}
+   * loads all {@link ClassDefinition} and {@link IClassCollectionRole} (deprecated) and creates
+   * XClasses from them if they don't exist yet in the given wiki
    */
-  @Deprecated
-  public void checkAllClassCollections();
+  void checkClasses(@NotNull WikiReference wikiRef);
 
-  public boolean isActivated(String name);
+  /**
+   * @deprecated instead use {@link #checkClasses()} or {@link #checkClasses(WikiReference)}
+   */
+  @Deprecated(since = "3.0", forRemoval = true)
+  void checkAllClassCollections();
+
+  boolean isActivated(@NotEmpty String name);
 
 }
