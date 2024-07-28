@@ -23,11 +23,11 @@ import com.xpn.xwiki.web.XWikiResponse;
 @ComponentRole
 public interface ModelContext {
 
-  @Deprecated
+  @Deprecated(since = "6.5", forRemoval = true)
   String XWIKI_SPACE = XWikiConstant.XWIKI_SPACE;
-  @Deprecated
+  @Deprecated(since = "6.5", forRemoval = true)
   String WEB_PREF_DOC_NAME = XWikiConstant.WEB_PREF_DOC_NAME;
-  @Deprecated
+  @Deprecated(since = "6.5", forRemoval = true)
   String XWIKI_PREF_DOC_NAME = XWikiConstant.XWIKI_PREF_DOC_NAME;
   String CFG_KEY_DEFAULT_LANG = "default_language";
   String FALLBACK_DEFAULT_LANG = "en";
@@ -61,16 +61,16 @@ public interface ModelContext {
   boolean isMainWiki();
 
   /**
-   * @deprecated since 3.6, instead use {@link #getDocument}
+   * @deprecated instead use {@link #getDocument}
    */
-  @Deprecated
+  @Deprecated(since = "3.6", forRemoval = true)
   @Nullable
   XWikiDocument getDoc();
 
   /**
-   * @deprecated since 5.9, instead use {@link #getDocument}
+   * @deprecated instead use {@link #getDocument}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<XWikiDocument> getCurrentDoc();
 
@@ -78,9 +78,9 @@ public interface ModelContext {
   Optional<XWikiDocument> getDocument();
 
   /**
-   * @deprecated since 5.9, instead use {@link #getDocRef}
+   * @deprecated instead use {@link #getDocRef}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<DocumentReference> getCurrentDocRef();
 
@@ -88,9 +88,9 @@ public interface ModelContext {
   Optional<DocumentReference> getDocRef();
 
   /**
-   * @deprecated since 5.9, instead use {@link #getSpaceRef}
+   * @deprecated instead use {@link #getSpaceRef}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<SpaceReference> getCurrentSpaceRef();
 
@@ -115,16 +115,16 @@ public interface ModelContext {
   XWikiDocument setDoc(@Nullable XWikiDocument doc);
 
   /**
-   * @deprecated since 3.6, instead use {@link #getUserOpt}
+   * @deprecated instead use {@link #getUserOpt}
    */
-  @Deprecated
+  @Deprecated(since = "3.6", forRemoval = true)
   @Nullable
   XWikiUser getUser();
 
   /**
-   * @deprecated since 5.9, instead use {@link #user}
+   * @deprecated instead use {@link #user}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<User> getCurrentUser();
 
@@ -132,9 +132,9 @@ public interface ModelContext {
   Optional<User> user();
 
   /**
-   * @deprecated since 3.6, instead use {@link #setCurrentUser(User)}
+   * @deprecated instead use {@link #setCurrentUser(User)}
    */
-  @Deprecated
+  @Deprecated(since = "3.6", forRemoval = true)
   @Nullable
   XWikiUser setUser(@Nullable XWikiUser user);
 
@@ -147,9 +147,9 @@ public interface ModelContext {
   String getUserName();
 
   /**
-   * @deprecated since 5.9, instead use {@link #request}
+   * @deprecated instead use {@link #request}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<XWikiRequest> getRequest();
 
@@ -157,9 +157,9 @@ public interface ModelContext {
   Optional<XWikiRequest> request();
 
   /**
-   * @deprecated since 5.9, instead use {@link #getRequestParam}
+   * @deprecated instead use {@link #getRequestParam}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<String> getRequestParameter(String key);
 
@@ -167,9 +167,9 @@ public interface ModelContext {
   Optional<String> getRequestParam(String key);
 
   /**
-   * @deprecated since 5.9, instead use {@link #response}
+   * @deprecated instead use {@link #response}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<XWikiResponse> getResponse();
 
@@ -198,9 +198,9 @@ public interface ModelContext {
 
   /**
    * @return the current url set in context
-   * @deprecated since 5.9, instead use {@link #getURL}
+   * @deprecated instead use {@link #getURL}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<URL> getUrl();
 
@@ -211,9 +211,9 @@ public interface ModelContext {
    * @param url
    *          to be set in context
    * @return the url which was set before
-   * @deprecated since 5.9, instead use {@link #setURL}
+   * @deprecated instead use {@link #setURL}
    */
-  @Deprecated
+  @Deprecated(since = "5.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<URL> setUrl(@Nullable URL url);
 
@@ -232,9 +232,9 @@ public interface ModelContext {
    * Returns the XWikiPreferences document. Creates it (in memory) if it does not exist.
    *
    * @return the XWikiPreferences document
-   * @deprecated since 5.10 instead use getXWikiPreferencesDoc
+   * @deprecated instead use getXWikiPreferencesDoc
    */
-  @Deprecated
+  @Deprecated(since = "5.10", forRemoval = true)
   @NotNull
   XWikiDocument getXWikiPreferenceDoc();
 

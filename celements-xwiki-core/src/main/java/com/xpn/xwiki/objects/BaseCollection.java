@@ -263,7 +263,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
       try {
         baseClass = context.getWiki().getXClass(classReference, context);
       } catch (Exception e) {
-        logger.error("getXClass - failed to get class [" + classReference + "]", e);
+        logger.error("getXClass - failed to get class [{}]", classReference, e);
       }
     }
 

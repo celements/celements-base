@@ -23,7 +23,6 @@ package com.xpn.xwiki.user.impl.LDAP;
 
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -154,9 +153,9 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
 
     if (LOGGER.isDebugEnabled()) {
       if (principal != null) {
-        LOGGER.debug("LDAP authentication succeed with principal [" + principal.getName() + "]");
+        LOGGER.debug("LDAP authentication succeed with principal [{}]", principal.getName());
       } else {
-        LOGGER.debug("LDAP authentication failed for user [" + login + "]");
+        LOGGER.debug("LDAP authentication failed for user [{}]", login);
       }
     }
 
@@ -367,7 +366,7 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
 
     if (filterGroupDN.length() > 0) {
       if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug("Checking if the user belongs to the user group: " + filterGroupDN);
+        LOGGER.debug("Checking if the user belongs to the user group: {}", filterGroupDN);
       }
 
       ldapDn = ldapUtils.isUidInGroup(ldapUid, filterGroupDN, context);
@@ -388,8 +387,8 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
 
     if (excludeGroupDN.length() > 0) {
       if (LOGGER.isDebugEnabled()) {
-        LOGGER
-            .debug("Checking if the user does not belongs to the exclude group: " + excludeGroupDN);
+        LOGGER.debug("Checking if the user does not belongs to the exclude group: {}",
+            excludeGroupDN);
       }
 
       if (ldapUtils.isUidInGroup(ldapUid, excludeGroupDN, context) != null) {
@@ -444,7 +443,7 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
 
         throw new XWikiException(XWikiException.MODULE_XWIKI_USER,
             XWikiException.ERROR_XWIKI_USER_INIT,
-            "LDAP authentication failed:" + " could not validate the password: wrong password for "
+            "LDAP authentication failed: could not validate the password: wrong password for "
                 + ldapDn);
       }
     } else {
@@ -567,7 +566,7 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
       Map<String, Set<String>> groupMappings,
       XWikiLDAPUtils ldapUtils, XWikiContext context) throws XWikiException {
     if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("Updating group membership for the user: " + xwikiUserName);
+      LOGGER.debug("Updating group membership for the user: {}", xwikiUserName);
     }
 
     Collection<String> xwikiUserGroupList = context.getWiki().getGroupService(context)
@@ -611,8 +610,7 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
   protected void addUserToXWikiGroup(String xwikiUserName, String groupName, XWikiContext context) {
     try {
       if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug(
-            MessageFormat.format("Adding user {0} to xwiki group {1}", xwikiUserName, groupName));
+        LOGGER.debug("Adding user [{}] to xwiki group [{}]", xwikiUserName, groupName);
       }
 
       BaseClass groupClass = context.getWiki().getGroupClass(context);
@@ -630,15 +628,11 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
       context.getWiki().saveDocument(groupDoc, context);
 
       if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug(
-            MessageFormat.format("Finished adding user {0} to xwiki group {1}", xwikiUserName,
-                groupName));
+        LOGGER.debug("Finished adding user [{}] to xwiki group [{}]", xwikiUserName, groupName);
       }
 
     } catch (Exception e) {
-      LOGGER
-          .error(MessageFormat.format("Failed to add a user [{0}] to a group [{1}]", xwikiUserName,
-              groupName), e);
+      LOGGER.error("Failed to add a user [{}] to a group [{}]", xwikiUserName, groupName, e);
     }
   }
 
@@ -669,8 +663,8 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
       // Save modifications
       context.getWiki().saveDocument(groupDoc, context);
     } catch (Exception e) {
-      LOGGER.error("Failed to remove a user from a group " + xwikiUserName + " group: " + groupName,
-          e);
+      LOGGER.error("Failed to remove a user from a group [{}] group: {}",
+          xwikiUserName, groupName, e);
     }
   }
 
@@ -698,9 +692,8 @@ public class XWikiLDAPAuthServiceImpl extends XWikiAuthServiceImpl {
     BaseObject userObj = userProfile.getXObject(userClass.getDocumentReference());
 
     if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("Start synchronising LDAP profile [" + searchAttributes
-          + "] with user profile based on mapping "
-          + userMappings);
+      LOGGER.debug("Start synchronising LDAP profile [{}] with user profile based on mapping {}",
+          searchAttributes, userMappings);
     }
 
     Map<String, String> map = new HashMap<>();
