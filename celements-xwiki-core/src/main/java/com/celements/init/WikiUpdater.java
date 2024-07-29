@@ -32,6 +32,8 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.migration.XWikiMigrationManagerInterface;
 import com.xpn.xwiki.util.AbstractXWikiRunnable;
 
+import one.util.streamex.EntryStream;
+
 @Component
 public class WikiUpdater {
 
@@ -138,14 +140,22 @@ public class WikiUpdater {
   }
 
   @PreDestroy
-  public void shutdown() {
+  public CompletableFuture<Void> shutdown() {
     executor.shutdown();
+    return cleanup();
+  }
+
+  private CompletableFuture<Void> cleanup() {
+    return CompletableFuture.allOf(EntryStream.of(wikiUpdates)
+        .mapKeyValue((wiki, future) -> future
+            .thenRunAsync(() -> wikiUpdates.remove(wiki))) // uses the default executor
+        .toArray(CompletableFuture.class));
   }
 
   public void shutdownAwait() {
     awaitAll(); // wait for all tasks to finish
-    shutdown(); // tell the executor to stop accepting new tasks
-    awaitAll(); // wait for potential new tasks to finish
+    var cleanup = shutdown(); // tell the executor to stop accepting new tasks
+    cleanup.join(); // wait for the cleanup to finish
   }
 
   private class WikiUpdateRunnable extends AbstractXWikiRunnable {
