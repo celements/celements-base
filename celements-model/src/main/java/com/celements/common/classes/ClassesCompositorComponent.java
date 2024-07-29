@@ -73,7 +73,11 @@ public class ClassesCompositorComponent implements IClassesCompositorComponent {
     Runnable checkClasses = new Contextualiser()
         .withWiki(wikiRef)
         .wrap(this::checkClassesForContext);
-    wikiUpdater.runUpdateAsync(wikiRef, checkClasses);
+    if (wikiUpdater.isShutdown()) {
+      checkClasses.run();
+    } else {
+      wikiUpdater.runUpdateAsync(wikiRef, checkClasses);
+    }
   }
 
   private void checkClassesForContext() {
