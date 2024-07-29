@@ -139,6 +139,10 @@ public class WikiUpdater {
     return execution.getContext().get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
 
+  public boolean isShutdown() {
+    return executor.isShutdown();
+  }
+
   @PreDestroy
   public CompletableFuture<Void> shutdown() {
     executor.shutdown();
