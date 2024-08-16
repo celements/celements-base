@@ -17,13 +17,13 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
     CustomClassField<Boolean> {
 
   private final String displayFormType;
-  private final String displayType;
+  private final String dictionaryKey;
   private final Integer defaultValue;
 
   public static class Builder extends AbstractClassField.Builder<Builder, Boolean> {
 
     private String displayFormType;
-    private String displayType;
+    private String dictionaryKey;
     private Integer defaultValue;
 
     @Deprecated
@@ -45,8 +45,27 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
       return getThis();
     }
 
+    /**
+     * @deprecated instead use {@link #dictionaryKey(String)}
+     * @since 6.5
+     */
+    @Deprecated(since = "6.5", forRemoval = true)
     public Builder displayType(@Nullable String val) {
-      displayType = val;
+      dictionaryKey = val;
+      return getThis();
+    }
+
+    /**
+     * What XWiki calls a displayType in BooleanFields is in reality a dictionary key which will be
+     * resolved to display the boolean values needed. E.g. "yesno" will lead to display values of
+     * "Yes" and "No". You can use whatever string you want as long as you create a corresponding
+     * entry for the dictionary key. If it is not set it will default to "yesno".
+     *
+     * @param val
+     *          the dictionaryKey
+     */
+    public Builder dictionaryKey(@Nullable String val) {
+      dictionaryKey = val;
       return getThis();
     }
 
@@ -64,7 +83,7 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
   protected BooleanField(@NotNull Builder builder) {
     super(builder);
     this.displayFormType = builder.displayFormType;
-    this.displayType = builder.displayType;
+    this.dictionaryKey = builder.dictionaryKey;
     this.defaultValue = builder.defaultValue;
   }
 
@@ -77,8 +96,17 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
     return displayFormType;
   }
 
+  /**
+   * @deprecated instead use {@link #getDictionaryKey()}
+   * @since 6.5
+   */
+  @Deprecated(since = "6.5", forRemoval = true)
   public String getDisplayType() {
-    return displayType;
+    return getDictionaryKey();
+  }
+
+  public String getDictionaryKey() {
+    return dictionaryKey != null ? dictionaryKey : "yesno";
   }
 
   public Integer getDefaultValue() {
@@ -91,9 +119,7 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
     if (displayFormType != null) {
       element.setDisplayFormType(displayFormType);
     }
-    if (displayType != null) {
-      element.setDisplayType(displayType);
-    }
+    element.setDisplayType(getDictionaryKey());
     if (defaultValue != null) {
       element.setDefaultValue(defaultValue);
     }
