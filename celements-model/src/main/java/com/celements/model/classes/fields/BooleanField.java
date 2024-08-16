@@ -17,14 +17,12 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
     CustomClassField<Boolean> {
 
   private final String displayFormType;
-  private final String displayType;
   private final String dictionaryKey;
   private final Integer defaultValue;
 
   public static class Builder extends AbstractClassField.Builder<Builder, Boolean> {
 
     private String displayFormType;
-    private String displayType;
     private String dictionaryKey;
     private Integer defaultValue;
 
@@ -53,7 +51,7 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
      */
     @Deprecated(since = "6.5", forRemoval = true)
     public Builder displayType(@Nullable String val) {
-      displayType = val;
+      dictionaryKey = val;
       return getThis();
     }
 
@@ -85,7 +83,6 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
   protected BooleanField(@NotNull Builder builder) {
     super(builder);
     this.displayFormType = builder.displayFormType;
-    this.displayType = builder.displayType;
     this.dictionaryKey = builder.dictionaryKey;
     this.defaultValue = builder.defaultValue;
   }
@@ -105,7 +102,7 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
    */
   @Deprecated(since = "6.5", forRemoval = true)
   public String getDisplayType() {
-    return displayType;
+    return getDictionaryKey();
   }
 
   public String getDictionaryKey() {
@@ -122,11 +119,7 @@ public final class BooleanField extends AbstractClassField<Boolean> implements
     if (displayFormType != null) {
       element.setDisplayFormType(displayFormType);
     }
-    if (displayType != null) {
-      element.setDisplayType(displayType);
-    } else {
-      element.setDisplayType(getDictionaryKey());
-    }
+    element.setDisplayType(getDictionaryKey());
     if (defaultValue != null) {
       element.setDefaultValue(defaultValue);
     }

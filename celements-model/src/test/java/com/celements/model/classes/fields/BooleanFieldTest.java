@@ -19,15 +19,14 @@ public class BooleanFieldTest extends AbstractComponentTest {
   private BooleanField field;
 
   String displayFormType = "select";
-  String displayType = "displayType";
   String dictionaryKey = "truefalse";
   Integer defaultValue = 5;
 
   @Before
   public void prepareTest() throws Exception {
     assertNotNull(STATIC_DEFINITION);
-    field = new BooleanField.Builder(TestClassDefinition.CLASS_REF, "name").displayType(
-        displayType).dictionaryKey(dictionaryKey).defaultValue(defaultValue)
+    field = new BooleanField.Builder(TestClassDefinition.CLASS_REF, "name")
+        .dictionaryKey(dictionaryKey).defaultValue(defaultValue)
         .displayFormType(displayFormType).build();
   }
 
@@ -38,7 +37,7 @@ public class BooleanFieldTest extends AbstractComponentTest {
 
   @Test
   public void test_getters() throws Exception {
-    assertEquals(displayType, field.getDisplayType());
+    assertEquals(dictionaryKey, field.getDisplayType());
     assertEquals(defaultValue, field.getDefaultValue());
     assertEquals(dictionaryKey, field.getDictionaryKey());
     assertEquals(displayFormType, field.getDisplayFormType());
@@ -53,22 +52,11 @@ public class BooleanFieldTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_fillXFieldDisplayTypeWithDictionaryKey() {
-    BooleanField field2 = new BooleanField.Builder(TestClassDefinition.CLASS_REF, "name")
-        .dictionaryKey("truefalse")
-        .build();
-    BooleanClass xField = (BooleanClass) field2.getXField();
-
-    assertEquals(field2.getDictionaryKey(), xField.getDisplayType());
-
-  }
-
-  @Test
   public void test_getXField() throws Exception {
     assertTrue(field.getXField() instanceof BooleanClass);
     BooleanClass xField = (BooleanClass) field.getXField();
     assertEquals(field.getName(), xField.getName());
-    assertEquals(displayType, xField.getDisplayType());
+    assertEquals(dictionaryKey, xField.getDisplayType());
     assertEquals(defaultValue, (Integer) xField.getDefaultValue());
     assertEquals(displayFormType, xField.getDisplayFormType());
   }
