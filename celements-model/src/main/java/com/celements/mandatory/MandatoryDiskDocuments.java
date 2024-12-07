@@ -14,10 +14,11 @@ import org.xwiki.context.Execution;
 import com.celements.init.DiskDocumentImporter;
 import com.xpn.xwiki.XWikiException;
 
-@Component
+@Component(MandatoryDiskDocuments.NAME)
 public class MandatoryDiskDocuments implements IMandatoryDocumentRole {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MandatoryDiskDocuments.class);
+  private static final String NAME = "celements.mandatory.MandatoryDiskDocuments";
 
   private final DiskDocumentImporter importer;
   private final Execution execution;

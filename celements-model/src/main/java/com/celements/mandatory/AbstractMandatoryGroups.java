@@ -19,7 +19,6 @@
  */
 package com.celements.mandatory;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -65,7 +64,7 @@ public abstract class AbstractMandatoryGroups implements IMandatoryDocumentRole 
 
   @Override
   public List<String> dependsOnMandatoryDocuments() {
-    return Collections.emptyList();
+    return List.of("celements.mandatory.MandatoryXClasses");
   }
 
   protected void checkGroup(DocumentReference groupDocRef) throws XWikiException {
