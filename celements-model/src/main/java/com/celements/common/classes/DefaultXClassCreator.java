@@ -19,6 +19,8 @@
  */
 package com.celements.common.classes;
 
+import static com.celements.logging.LogUtils.*;
+
 import java.util.List;
 
 import javax.inject.Singleton;
@@ -87,15 +89,38 @@ public class DefaultXClassCreator implements XClassCreator {
     LOGGER.debug("creating class '{}'", classDef.getName());
     XWikiDocument classDoc = modelAccess.getOrCreateDocument(
         classDef.getClassReference().getDocRef());
-    BaseClass bClass = generateXClass(classDef);
-    if (!classDoc.getXClass().equals(bClass)) {
+    if (hasClassChange(classDef, classDoc)) {
       try {
-        classDoc.setXClass(bClass);
+        classDoc.setXClass(generateXClass(classDef));
         modelAccess.saveDocument(classDoc, "created/updated XClass");
       } catch (DocumentSaveException exc) {
         throw new XClassCreateException(exc);
       }
     }
+  }
+
+  private boolean hasClassChange(ClassDefinition classDef, XWikiDocument classDoc) {
+    boolean changed = classDoc.isNew();
+    if (changed) {
+      LOGGER.trace("hasClassChange - new doc: {}", classDoc.getDocumentReference());
+    }
+    BaseClass bClass = classDoc.getXClass();
+    if (classDef.isInternalMapping() != bClass.hasInternalCustomMapping()) {
+      changed = true;
+      LOGGER.trace("hasClassChange - internal mapping changed: {} -> {}",
+          bClass.hasInternalCustomMapping(), classDef.isInternalMapping());
+    }
+    for (ClassField<?> field : classDef.getFields()) {
+      PropertyInterface xField = bClass.get(field.getName());
+      if (xField == null) {
+        changed = true;
+        LOGGER.trace("hasClassChange - field missing: {}", defer(field::serialize));
+      } else if (!xField.equals(field.getXField())) {
+        changed = true;
+        LOGGER.trace("hasClassChange - field changed: {}", defer(field::serialize));
+      }
+    }
+    return changed;
   }
 
   @Override

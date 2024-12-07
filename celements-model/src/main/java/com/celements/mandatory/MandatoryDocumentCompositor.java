@@ -97,12 +97,12 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
         .collect(toList());
     List<String> mandatoryDocExecList = new ArrayList<>();
     do {
-      for (String mandatoryDocElemKey : mandatoryDocElemKeys) {
-        if (mandatoryDocExecList.containsAll(mandatoryDocumentsMap.get(
-            mandatoryDocElemKey).dependsOnMandatoryDocuments())) {
-          mandatoryDocExecList.add(mandatoryDocElemKey);
-        }
-      }
+      mandatoryDocElemKeys.stream()
+          .filter(key -> mandatoryDocumentsMap.get(key)
+              .dependsOnMandatoryDocuments().stream()
+              .filter(mandatoryDocumentsMap::containsKey)
+              .allMatch(mandatoryDocExecList::contains))
+          .forEach(mandatoryDocExecList::add);
     } while (mandatoryDocElemKeys.removeAll(mandatoryDocExecList)
         && !mandatoryDocElemKeys.isEmpty());
     for (String skippedDocElemKey : mandatoryDocElemKeys) {
