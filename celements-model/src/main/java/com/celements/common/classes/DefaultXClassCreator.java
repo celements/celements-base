@@ -172,7 +172,7 @@ public class DefaultXClassCreator implements XClassCreator {
       if (Objects.equals(xProp, genXProp)) {
         continue;
       }
-      // workaround for equality check on "defaultValue" always being false
+      // FIXME CELDEV-1262 workaround for equality check on "defaultValue" always being false
       if ("defaultValue".equals(key)) {
         xField.removeField(key);
         genXField.removeField(key);
