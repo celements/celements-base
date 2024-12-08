@@ -173,7 +173,7 @@ public class DefaultXClassCreator implements XClassCreator {
         continue;
       }
       // workaround for equality check on "defaultValue" always being false
-      if ("defaultValue".equals(key) && Objects.equals(xPropVal, genXPropVal)) {
+      if ("defaultValue".equals(key)) {
         xField.removeField(key);
         genXField.removeField(key);
         LOGGER.trace("hasClassChange - removing prop '{}' with same value: {}:{}",
