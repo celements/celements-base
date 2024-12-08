@@ -40,6 +40,7 @@ import com.celements.model.classes.fields.ClassField;
 import com.celements.model.context.ModelContext;
 import com.google.common.collect.Sets;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
@@ -162,10 +163,12 @@ public class DefaultXClassCreator implements XClassCreator {
     var difference = Sets.symmetricDifference(props, genProps);
     LOGGER.trace("hasClassChange - difference: {}", difference);
     for (var key : difference.isEmpty() ? props : difference) {
-      var xProp = xField.getField(key);
-      var genXProp = genXField.getField(key);
+      var xProp = (BaseProperty) xField.getField(key);
+      var genXProp = (BaseProperty) genXField.getField(key);
       if (!Objects.equals(xProp, genXProp)) {
-        LOGGER.trace("hasClassChange - prop '{}' changed: {} -> {}", key, xProp, genXProp);
+        LOGGER.trace("hasClassChange - prop '{}' changed: {}:{} -> {}:{}", key,
+            xProp, xProp != null ? xProp.getValue() : null,
+            genXProp, genXProp != null ? genXProp.getValue() : null);
       }
     }
   }

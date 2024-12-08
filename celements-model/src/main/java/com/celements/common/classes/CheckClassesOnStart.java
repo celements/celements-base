@@ -10,6 +10,7 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
 import com.celements.init.CelementsStartedEvent;
+import com.celements.model.util.ModelUtils;
 import com.celements.wiki.WikiService;
 import com.xpn.xwiki.XWikiConfigSource;
 
@@ -21,15 +22,18 @@ public class CheckClassesOnStart implements ApplicationListener<CelementsStarted
   private final XWikiConfigSource xwikiCfg;
   private final WikiService wikiService;
   private final IClassesCompositorComponent classesCompositor;
+  private final ModelUtils modelUtils;
 
   @Inject
   public CheckClassesOnStart(
       XWikiConfigSource xwikiCfg,
       @Lazy WikiService wikiService,
-      IClassesCompositorComponent classesCompositor) {
+      IClassesCompositorComponent classesCompositor,
+      ModelUtils modelUtils) {
     this.xwikiCfg = xwikiCfg;
     this.wikiService = wikiService;
     this.classesCompositor = classesCompositor;
+    this.modelUtils = modelUtils;
   }
 
   @Override
@@ -43,6 +47,7 @@ public class CheckClassesOnStart implements ApplicationListener<CelementsStarted
     if ("1".equals(xwikiCfg.getProperty("celements.classCollections.checkOnStart", "1"))) {
       LOGGER.info("checking classes");
       wikiService.streamAllWikis()
+          .filter(wiki -> !modelUtils.isMainWiki(wiki))
           .forEach(classesCompositor::checkClasses);
     }
   }
