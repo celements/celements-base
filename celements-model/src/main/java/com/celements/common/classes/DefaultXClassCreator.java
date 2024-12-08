@@ -22,6 +22,7 @@ package com.celements.common.classes;
 import static com.celements.logging.LogUtils.*;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.inject.Singleton;
 
@@ -141,14 +142,29 @@ public class DefaultXClassCreator implements XClassCreator {
       }
       var genXField = (PropertyClass) field.getXField();
       genXField.setNumber(xField.getNumber()); // comparison only works with same number
-      if (!xField.equals(genXField)) {
+      if (!Objects.equals(xField, genXField)) {
         changed = true;
-        LOGGER.trace("hasClassChange - field {} changed, props: {}", defer(field::serialize),
-            defer(() -> Sets.symmetricDifference(xField.getPropertyList(),
-                genXField.getPropertyList())));
+        if (LOGGER.isTraceEnabled()) {
+          LOGGER.trace("hasClassChange - field {} changed", field.serialize());
+          logFieldDifference(xField, genXField);
+        }
       }
     }
     return changed;
+  }
+
+  private void logFieldDifference(PropertyClass xField, PropertyClass genXField) {
+    var props = xField.getPropertyList();
+    var genProps = genXField.getPropertyList();
+    var difference = Sets.symmetricDifference(props, genProps);
+    LOGGER.trace("hasClassChange - difference: {}", difference);
+    for (var key : difference.isEmpty() ? props : difference) {
+      var xProp = xField.getField(key);
+      var genXProp = genXField.getField(key);
+      if (!Objects.equals(xProp, genXProp)) {
+        LOGGER.trace("hasClassChange - prop '{}' changed: {} -> {}", key, xProp, genXProp);
+      }
+    }
   }
 
 }
