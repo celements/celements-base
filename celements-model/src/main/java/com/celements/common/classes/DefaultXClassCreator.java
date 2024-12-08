@@ -93,7 +93,10 @@ public class DefaultXClassCreator implements XClassCreator {
     XWikiDocument classDoc = modelAccess.getOrCreateDocument(
         classDef.getClassReference().getDocRef());
     if (hasClassChange(classDef, classDoc)) {
-      LOGGER.info("createXClass - {}", classDef.getName());
+      LOGGER.info("createXClass - {} {}:{}",
+          classDoc.isNew() ? "create" : "update",
+          classDoc.getDocumentReference().getWikiReference().getName(),
+          classDef.getName());
       try {
         classDoc.setXClass(generateXClass(classDef));
         modelAccess.saveDocument(classDoc, "created/updated XClass");
