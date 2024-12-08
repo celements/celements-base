@@ -33,7 +33,6 @@ import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseCollection;
-import com.xpn.xwiki.objects.BaseElement;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
@@ -98,8 +97,7 @@ public class PropertyClass extends BaseCollection
 
   @Override
   public long getId() {
-    BaseElement element = getObject() != null ? getObject() : this;
-    return element.getId();
+    return (getObject() != null) ? getObject().getId() : super.getId();
   }
 
   // needed for properties because access=field not possible (composite id)
