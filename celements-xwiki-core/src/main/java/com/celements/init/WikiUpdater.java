@@ -3,6 +3,7 @@ package com.celements.init;
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,11 +23,11 @@ import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.lambda.LambdaExceptionUtil.ThrowingRunnable;
-import com.celements.execution.XWikiExecutionProp;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.migration.XWikiMigrationManagerInterface;
@@ -86,7 +87,7 @@ public class WikiUpdater {
       ThrowingRunnable<Exception> action) {
     checkNotNull(wikiRef);
     checkState(!executor.isShutdown());
-    var wikiUpdateAction = new WikiUpdateRunnable(action);
+    var wikiUpdateAction = new WikiUpdateRunnable(wikiRef, action);
     return wikiUpdates.compute(wikiRef,
         (wiki, future) -> (future == null) || future.isDone()
             ? CompletableFuture.runAsync(wikiUpdateAction, executor)
@@ -104,7 +105,7 @@ public class WikiUpdater {
   }
 
   public void runAllMigrationsAsync() {
-    var wikiUpdateAction = new WikiUpdateRunnable(() -> {
+    var wikiUpdateAction = new WikiUpdateRunnable(XWikiConstant.MAIN_WIKI, () -> {
       LOGGER.debug("runMigrations - waiting for all wiki updates to finish...");
       awaitAll(); // TODO instead awaitAll start migration per wiki with runUpdateAsync
       LOGGER.debug("runMigrations - wiki updates finished, starting migrations");
@@ -166,11 +167,11 @@ public class WikiUpdater {
 
     private final ThrowingRunnable<Exception> action;
 
-    WikiUpdateRunnable(ThrowingRunnable<Exception> action) {
-      // make XWiki available in the runnable's execution context since it's not necessarily
-      // already available in the servlet context, see XWikiProvider
-      super(XWikiExecutionProp.XWIKI.getName(),
-          wikiProvider.get().orElseThrow(IllegalStateException::new));
+    WikiUpdateRunnable(WikiReference wikiRef, ThrowingRunnable<Exception> action) {
+      super(Map.of(WIKI.getName(), wikiRef,
+          // make XWiki available in the runnable's execution context since it's not necessarily
+          // already available in the servlet context, see XWikiProvider
+          XWIKI.getName(), wikiProvider.get().orElseThrow(IllegalStateException::new)));
       this.action = action;
     }
 
