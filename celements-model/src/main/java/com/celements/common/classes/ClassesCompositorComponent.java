@@ -33,7 +33,6 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.init.WikiUpdater;
 import com.celements.model.classes.ClassPackage;
-import com.celements.model.context.Contextualiser;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.web.Utils;
@@ -70,13 +69,10 @@ public class ClassesCompositorComponent implements IClassesCompositorComponent {
 
   @Override
   public void checkClasses(WikiReference wikiRef) {
-    Runnable checkClasses = new Contextualiser()
-        .withWiki(wikiRef)
-        .wrap(this::checkClassesForContext);
     if (wikiUpdater.isShutdown()) {
-      checkClasses.run();
+      checkClassesForContext();
     } else {
-      wikiUpdater.runUpdateAsync(wikiRef, checkClasses);
+      wikiUpdater.runUpdateAsync(wikiRef, this::checkClassesForContext);
     }
   }
 
