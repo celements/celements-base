@@ -168,7 +168,7 @@ public class WikiUpdater {
     private final ThrowingRunnable<Exception> action;
 
     WikiUpdateRunnable(WikiReference wikiRef, ThrowingRunnable<Exception> action) {
-      super(Map.of(WIKI.getName(), wikiRef,
+      super(Map.of(/* WIKI.getName(), wikiRef, */
           // make XWiki available in the runnable's execution context since it's not necessarily
           // already available in the servlet context, see XWikiProvider
           XWIKI.getName(), wikiProvider.get().orElseThrow(IllegalStateException::new)));

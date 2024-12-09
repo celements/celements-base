@@ -112,11 +112,13 @@ public class Contextualiser {
   }
 
   public Contextualiser withWiki(WikiReference wiki) {
-    return withXWikiContext("wiki", (wiki != null) ? wiki.getName() : null);
+    return withXWikiContext("wiki", (wiki != null) ? wiki.getName() : null)
+        .withExecContext(WIKI, wiki);
   }
 
   public Contextualiser withDoc(XWikiDocument doc) {
-    return withXWikiContext("doc", doc);
+    return withXWikiContext("doc", doc)
+        .withExecContext(DOC, doc);
   }
 
   public void execute(Runnable runnable) {
