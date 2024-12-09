@@ -72,11 +72,12 @@ public class BaseProperty extends BaseElement
    */
   @Override
   public boolean equals(Object el) {
-    // Same Java object, they sure are equal
     if (this == el) {
       return true;
     }
-
+    if (el == null) {
+      return false;
+    }
     // I hate this.. needed for hibernate to find the object
     // when loading the collections..
     if ((this.object == null) || (((BaseProperty) el).getObject() == null)) {

@@ -35,7 +35,6 @@ import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.init.WikiUpdater;
-import com.celements.model.context.Contextualiser;
 import com.xpn.xwiki.XWikiContext;
 
 @Component
@@ -64,13 +63,10 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
 
   @Override
   public void checkAllMandatoryDocuments(WikiReference wikiRef) {
-    Runnable checker = new Contextualiser()
-        .withWiki(wikiRef)
-        .wrap(this::checkAllMandatoryDocumentsForContext);
     if (wikiUpdater.isShutdown()) {
-      checker.run();
+      checkAllMandatoryDocumentsForContext();
     } else {
-      wikiUpdater.runUpdateAsync(wikiRef, checker);
+      wikiUpdater.runUpdateAsync(wikiRef, this::checkAllMandatoryDocumentsForContext);
     }
   }
 
@@ -97,12 +93,12 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
         .collect(toList());
     List<String> mandatoryDocExecList = new ArrayList<>();
     do {
-      for (String mandatoryDocElemKey : mandatoryDocElemKeys) {
-        if (mandatoryDocExecList.containsAll(mandatoryDocumentsMap.get(
-            mandatoryDocElemKey).dependsOnMandatoryDocuments())) {
-          mandatoryDocExecList.add(mandatoryDocElemKey);
-        }
-      }
+      mandatoryDocElemKeys.stream()
+          .filter(key -> mandatoryDocumentsMap.get(key)
+              .dependsOnMandatoryDocuments().stream()
+              .filter(mandatoryDocumentsMap::containsKey)
+              .allMatch(mandatoryDocExecList::contains))
+          .forEach(mandatoryDocExecList::add);
     } while (mandatoryDocElemKeys.removeAll(mandatoryDocExecList)
         && !mandatoryDocElemKeys.isEmpty());
     for (String skippedDocElemKey : mandatoryDocElemKeys) {
