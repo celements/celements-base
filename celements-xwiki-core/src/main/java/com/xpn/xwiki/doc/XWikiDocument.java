@@ -1945,8 +1945,8 @@ public class XWikiDocument implements DocumentModelBridge {
    */
   public void setXClass(BaseClass xwikiClass) {
     xwikiClass.setDocumentReference(getDocumentReference());
-
     this.xClass = xwikiClass;
+    setMetaDataDirty(true);
   }
 
   /**
@@ -3224,7 +3224,7 @@ public class XWikiDocument implements DocumentModelBridge {
             // We might have received the object from the cache and the template objects might have
             // been
             // copied already we need to remove them
-            setXObjects(new TreeMap<DocumentReference, List<BaseObject>>());
+            setXObjects(new TreeMap<>());
           }
           // Merge the external objects.
           // Currently the choice is not to merge the base class and object because it is not the
