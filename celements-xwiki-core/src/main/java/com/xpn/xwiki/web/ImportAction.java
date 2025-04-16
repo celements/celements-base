@@ -28,6 +28,8 @@ import java.util.List;
  * @version $Id$
  */
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -39,6 +41,8 @@ import com.xpn.xwiki.plugin.packaging.PackageAPI;
 import com.xpn.xwiki.util.Util;
 
 public class ImportAction extends XWikiAction {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportAction.class);
 
   /**
    * {@inheritDoc}
@@ -104,6 +108,7 @@ public class ImportAction extends XWikiAction {
                 try {
                   iAction = Integer.parseInt(defaultAction);
                 } catch (Exception e) {
+                  LOGGER.info("Parsing of {} failed. Skipping document.", defaultAction);
                   iAction = DocumentInfo.ACTION_SKIP;
                 }
               }

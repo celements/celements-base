@@ -25,7 +25,7 @@ import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
 import java.io.IOException;
-import java.util.Vector;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -44,12 +44,13 @@ import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
 import org.xwiki.velocity.VelocityManager;
 
+import com.celements.globalredirect.IGlobalRedirect;
+import com.celements.globalredirect.IGlobalRedirectService;
 import com.celements.init.CelementsRequestFilter;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
 
 /**
@@ -94,7 +95,7 @@ import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
  */
 public abstract class XWikiAction extends Action {
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiAction.class);
 
   /**
    * Handle server requests.
@@ -333,31 +334,19 @@ public abstract class XWikiAction extends Action {
    *          the XWiki context
    * @return true if a redirection has been sent
    */
-  protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context)
-      throws Exception {
-    if ("1".equals(context.getWiki().Param("xwiki.preferences.redirect"))) {
-      // Note: This implementation is not performant at all and will slow down the wiki as the
-      // number
-      // of redirects increases. A better implementation would use a cache of redirects and would
-      // use
-      // the notification mechanism to update the cache when the XWiki.XWikiPreferences document is
-      // modified.
-      XWikiDocument globalPreferences = context.getWiki()
-          .getDocument("xwiki:XWiki.XWikiPreferences", context);
-      Vector<BaseObject> redirects = globalPreferences.getObjects("XWiki.GlobalRedirect");
-
-      if (redirects != null) {
-        for (BaseObject redir : redirects) {
-          String p = redir.getStringValue("pattern");
-          if (url.matches(p)) {
-            String dest = redir.getStringValue("destination");
-            response.sendRedirect(url.replaceAll(p, dest));
-            return true;
-          }
-        }
+  protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context) {
+    IGlobalRedirectService globalRedirSrv = Utils.getComponent(IGlobalRedirectService.class);
+    if ((globalRedirSrv != null) && globalRedirSrv.isActivated()) {
+      Optional<IGlobalRedirect> globalRedirect = globalRedirSrv.getGlobalRedirect().stream()
+          .filter(globRedir -> globRedir.test(url))
+          .findFirst();
+      if (globalRedirect.isPresent()) {
+        globalRedirect.get().sendRedirect(response, url);
+        return true;
       }
     }
     return false;
+
   }
 
   protected void sendRedirect(XWikiResponse response, String page) throws XWikiException {
