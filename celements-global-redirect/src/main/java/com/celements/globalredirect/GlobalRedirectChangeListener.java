@@ -18,7 +18,7 @@ public class GlobalRedirectChangeListener implements EventListener {
 
   public static final String NAME = "globalRedirectChangeListener";
 
-  private GlobalRedirectService globalRedirectSrv;
+  private final GlobalRedirectService globalRedirectSrv;
 
   @Inject
   public GlobalRedirectChangeListener(GlobalRedirectService globalRedirectSrv) {
