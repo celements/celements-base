@@ -14,9 +14,7 @@ import org.xwiki.observation.event.Event;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @Component(GlobalRedirectChangeListener.NAME)
-public class GlobalRedirectChangeListener implements EventListener
-
-{
+public class GlobalRedirectChangeListener implements EventListener {
 
   public static final String NAME = "globalRedirectChangeListener";
 
