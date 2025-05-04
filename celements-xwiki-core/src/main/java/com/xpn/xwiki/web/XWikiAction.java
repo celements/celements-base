@@ -346,7 +346,6 @@ public abstract class XWikiAction extends Action {
       }
     }
     return false;
-
   }
 
   protected void sendRedirect(XWikiResponse response, String page) throws XWikiException {
