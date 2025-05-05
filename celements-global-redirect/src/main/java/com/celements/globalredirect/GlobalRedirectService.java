@@ -18,13 +18,14 @@ import com.celements.init.XWikiProvider;
 import com.celements.model.reference.RefBuilder;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfigSource;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 @Component
-public class GlobalRedirectService {
+public class GlobalRedirectService implements IGlobalRedirectService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GlobalRedirectService.class);
 
@@ -42,13 +43,20 @@ public class GlobalRedirectService {
     this.execution = execution;
   }
 
+  @Override
   public boolean isActivated() {
     return ("1".equals(configSource.getProperty("xwiki.preferences.redirect")));
   }
 
+  @Override
   public DocumentReference getGlobalRedirectDocRef() {
-    return RefBuilder.create().wiki("xwiki").doc("XWiki").doc("XWikiPreferences")
-        .build(DocumentReference.class);
+    return RefBuilder.create().with(XWikiConstant.MAIN_WIKI).space(XWikiConstant.XWIKI_SPACE)
+        .doc(XWikiConstant.XWIKI_PREF_DOC_NAME).build(DocumentReference.class);
+  }
+
+  public DocumentReference getGlobalRedirectClassRef() {
+    return RefBuilder.create().with(XWikiConstant.MAIN_WIKI).space(XWikiConstant.XWIKI_SPACE)
+        .doc("GlobalRedirect").build(DocumentReference.class);
   }
 
   private Optional<List<GlobalRedirect>> computeGlobalRedirectList() {
@@ -57,9 +65,7 @@ public class GlobalRedirectService {
       if (xwikiOpt.isPresent()) {
         XWikiDocument globalPreferences = xwikiOpt.get()
             .getDocument(getGlobalRedirectDocRef(), getXWikiContext());
-        DocumentReference globalRedirectClassRef = new DocumentReference("xwiki", "XWiki",
-            "GlobalRedirect");
-        List<BaseObject> redirects = globalPreferences.getXObjects(globalRedirectClassRef);
+        List<BaseObject> redirects = globalPreferences.getXObjects(getGlobalRedirectClassRef());
         if (redirects != null) {
           return Optional.of(redirects.stream().filter(o -> o != null)
               .map(redir -> new GlobalRedirect(redir.getStringValue("pattern"),
@@ -75,7 +81,8 @@ public class GlobalRedirectService {
     return Optional.empty();
   }
 
-  public List<GlobalRedirect> getGlobalRedirect() {
+  @Override
+  public List<? extends IGlobalRedirect> getGlobalRedirect() {
     List<GlobalRedirect> currentList = globalRedirectList.get();
     if (currentList == null) {
       currentList = computeGlobalRedirectList().orElse(null);

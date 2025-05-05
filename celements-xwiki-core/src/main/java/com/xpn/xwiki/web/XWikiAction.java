@@ -337,7 +337,8 @@ public abstract class XWikiAction extends Action {
   protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context) {
     IGlobalRedirectService globalRedirSrv = Utils.getComponent(IGlobalRedirectService.class);
     if ((globalRedirSrv != null) && globalRedirSrv.isActivated()) {
-      Optional<IGlobalRedirect> globalRedirect = globalRedirSrv.getGlobalRedirect().stream()
+      Optional<? extends IGlobalRedirect> globalRedirect = globalRedirSrv.getGlobalRedirect()
+          .stream()
           .filter(globRedir -> globRedir.test(url))
           .findFirst();
       if (globalRedirect.isPresent()) {

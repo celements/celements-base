@@ -2,14 +2,18 @@ package com.celements.globalredirect;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.model.reference.DocumentReference;
 
 public interface IGlobalRedirectService {
 
   boolean isActivated();
 
+  @NotNull
   DocumentReference getGlobalRedirectDocRef();
 
-  List<IGlobalRedirect> getGlobalRedirect();
+  @NotNull
+  List<? extends IGlobalRedirect> getGlobalRedirect();
 
 }

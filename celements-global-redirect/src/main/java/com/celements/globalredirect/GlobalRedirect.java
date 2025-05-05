@@ -15,7 +15,7 @@ import com.google.common.base.Strings;
 import com.xpn.xwiki.web.XWikiResponse;
 
 @Immutable
-public class GlobalRedirect {
+public class GlobalRedirect implements IGlobalRedirect {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GlobalRedirect.class);
 
@@ -37,11 +37,17 @@ public class GlobalRedirect {
     this.predicate = thePredicate;
   }
 
-  public void sendRedirect(XWikiResponse response, String url) throws IOException {
-    Matcher matcher = pattern.matcher(url);
-    response.sendRedirect(matcher.replaceAll(destination));
+  @Override
+  public void sendRedirect(XWikiResponse response, String url) {
+    try {
+      Matcher matcher = pattern.matcher(url);
+      response.sendRedirect(matcher.replaceAll(destination));
+    } catch (IOException ioExp) {
+      LOGGER.error("failed to send redirect", ioExp);
+    }
   }
 
+  @Override
   public boolean test(String url) {
     return predicate.test(url);
   }
