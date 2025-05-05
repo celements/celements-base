@@ -21,6 +21,7 @@
 package com.xpn.xwiki.web;
 
 import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.spring.context.SpringContextProvider.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
@@ -95,7 +96,7 @@ import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
  */
 public abstract class XWikiAction extends Action {
 
-  private static final Logger LOG = LoggerFactory.getLogger(XWikiAction.class);
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Handle server requests.
@@ -131,7 +132,7 @@ public abstract class XWikiAction extends Action {
       // From this line forward all information can be found in the XWiki Context.
       return execute(context);
     } catch (Exception exc) {
-      LOG.error("execute - failed", exc);
+      logger.error("execute - failed", exc);
       return null;
     } finally {
       requestFilter.postExecute();
@@ -167,7 +168,7 @@ public abstract class XWikiAction extends Action {
         try {
           xwiki.getNotificationManager().preverify(context.getDoc(), context.getAction(), context);
         } catch (Exception exc) {
-          LOG.error("execute - failed on notfication preverify", exc);
+          logger.error("execute - failed on notfication preverify", exc);
         }
         String renderResult = null;
         XWikiDocument doc = context.getDoc();
@@ -198,7 +199,7 @@ public abstract class XWikiAction extends Action {
             XWikiException xex = (XWikiException) e;
             if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
               // Connection aborted, simply ignore this.
-              LOG.error("Connection aborted");
+              logger.error("Connection aborted");
               // We don't write any other message, as the connection is broken, anyway.
               return null;
             } else if (xex.getCode() == XWikiException.ERROR_XWIKI_ACCESS_DENIED) {
@@ -226,7 +227,7 @@ public abstract class XWikiAction extends Action {
             }
           }
           vcontext.put("exp", e);
-          LOG.error("Uncaught exception: {}", e.getMessage(), e);
+          logger.error("Uncaught exception: {}", e.getMessage(), e);
           // If the request is an AJAX request, we don't return a whole HTML page, but just the
           // exception inline.
           String exceptionTemplate = ajax ? "exceptioninline" : "exception";
@@ -234,15 +235,15 @@ public abstract class XWikiAction extends Action {
           return null;
         } catch (XWikiException ex) {
           if (ex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
-            LOG.error("Connection aborted");
+            logger.error("Connection aborted");
           } else {
-            LOG.error("Uncaught exceptions (inner): ", e);
-            LOG.error("Uncaught exceptions (outer): ", ex);
+            logger.error("Uncaught exceptions (inner): ", e);
+            logger.error("Uncaught exceptions (outer): ", ex);
           }
         } catch (Exception e2) {
           // I hope this never happens
-          LOG.error("Uncaught exceptions (inner): ", e);
-          LOG.error("Uncaught exceptions (outer): ", e2);
+          logger.error("Uncaught exceptions (inner): ", e);
+          logger.error("Uncaught exceptions (outer): ", e2);
         }
         return null;
       } finally {
@@ -259,7 +260,7 @@ public abstract class XWikiAction extends Action {
         try {
           xwiki.getNotificationManager().verify(context.getDoc(), context.getAction(), context);
         } catch (Exception exc) {
-          LOG.error("execute - failed on notfication verify", exc);
+          logger.error("execute - failed on notfication verify", exc);
         }
         // This is the new notification mechanism, implemented as a Plexus Component.
         // For the moment we're sending the XWiki context as the data, but this will be
@@ -269,8 +270,9 @@ public abstract class XWikiAction extends Action {
           ObservationManager om = Utils.getComponent(ObservationManager.class);
           om.notify(new ActionExecutionEvent(context.getAction()), context.getDoc(), context);
         } catch (Exception ex) {
-          LOG.error("Cannot send action notifications for document [" + docName + " using action ["
-              + context.getAction() + "]", ex);
+          logger
+              .error("Cannot send action notifications for document [" + docName + " using action ["
+                  + context.getAction() + "]", ex);
         }
         // Make sure we cleanup database connections
         // There could be cases where we have some
@@ -335,8 +337,8 @@ public abstract class XWikiAction extends Action {
    * @return true if a redirection has been sent
    */
   protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context) {
-    IGlobalRedirectService globalRedirSrv = Utils.getComponent(IGlobalRedirectService.class);
-    if ((globalRedirSrv != null) && globalRedirSrv.isActivated()) {
+    IGlobalRedirectService globalRedirSrv = getBeanFactory().getBean(IGlobalRedirectService.class);
+    if (globalRedirSrv.isActivated()) {
       Optional<? extends IGlobalRedirect> globalRedirect = globalRedirSrv.getGlobalRedirect()
           .stream()
           .filter(globRedir -> globRedir.test(url))

@@ -61,20 +61,17 @@ public class GlobalRedirectService implements IGlobalRedirectService {
 
   private Optional<List<GlobalRedirect>> computeGlobalRedirectList() {
     try {
-      Optional<XWiki> xwikiOpt = xwikiProvider.get();
-      if (xwikiOpt.isPresent()) {
-        XWikiDocument globalPreferences = xwikiOpt.get()
-            .getDocument(getGlobalRedirectDocRef(), getXWikiContext());
-        List<BaseObject> redirects = globalPreferences.getXObjects(getGlobalRedirectClassRef());
-        if (redirects != null) {
-          return Optional.of(redirects.stream().filter(o -> o != null)
-              .map(redir -> new GlobalRedirect(redir.getStringValue("pattern"),
-                  redir.getStringValue("destination")))
-              .filter(GlobalRedirect::isValid)
-              .collect(Collectors.toUnmodifiableList()));
-        }
-        return Optional.of(List.of());
+      XWikiDocument globalPreferences = xwikiProvider.get().orElseThrow()
+          .getDocument(getGlobalRedirectDocRef(), getXWikiContext());
+      List<BaseObject> redirects = globalPreferences.getXObjects(getGlobalRedirectClassRef());
+      if (redirects != null) {
+        return Optional.of(redirects.stream().filter(o -> o != null)
+            .map(redir -> new GlobalRedirect(redir.getStringValue("pattern"),
+                redir.getStringValue("destination")))
+            .filter(GlobalRedirect::isValid)
+            .collect(Collectors.toUnmodifiableList()));
       }
+      return Optional.of(List.of());
     } catch (XWikiException exp) {
       LOGGER.info("failed to compute global redirect cache");
     }
