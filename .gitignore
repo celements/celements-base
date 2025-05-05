@@ -200,4 +200,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+/.apt_generated_tests/
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,windows,eclipse,visualstudiocode,java,maven
