@@ -21,11 +21,12 @@
 package com.xpn.xwiki.web;
 
 import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.spring.context.SpringContextProvider.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 
 import java.io.IOException;
-import java.util.Vector;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -44,12 +45,13 @@ import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
 import org.xwiki.velocity.VelocityManager;
 
+import com.celements.globalredirect.IGlobalRedirect;
+import com.celements.globalredirect.IGlobalRedirectService;
 import com.celements.init.CelementsRequestFilter;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
 
 /**
@@ -94,7 +96,7 @@ import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
  */
 public abstract class XWikiAction extends Action {
 
-  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Handle server requests.
@@ -130,7 +132,7 @@ public abstract class XWikiAction extends Action {
       // From this line forward all information can be found in the XWiki Context.
       return execute(context);
     } catch (Exception exc) {
-      LOG.error("execute - failed", exc);
+      logger.error("execute - failed", exc);
       return null;
     } finally {
       requestFilter.postExecute();
@@ -166,7 +168,7 @@ public abstract class XWikiAction extends Action {
         try {
           xwiki.getNotificationManager().preverify(context.getDoc(), context.getAction(), context);
         } catch (Exception exc) {
-          LOG.error("execute - failed on notfication preverify", exc);
+          logger.error("execute - failed on notfication preverify", exc);
         }
         String renderResult = null;
         XWikiDocument doc = context.getDoc();
@@ -197,7 +199,7 @@ public abstract class XWikiAction extends Action {
             XWikiException xex = (XWikiException) e;
             if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
               // Connection aborted, simply ignore this.
-              LOG.error("Connection aborted");
+              logger.error("Connection aborted");
               // We don't write any other message, as the connection is broken, anyway.
               return null;
             } else if (xex.getCode() == XWikiException.ERROR_XWIKI_ACCESS_DENIED) {
@@ -225,7 +227,7 @@ public abstract class XWikiAction extends Action {
             }
           }
           vcontext.put("exp", e);
-          LOG.error("Uncaught exception: {}", e.getMessage(), e);
+          logger.error("Uncaught exception: {}", e.getMessage(), e);
           // If the request is an AJAX request, we don't return a whole HTML page, but just the
           // exception inline.
           String exceptionTemplate = ajax ? "exceptioninline" : "exception";
@@ -233,15 +235,15 @@ public abstract class XWikiAction extends Action {
           return null;
         } catch (XWikiException ex) {
           if (ex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
-            LOG.error("Connection aborted");
+            logger.error("Connection aborted");
           } else {
-            LOG.error("Uncaught exceptions (inner): ", e);
-            LOG.error("Uncaught exceptions (outer): ", ex);
+            logger.error("Uncaught exceptions (inner): ", e);
+            logger.error("Uncaught exceptions (outer): ", ex);
           }
         } catch (Exception e2) {
           // I hope this never happens
-          LOG.error("Uncaught exceptions (inner): ", e);
-          LOG.error("Uncaught exceptions (outer): ", e2);
+          logger.error("Uncaught exceptions (inner): ", e);
+          logger.error("Uncaught exceptions (outer): ", e2);
         }
         return null;
       } finally {
@@ -258,7 +260,7 @@ public abstract class XWikiAction extends Action {
         try {
           xwiki.getNotificationManager().verify(context.getDoc(), context.getAction(), context);
         } catch (Exception exc) {
-          LOG.error("execute - failed on notfication verify", exc);
+          logger.error("execute - failed on notfication verify", exc);
         }
         // This is the new notification mechanism, implemented as a Plexus Component.
         // For the moment we're sending the XWiki context as the data, but this will be
@@ -268,8 +270,8 @@ public abstract class XWikiAction extends Action {
           ObservationManager om = Utils.getComponent(ObservationManager.class);
           om.notify(new ActionExecutionEvent(context.getAction()), context.getDoc(), context);
         } catch (Exception ex) {
-          LOG.error("Cannot send action notifications for document [" + docName + " using action ["
-              + context.getAction() + "]", ex);
+          logger.error("Cannot send action notifications for document [{}] using action [{}]",
+                  docName, context.getAction(), ex);
         }
         // Make sure we cleanup database connections
         // There could be cases where we have some
@@ -333,28 +335,16 @@ public abstract class XWikiAction extends Action {
    *          the XWiki context
    * @return true if a redirection has been sent
    */
-  protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context)
-      throws Exception {
-    if ("1".equals(context.getWiki().Param("xwiki.preferences.redirect"))) {
-      // Note: This implementation is not performant at all and will slow down the wiki as the
-      // number
-      // of redirects increases. A better implementation would use a cache of redirects and would
-      // use
-      // the notification mechanism to update the cache when the XWiki.XWikiPreferences document is
-      // modified.
-      XWikiDocument globalPreferences = context.getWiki()
-          .getDocument("xwiki:XWiki.XWikiPreferences", context);
-      Vector<BaseObject> redirects = globalPreferences.getObjects("XWiki.GlobalRedirect");
-
-      if (redirects != null) {
-        for (BaseObject redir : redirects) {
-          String p = redir.getStringValue("pattern");
-          if (url.matches(p)) {
-            String dest = redir.getStringValue("destination");
-            response.sendRedirect(url.replaceAll(p, dest));
-            return true;
-          }
-        }
+  protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context) {
+    IGlobalRedirectService globalRedirSrv = getBeanFactory().getBean(IGlobalRedirectService.class);
+    if (globalRedirSrv.isActivated()) {
+      Optional<? extends IGlobalRedirect> globalRedirect = globalRedirSrv.getGlobalRedirect()
+          .stream()
+          .filter(globRedir -> globRedir.test(url))
+          .findFirst();
+      if (globalRedirect.isPresent()) {
+        globalRedirect.get().sendRedirect(response, url);
+        return true;
       }
     }
     return false;
