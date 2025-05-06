@@ -270,9 +270,8 @@ public abstract class XWikiAction extends Action {
           ObservationManager om = Utils.getComponent(ObservationManager.class);
           om.notify(new ActionExecutionEvent(context.getAction()), context.getDoc(), context);
         } catch (Exception ex) {
-          logger
-              .error("Cannot send action notifications for document [" + docName + " using action ["
-                  + context.getAction() + "]", ex);
+          logger.error("Cannot send action notifications for document [{}] using action [{}]",
+                  docName, context.getAction(), ex);
         }
         // Make sure we cleanup database connections
         // There could be cases where we have some
