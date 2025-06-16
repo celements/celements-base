@@ -87,7 +87,8 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
         .queryParam(savedRequestKey, savedRequestId)
         .queryParam("xredirect", redirectUriBuilder.toUriString())
         .build().toUriString();
-    LOGGER.trace("showLogin - redirect to {}", redirectUrl);
+    LOGGER.trace("showLogin - current uri {}, redirect to {}", request.getRequestURI(),
+        redirectUrl);
     if (LOGGER.isTraceEnabled()) {
       new Exception().printStackTrace();
     }
