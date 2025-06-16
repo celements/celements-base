@@ -40,7 +40,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.context.ExecutionContext;
+import org.xwiki.context.Execution;
 import org.xwiki.csrf.CSRFToken;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
@@ -125,7 +125,7 @@ public abstract class XWikiAction extends Action {
        * which is the main object used to pass information across classes/methods.
        * It's also wrapping the request, response, and all container objects in general.
        */
-      context = getBeanFactory().getBean(ExecutionContext.class)
+      context = getBeanFactory().getBean(Execution.class).getContext()
           .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
       if (form != null) {
         form.reset(mapping, context.getRequest());
