@@ -42,7 +42,7 @@ public class ExecutionContextFilter implements Filter {
       if ((request instanceof HttpServletRequest) && (response instanceof HttpServletResponse)) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        requestFilter.preExecute("spring", httpRequest, httpResponse);
+        requestFilter.preExecute(httpRequest, httpResponse);
       }
       chain.doFilter(request, response);
     } catch (ExecutionContextException | WikiMissingException | ExecutionException

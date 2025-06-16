@@ -3,6 +3,8 @@ package com.celements.init;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
@@ -62,6 +64,24 @@ public class CelementsRequestFilter {
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
+  }
+
+  public ExecutionContext preExecute(HttpServletRequest request,
+      HttpServletResponse response) throws WikiMissingException, ExecutionException,
+      ExecutionContextException, ServletContainerException {
+    return preExecute(getUrlAction(request.getRequestURI()), request, response);
+  }
+
+  public String getUrlAction(String requestURI) {
+    try {
+      var urlParts = new URL(requestURI).getPath().split("/");
+      if (urlParts.length > 2) {
+        return urlParts[0];
+      }
+    } catch (MalformedURLException exp) {
+      LOGGER.debug("failed to parse URL {} for {}", requestURI, exp.getMessage(), exp);
+    }
+    return "view";
   }
 
   public ExecutionContext preExecute(String action, HttpServletRequest request,

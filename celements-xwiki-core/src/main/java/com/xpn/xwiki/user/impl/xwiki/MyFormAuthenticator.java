@@ -90,9 +90,6 @@ public class MyFormAuthenticator extends FormAuthenticator implements XWikiAuthe
     boolean isAlreadyLoginPage = request.getRequestURI().startsWith(loginPage);
     LOGGER.trace("showLogin - current uri {}, redirect to {}, loginPage={}, isAlreadyLoginPage={}",
         request.getRequestURI(), redirectUrl, loginPage, isAlreadyLoginPage);
-    if (LOGGER.isTraceEnabled()) {
-      new Exception().printStackTrace();
-    }
     if (!isAlreadyLoginPage) {
       response.sendRedirect(redirectUrl);
     }
