@@ -3,8 +3,6 @@ package com.celements.init;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
@@ -72,14 +70,10 @@ public class CelementsRequestFilter {
     return preExecute(getUrlAction(request.getRequestURI()), request, response);
   }
 
-  public String getUrlAction(String requestURI) {
-    try {
-      var urlParts = new URL(requestURI).getPath().split("/");
-      if (urlParts.length > 2) {
-        return urlParts[0];
-      }
-    } catch (MalformedURLException exp) {
-      LOGGER.debug("failed to parse URL {} for {}", requestURI, exp.getMessage(), exp);
+  public String getUrlAction(String requestPath) {
+    String[] urlParts = requestPath.split("/");
+    if (urlParts.length > 2) {
+      return urlParts[0];
     }
     return "view";
   }
