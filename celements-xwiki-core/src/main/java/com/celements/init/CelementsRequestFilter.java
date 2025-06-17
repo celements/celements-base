@@ -32,6 +32,7 @@ import com.celements.wiki.WikiService;
 import com.google.common.base.Stopwatch;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiResponse;
 import com.xpn.xwiki.web.XWikiServletRequest;
@@ -48,6 +49,7 @@ public class CelementsRequestFilter {
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiProvider xwikiProvider;
+  private final XWikiRightServiceImpl rightsService;
 
   @Inject
   public CelementsRequestFilter(
@@ -56,13 +58,14 @@ public class CelementsRequestFilter {
       ServletContainerInitializer containerInitializer,
       @Lazy WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiProvider xwikiProvider) {
+      XWikiProvider xwikiProvider, XWikiRightServiceImpl rightsService) {
     this.execution = execution;
     this.execContextManager = execContextManager;
     this.containerInitializer = containerInitializer;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
+    this.rightsService = rightsService;
   }
 
   public ExecutionContext preExecute(HttpServletRequest request,
@@ -71,9 +74,9 @@ public class CelementsRequestFilter {
     return preExecute(getUrlAction(request.getRequestURI()), request, response);
   }
 
-  public String getUrlAction(String requestPath) {
+  private String getUrlAction(String requestPath) {
     String[] urlParts = StringUtils.tokenizeToStringArray(requestPath, "/");
-    if (urlParts.length > 2) {
+    if ((urlParts.length > 2) && rightsService.validAction(urlParts[0])) {
       return urlParts[0];
     }
     return "view";

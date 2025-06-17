@@ -35,6 +35,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -58,6 +59,7 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  */
+@Service
 public class XWikiRightServiceImpl implements XWikiRightService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XWikiRightServiceImpl.class);
@@ -103,7 +105,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
     actionMap.put("create", "edit");
     actionMap.put("temp", "view");
     actionMap.put("unknown", "view");
-  };
+  }
 
   /**
    * Used to convert a string into a proper Document Reference.
@@ -134,6 +136,10 @@ public class XWikiRightServiceImpl implements XWikiRightService {
   @Override
   public List<String> listAllLevels(XWikiContext context) throws XWikiException {
     return new ArrayList<>(ALLLEVELS);
+  }
+
+  public boolean validAction(String action) {
+    return actionMap.containsKey(action);
   }
 
   public String getRight(String action) {
