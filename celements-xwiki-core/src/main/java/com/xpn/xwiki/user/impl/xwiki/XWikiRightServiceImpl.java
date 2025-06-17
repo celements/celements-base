@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -110,14 +112,18 @@ public class XWikiRightServiceImpl implements XWikiRightService {
   /**
    * Used to convert a string into a proper Document Reference.
    */
-  private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
+  private final DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed");
 
   /**
    * Used to convert a proper Document Name to string.
    */
-  private EntityReferenceSerializer<String> entityReferenceSerializer = Utils
-      .getComponent(EntityReferenceSerializer.class);
+  private final EntityReferenceSerializer<String> entityReferenceSerializer;
+
+  @Inject
+  public XWikiRightServiceImpl(EntityReferenceSerializer<String> entityReferenceSerializer) {
+    this.entityReferenceSerializer = entityReferenceSerializer;
+  }
 
   protected void logAllow(String username, String page, String action, String info) {
     LOGGER.debug("Access has been granted for ({},{},{}): {}", username, page, action, info);
