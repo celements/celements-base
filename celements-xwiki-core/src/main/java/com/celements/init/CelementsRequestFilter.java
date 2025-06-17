@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.context.Execution;
@@ -71,7 +72,7 @@ public class CelementsRequestFilter {
   }
 
   public String getUrlAction(String requestPath) {
-    String[] urlParts = requestPath.split("/");
+    String[] urlParts = StringUtils.tokenizeToStringArray(requestPath, "/");
     if (urlParts.length > 2) {
       return urlParts[0];
     }
