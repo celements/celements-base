@@ -31,13 +31,10 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
@@ -61,7 +58,6 @@ import com.xpn.xwiki.web.Utils;
  *
  * @version $Id$
  */
-@Service
 public class XWikiRightServiceImpl implements XWikiRightService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XWikiRightServiceImpl.class);
@@ -118,12 +114,8 @@ public class XWikiRightServiceImpl implements XWikiRightService {
   /**
    * Used to convert a proper Document Name to string.
    */
-  private final EntityReferenceSerializer<String> entityReferenceSerializer;
-
-  @Inject
-  public XWikiRightServiceImpl(EntityReferenceSerializer<String> entityReferenceSerializer) {
-    this.entityReferenceSerializer = entityReferenceSerializer;
-  }
+  private final EntityReferenceSerializer<String> entityReferenceSerializer = Utils
+      .getComponent(EntityReferenceSerializer.class);
 
   protected void logAllow(String username, String page, String action, String info) {
     LOGGER.debug("Access has been granted for ({},{},{}): {}", username, page, action, info);
