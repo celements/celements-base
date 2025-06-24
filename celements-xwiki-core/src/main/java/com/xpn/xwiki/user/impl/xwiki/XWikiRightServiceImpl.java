@@ -531,7 +531,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       XWikiContext context) throws XWikiException {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug(
-          "hasAccessLevel for " + accessLevel + ", " + userOrGroupName + ", " + entityReference);
+          "hasAccessLevel for {}, {}, {}", accessLevel, userOrGroupName, entityReference);
     }
 
     DocumentReference userOrGroupNameReference = this.currentMixedDocumentReferenceResolver
