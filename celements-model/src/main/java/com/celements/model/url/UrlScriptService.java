@@ -21,11 +21,11 @@ public class UrlScriptService implements ScriptService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UrlScriptService.class);
 
-  private final UrlService urlService, ModelContext context;
+  private final UrlService urlService;
   private final ModelContext context;
 
   @Inject
-  public URLScriptService(UrlService urlService, ModelContext context)  {
+  public UrlScriptService(UrlService urlService, ModelContext context) {
     this.urlService = urlService;
     this.context = context;
   }
