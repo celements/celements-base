@@ -5,11 +5,11 @@ import static com.google.common.base.MoreObjects.*;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriBuilder;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.script.service.ScriptService;
 
@@ -52,7 +52,7 @@ public class UrlScriptService implements ScriptService {
       return urlService.getURL(firstNonNull(ref, getCurrentReference()), action, queryString);
     } catch (Exception iae) {
       LOGGER.debug("getURL - failed for [{}], [{}], [{}]", ref, action, queryString);
-      return null;
+      return "";
     }
   }
 
@@ -79,7 +79,7 @@ public class UrlScriptService implements ScriptService {
           queryString);
     } catch (Exception iae) {
       LOGGER.debug("getExternalURL - failed for [{}], [{}], [{}]", ref, action, queryString);
-      return null;
+      return "";
     }
   }
 
@@ -99,7 +99,7 @@ public class UrlScriptService implements ScriptService {
       return urlService.createURIBuilder(firstNonNull(ref, getCurrentReference()), action);
     } catch (Exception iae) {
       LOGGER.debug("createURIBuilder - failed for [{}], [{}]", ref, action);
-      return null;
+      return "";
     }
   }
 
