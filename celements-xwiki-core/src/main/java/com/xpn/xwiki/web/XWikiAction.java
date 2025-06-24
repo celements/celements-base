@@ -121,7 +121,7 @@ public abstract class XWikiAction extends Action {
     XWikiContext context = null;
     try {
       /**
-       * ExecutionContext AND XWiki Context are already initalized by the ExecutionContextFilter
+       * ExecutionContext AND XWiki Context are already initialized by the ExecutionContextFilter
        * which is the main object used to pass information across classes/methods.
        * It's also wrapping the request, response, and all container objects in general.
        */
