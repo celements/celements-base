@@ -28,8 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -41,6 +39,9 @@ import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 
+import com.celements.model.reference.RefBuilder;
+import com.google.common.collect.ImmutableMap;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -68,42 +69,42 @@ public class XWikiRightServiceImpl implements XWikiRightService {
   private static final EntityReference DEFAULTUSERSPACE = new EntityReference("XWiki",
       EntityType.SPACE);
 
-  private static final Map<String, String> actionMap = new ConcurrentHashMap<>();
-  static {
-    actionMap.put("login", "login");
-    actionMap.put("logout", "login");
-    actionMap.put("loginerror", "login");
-    actionMap.put("loginsubmit", "login");
-    actionMap.put("view", "view");
-    actionMap.put("viewrev", "view");
-    actionMap.put("get", "view");
-    actionMap.put("downloadrev", "view");
-    actionMap.put("plain", "view");
-    actionMap.put("raw", "view");
-    actionMap.put("attach", "view");
-    actionMap.put("charting", "view");
-    actionMap.put("skin", "view");
-    actionMap.put("download", "view");
-    actionMap.put("dot", "view");
-    actionMap.put("svg", "view");
-    actionMap.put("pdf", "view");
-    actionMap.put("delete", "delete");
-    actionMap.put("deleteversions", "admin");
-    actionMap.put("undelete", "undelete");
-    actionMap.put("reset", "delete");
-    actionMap.put("commentadd", "comment");
-    actionMap.put("register", "register");
-    actionMap.put("redirect", "view");
-    actionMap.put("admin", "admin");
-    actionMap.put("export", "view");
-    actionMap.put("import", "admin");
-    actionMap.put("jsx", "view");
-    actionMap.put("ssx", "view");
-    actionMap.put("tex", "view");
-    actionMap.put("create", "edit");
-    actionMap.put("temp", "view");
-    actionMap.put("unknown", "view");
-  }
+  private static final Map<String, String> actionMap = Map.copyOf(
+      ImmutableMap.<String, String>builder()
+          .put("login", "login")
+          .put("logout", "login")
+          .put("loginerror", "login")
+          .put("loginsubmit", "login")
+          .put("view", "view")
+          .put("viewrev", "view")
+          .put("get", "view")
+          .put("downloadrev", "view")
+          .put("plain", "view")
+          .put("raw", "view")
+          .put("attach", "view")
+          .put("charting", "view")
+          .put("skin", "view")
+          .put("download", "view")
+          .put("dot", "view")
+          .put("svg", "view")
+          .put("pdf", "view")
+          .put("delete", "delete")
+          .put("deleteversions", "admin")
+          .put("undelete", "undelete")
+          .put("reset", "delete")
+          .put("commentadd", "comment")
+          .put("register", "register")
+          .put("redirect", "view")
+          .put("admin", "admin")
+          .put("export", "view")
+          .put("import", "admin")
+          .put("jsx", "view")
+          .put("ssx", "view")
+          .put("tex", "view")
+          .put("create", "edit")
+          .put("temp", "view")
+          .put("unknown", "view")
+          .build());
 
   /**
    * Used to convert a string into a proper Document Reference.
@@ -302,7 +303,11 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       boolean user,
       boolean allow, boolean global, XWikiContext context)
       throws XWikiRightNotFoundException, XWikiException {
-    String className = global ? "XWiki.XWikiGlobalRights" : "XWiki.XWikiRights";
+    DocumentReference rightsClassRef = global
+        ? RefBuilder.create().space(XWikiConstant.XWIKI_SPACE).doc("XWikiGlobalRights")
+            .build(DocumentReference.class)
+        : RefBuilder.create().space(XWikiConstant.XWIKI_SPACE).doc("XWikiRights")
+            .build(DocumentReference.class);
     String fieldName = user ? "users" : "groups";
     boolean found = false;
 
@@ -317,31 +322,19 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       shortname = userOrGroupName.substring(i0 + 1);
     }
 
-    if (LOGGER.isDebugEnabled()) {
-      LOGGER
-          .debug("Checking right: " + userOrGroupName + "," + doc.getFullName() + "," + accessLevel
-              + "," + user
-              + "," + allow + "," + global);
-    }
+    LOGGER.debug("Checking right: {}, {}, {}, {}, {}, {}",
+        userOrGroupName, doc.getDocumentReference(), accessLevel, user, allow, global);
 
-    Vector<BaseObject> vobj = doc.getObjects(className);
+    List<BaseObject> vobj = doc.getXObjects(rightsClassRef);
     if (vobj != null) {
-      if (LOGGER.isDebugEnabled()) {
-        LOGGER.debug("Checking objects " + vobj.size());
-      }
+      LOGGER.debug("Checking objects {}", vobj.size());
 
       for (int i = 0; i < vobj.size(); i++) {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Checking object " + i);
-        }
-
+        LOGGER.debug("Checking object {}", i);
         BaseObject bobj = vobj.get(i);
 
         if (bobj == null) {
-          if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Bypass object " + i);
-          }
-
+          LOGGER.debug("Bypass object {}", i);
           continue;
         }
 

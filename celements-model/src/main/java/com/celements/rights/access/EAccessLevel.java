@@ -9,13 +9,8 @@ import com.google.common.base.Optional;
 
 public enum EAccessLevel implements ValueGetter<String> {
 
-  VIEW("view"),
-  COMMENT("comment"),
-  EDIT("edit"),
-  DELETE("delete"),
-  UNDELETE("undelete"),
-  REGISTER("register"),
-  PROGRAMMING("programming");
+  VIEW("view"), COMMENT("comment"), EDIT("edit"), DELETE("delete"), UNDELETE("undelete"), REGISTER(
+      "register"), PROGRAMMING("programming");
 
   private static ReverseMap<EAccessLevel, String> ID_MAP = new ReverseMap<>(EAccessLevel.values());
 
