@@ -143,7 +143,7 @@ public abstract class XWikiAction extends Action {
     FileUploadPlugin fileupload = null;
     String docName = "";
     try {
-      XWiki xwiki = getWiki();
+      XWiki xwiki = getXWiki();
       checkNotNull(xwiki);
       // Send global redirection (if any)
       if (sendGlobalRedirect(context.getResponse(), context.getURL().toString(), context)) {
@@ -203,16 +203,16 @@ public abstract class XWikiAction extends Action {
               // We don't write any other message, as the connection is broken, anyway.
               return null;
             } else if (xex.getCode() == XWikiException.ERROR_XWIKI_ACCESS_DENIED) {
-              Utils.parseTemplate(getWiki().Param("xwiki.access_exception", "accessdenied"),
+              Utils.parseTemplate(getXWiki().Param("xwiki.access_exception", "accessdenied"),
                   context);
               return null;
             } else if (xex.getCode() == XWikiException.ERROR_XWIKI_USER_INACTIVE) {
-              Utils.parseTemplate(getWiki().Param("xwiki.user_exception", "userinactive"),
+              Utils.parseTemplate(getXWiki().Param("xwiki.user_exception", "userinactive"),
                   context);
               return null;
             } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_ATTACHMENT_NOT_FOUND) {
               context.put("message", "attachmentdoesnotexist");
-              Utils.parseTemplate(getWiki().Param("xwiki.attachment_exception",
+              Utils.parseTemplate(getXWiki().Param("xwiki.attachment_exception",
                   "attachmentdoesnotexist"), context);
               return null;
             } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION) {
@@ -221,7 +221,7 @@ public abstract class XWikiAction extends Action {
                   xwiki.getDefaultSpace(context) + "." + xwiki.getDefaultPage(context),
                   context, vcontext);
               context.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
-              Utils.parseTemplate(getWiki().Param("xwiki.invalid_url_exception", "error"),
+              Utils.parseTemplate(getXWiki().Param("xwiki.invalid_url_exception", "error"),
                   context);
               return null;
             }
@@ -286,7 +286,7 @@ public abstract class XWikiAction extends Action {
     }
   }
 
-  private XWiki getWiki() {
+  private XWiki getXWiki() {
     return getBeanFactory().getBean(XWikiProvider.class).get().orElseThrow();
   }
 
@@ -311,9 +311,9 @@ public abstract class XWikiAction extends Action {
       XWikiDocument doc = (XWikiDocument) context.get("doc");
       XWikiDocument tdoc = (XWikiDocument) context.get("tdoc");
       XWikiDocument rdoc = (!doc.getLanguage().equals(tdoc.getLanguage())) ? doc
-          : getWiki().getDocument(doc, rev, context);
+          : getXWiki().getDocument(doc, rev, context);
       XWikiDocument rtdoc = (doc.getLanguage().equals(tdoc.getLanguage())) ? rdoc
-          : getWiki().getDocument(tdoc, rev, context);
+          : getXWiki().getDocument(tdoc, rev, context);
       context.put("tdoc", rtdoc);
       context.put("cdoc", rdoc);
       context.put("doc", rdoc);
