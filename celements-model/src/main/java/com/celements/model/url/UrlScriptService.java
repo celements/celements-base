@@ -9,12 +9,13 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriBuilder;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.script.service.ScriptService;
 
 import com.celements.model.context.ModelContext;
 import com.celements.url.UrlService;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 @Component("url")
 public class UrlScriptService implements ScriptService {
@@ -71,7 +72,7 @@ public class UrlScriptService implements ScriptService {
     return getExternalURL(ref, action, null);
   }
 
-  @NotNull
+  @Nullable
   public String getExternalURL(@Nullable EntityReference ref, @Nullable String action,
       @Nullable String queryString) {
     try {
@@ -79,7 +80,7 @@ public class UrlScriptService implements ScriptService {
           queryString);
     } catch (Exception iae) {
       LOGGER.debug("getExternalURL - failed for [{}], [{}], [{}]", ref, action, queryString);
-      return "";
+      return null;
     }
   }
 
@@ -93,13 +94,13 @@ public class UrlScriptService implements ScriptService {
     return createURIBuilder(ref, null);
   }
 
-  @NotNull
+  @Nullable
   UriBuilder createURIBuilder(@Nullable EntityReference ref, @Nullable String action) {
     try {
       return urlService.createURIBuilder(firstNonNull(ref, getCurrentReference()), action);
     } catch (Exception iae) {
       LOGGER.debug("createURIBuilder - failed for [{}], [{}]", ref, action);
-      return "";
+      return null;
     }
   }
 

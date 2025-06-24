@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.context.Execution;
@@ -27,13 +26,12 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.url.UrlService;
 import com.celements.wiki.WikiMissingException;
 import com.celements.wiki.WikiService;
 import com.google.common.base.Stopwatch;
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiResponse;
 import com.xpn.xwiki.web.XWikiServletRequest;
@@ -50,6 +48,7 @@ public class CelementsRequestFilter {
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiProvider xwikiProvider;
+  private final UrlService urlService;
 
   @Inject
   public CelementsRequestFilter(
@@ -58,32 +57,21 @@ public class CelementsRequestFilter {
       ServletContainerInitializer containerInitializer,
       @Lazy WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiProvider xwikiProvider) {
+      XWikiProvider xwikiProvider,
+      UrlService urlService) {
     this.execution = execution;
     this.execContextManager = execContextManager;
     this.containerInitializer = containerInitializer;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
+    this.urlService = urlService;
   }
 
   public ExecutionContext preExecute(HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
-    return preExecute(getActionFromUrl(request.getRequestURI()), request, response);
-  }
-
-  private String getActionFromUrl(String requestPath) throws ExecutionException {
-    String[] urlParts = StringUtils.tokenizeToStringArray(requestPath, "/");
-    if ((urlParts.length > 2) && getRightService().validAction(urlParts[0])) {
-      return urlParts[0];
-    }
-    return "view";
-  }
-
-  private XWikiRightServiceImpl getRightService() throws ExecutionException {
-    return (XWikiRightServiceImpl) awaitWikiAvailability(XWikiConstant.MAIN_WIKI,
-        Duration.ofHours(1)).getRightService();
+    return preExecute(urlService.getActionFromUrl(request.getRequestURI()), request, response);
   }
 
   public ExecutionContext preExecute(String action, HttpServletRequest request,

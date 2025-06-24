@@ -7,24 +7,38 @@ import static com.google.common.base.Strings.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 
-import javax.ws.rs.core.UriBuilder;
+import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
+import com.celements.init.XWikiProvider;
 import com.celements.model.context.ModelContext;
 import com.celements.url.UrlService;
 import com.google.common.base.Strings;
+import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
+import com.xpn.xwiki.web.ViewAction;
 import com.xpn.xwiki.web.XWikiURLFactory;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 @Component
 public class XWikiUrlService implements UrlService {
 
-  @Requirement
-  private ModelContext context;
+  private final ModelContext context;
+  private final XWikiProvider xwikiProvider;
+
+  @Inject
+  public XWikiUrlService(XWikiProvider xwikiProvider, ModelContext context) {
+    this.context = context;
+    this.xwikiProvider = xwikiProvider;
+  }
 
   @Override
   public String getURL(EntityReference ref) {
@@ -122,4 +136,16 @@ public class XWikiUrlService implements UrlService {
     return context.getXWikiContext().getURLFactory();
   }
 
+  @Override
+  public @NotEmpty String getActionFromUrl(String requestPath) throws ExecutionException {
+    String[] urlParts = StringUtils.tokenizeToStringArray(requestPath, "/");
+    if ((urlParts.length > 2) && getRightService().validAction(urlParts[0])) {
+      return urlParts[0];
+    }
+    return ViewAction.VIEW_ACTION;
+  }
+
+  private XWikiRightServiceImpl getRightService() throws ExecutionException {
+    return (XWikiRightServiceImpl) xwikiProvider.await(Duration.ofHours(1)).getRightService();
+  }
 }

@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.web.util.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 import org.xwiki.model.reference.EntityReference;
 
 public interface UrlService {
