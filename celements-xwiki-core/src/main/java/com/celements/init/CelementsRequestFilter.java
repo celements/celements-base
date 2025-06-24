@@ -70,10 +70,10 @@ public class CelementsRequestFilter {
   public ExecutionContext preExecute(HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
-    return preExecute(getUrlAction(request.getRequestURI()), request, response);
+    return preExecute(getActionFromUrl(request.getRequestURI()), request, response);
   }
 
-  private String getUrlAction(String requestPath) throws ExecutionException {
+  private String getActionFromUrl(String requestPath) throws ExecutionException {
     String[] urlParts = StringUtils.tokenizeToStringArray(requestPath, "/");
     if ((urlParts.length > 2) && getRightService().validAction(urlParts[0])) {
       return urlParts[0];
