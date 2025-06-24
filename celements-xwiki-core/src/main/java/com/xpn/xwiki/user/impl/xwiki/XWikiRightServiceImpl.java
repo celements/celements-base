@@ -122,7 +122,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
   }
 
   protected void logDeny(String username, String page, String action, String info) {
-    LOGGER.info("Access has been denied for (({},{},{}): {}", username, page, action, info);
+    LOGGER.info("Access has been denied for ({},{},{}): {}", username, page, action, info);
   }
 
   protected void logDeny(String name, String resourceKey, String accessLevel, String info,
@@ -531,7 +531,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       XWikiContext context) throws XWikiException {
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug(
-          "hasAccessLevel for " + accessLevel + ", " + userOrGroupName + ", " + entityReference);
+          "hasAccessLevel for {}, {}, {}", accessLevel, userOrGroupName, entityReference);
     }
 
     DocumentReference userOrGroupNameReference = this.currentMixedDocumentReferenceResolver
