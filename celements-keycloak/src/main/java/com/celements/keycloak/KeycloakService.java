@@ -1,4 +1,4 @@
-package com.celements.spring.security;
+package com.celements.keycloak;
 
 import static com.celements.logging.LogUtils.*;
 
@@ -31,6 +31,7 @@ import com.celements.configuration.CelementsFromWikiConfigurationSource;
 import com.celements.model.reference.RefBuilder;
 import com.celements.observation.save.SaveEventOperation;
 import com.celements.observation.save.object.ObjectEvent;
+import com.celements.spring.security.IdentityService;
 import com.google.common.base.Objects;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.doc.XWikiDocument;
