@@ -33,6 +33,11 @@
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
+      <artifactId>celements-config-source</artifactId>
+      <version>6.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
       <artifactId>celements-subsystem-migration-manager</artifactId>
       <version>6.0</version>
       <scope>provided</scope>

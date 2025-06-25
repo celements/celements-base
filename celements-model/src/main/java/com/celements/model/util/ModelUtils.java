@@ -193,6 +193,7 @@ public interface ModelUtils {
    * @deprecated since 6.0 instead use {@link ExecutionContext#computeIfAbsent}
    */
   @Deprecated
-  <T> @Nullable T computeExecPropIfAbsent(@NotEmpty String key, @NotNull Supplier<T> defaultSetter);
+  @Nullable
+  <T> T computeExecPropIfAbsent(@NotEmpty String key, @NotNull Supplier<T> defaultSetter);
 
 }
