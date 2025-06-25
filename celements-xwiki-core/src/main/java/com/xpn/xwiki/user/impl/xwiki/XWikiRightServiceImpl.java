@@ -305,10 +305,8 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       boolean allow, boolean global, XWikiContext context)
       throws XWikiRightNotFoundException, XWikiException {
     DocumentReference rightsClassRef = global
-        ? RefBuilder.create().space(XWikiConstant.XWIKI_SPACE).doc("XWikiGlobalRights")
-            .build(DocumentReference.class)
-        : RefBuilder.create().space(XWikiConstant.XWIKI_SPACE).doc("XWikiRights")
-            .build(DocumentReference.class);
+        ? getClassRef(doc, XWikiConstant.XWIKI_SPACE, "XWikiGlobalRights")
+        : getClassRef(doc, XWikiConstant.XWIKI_SPACE, "XWikiRights");
     String fieldName = user ? "users" : "groups";
     boolean found = false;
 
@@ -475,6 +473,13 @@ public class XWikiRightServiceImpl implements XWikiRightService {
     } else {
       throw new XWikiRightNotFoundException();
     }
+  }
+
+  private DocumentReference getClassRef(XWikiDocument doc, String space, String className) {
+    return RefBuilder.from(doc.getWikiRef())
+        .space(space)
+        .doc(className)
+        .build(DocumentReference.class);
   }
 
   private void addMemberGroups(String wiki, String prefixedFullName,
