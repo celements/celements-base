@@ -45,8 +45,12 @@ public class CelementsPropertiesConfigurationSource extends CommonsConfiguration
 
   static final String CELEMENTS_PROPERTIES_FILE = "/WEB-INF/celements.properties";
 
+  private final ResourceLoader resourceLoader;
+
   @Inject
-  private ResourceLoader resourceLoader;
+  public CelementsPropertiesConfigurationSource(ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
+  }
 
   @Override
   public void initialize() throws InitializationException {

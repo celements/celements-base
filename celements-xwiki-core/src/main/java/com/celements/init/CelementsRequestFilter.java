@@ -26,6 +26,7 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.url.UrlService;
 import com.celements.wiki.WikiMissingException;
 import com.celements.wiki.WikiService;
 import com.google.common.base.Stopwatch;
@@ -47,6 +48,7 @@ public class CelementsRequestFilter {
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiProvider xwikiProvider;
+  private final UrlService urlService;
 
   @Inject
   public CelementsRequestFilter(
@@ -55,18 +57,27 @@ public class CelementsRequestFilter {
       ServletContainerInitializer containerInitializer,
       @Lazy WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiProvider xwikiProvider) {
+      XWikiProvider xwikiProvider,
+      UrlService urlService) {
     this.execution = execution;
     this.execContextManager = execContextManager;
     this.containerInitializer = containerInitializer;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
+    this.urlService = urlService;
+  }
+
+  public ExecutionContext preExecute(HttpServletRequest request,
+      HttpServletResponse response) throws WikiMissingException, ExecutionException,
+      ExecutionContextException, ServletContainerException {
+    return preExecute(urlService.getActionFromUrl(request.getRequestURI()), request, response);
   }
 
   public ExecutionContext preExecute(String action, HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
+    LOGGER.debug("preExecute action={} initialize request", action);
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
     containerInitializer.initializeRequest(request);
     containerInitializer.initializeResponse(response);
@@ -76,7 +87,7 @@ public class CelementsRequestFilter {
     XWikiContext xContext = eContext.get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
     xwiki.prepareResources(xContext);
-    LOGGER.debug("request initialized");
+    LOGGER.debug("request initialized for action={}", action);
     return eContext;
   }
 
