@@ -40,6 +40,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.context.Execution;
 import org.xwiki.csrf.CSRFToken;
 import org.xwiki.observation.ObservationManager;
@@ -125,8 +126,11 @@ public abstract class XWikiAction extends Action {
        * which is the main object used to pass information across classes/methods.
        * It's also wrapping the request, response, and all container objects in general.
        */
-      context = getBeanFactory().getBean(Execution.class).getContext()
-          .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
+      context = getXWikiContext();
+      if (req != context.getRequest().getHttpServletRequest()) {
+        // update container request object if there is a new struts wrapper
+        getContainerInitializer().initializeRequest(req);
+      }
       if (form != null) {
         form.reset(mapping, context.getRequest());
         context.setForm((XWikiForm) form);
@@ -137,6 +141,11 @@ public abstract class XWikiAction extends Action {
       logger.error("execute - failed", exc);
       return null;
     }
+  }
+
+  private XWikiContext getXWikiContext() {
+    return getBeanFactory().getBean(Execution.class).getContext()
+        .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
 
   public ActionForward execute(XWikiContext context) throws Exception {
@@ -288,6 +297,10 @@ public abstract class XWikiAction extends Action {
 
   private XWiki getXWiki() {
     return getBeanFactory().getBean(XWikiProvider.class).get().orElseThrow();
+  }
+
+  private ServletContainerInitializer getContainerInitializer() {
+    return getBeanFactory().getBean(ServletContainerInitializer.class);
   }
 
   public String getRealPath(String path) {
