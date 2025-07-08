@@ -128,7 +128,7 @@ public abstract class XWikiAction extends Action {
        */
       context = getXWikiContext();
       if (req != context.getRequest().getHttpServletRequest()) {
-        // update container request object if there is a new struts wrapper
+        // update container request object if there is a struts wrapper available
         getContainerInitializer().initializeRequest(req);
       }
       if (form != null) {
