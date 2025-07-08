@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.csrf.CSRFToken;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
@@ -129,6 +130,11 @@ public abstract class XWikiAction extends Action {
       context = getXWikiContext();
       if (req != context.getRequest().getHttpServletRequest()) {
         // update container request object if there is a struts wrapper available
+        logger.debug("update servlet-request in contexts new {} replace {}", req.getClass(),
+            context.getRequest().getHttpServletRequest().getClass());
+        XWikiRequest xRequest = new XWikiServletRequest(req);
+        getExcecutionContext().set(XWIKI_REQUEST, xRequest);
+        context.setRequest(xRequest);
         getContainerInitializer().initializeRequest(req);
       }
       if (form != null) {
@@ -144,8 +150,12 @@ public abstract class XWikiAction extends Action {
   }
 
   private XWikiContext getXWikiContext() {
-    return getBeanFactory().getBean(Execution.class).getContext()
+    return getExcecutionContext()
         .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
+  }
+
+  private ExecutionContext getExcecutionContext() {
+    return getBeanFactory().getBean(Execution.class).getContext();
   }
 
   public ActionForward execute(XWikiContext context) throws Exception {
