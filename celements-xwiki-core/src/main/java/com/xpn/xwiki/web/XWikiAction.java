@@ -135,7 +135,6 @@ public abstract class XWikiAction extends Action {
         XWikiRequest xRequest = new XWikiServletRequest(req);
         getExcecutionContext().set(XWIKI_REQUEST, xRequest);
         context.setRequest(xRequest);
-        getContainerInitializer().initializeRequest(req);
       }
       if (form != null) {
         form.reset(mapping, context.getRequest());
