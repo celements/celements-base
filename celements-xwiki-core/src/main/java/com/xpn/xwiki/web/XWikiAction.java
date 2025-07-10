@@ -308,10 +308,6 @@ public abstract class XWikiAction extends Action {
     return getBeanFactory().getBean(XWikiProvider.class).get().orElseThrow();
   }
 
-  private ServletContainerInitializer getContainerInitializer() {
-    return getBeanFactory().getBean(ServletContainerInitializer.class);
-  }
-
   public String getRealPath(String path) {
     return this.servlet.getServletContext().getRealPath(path);
   }
