@@ -40,7 +40,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.container.servlet.ServletContainerInitializer;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.csrf.CSRFToken;
