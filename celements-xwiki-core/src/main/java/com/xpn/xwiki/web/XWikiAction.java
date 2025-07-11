@@ -41,6 +41,7 @@ import org.apache.velocity.VelocityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.csrf.CSRFToken;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
@@ -125,8 +126,8 @@ public abstract class XWikiAction extends Action {
        * which is the main object used to pass information across classes/methods.
        * It's also wrapping the request, response, and all container objects in general.
        */
-      context = getBeanFactory().getBean(Execution.class).getContext()
-          .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
+      updateWrapperRequestAndResponse(req, resp);
+      context = getXWikiContext();
       if (form != null) {
         form.reset(mapping, context.getRequest());
         context.setForm((XWikiForm) form);
@@ -137,6 +138,35 @@ public abstract class XWikiAction extends Action {
       logger.error("execute - failed", exc);
       return null;
     }
+  }
+
+  private void updateWrapperRequestAndResponse(HttpServletRequest req, HttpServletResponse resp) {
+    var context = getXWikiContext();
+    if (req != context.getRequest().getHttpServletRequest()) {
+      // update container request object if there is a struts wrapper available
+      logger.debug("update servlet-request in contexts new {} replace {}", req.getClass(),
+          context.getRequest().getHttpServletRequest().getClass());
+      XWikiRequest xRequest = new XWikiServletRequest(req);
+      getExcecutionContext().set(XWIKI_REQUEST, xRequest);
+      context.setRequest(xRequest);
+    }
+    if (resp != context.getResponse().getHttpServletResponse()) {
+      // update container response object if there is a struts wrapper available
+      logger.debug("update servlet-response in contexts new {} replace {}", resp.getClass(),
+          context.getResponse().getHttpServletResponse().getClass());
+      XWikiResponse xResponse = new XWikiServletResponse(resp);
+      getExcecutionContext().set(XWIKI_RESPONSE, xResponse);
+      context.setResponse(xResponse);
+    }
+  }
+
+  private XWikiContext getXWikiContext() {
+    return getExcecutionContext()
+        .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
+  }
+
+  private ExecutionContext getExcecutionContext() {
+    return getBeanFactory().getBean(Execution.class).getContext();
   }
 
   public ActionForward execute(XWikiContext context) throws Exception {
