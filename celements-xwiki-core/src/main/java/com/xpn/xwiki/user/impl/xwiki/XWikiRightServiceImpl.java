@@ -69,43 +69,43 @@ public class XWikiRightServiceImpl implements XWikiRightService {
   private static final EntityReference DEFAULTUSERSPACE = new EntityReference("XWiki",
       EntityType.SPACE);
 
-  private static final Map<String, String> actionMap = Map.copyOf(
-      ImmutableMap.<String, String>builder()
-          .put("login", "login")
-          .put("logout", "login")
-          .put("loginerror", "login")
-          .put("loginsubmit", "login")
-          .put("view", "view")
-          .put("edit", "edit")
-          .put("viewrev", "view")
-          .put("get", "view")
-          .put("downloadrev", "view")
-          .put("plain", "view")
-          .put("raw", "view")
-          .put("attach", "view")
-          .put("charting", "view")
-          .put("skin", "view")
-          .put("download", "view")
-          .put("dot", "view")
-          .put("svg", "view")
-          .put("pdf", "view")
-          .put("delete", "delete")
-          .put("deleteversions", "admin")
-          .put("undelete", "undelete")
-          .put("reset", "delete")
-          .put("commentadd", "comment")
-          .put("register", "register")
-          .put("redirect", "view")
-          .put("admin", "admin")
-          .put("export", "view")
-          .put("import", "admin")
-          .put("jsx", "view")
-          .put("ssx", "view")
-          .put("tex", "view")
-          .put("create", "edit")
-          .put("temp", "view")
-          .put("unknown", "view")
-          .build());
+  private static final Map<String, String> ACTION_MAP = ImmutableMap.<String, String>builder()
+      .put("login", "login")
+      .put("logout", "login")
+      .put("loginerror", "login")
+      .put("loginsubmit", "login")
+      .put("view", "view")
+      .put("inline", "view")
+      .put("edit", "edit")
+      .put("viewrev", "view")
+      .put("get", "view")
+      .put("downloadrev", "view")
+      .put("plain", "view")
+      .put("raw", "view")
+      .put("attach", "view")
+      .put("charting", "view")
+      .put("skin", "view")
+      .put("download", "view")
+      .put("dot", "view")
+      .put("svg", "view")
+      .put("pdf", "view")
+      .put("delete", "delete")
+      .put("deleteversions", "admin")
+      .put("undelete", "undelete")
+      .put("reset", "delete")
+      .put("commentadd", "comment")
+      .put("register", "register")
+      .put("redirect", "view")
+      .put("admin", "admin")
+      .put("export", "view")
+      .put("import", "admin")
+      .put("jsx", "view")
+      .put("ssx", "view")
+      .put("tex", "view")
+      .put("create", "edit")
+      .put("temp", "view")
+      .put("unknown", "view")
+      .build();
 
   /**
    * Used to convert a string into a proper Document Reference.
@@ -139,11 +139,11 @@ public class XWikiRightServiceImpl implements XWikiRightService {
   }
 
   public boolean validAction(String action) {
-    return actionMap.containsKey(action);
+    return ACTION_MAP.containsKey(action);
   }
 
   public String getRight(String action) {
-    return actionMap.getOrDefault(action, "edit");
+    return ACTION_MAP.getOrDefault(action, "edit");
   }
 
   @Override
