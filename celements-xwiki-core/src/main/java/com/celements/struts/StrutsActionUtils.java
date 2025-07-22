@@ -25,8 +25,8 @@ public class StrutsActionUtils {
   /**
    * @param request
    *          current HttpServletRequest
-   * @param actionPath
-   *          the logical path e.g. "/inline" (no ".do", no context path)
+   * @param action
+   *          the action name
    * @return true if there is a matching <action path="inline"> in this module
    */
   public boolean isActionDefined(@NotNull HttpServletRequest request, @NotEmpty String action) {
