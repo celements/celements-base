@@ -27,7 +27,7 @@ public class StrutsActionUtils {
    *          current HttpServletRequest
    * @param action
    *          the action name
-   * @return true if there is a matching <action path="inline"> in this module
+   * @return true if there is a matching action in this module
    */
   public boolean isActionDefined(@NotNull HttpServletRequest request, @NotEmpty String action) {
     ServletContext context = request.getServletContext();
