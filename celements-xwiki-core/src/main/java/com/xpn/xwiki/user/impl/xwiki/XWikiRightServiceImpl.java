@@ -138,6 +138,14 @@ public class XWikiRightServiceImpl implements XWikiRightService {
     return new ArrayList<>(ALLLEVELS);
   }
 
+  /**
+   * CAUTION: incomplete implementation. Not all valid strut-actions are recognized
+   *
+   * @param action
+   * @return
+   * @deprecated dropped, no replacement
+   */
+  @Deprecated(since = "6.8.1", forRemoval = true)
   public boolean validAction(String action) {
     return actionMap.containsKey(action);
   }
