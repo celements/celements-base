@@ -57,6 +57,14 @@ public interface UrlService {
   @NotNull
   UriBuilder createURIBuilder(@NotNull EntityReference ref, @Nullable String action);
 
+  /**
+   * CAUTION: incomplete implementation. Not all valid strut-actions are recognized
+   *
+   * @param requestPath
+   * @return
+   * @throws ExecutionException
+   * @deprecated dropped, no replacement
+   */
   @Deprecated(since = "6.8.1", forRemoval = true)
   @NotEmpty
   String getActionFromUrl(String requestPath) throws ExecutionException;
