@@ -73,13 +73,16 @@ public class CelementsRequestFilter {
   public ExecutionContext preExecute(HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
+    String action = actionUtils.getActionForRequest(request);
+    LOGGER.debug("preExecute action '{}' for the request uri '{}'", action,
+        request.getRequestURI());
     return preExecute(actionUtils.getActionForRequest(request), request, response);
   }
 
   public ExecutionContext preExecute(String action, HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
-    LOGGER.debug("preExecute action={} initialize request", action);
+    LOGGER.debug("preExecute action '{}' initialize request", action);
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
     containerInitializer.initializeRequest(request);
     containerInitializer.initializeResponse(response);
