@@ -25,8 +25,9 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import jakarta.ws.rs.core.UriBuilder;
 import org.xwiki.model.reference.EntityReference;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 public interface UrlService {
 
@@ -56,6 +57,7 @@ public interface UrlService {
   @NotNull
   UriBuilder createURIBuilder(@NotNull EntityReference ref, @Nullable String action);
 
+  @Deprecated(since = "6.8.1", forRemoval = true)
   @NotEmpty
   String getActionFromUrl(String requestPath) throws ExecutionException;
 

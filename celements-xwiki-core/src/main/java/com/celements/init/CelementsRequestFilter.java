@@ -26,6 +26,7 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.struts.StrutsActionUtils;
 import com.celements.url.UrlService;
 import com.celements.wiki.WikiMissingException;
 import com.celements.wiki.WikiService;
@@ -48,7 +49,7 @@ public class CelementsRequestFilter {
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiProvider xwikiProvider;
-  private final UrlService urlService;
+  private final StrutsActionUtils actionUtils;
 
   @Inject
   public CelementsRequestFilter(
@@ -58,20 +59,21 @@ public class CelementsRequestFilter {
       @Lazy WikiService wikiService,
       WikiUpdater wikiUpdater,
       XWikiProvider xwikiProvider,
-      UrlService urlService) {
+      UrlService urlService,
+      StrutsActionUtils actionUtils) {
     this.execution = execution;
     this.execContextManager = execContextManager;
     this.containerInitializer = containerInitializer;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
-    this.urlService = urlService;
+    this.actionUtils = actionUtils;
   }
 
   public ExecutionContext preExecute(HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
-    return preExecute(urlService.getActionFromUrl(request.getRequestURI()), request, response);
+    return preExecute(actionUtils.getActionForRequest(request), request, response);
   }
 
   public ExecutionContext preExecute(String action, HttpServletRequest request,

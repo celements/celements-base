@@ -136,6 +136,7 @@ public class XWikiUrlService implements UrlService {
     return context.getXWikiContext().getURLFactory();
   }
 
+  @Deprecated(since = "6.8.1", forRemoval = true)
   @Override
   public @NotEmpty String getActionFromUrl(String requestPath) throws ExecutionException {
     String[] urlParts = StringUtils.tokenizeToStringArray(requestPath, "/");
