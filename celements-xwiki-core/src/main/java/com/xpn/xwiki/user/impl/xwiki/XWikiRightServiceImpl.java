@@ -75,7 +75,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       .put("loginerror", "login")
       .put("loginsubmit", "login")
       .put("view", "view")
-      .put("inline", "view")
+      .put("inline", "edit")
       .put("edit", "edit")
       .put("viewrev", "view")
       .put("get", "view")
