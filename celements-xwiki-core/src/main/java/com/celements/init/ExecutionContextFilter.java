@@ -37,8 +37,9 @@ public class ExecutionContextFilter implements Filter {
       throws IOException, ServletException {
     CelementsRequestFilter requestFilter = getBeanFactory().getBean(CelementsRequestFilter.class);
     try {
-      LOGGER.debug("setup execution context for request {}",
-          defer(() -> getRequestUrl(request).orElse("'no HttpServletRequest'")));
+      LOGGER.debug("setup execution context for request [{}], dispatcher [{}]",
+          defer(() -> getRequestUrl(request).orElse("'no HttpServletRequest'")),
+          request.getDispatcherType());
       if ((request instanceof HttpServletRequest) && (response instanceof HttpServletResponse)) {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
