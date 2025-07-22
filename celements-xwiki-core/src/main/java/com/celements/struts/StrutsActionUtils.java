@@ -1,7 +1,5 @@
 package com.celements.struts;
 
-import static com.celements.logging.LogUtils.*;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotEmpty;
@@ -22,6 +20,8 @@ public class StrutsActionUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StrutsActionUtils.class);
 
+  private static final String URI_SEPARATOR = "/";
+
   /**
    * @param request
    *          current HttpServletRequest
@@ -29,22 +29,21 @@ public class StrutsActionUtils {
    *          the logical path e.g. "/inline" (no ".do", no context path)
    * @return true if there is a matching <action path="inline"> in this module
    */
-  public boolean isActionDefined(@NotNull HttpServletRequest request, @NotEmpty String actionPath) {
+  public boolean isActionDefined(@NotNull HttpServletRequest request, @NotEmpty String action) {
     ServletContext context = request.getServletContext();
     // pick up the ModuleConfig for this request
     ModuleConfig moduleConfig = ModuleUtils.getInstance().getModuleConfig(request, context);
     if (moduleConfig == null) {
       return false;
     }
+    String actionPath = URI_SEPARATOR + action + URI_SEPARATOR;
     ActionConfig cfg = moduleConfig.findActionConfig(actionPath);
+    LOGGER.debug("isActionDefined: actionPath '{}', action-config '{}'", actionPath, cfg);
     return (cfg != null);
   }
 
   public @NotEmpty String getActionForRequest(@NotNull HttpServletRequest request) {
-    String[] urlParts = StringUtils.tokenizeToStringArray(request.getRequestURI(), "/");
-    LOGGER.debug("getActionForRequest: for full request-uri '{}', for first part '{}'",
-        defer(() -> isActionDefined(request, request.getRequestURI())),
-        defer(() -> isActionDefined(request, urlParts[0])));
+    String[] urlParts = StringUtils.tokenizeToStringArray(request.getRequestURI(), URI_SEPARATOR);
     if ((urlParts.length > 2) && isActionDefined(request, urlParts[0])) {
       return urlParts[0];
     }
