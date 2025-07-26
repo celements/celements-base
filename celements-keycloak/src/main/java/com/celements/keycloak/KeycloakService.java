@@ -67,6 +67,24 @@ public class KeycloakService implements IdentityService {
 
   @Override
   @NotEmpty
+  public String getLoginClientId() {
+    return configSource.getProperty("celements.keycloak.login-client-id", "unkown");
+  }
+
+  @Override
+  @NotEmpty
+  public String getLoginClientSecret() {
+    return configSource.getProperty("celements.keycloak.login-client-secret", "<unkown-secret>");
+  }
+
+  @Override
+  @NotEmpty
+  public String getOAuth2BaseUrl() {
+    return "https://" + getHost() + "/auth/realms/" + getRealm() + "/protocol/openid-connect/";
+  }
+
+  @Override
+  @NotEmpty
   public String getJwkSetUri() {
     return "https://" + getHost() + "/realms/" + getRealm()
         + "/protocol/openid-connect/certs";
