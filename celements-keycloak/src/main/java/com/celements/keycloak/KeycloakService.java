@@ -49,8 +49,10 @@ public class KeycloakService implements IdentityService {
 
   @Inject
   public KeycloakService(
-      @Named(CelementsFromWikiConfigurationSource.NAME) ConfigurationSource configSource) {
+      @Named(CelementsFromWikiConfigurationSource.NAME) ConfigurationSource configSource,
+      ModelContext context) {
     this.configSource = configSource;
+    this.context = context;
     LOGGER.info("KeycloakService constructor: {} host={}, realm={}", configSource.getClass(),
         getHost(), getRealm());
   }
