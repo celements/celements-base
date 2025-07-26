@@ -28,6 +28,7 @@ import org.xwiki.observation.event.Event;
 
 import com.celements.common.observation.listener.AbstractLocalEventListener;
 import com.celements.configuration.CelementsFromWikiConfigurationSource;
+import com.celements.model.context.ModelContext;
 import com.celements.model.reference.RefBuilder;
 import com.celements.observation.save.SaveEventOperation;
 import com.celements.observation.save.object.ObjectEvent;
@@ -44,6 +45,7 @@ public class KeycloakService implements IdentityService {
   private final Map<String, AuthenticationManager> authManagerCache = new ConcurrentHashMap<>();
 
   private final ConfigurationSource configSource;
+  private final ModelContext context;
 
   @Inject
   public KeycloakService(
@@ -79,15 +81,40 @@ public class KeycloakService implements IdentityService {
 
   @Override
   @NotEmpty
+  public String getIssuerUri() {
+    return "https://" + getHost() + "/realms/" + getRealm();
+  }
+
+  @Override
+  @NotEmpty
   public String getOAuth2BaseUrl() {
-    return "https://" + getHost() + "/auth/realms/" + getRealm() + "/protocol/openid-connect/";
+    return getIssuerUri() + "/protocol/openid-connect/";
   }
 
   @Override
   @NotEmpty
   public String getJwkSetUri() {
-    return "https://" + getHost() + "/realms/" + getRealm()
-        + "/protocol/openid-connect/certs";
+    return getOAuth2BaseUrl() + "certs";
+  }
+
+  @Override
+  @NotEmpty
+  public String getLoginUrl() {
+    return "/oauth2/authorization/" + getRegistrationId();
+  }
+
+  @Override
+  @NotEmpty
+  public String getLogoutSucessUrl() {
+    // TODO get celements-logout URL respecting XWikiPreferences or
+    // xwiki.cfg config
+    return "/";
+  }
+
+  @Override
+  @NotEmpty
+  public String getRegistrationId() {
+    return context.getWikiRef().getName() + "-login";
   }
 
   @Override
@@ -157,4 +184,5 @@ public class KeycloakService implements IdentityService {
     }
 
   }
+
 }
