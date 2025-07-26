@@ -1,9 +1,11 @@
 package com.celements.keycloak;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.logging.LogUtils.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
@@ -22,13 +24,13 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.context.Execution;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.event.Event;
 
 import com.celements.common.observation.listener.AbstractLocalEventListener;
 import com.celements.configuration.CelementsFromWikiConfigurationSource;
-import com.celements.model.context.ModelContext;
 import com.celements.model.reference.RefBuilder;
 import com.celements.observation.save.SaveEventOperation;
 import com.celements.observation.save.object.ObjectEvent;
@@ -45,14 +47,14 @@ public class KeycloakService implements IdentityService {
   private final Map<String, AuthenticationManager> authManagerCache = new ConcurrentHashMap<>();
 
   private final ConfigurationSource configSource;
-  private final ModelContext context;
+  private final Execution execution;
 
   @Inject
   public KeycloakService(
       @Named(CelementsFromWikiConfigurationSource.NAME) ConfigurationSource configSource,
-      ModelContext context) {
+      Execution execution) {
     this.configSource = configSource;
-    this.context = context;
+    this.execution = execution;
     LOGGER.info("KeycloakService constructor: {} host={}, realm={}", configSource.getClass(),
         getHost(), getRealm());
   }
@@ -116,7 +118,9 @@ public class KeycloakService implements IdentityService {
   @Override
   @NotEmpty
   public String getRegistrationId() {
-    return context.getWikiRef().getName() + "-login";
+    Optional<String> wikiNameOpt = execution.getContext().get(WIKI).map(WikiReference::getName);
+    LOGGER.info("get registrationId for wikiName={}", defer(() -> wikiNameOpt.orElse(null)));
+    return wikiNameOpt.map(wikiName -> wikiName + "-").orElse("") + "login";
   }
 
   @Override
