@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.event.Event;
@@ -118,7 +119,9 @@ public class KeycloakService implements IdentityService {
   @Override
   @NotEmpty
   public String getRegistrationId() {
-    Optional<String> wikiNameOpt = execution.getContext().get(WIKI).map(WikiReference::getName);
+    Optional<ExecutionContext> eContextOpt = Optional.ofNullable(execution.getContext());
+    Optional<String> wikiNameOpt = eContextOpt.flatMap(eContext -> eContext.get(WIKI))
+        .map(WikiReference::getName);
     LOGGER.info("get registrationId for wikiName={}", defer(() -> wikiNameOpt.orElse(null)));
     return wikiNameOpt.map(wikiName -> wikiName + "-").orElse("") + "login";
   }
