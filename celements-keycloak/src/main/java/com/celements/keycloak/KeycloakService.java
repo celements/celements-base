@@ -105,7 +105,10 @@ public class KeycloakService implements IdentityService {
   @Override
   @NotEmpty
   public String getLoginUrl() {
-    return "/oauth2/authorization/" + getRegistrationId();
+    String loginUrl = "/oauth2/authorization/" + getRegistrationId();
+    LOGGER.info("get getLoginUrl for wikiName={} returns '{}'",
+        defer(() -> getWikiName().orElse(null)), loginUrl);
+    return loginUrl;
   }
 
   @Override
@@ -119,11 +122,16 @@ public class KeycloakService implements IdentityService {
   @Override
   @NotEmpty
   public String getRegistrationId() {
+    Optional<String> wikiNameOpt = getWikiName();
+    LOGGER.info("get registrationId for wikiName={}", defer(() -> wikiNameOpt.orElse(null)));
+    return wikiNameOpt.map(wikiName -> wikiName + "-").orElse("") + "login";
+  }
+
+  private Optional<String> getWikiName() {
     Optional<ExecutionContext> eContextOpt = Optional.ofNullable(execution.getContext());
     Optional<String> wikiNameOpt = eContextOpt.flatMap(eContext -> eContext.get(WIKI))
         .map(WikiReference::getName);
-    LOGGER.info("get registrationId for wikiName={}", defer(() -> wikiNameOpt.orElse(null)));
-    return wikiNameOpt.map(wikiName -> wikiName + "-").orElse("") + "login";
+    return wikiNameOpt;
   }
 
   @Override
