@@ -81,9 +81,6 @@ public class CelementsRequestFilter {
   public ExecutionContext preExecute(String action, HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
-    if (execution.getContext() != null) {
-      return execution.getContext();
-    }
     LOGGER.debug("preExecute - action [{}], request [{}]",
         action, defer(() -> request.getRequestURL().toString()));
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
@@ -138,9 +135,6 @@ public class CelementsRequestFilter {
   }
 
   public void postExecute() {
-    if (execution.getContext() == null) {
-      return;
-    }
     LOGGER.debug("postExecute");
     containerInitializer.cleanup();
     execution.removeContext();
