@@ -45,6 +45,8 @@ public class KeycloakService implements IdentityService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KeycloakService.class);
 
+  private static final String CELEMENTS_KEYCLOAK_REALM = "celements.keycloak.realm";
+
   private final Map<String, AuthenticationManager> authManagerCache = new ConcurrentHashMap<>();
 
   private final ConfigurationSource configSource;
@@ -61,15 +63,27 @@ public class KeycloakService implements IdentityService {
   }
 
   @Override
+  public boolean isOAuthEnabled() {
+    return configSource.containsKey(CELEMENTS_KEYCLOAK_REALM)
+        && getRealmOpt().map(realm -> !realm.trim().isEmpty()).orElse(false);
+  }
+
+  @Override
   @NotEmpty
-  public String getHost() {
-    return configSource.getProperty("celements.keycloak.host", "localhost");
+  public Optional<String> getRealmOpt() {
+    return Optional.ofNullable(configSource.getProperty(CELEMENTS_KEYCLOAK_REALM));
   }
 
   @Override
   @NotEmpty
   public String getRealm() {
-    return configSource.getProperty("celements.keycloak.realm", XWikiConstant.MAIN_WIKI.getName());
+    return getRealmOpt().orElse(XWikiConstant.MAIN_WIKI.getName());
+  }
+
+  @Override
+  @NotEmpty
+  public String getHost() {
+    return configSource.getProperty("celements.keycloak.host", "localhost");
   }
 
   @Override
