@@ -89,13 +89,13 @@ public class KeycloakService implements IdentityService {
   @Override
   @NotEmpty
   public String getLoginClientId() {
-    return configSource.getProperty("celements.keycloak.login-client-id", "unkown");
+    return configSource.getProperty("celements.keycloak.login_client_id", "unkown");
   }
 
   @Override
   @NotEmpty
   public String getLoginClientSecret() {
-    return configSource.getProperty("celements.keycloak.login-client-secret", "<unkown-secret>");
+    return configSource.getProperty("celements.keycloak.login_client_secret", "<unkown-secret>");
   }
 
   @Override
