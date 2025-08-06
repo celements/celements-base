@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
@@ -25,7 +26,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
-import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.event.Event;
@@ -48,6 +48,7 @@ public class KeycloakService implements IdentityService {
   private static final String CELEMENTS_KEYCLOAK_REALM = "celements.keycloak.realm";
 
   private final Map<String, AuthenticationManager> authManagerCache = new ConcurrentHashMap<>();
+  private final Map<String, JwtDecoder> jwtDecoderCache = new ConcurrentHashMap<>();
 
   private final ConfigurationSource configSource;
   private final Execution execution;
@@ -141,13 +142,6 @@ public class KeycloakService implements IdentityService {
     return wikiNameOpt.map(wikiName -> wikiName + "-").orElse("") + "login";
   }
 
-  private Optional<String> getWikiName() {
-    Optional<ExecutionContext> eContextOpt = Optional.ofNullable(execution.getContext());
-    Optional<String> wikiNameOpt = eContextOpt.flatMap(eContext -> eContext.get(WIKI))
-        .map(WikiReference::getName);
-    return wikiNameOpt;
-  }
-
   @Override
   @NotNull
   public AuthenticationManager getAuthenticationManagerForWiki(WikiReference wikiRef) {
@@ -155,13 +149,32 @@ public class KeycloakService implements IdentityService {
         this::buildAuthenticationManagerForWiki);
   }
 
-  private AuthenticationManager buildAuthenticationManagerForWiki(String wikiName) {
+  @Override
+  @NotNull
+  public JwtDecoder getJwtDecoder() {
+    return jwtDecoderCache.computeIfAbsent(getWikiName().orElseThrow(),
+        this::buildJwtDecoderForWiki);
+  }
+
+  private JwtDecoder buildJwtDecoderForWiki(String wikiName) {
     LOGGER.info("Building JwtDecoder for wikiName={}, jwkSetUri={}", wikiName,
+        defer(this::getJwkSetUri));
+    return NimbusJwtDecoder.withJwkSetUri(getJwkSetUri()).build();
+  }
+
+  private AuthenticationManager buildAuthenticationManagerForWiki(String wikiName) {
+    LOGGER.info("Building AuthenticationManager for wikiName={}, jwkSetUri={}", wikiName,
         defer(this::getJwkSetUri));
     JwtAuthenticationProvider provider = new JwtAuthenticationProvider(
         NimbusJwtDecoder.withJwkSetUri(getJwkSetUri()).build());
     provider.setJwtAuthenticationConverter(jwtAuthConverter());
     return new ProviderManager(provider);
+  }
+
+  private Optional<String> getWikiName() {
+    return Optional.ofNullable(execution.getContext())
+        .flatMap(eContext -> eContext.get(WIKI))
+        .map(WikiReference::getName);
   }
 
   private JwtAuthenticationConverter jwtAuthConverter() {
@@ -208,6 +221,7 @@ public class KeycloakService implements IdentityService {
         logger.trace("changes on {} saved. Invalidating authentication manager cache",
             changedDoc.getDocumentReference());
         authManagerCache.remove(changedDoc.getWikiRef().getName());
+        jwtDecoderCache.remove(changedDoc.getWikiRef().getName());
       } else {
         logger.trace("changes on {} saved. NOT invalidating authentication manager cache",
             changedDoc.getDocumentReference());
