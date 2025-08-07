@@ -183,6 +183,7 @@ public class KeycloakService implements IdentityService {
     authoritiesConverter.setAuthorityPrefix("ROLE_");
 
     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+    converter.setPrincipalClaimName("preferred_username");
     converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
     return converter;
   }
