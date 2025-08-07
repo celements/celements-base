@@ -19,11 +19,14 @@
  */
 package com.xpn.xwiki.internal.observation.remote.converter;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.junit.Test;
 import org.xwiki.bridge.event.DocumentUpdatedEvent;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.observation.remote.LocalEventData;
@@ -32,15 +35,16 @@ import org.xwiki.observation.remote.converter.EventConverterManager;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Validate {@link DocumentEventConverter};
  *
  * @version $Id$
  */
-public class DocumentEventConverterTest extends AbstractBridgedXWikiComponentTestCase {
+public class DocumentEventConverterTest extends AbstractComponentTest {
 
+  @Test
   public void testConvertWithOriginalDocNull() throws Exception {
     EventConverterManager eventConverterManager = getComponentManager()
         .lookup(EventConverterManager.class);

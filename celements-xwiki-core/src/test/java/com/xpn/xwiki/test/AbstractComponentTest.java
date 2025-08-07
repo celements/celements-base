@@ -31,6 +31,7 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.common.test.AbstractBaseComponentTest;
+import com.celements.spring.context.SpringContextProvider;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
@@ -41,7 +42,6 @@ import com.xpn.xwiki.web.Utils;
 
 /**
  * Same as {@link com.xpn.xwiki.test.AbstractBridgedComponentTestCase} but for EasyMock.
- *
  */
 public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
 
@@ -51,6 +51,11 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
   protected void beforeSpringContextRefresh() {
     getBeanFactory().registerSingleton(MockServletContext.class.getName(),
         new MockServletContext(getSpringContext()));
+  }
+
+  @Before
+  public final void setUpApplicationContext() {
+    getBeanFactory().getBean(SpringContextProvider.class).setApplicationContext(getSpringContext());
   }
 
   @Before

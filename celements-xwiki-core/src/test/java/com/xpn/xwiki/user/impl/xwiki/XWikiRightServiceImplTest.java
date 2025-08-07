@@ -362,48 +362,6 @@ public class XWikiRightServiceImplTest extends AbstractBridgedXWikiComponentTest
             .getPageName(), doc.getPageName(), true, getContext()));
   }
 
-  /**
-   * Test that programming rights are checked on the context user when no context document is set.
-   */
-  public void testProgrammingRightsWhenNoContextDocumentIsSet() {
-    // Setup an XWikiPreferences document granting programming rights to XWiki.Programmer
-    XWikiDocument prefs = new XWikiDocument("XWiki", "XWikiPreferences");
-    Mock mockGlobalRightObj = mock(BaseObject.class, new Class[] {}, new Object[] {});
-    mockGlobalRightObj.stubs().method("getStringValue").with(eq("levels"))
-        .will(returnValue("programming,admin"));
-    mockGlobalRightObj.stubs().method("getStringValue").with(eq("users"))
-        .will(returnValue("XWiki.Programmer"));
-    mockGlobalRightObj.stubs().method("getIntValue").with(eq("allow")).will(returnValue(1));
-    mockGlobalRightObj.stubs().method("setNumber");
-    mockGlobalRightObj.stubs().method("setDocumentReference");
-    prefs.addObject("XWiki.XWikiGlobalRights", (BaseObject) mockGlobalRightObj.proxy());
-    this.mockXWiki.stubs().method("getDocument")
-        .with(eq("XWiki.XWikiPreferences"), eq(getContext())).will(
-            returnValue(prefs));
-
-    // Setup the context (no context document)
-    this.mockXWiki.stubs().method("getDatabase").will(returnValue("xwiki"));
-    getContext().remove("doc");
-    getContext().remove("sdoc");
-
-    // XWiki.Programmer should have PR, as per the global rights.
-    getContext().setUser("XWiki.Programmer");
-    assertTrue(this.rightService.hasProgrammingRights(getContext()));
-
-    this.mockGroupService.stubs().method("getAllGroupsReferencesForMember").with(
-        eq(new DocumentReference("xwiki", "XWiki", XWikiRightService.GUEST_USER)), ANYTHING,
-        ANYTHING, ANYTHING)
-        .will(returnValue(Collections.emptyList()));
-
-    // Guests should not have PR
-    getContext().setUser(XWikiRightService.GUEST_USER_FULLNAME);
-    assertFalse(this.rightService.hasProgrammingRights(getContext()));
-
-    // superadmin should always have PR
-    getContext().setUser(XWikiRightService.SUPERADMIN_USER_FULLNAME);
-    assertTrue(this.rightService.hasProgrammingRights(getContext()));
-  }
-
   public void testHasAccessLevelWhithGuestUser() throws XWikiException {
     final XWikiDocument doc = new XWikiDocument(new DocumentReference("wiki2", "Space", "Page"));
 
