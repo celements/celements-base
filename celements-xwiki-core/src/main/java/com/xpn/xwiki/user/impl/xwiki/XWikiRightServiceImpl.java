@@ -82,7 +82,7 @@ public class XWikiRightServiceImpl implements XWikiRightService {
       .put("delete", "delete")
       .put("deleteversions", "admin")
       .put("download", "view")
-      .put("downloadrev", "view")
+      .put("downloadrev", "edit")
       .put("dot", "view")
       .put("edit", "edit")
       .put("export", "view")
