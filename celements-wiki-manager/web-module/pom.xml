@@ -3,22 +3,28 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>celementsweb</artifactId>
-    <version>6.0</version>
+    <version>6.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-wiki-manager-web</artifactId>
   <packaging>war</packaging>
-  <name>Celements Wiki Manager Web</name>
+  <name>Celements Wiki Manager Web-Module</name>
   <version>6.1-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-wiki-manager</artifactId>
-      <version>6.0</version>
+      <version>6.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>
     <finalName>celements-wiki-manager-web</finalName>
+    <plugins>
+      <plugin>
+        <groupId>com.jarslab.maven</groupId>
+        <artifactId>babel-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
