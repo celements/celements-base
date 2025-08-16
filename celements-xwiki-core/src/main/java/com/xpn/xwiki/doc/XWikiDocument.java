@@ -7328,7 +7328,12 @@ public class XWikiDocument implements DocumentModelBridge {
   private void init(DocumentReference reference) {
     // if the passed reference is null consider it points to the default reference
     if (reference == null) {
-      setDocumentReference(Utils.getComponent(DocumentReferenceResolver.class).resolve(""));
+      if (getXWikiContext() != null) {
+        setDocumentReference(Utils.getComponent(DocumentReferenceResolver.class).resolve("",
+            new WikiReference(getXWikiContext().getDatabase())));
+      } else {
+        setDocumentReference(Utils.getComponent(DocumentReferenceResolver.class).resolve(""));
+      }
     } else {
       setDocumentReference(reference);
     }
