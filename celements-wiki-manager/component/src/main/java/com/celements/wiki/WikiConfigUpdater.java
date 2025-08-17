@@ -107,6 +107,7 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
         .filter(FIELD_LANGUAGE, "en")
         .filter(FIELD_HOMEPAGE, "Content.WebHome")
         .filter(FIELD_IS_TEMPLATE, false)
+        .filter(FIELD_OICD_ACTIVE, false)
         .createFirst();
   }
 
