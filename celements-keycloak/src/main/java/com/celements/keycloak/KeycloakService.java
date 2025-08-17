@@ -64,7 +64,7 @@ public class KeycloakService implements IdentityService {
   }
 
   @Override
-  public boolean isOAuthEnabled() {
+  public boolean isConfigValid() {
     return configSource.containsKey(CELEMENTS_KEYCLOAK_REALM)
         && getRealmOpt().map(realm -> !realm.trim().isEmpty()).orElse(false);
   }

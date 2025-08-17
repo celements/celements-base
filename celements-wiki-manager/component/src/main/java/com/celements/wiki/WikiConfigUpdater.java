@@ -8,20 +8,17 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
-import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentSaveException;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
-import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
 import com.celements.wiki.classes.XWikiServerClass;
 import com.celements.wiki.classes.XWikiServerClass.State;
@@ -29,6 +26,7 @@ import com.celements.wiki.classes.XWikiServerClass.Visibility;
 import com.celements.wiki.event.WikiCreatedEvent;
 import com.celements.wiki.event.WikiDeletedEvent;
 import com.celements.wiki.event.WikiEvent;
+import com.celements.wiki.service.WikiManagerService;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
@@ -41,22 +39,29 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WikiConfigUpdater.class);
 
-  public static final String DOC_NAME_PREFIX = "XWikiServer";
+  /**
+   * @deprecated since 6.9 instead use {@link WikiManagerService#DOC_NAME_PREFIX}
+   */
+  @Deprecated(since = "6.9", forRemoval = true)
+  public static final String DOC_NAME_PREFIX = WikiManagerService.DOC_NAME_PREFIX;
 
   private final ModelUtils modelUtils;
   private final IModelAccessFacade modelAccess;
   private final WikiService wikiService;
   private final XWikiConfigSource xwikiCfg;
+  private final WikiManagerService wikimanager;
 
   @Inject
   public WikiConfigUpdater(
       ModelUtils modelUtils,
       IModelAccessFacade modelAccess,
       WikiService wikiService,
+      WikiManagerService wikimanager,
       XWikiConfigSource xwikiCfg) {
     this.modelUtils = modelUtils;
     this.modelAccess = modelAccess;
     this.wikiService = wikiService;
+    this.wikimanager = wikimanager;
     this.xwikiCfg = xwikiCfg;
   }
 
@@ -77,7 +82,8 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
   }
 
   private void createWikiConfig(WikiReference wikiRef) {
-    XWikiDocument cfgDoc = modelAccess.getOrCreateDocument(getWikiConfigDocRef(wikiRef));
+    XWikiDocument cfgDoc = modelAccess
+        .getOrCreateDocument(wikimanager.getWikiConfigDocRef(wikiRef));
     var editor = XWikiObjectEditor.on(cfgDoc).filter(XWikiServerClass.CLASS_REF);
     if (editor.fetch().exists()) {
       LOGGER.debug("skip wiki config creation for [{}], already exists", wikiRef.getName());
@@ -113,18 +119,10 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
 
   private void deleteWikiConfig(WikiReference wikiRef) {
     try {
-      modelAccess.deleteDocument(getWikiConfigDocRef(wikiRef), true);
+      modelAccess.deleteDocument(wikimanager.getWikiConfigDocRef(wikiRef), true);
     } catch (DocumentDeleteException dde) {
       LOGGER.error("failed to delete wiki config for [{}]", wikiRef, dde);
     }
-  }
-
-  private DocumentReference getWikiConfigDocRef(WikiReference wikiRef) {
-    return RefBuilder.create()
-        .with(modelUtils.getMainWikiRef())
-        .space(XWIKI_SPACE)
-        .doc(DOC_NAME_PREFIX + StringUtils.capitalize(wikiRef.getName()))
-        .build(DocumentReference.class);
   }
 
   private String determineHost() {
