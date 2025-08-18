@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
@@ -20,6 +21,7 @@ import com.celements.model.util.ModelUtils;
 import com.celements.wiki.classes.XWikiServerClass;
 import com.xpn.xwiki.doc.XWikiDocument;
 
+@Service
 public class WikiManagerService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WikiManagerService.class);
