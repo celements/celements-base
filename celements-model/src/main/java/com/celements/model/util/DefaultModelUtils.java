@@ -153,7 +153,7 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  public String getDatabaseName(WikiReference wikiRef) {
+  public String getDatabaseNameWithoutPrefix(WikiReference wikiRef) {
     checkNotNull(wikiRef);
     String database = "";
     if (XWikiConstant.MAIN_WIKI.equals(wikiRef)) {
@@ -162,7 +162,14 @@ public class DefaultModelUtils implements ModelUtils {
     if (database.isEmpty()) {
       database = wikiRef.getName().replace('-', '_');
     }
-    return xwikiCfg.getProperty("xwiki.db.prefix", "") + database.replace('-', '_');
+    return database;
+  }
+
+  @Override
+  public String getDatabaseName(WikiReference wikiRef) {
+    checkNotNull(wikiRef);
+    return xwikiCfg.getProperty("xwiki.db.prefix", "")
+        + getDatabaseNameWithoutPrefix(wikiRef).replace('-', '_');
   }
 
   @Override

@@ -48,6 +48,9 @@ public interface ModelUtils {
   Stream<DocumentReference> getAllDocsForSpace(@NotNull SpaceReference spaceRef);
 
   @NotNull
+  String getDatabaseNameWithoutPrefix(@NotNull WikiReference wikiRef);
+
+  @NotNull
   String getDatabaseName(@NotNull WikiReference wikiRef);
 
   /**

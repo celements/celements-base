@@ -5,6 +5,7 @@ import static com.xpn.xwiki.XWikiConstant.*;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,15 +40,18 @@ public class WikiManagerService {
     this.modelAccess = modelAccess;
   }
 
-  public DocumentReference getWikiConfigDocRef(WikiReference wikiRef) {
+  @NotNull
+  public DocumentReference getWikiConfigDocRef(@NotNull WikiReference wikiRef) {
     return RefBuilder.create()
         .with(modelUtils.getMainWikiRef())
         .space(XWIKI_SPACE)
-        .doc(DOC_NAME_PREFIX + StringUtils.capitalize(wikiRef.getName()))
+        .doc(DOC_NAME_PREFIX
+            + StringUtils.capitalize(modelUtils.getDatabaseNameWithoutPrefix(wikiRef)))
         .build(DocumentReference.class);
   }
 
-  public Optional<XWikiObjectFetcher> getWikiConfigOptional(WikiReference wikiRef) {
+  @NotNull
+  public Optional<XWikiObjectFetcher> getWikiConfigOptional(@NotNull WikiReference wikiRef) {
     try {
       return Optional.of(getWikiConfig(wikiRef));
     } catch (WikiNotExistsException exp) {
@@ -56,7 +60,9 @@ public class WikiManagerService {
     return Optional.empty();
   }
 
-  public XWikiObjectFetcher getWikiConfig(WikiReference wikiRef) throws WikiNotExistsException {
+  @NotNull
+  public XWikiObjectFetcher getWikiConfig(@NotNull WikiReference wikiRef)
+      throws WikiNotExistsException {
     try {
       XWikiDocument cfgDoc = modelAccess.getDocument(getWikiConfigDocRef(wikiRef));
       return XWikiObjectFetcher.on(cfgDoc).filter(XWikiServerClass.CLASS_REF);
