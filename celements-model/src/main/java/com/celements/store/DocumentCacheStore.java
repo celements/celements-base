@@ -20,6 +20,8 @@
  */
 package com.celements.store;
 
+import static com.celements.logging.LogUtils.*;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -256,6 +258,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   InvalidateState removeDocFromCache(XWikiDocument doc, Boolean docExists) {
+    LOGGER.debug("remove doc from cache {} and docExists {}", defer(doc::getDocRef), docExists);
     InvalidateState returnState = InvalidateState.CACHE_MISS;
     Set<String> docKeys = new HashSet<>();
     String key = getKey(doc.getDocumentReference());
@@ -282,6 +285,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       }
       setExistCache(doc, docExists);
     }
+    LOGGER.info("removed doc from cache {}, docExists {} returning {}", defer(doc::getDocRef),
+        docExists, returnState);
     return returnState;
   }
 
