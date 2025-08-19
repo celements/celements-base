@@ -197,6 +197,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public void saveXWikiDoc(final XWikiDocument doc, final XWikiContext context,
       final boolean bTransaction) throws XWikiException {
+    LOGGER.debug("saving document {}", defer(doc::getDocRef));
     getBackingStore().saveXWikiDoc(doc, context, bTransaction);
     removeDocFromCache(doc, true);
   }
