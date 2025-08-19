@@ -286,10 +286,10 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   InvalidateState invalidateDocCache(String key) {
+    LOGGER.debug("invalidate doc cache for {}", key);
     InvalidateState invalidState = InvalidateState.CACHE_MISS;
     final DocumentLoader docLoader = documentLoaderMap.get(key);
-    boolean invalidateDocLoader = (docLoader != null);
-    if (invalidateDocLoader) {
+    if (docLoader != null) {
       invalidState = docLoader.invalidate();
     }
     XWikiDocument oldCachedDoc = null;

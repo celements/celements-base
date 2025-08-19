@@ -1,5 +1,6 @@
 package com.celements.wiki.service;
 
+import static com.celements.logging.LogUtils.*;
 import static com.xpn.xwiki.XWikiConstant.*;
 
 import java.util.Optional;
@@ -65,6 +66,7 @@ public class WikiManagerService {
       throws WikiNotExistsException {
     try {
       XWikiDocument cfgDoc = modelAccess.getDocument(getWikiConfigDocRef(wikiRef));
+      LOGGER.debug("return object-fetcher for {}", defer(cfgDoc::getDocRef));
       return XWikiObjectFetcher.on(cfgDoc).filter(XWikiServerClass.CLASS_REF);
     } catch (DocumentNotExistsException exp) {
       throw new WikiNotExistsException("no wiki found for name [" + wikiRef.getName() + "]", exp);
