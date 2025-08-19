@@ -216,10 +216,13 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   String getKey(DocumentReference docRef) {
-    DocumentReference cacheDocRef = RefBuilder.from(docRef)
-        .with(modelContext.getWikiRef())
-        .build(DocumentReference.class);
-    return modelUtils.serializeRef(cacheDocRef);
+    WikiReference wikiRef = modelContext.getWikiRef();
+    if (modelUtils.isMainWiki(modelContext.getWikiRef())) {
+      wikiRef = modelUtils.getMainWikiRef();
+    }
+    return modelUtils.serializeRef(RefBuilder.from(docRef)
+        .with(wikiRef)
+        .build(DocumentReference.class));
   }
 
   String getKeyWithLang(DocumentReference docRef, String language) {
@@ -259,10 +262,11 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   InvalidateState removeDocFromCache(XWikiDocument doc, Boolean docExists) {
-    LOGGER.debug("remove doc from cache {} and docExists {}", defer(doc::getDocRef), docExists);
     InvalidateState returnState = InvalidateState.CACHE_MISS;
     Set<String> docKeys = new HashSet<>();
     String key = getKey(doc.getDocumentReference());
+    LOGGER.debug("remove doc from cache {} with key {} and docExists {}", defer(doc::getDocRef),
+        key, docExists);
     String origKey = "";
     if (doc.getOriginalDocument() != null) {
       origKey = getKey(doc.getOriginalDocument().getDocumentReference());
@@ -286,8 +290,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       }
       setExistCache(doc, docExists);
     }
-    LOGGER.info("removed doc from cache {}, docExists {} returning {}", defer(doc::getDocRef),
-        docExists, returnState);
+    LOGGER.info("removed doc from cache {}, key {}, docExists {} returning {}",
+        defer(doc::getDocRef), key, docExists, returnState);
     return returnState;
   }
 
