@@ -9,7 +9,9 @@ import static com.google.common.base.Strings.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,8 +111,9 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  public <T extends EntityReference> T resolveRef(String name, Class<T> token,
-      EntityReference baseRef) {
+  @NotNull
+  public <T extends EntityReference> T resolveRef(@NotNull String name, @NotNull Class<T> token,
+      @Nullable EntityReference baseRef) {
     RefBuilder builder = RefBuilder.create()
         .with(context.getWikiRef())
         .with(baseRef);
@@ -132,9 +135,18 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  public boolean isMainWiki(WikiReference wikiRef) {
+  public boolean isMainWiki(@Nullable WikiReference wikiRef) {
     return XWikiConstant.MAIN_WIKI.equals(wikiRef)
         || getMainWikiRef().equals(wikiRef);
+  }
+
+  @Override
+  @Nullable
+  public WikiReference normalizeWikiRef(@Nullable WikiReference wikiRef) {
+    if (isMainWiki(wikiRef)) {
+      return getMainWikiRef();
+    }
+    return wikiRef;
   }
 
   @Override
@@ -153,23 +165,12 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  public String getDatabaseNameWithoutPrefix(WikiReference wikiRef) {
-    checkNotNull(wikiRef);
-    String database = "";
-    if (XWikiConstant.MAIN_WIKI.equals(wikiRef)) {
-      database = xwikiCfg.getMainWikiName().trim();
-    }
-    if (database.isEmpty()) {
-      database = wikiRef.getName().replace('-', '_');
-    }
-    return database;
-  }
-
-  @Override
   public String getDatabaseName(WikiReference wikiRef) {
-    checkNotNull(wikiRef);
+    WikiReference normWikiRef = normalizeWikiRef(wikiRef);
+    checkNotNull(normWikiRef);
+    String database = normWikiRef.getName().replace('-', '_');
     return xwikiCfg.getProperty("xwiki.db.prefix", "")
-        + getDatabaseNameWithoutPrefix(wikiRef).replace('-', '_');
+        + database.replace('-', '_');
   }
 
   @Override

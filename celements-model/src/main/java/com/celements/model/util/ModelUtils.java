@@ -26,6 +26,9 @@ public interface ModelUtils {
 
   boolean isMainWiki(@Nullable WikiReference wikiRef);
 
+  @Nullable
+  WikiReference normalizeWikiRef(@Nullable WikiReference wikiRef);
+
   /**
    * @deprecated since 6.0 instead use {@link ReferenceProvider#getAllWikis}
    */
@@ -46,9 +49,6 @@ public interface ModelUtils {
   @Deprecated
   @NotNull
   Stream<DocumentReference> getAllDocsForSpace(@NotNull SpaceReference spaceRef);
-
-  @NotNull
-  String getDatabaseNameWithoutPrefix(@NotNull WikiReference wikiRef);
 
   @NotNull
   String getDatabaseName(@NotNull WikiReference wikiRef);

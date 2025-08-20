@@ -216,12 +216,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   String getKey(DocumentReference docRef) {
-    WikiReference wikiRef = modelContext.getWikiRef();
-    if (modelUtils.isMainWiki(modelContext.getWikiRef())) {
-      wikiRef = modelUtils.getMainWikiRef();
-    }
     return modelUtils.serializeRef(RefBuilder.from(docRef)
-        .with(wikiRef)
+        .with(modelUtils.normalizeWikiRef(modelContext.getWikiRef()))
         .build(DocumentReference.class));
   }
 

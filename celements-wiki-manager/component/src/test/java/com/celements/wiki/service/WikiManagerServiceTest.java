@@ -32,8 +32,8 @@ public class WikiManagerServiceTest extends AbstractComponentTest {
   @Test
   public void test_getWikiConfigDocRef_mainWiki() {
     expect(getMock(ModelUtils.class).getMainWikiRef()).andReturn(new WikiReference("unkownMain"));
-    expect(getMock(ModelUtils.class).getDatabaseNameWithoutPrefix(eq(XWikiConstant.MAIN_WIKI)))
-        .andReturn("main");
+    expect(getMock(ModelUtils.class).normalizeWikiRef(eq(XWikiConstant.MAIN_WIKI)))
+        .andReturn(new WikiReference("main"));
     replayDefault();
     DocumentReference configDocRef = service.getWikiConfigDocRef(XWikiConstant.MAIN_WIKI);
     verifyDefault();

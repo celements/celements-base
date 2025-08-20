@@ -1,6 +1,7 @@
 package com.celements.wiki.service;
 
 import static com.celements.logging.LogUtils.*;
+import static com.google.common.base.Preconditions.*;
 import static com.xpn.xwiki.XWikiConstant.*;
 
 import java.util.Optional;
@@ -43,11 +44,13 @@ public class WikiManagerService {
 
   @NotNull
   public DocumentReference getWikiConfigDocRef(@NotNull WikiReference wikiRef) {
+    WikiReference normWikiRef = modelUtils.normalizeWikiRef(wikiRef);
+    checkNotNull(normWikiRef);
     return RefBuilder.create()
         .with(modelUtils.getMainWikiRef())
         .space(XWIKI_SPACE)
         .doc(DOC_NAME_PREFIX
-            + StringUtils.capitalize(modelUtils.getDatabaseNameWithoutPrefix(wikiRef)))
+            + StringUtils.capitalize(normWikiRef.getName()))
         .build(DocumentReference.class);
   }
 
