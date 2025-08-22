@@ -11,12 +11,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.validation.constraints.NotNull;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -38,28 +36,31 @@ import com.xpn.xwiki.web.Utils;
 @Component
 public class DefaultModelUtils implements ModelUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelUtils.class);
-
-  @Requirement
-  private Execution exec;
-
-  @Requirement
-  private ModelContext context;
-
-  @Requirement("explicit")
-  private EntityReferenceResolver<String> resolver;
+  private final Execution exec;
+  private final ModelContext context;
+  private final EntityReferenceResolver<String> resolver;
+  private final ReferenceProvider refProvider;
+  private final XWikiConfigSource xwikiCfg;
+  private final Supplier<WikiReference> mainWikiRef;
 
   @Inject
-  private ReferenceProvider refProvider;
-
-  @Inject
-  private XWikiConfigSource xwikiCfg;
-
-  private final Supplier<WikiReference> mainWikiRef = Suppliers
-      .memoize(() -> RefBuilder.create()
-          .wiki(xwikiCfg.getMainWikiName())
-          .buildOpt(WikiReference.class)
-          .orElse(XWikiConstant.MAIN_WIKI));
+  public DefaultModelUtils(
+      @Named("explicit") EntityReferenceResolver<String> resolver,
+      ReferenceProvider refProvider,
+      XWikiConfigSource xwikiCfg,
+      ModelContext context,
+      Execution exec) {
+    this.resolver = resolver;
+    this.refProvider = refProvider;
+    this.xwikiCfg = xwikiCfg;
+    this.context = context;
+    this.exec = exec;
+    this.mainWikiRef = Suppliers
+        .memoize(() -> RefBuilder.create()
+            .wiki(xwikiCfg.getMainWikiName())
+            .buildOpt(WikiReference.class)
+            .orElse(XWikiConstant.MAIN_WIKI));
+  }
 
   @Override
   @Deprecated
@@ -168,9 +169,8 @@ public class DefaultModelUtils implements ModelUtils {
   public String getDatabaseName(WikiReference wikiRef) {
     WikiReference normWikiRef = normalizeWikiRef(wikiRef);
     checkNotNull(normWikiRef);
-    String database = normWikiRef.getName().replace('-', '_');
     return xwikiCfg.getProperty("xwiki.db.prefix", "")
-        + database.replace('-', '_');
+        + normWikiRef.getName().replace('-', '_');
   }
 
   @Override

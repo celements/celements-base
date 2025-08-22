@@ -56,12 +56,12 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
       ModelUtils modelUtils,
       IModelAccessFacade modelAccess,
       WikiService wikiService,
-      WikiManagerService wikimanager,
+      WikiManagerService wikiManager,
       XWikiConfigSource xwikiCfg) {
     this.modelUtils = modelUtils;
     this.modelAccess = modelAccess;
     this.wikiService = wikiService;
-    this.wikiManager = wikimanager;
+    this.wikiManager = wikiManager;
     this.xwikiCfg = xwikiCfg;
   }
 

@@ -55,8 +55,15 @@ public class WikiManagerService {
         .build(DocumentReference.class);
   }
 
+  public boolean isOicdEnabled(@NotNull WikiReference wikiRef) {
+    return getWikiConfigOptional(wikiRef)
+        .flatMap(fetcher -> fetcher.fetchField(XWikiServerClass.FIELD_OICD_ACTIVE)
+            .findFirst())
+        .orElse(false);
+  }
+
   @NotNull
-  public Optional<XWikiObjectFetcher> getWikiConfigOptional(@NotNull WikiReference wikiRef) {
+  private Optional<XWikiObjectFetcher> getWikiConfigOptional(@NotNull WikiReference wikiRef) {
     try {
       return Optional.of(getWikiConfig(wikiRef));
     } catch (WikiMissingException exp) {
@@ -66,7 +73,7 @@ public class WikiManagerService {
   }
 
   @NotNull
-  public XWikiObjectFetcher getWikiConfig(@NotNull WikiReference wikiRef)
+  private XWikiObjectFetcher getWikiConfig(@NotNull WikiReference wikiRef)
       throws WikiMissingException {
     try {
       XWikiDocument cfgDoc = modelAccess.getDocument(getWikiConfigDocRef(wikiRef));
