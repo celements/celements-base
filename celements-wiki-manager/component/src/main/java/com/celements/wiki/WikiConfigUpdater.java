@@ -49,7 +49,7 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
   private final IModelAccessFacade modelAccess;
   private final WikiService wikiService;
   private final XWikiConfigSource xwikiCfg;
-  private final WikiManagerService wikimanager;
+  private final WikiManagerService wikiManager;
 
   @Inject
   public WikiConfigUpdater(
@@ -61,7 +61,7 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
     this.modelUtils = modelUtils;
     this.modelAccess = modelAccess;
     this.wikiService = wikiService;
-    this.wikimanager = wikimanager;
+    this.wikiManager = wikimanager;
     this.xwikiCfg = xwikiCfg;
   }
 
@@ -83,7 +83,7 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
 
   private void createWikiConfig(WikiReference wikiRef) {
     XWikiDocument cfgDoc = modelAccess
-        .getOrCreateDocument(wikimanager.getWikiConfigDocRef(wikiRef));
+        .getOrCreateDocument(wikiManager.getWikiConfigDocRef(wikiRef));
     var editor = XWikiObjectEditor.on(cfgDoc).filter(XWikiServerClass.CLASS_REF);
     if (editor.fetch().exists()) {
       LOGGER.debug("skip wiki config creation for [{}], already exists", wikiRef.getName());
@@ -119,7 +119,7 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
 
   private void deleteWikiConfig(WikiReference wikiRef) {
     try {
-      modelAccess.deleteDocument(wikimanager.getWikiConfigDocRef(wikiRef), true);
+      modelAccess.deleteDocument(wikiManager.getWikiConfigDocRef(wikiRef), true);
     } catch (DocumentDeleteException dde) {
       LOGGER.error("failed to delete wiki config for [{}]", wikiRef, dde);
     }

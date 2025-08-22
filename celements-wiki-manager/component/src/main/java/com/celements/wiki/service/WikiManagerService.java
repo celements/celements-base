@@ -21,6 +21,7 @@ import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.object.xwiki.XWikiObjectFetcher;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
+import com.celements.wiki.WikiMissingException;
 import com.celements.wiki.classes.XWikiServerClass;
 import com.xpn.xwiki.doc.XWikiDocument;
 
@@ -58,7 +59,7 @@ public class WikiManagerService {
   public Optional<XWikiObjectFetcher> getWikiConfigOptional(@NotNull WikiReference wikiRef) {
     try {
       return Optional.of(getWikiConfig(wikiRef));
-    } catch (WikiNotExistsException exp) {
+    } catch (WikiMissingException exp) {
       LOGGER.warn("no wiki found for {}", wikiRef, exp);
     }
     return Optional.empty();
@@ -66,13 +67,13 @@ public class WikiManagerService {
 
   @NotNull
   public XWikiObjectFetcher getWikiConfig(@NotNull WikiReference wikiRef)
-      throws WikiNotExistsException {
+      throws WikiMissingException {
     try {
       XWikiDocument cfgDoc = modelAccess.getDocument(getWikiConfigDocRef(wikiRef));
       LOGGER.debug("return object-fetcher for {}", defer(cfgDoc::getDocRef));
       return XWikiObjectFetcher.on(cfgDoc).filter(XWikiServerClass.CLASS_REF);
     } catch (DocumentNotExistsException exp) {
-      throw new WikiNotExistsException("no wiki found for name [" + wikiRef.getName() + "]", exp);
+      throw new WikiMissingException(wikiRef, exp);
     }
   }
 
