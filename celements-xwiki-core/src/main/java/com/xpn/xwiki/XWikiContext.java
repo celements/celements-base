@@ -96,7 +96,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private XWiki wiki;
 
-  private XWikiEngineContext engine_context;
+  private XWikiEngineContext engineContext;
 
   private XWikiRequest request;
 
@@ -181,11 +181,11 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public XWikiEngineContext getEngineContext() {
-    return this.engine_context;
+    return this.engineContext;
   }
 
-  public void setEngineContext(XWikiEngineContext engine_context) {
-    this.engine_context = engine_context;
+  public void setEngineContext(XWikiEngineContext engineContext) {
+    this.engineContext = engineContext;
   }
 
   public XWikiRequest getRequest() {
@@ -328,10 +328,10 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public void setUser(String user, boolean main) {
     if (user == null) {
-      getExcecutionContext().removeProperty(XWikiExecutionProp.XWIKI_USER.getName());
+      getExecutionContext().removeProperty(XWikiExecutionProp.XWIKI_USER.getName());
       remove(USER_KEY);
     } else {
-      getExcecutionContext().set(XWikiExecutionProp.XWIKI_USER, new XWikiUser(user, main));
+      getExecutionContext().set(XWikiExecutionProp.XWIKI_USER, new XWikiUser(user, main));
       put(USER_KEY, user);
     }
   }
@@ -354,7 +354,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public XWikiUser getXWikiUser() {
-    return getExcecutionContext().get(XWikiExecutionProp.XWIKI_USER).orElse(null);
+    return getExecutionContext().get(XWikiExecutionProp.XWIKI_USER).orElse(null);
   }
 
   public String getLanguage() {
@@ -587,7 +587,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
     return Utils.getComponent(XWikiConfigSource.class);
   }
 
-  private ExecutionContext getExcecutionContext() {
+  private ExecutionContext getExecutionContext() {
     return getBeanFactory().getBean(Execution.class).getContext();
   }
 

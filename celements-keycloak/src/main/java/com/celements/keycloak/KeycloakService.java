@@ -1,5 +1,6 @@
 package com.celements.keycloak;
 
+import static com.celements.configuration.ConfigSourceUtils.*;
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.logging.LogUtils.*;
 
@@ -59,20 +60,19 @@ public class KeycloakService implements IdentityService {
       Execution execution) {
     this.configSource = configSource;
     this.execution = execution;
-    LOGGER.info("KeycloakService constructor: {} host={}, realm={}", configSource.getClass(),
+    LOGGER.info("KeycloakService constructor: {} host '{}', realm '{}'", configSource.getClass(),
         getHost(), getRealm());
   }
 
   @Override
   public boolean isConfigValid() {
     return configSource.containsKey(CELEMENTS_KEYCLOAK_REALM)
-        && getRealmOpt().map(realm -> !realm.trim().isEmpty()).orElse(false);
+        && getRealmOpt().isPresent();
   }
 
-  @Override
   @NotEmpty
-  public Optional<String> getRealmOpt() {
-    return Optional.ofNullable(configSource.getProperty(CELEMENTS_KEYCLOAK_REALM));
+  private Optional<String> getRealmOpt() {
+    return getStringProperty(configSource, CELEMENTS_KEYCLOAK_REALM).toJavaUtil();
   }
 
   @Override
@@ -121,7 +121,7 @@ public class KeycloakService implements IdentityService {
   @NotEmpty
   public String getLoginUrl() {
     String loginUrl = "/oauth2/authorization/" + getRegistrationId();
-    LOGGER.info("get getLoginUrl for wikiName={} returns '{}'",
+    LOGGER.info("get getLoginUrl for wikiName '{}' returns '{}'",
         defer(() -> getWikiName().orElse(null)), loginUrl);
     return loginUrl;
   }
@@ -138,7 +138,7 @@ public class KeycloakService implements IdentityService {
   @NotEmpty
   public String getRegistrationId() {
     Optional<String> wikiNameOpt = getWikiName();
-    LOGGER.info("get registrationId for wikiName={}", defer(() -> wikiNameOpt.orElse(null)));
+    LOGGER.info("get registrationId for wikiName '{}'", defer(() -> wikiNameOpt.orElse(null)));
     return wikiNameOpt.map(wikiName -> wikiName + "-").orElse("") + "login";
   }
 
@@ -149,26 +149,29 @@ public class KeycloakService implements IdentityService {
         this::buildAuthenticationManagerForWiki);
   }
 
-  @Override
-  @NotNull
-  public JwtDecoder getJwtDecoder() {
-    return jwtDecoderCache.computeIfAbsent(getWikiName().orElseThrow(),
-        this::buildJwtDecoderForWiki);
-  }
-
-  private JwtDecoder buildJwtDecoderForWiki(String wikiName) {
-    LOGGER.info("Building JwtDecoder for wikiName={}, jwkSetUri={}", wikiName,
-        defer(this::getJwkSetUri));
-    return NimbusJwtDecoder.withJwkSetUri(getJwkSetUri()).build();
-  }
-
   private AuthenticationManager buildAuthenticationManagerForWiki(String wikiName) {
-    LOGGER.info("Building AuthenticationManager for wikiName={}, jwkSetUri={}", wikiName,
+    LOGGER.info("Building AuthenticationManager for wikiName '{}', jwkSetUri '{}'", wikiName,
         defer(this::getJwkSetUri));
     JwtAuthenticationProvider provider = new JwtAuthenticationProvider(
         NimbusJwtDecoder.withJwkSetUri(getJwkSetUri()).build());
     provider.setJwtAuthenticationConverter(jwtAuthConverter());
     return new ProviderManager(provider);
+  }
+
+  @Override
+  @NotNull
+  public JwtDecoder getJwtDecoder() {
+    return jwtDecoderCache.computeIfAbsent(getWikiName().orElseThrow(),
+        (String currentWikiName) -> buildJwtDecoderForCurrentWiki());
+  }
+
+  /**
+   * CAUTION: the JwtDecoder gets generated for the current wiki in the execution context.
+   */
+  private JwtDecoder buildJwtDecoderForCurrentWiki() {
+    LOGGER.info("Building JwtDecoder for wikiName '{}', jwkSetUri '{}'",
+        defer(() -> getWikiName().orElse(null)), defer(this::getJwkSetUri));
+    return NimbusJwtDecoder.withJwkSetUri(getJwkSetUri()).build();
   }
 
   private Optional<String> getWikiName() {
@@ -181,7 +184,11 @@ public class KeycloakService implements IdentityService {
     JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
     authoritiesConverter.setAuthoritiesClaimName("realm_access.roles");
     authoritiesConverter.setAuthorityPrefix("ROLE_");
+    return createJwtAuthenticationCoverter(authoritiesConverter);
+  }
 
+  private JwtAuthenticationConverter createJwtAuthenticationCoverter(
+      JwtGrantedAuthoritiesConverter authoritiesConverter) {
     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
     converter.setPrincipalClaimName("preferred_username");
     converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
