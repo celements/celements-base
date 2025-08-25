@@ -1,6 +1,5 @@
 package com.celements.keycloak;
 
-import static com.celements.configuration.ConfigSourceUtils.*;
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.logging.LogUtils.*;
 
@@ -72,7 +71,7 @@ public class KeycloakService implements IdentityService {
 
   @NotEmpty
   private Optional<String> getRealmOpt() {
-    return getStringProperty(configSource, CELEMENTS_KEYCLOAK_REALM).toJavaUtil();
+    return configSource.getStringProperty(CELEMENTS_KEYCLOAK_REALM);
   }
 
   @Override
