@@ -26,6 +26,9 @@ public interface ModelUtils {
 
   boolean isMainWiki(@Nullable WikiReference wikiRef);
 
+  @Nullable
+  WikiReference normalizeWikiRef(@Nullable WikiReference wikiRef);
+
   /**
    * @deprecated since 6.0 instead use {@link ReferenceProvider#getAllWikis}
    */

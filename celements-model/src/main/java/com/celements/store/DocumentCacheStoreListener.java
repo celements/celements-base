@@ -23,7 +23,7 @@ public class DocumentCacheStoreListener implements EventListener {
 
   public static final String COMPONENT_NAME = "DocumentCacheStoreListener";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DocumentCacheStore.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DocumentCacheStoreListener.class);
 
   @Requirement
   private RemoteObservationManagerContext remoteObservationManagerContext;

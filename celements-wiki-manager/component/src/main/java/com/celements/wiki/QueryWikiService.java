@@ -27,6 +27,7 @@ import org.xwiki.query.QueryManager;
 
 import com.celements.common.MoreOptional;
 import com.celements.common.lambda.Try;
+import com.celements.wiki.service.WikiManagerService;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
@@ -146,7 +147,7 @@ public class QueryWikiService implements WikiService {
   }
 
   private Stream<WikiReference> toWikiRef(String name) {
-    return Stream.of(name.replace("XWikiServer", "").trim())
+    return Stream.of(name.replace(WikiManagerService.DOC_NAME_PREFIX, "").trim())
         .filter(not(String::isEmpty))
         .map(WikiReference::new)
         .map(this::convertMainWiki);

@@ -41,7 +41,6 @@ import com.xpn.xwiki.web.Utils;
 
 /**
  * Same as {@link com.xpn.xwiki.test.AbstractBridgedComponentTestCase} but for EasyMock.
- *
  */
 public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
 
