@@ -118,6 +118,12 @@ public class KeycloakService implements IdentityService {
 
   @Override
   @NotEmpty
+  public String getRevokeUrl() {
+    return getOAuth2BaseUrl() + "revoke";
+  }
+
+  @Override
+  @NotEmpty
   public String getLoginUrl() {
     String loginUrl = "/oauth2/authorization/" + getRegistrationId();
     LOGGER.info("get getLoginUrl for wikiName '{}' returns '{}'",
