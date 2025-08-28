@@ -9,7 +9,7 @@
   <artifactId>celements-wiki-manager-web</artifactId>
   <packaging>war</packaging>
   <name>Celements Wiki Manager Web</name>
-  <version>6.1</version>
+  <version>6.2-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
@@ -24,6 +24,6 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base</url>
-    <tag>celements-wiki-manager-web-6.1</tag>
+    <tag>HEAD</tag>
   </scm>
 </project>
