@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>celementsweb</artifactId>
-    <version>6.1</version>
+    <version>6.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-wiki-manager-web</artifactId>
@@ -14,7 +14,7 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-wiki-manager</artifactId>
-      <version>6.1-SNAPSHOT</version>
+      <version>6.1</version>
     </dependency>
   </dependencies>
   <build>
