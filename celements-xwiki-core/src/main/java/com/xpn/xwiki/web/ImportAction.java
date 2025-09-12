@@ -58,18 +58,15 @@ public class ImportAction extends XWikiAction {
       String name = request.get("name");
       String action = request.get("action");
       String[] pages = request.getParameterValues("pages");
-
+      LOGGER.debug("render - name [{}], action [{}], {} pages", name, action, pages.length);
       if (!context.getWiki().getRightService().hasAdminRights(context)) {
         context.put("message", "needadminrights");
         return "exception";
       }
-
       if (name == null) {
         return "admin";
       }
-
       PackageAPI importer = ((PackageAPI) context.getWiki().getPluginApi("package", context));
-
       if ("getPackageInfos".equals(action)) {
         // List the documents present in the selected archive
         String encoding = context.getWiki().getEncoding();
@@ -93,7 +90,6 @@ public class ImportAction extends XWikiAction {
             for (DocumentInfoAPI dia : filelist) {
               dia.setAction(DocumentInfo.ACTION_SKIP);
             }
-
             for (String pageName : pages) {
               String language = Util.normalizeLanguage(request.get("language_" + pageName));
               String actionName = "action_" + pageName;
@@ -114,11 +110,7 @@ public class ImportAction extends XWikiAction {
               }
 
               String docName = pageName.replaceAll(":.*$", "");
-              if (language == null) {
-                importer.setDocumentAction(docName, iAction);
-              } else {
-                importer.setDocumentAction(docName, language, iAction);
-              }
+              importer.setDocumentAction(docName, language, iAction);
             }
           }
           // Set the appropriate strategy to handle versions

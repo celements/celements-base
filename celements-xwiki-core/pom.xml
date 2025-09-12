@@ -24,23 +24,23 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>6.3-SNAPSHOT</version>
+    <version>6.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-xwiki-core</artifactId>
-  <version>6.8-SNAPSHOT</version>
+  <version>6.10-SNAPSHOT</version>
   <description>Celements XWiki</description>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>6.1</version>
+      <version>6.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>6.1-SNAPSHOT</version>
+      <version>6.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -52,13 +52,13 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>6.1</version>
+      <version>6.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source</artifactId>
-      <version>6.1</version>
+      <version>6.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
