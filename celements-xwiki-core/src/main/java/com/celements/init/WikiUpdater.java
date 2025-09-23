@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 
@@ -39,7 +40,8 @@ public class WikiUpdater {
   private final Execution execution;
   private final ExecutorService executor;
   private final ConcurrentHashMap<WikiReference, CompletableFuture<Void>> wikiUpdates;
-  private final CompletableFuture<Void> completed = new CompletableFuture<>();
+  private final AtomicBoolean shutdown;
+  private final CompletableFuture<Void> completed;
 
   @Inject
   public WikiUpdater(
@@ -50,6 +52,9 @@ public class WikiUpdater {
     this.executor = Executors.newFixedThreadPool(THREAD_COUNT, new ThreadFactoryBuilder()
         .setNameFormat("cel-wiki-updater-%d").build());
     this.wikiUpdates = new ConcurrentHashMap<>();
+    this.shutdown = new AtomicBoolean(false);
+    this.completed = new CompletableFuture<>();
+    this.completed.whenComplete((v, exc) -> executor.shutdown());
   }
 
   public Optional<CompletableFuture<Void>> getFuture(WikiReference wiki) {
@@ -64,7 +69,7 @@ public class WikiUpdater {
     return runUpdateAsyncExc(wikiRef, action::run);
   }
 
-  public synchronized CompletableFuture<Void> runUpdateAsyncExc(WikiReference wikiRef,
+  public CompletableFuture<Void> runUpdateAsyncExc(WikiReference wikiRef,
       ThrowingRunnable<Exception> action) {
     checkNotNull(wikiRef);
     checkState(!isShutdown());
@@ -90,25 +95,17 @@ public class WikiUpdater {
   }
 
   public boolean isShutdown() {
-    return executor.isShutdown();
+    return shutdown.get();
   }
 
   public CompletableFuture<Void> onShutdown(Runnable action) {
     return completed.whenComplete((v, e) -> action.run());
   }
 
-  public synchronized CompletableFuture<Void> shutdown() {
-    if (!executor.isShutdown()) {
-      executor.shutdown();
-      var allUpdates = CompletableFuture.allOf(EntryStream.of(wikiUpdates)
-          .mapKeyValue((wiki, f) -> XWikiConstant.MAIN_WIKI.equals(wiki)
-              ? f // propagate exceptions for main wiki
-              : f.exceptionally(exc -> { // just log exceptions for other wikis
-                LOGGER.error("Wiki update failed for {}", wiki, exc);
-                return null;
-              }))
-          .toArray(CompletableFuture[]::new));
-      allUpdates.whenComplete((r, exc) -> {
+  public CompletableFuture<Void> shutdown() {
+    if (shutdown.compareAndSet(false, true)) {
+      LOGGER.info("shutting down WikiUpdater");
+      onAllUpdates().whenComplete((v, exc) -> {
         if (exc != null) {
           completed.completeExceptionally(exc);
         } else {
@@ -117,6 +114,17 @@ public class WikiUpdater {
       });
     }
     return completed;
+  }
+
+  private CompletableFuture<Void> onAllUpdates() {
+    var allUpdates = EntryStream.of(wikiUpdates)
+        .mapKeyValue((wiki, f) -> XWikiConstant.MAIN_WIKI.equals(wiki)
+            ? f // propagate exceptions for main wiki
+            : f.exceptionally(exc -> { // just log exceptions for other wikis
+              LOGGER.error("Wiki update failed for {}", wiki, exc);
+              return null;
+            }));
+    return CompletableFuture.allOf(allUpdates.toArray(CompletableFuture[]::new));
   }
 
   private class WikiUpdateRunnable extends AbstractXWikiRunnable {
