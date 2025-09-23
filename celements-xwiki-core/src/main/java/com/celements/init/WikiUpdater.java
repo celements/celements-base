@@ -41,7 +41,7 @@ public class WikiUpdater {
   private final ExecutorService executor;
   private final ConcurrentHashMap<WikiReference, CompletableFuture<Void>> wikiUpdates;
   private final AtomicBoolean shutdown;
-  private final CompletableFuture<Void> completed;
+  private final CompletableFuture<Void> shutdownFuture;
 
   @Inject
   public WikiUpdater(
@@ -53,8 +53,8 @@ public class WikiUpdater {
         .setNameFormat("cel-wiki-updater-%d").build());
     this.wikiUpdates = new ConcurrentHashMap<>();
     this.shutdown = new AtomicBoolean(false);
-    this.completed = new CompletableFuture<>();
-    this.completed.whenComplete((v, exc) -> executor.shutdown());
+    this.shutdownFuture = new CompletableFuture<>();
+    this.shutdownFuture.whenComplete((v, e) -> executor.shutdown());
   }
 
   public Optional<CompletableFuture<Void>> getFuture(WikiReference wiki) {
@@ -98,8 +98,8 @@ public class WikiUpdater {
     return shutdown.get();
   }
 
-  public CompletableFuture<Void> onShutdown(Runnable action) {
-    return completed.whenComplete((v, e) -> action.run());
+  public CompletableFuture<Void> getShutdownFuture() {
+    return shutdownFuture;
   }
 
   public CompletableFuture<Void> shutdown() {
@@ -107,13 +107,13 @@ public class WikiUpdater {
       LOGGER.info("shutting down WikiUpdater");
       onAllUpdates().whenComplete((v, exc) -> {
         if (exc != null) {
-          completed.completeExceptionally(exc);
+          getShutdownFuture().completeExceptionally(exc);
         } else {
-          completed.complete(null);
+          getShutdownFuture().complete(null);
         }
       });
     }
-    return completed;
+    return getShutdownFuture();
   }
 
   private CompletableFuture<Void> onAllUpdates() {

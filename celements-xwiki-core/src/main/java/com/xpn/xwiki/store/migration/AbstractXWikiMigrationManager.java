@@ -27,9 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +78,7 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
    * @param context
    *          - used everywhere
    */
-  public AbstractXWikiMigrationManager(XWikiContext context) throws XWikiException {
+  protected AbstractXWikiMigrationManager(XWikiContext context) throws XWikiException {
     this.startupVersion = getDBVersion(context);
   }
 
@@ -138,13 +136,7 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
    */
   @Override
   public void startMigrations(XWikiContext context) throws XWikiException {
-    getWikiService().streamAllWikis().forEach(wiki -> {
-      try {
-        startMigrations(wiki).join();
-      } catch (CompletionException | CancellationException e) {
-        LOG.error("Failed to migrate database [{}]", wiki.getName(), e);
-      }
-    });
+    getWikiService().streamAllWikis().forEach(this::startMigrations);
   }
 
   /**

@@ -57,11 +57,11 @@ public class MigrationTrigger implements ApplicationListener<CelementsStartedEve
       LOGGER.info("triggering migrations");
       getMigrationManager().startMigrations(getXContext());
     } catch (XWikiException exc) {
-      LOGGER.error("Error starting migrations", exc);
+      throw new IllegalStateException("Failed to start migrations", exc);
     }
     if (isExitAfterMigration()) {
       LOGGER.info("Waiting for all migrations to finish before exiting...");
-      wikiUpdater.onShutdown(() -> {
+      wikiUpdater.getShutdownFuture().whenComplete((v, e) -> {
         LOGGER.warn("Exiting because xwiki.store.migration.exitAfterEnd is set, good bye.");
         System.exit(0); // so brutal
       });
