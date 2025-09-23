@@ -189,15 +189,13 @@ public abstract class AbstractXWikiMigrationManager implements XWikiMigrationMan
   protected Collection<XWikiMigration> getNeededMigrations(XWikiContext context) throws Exception {
     XWikiDBVersion curversion = getDBVersion(context);
     var neededMigrations = new TreeMap<XWikiDBVersion, XWikiMigration>();
-
     var forcedMigrations = getForcedMigrations(context);
     if (!forcedMigrations.isEmpty()) {
       neededMigrations.putAll(forcedMigrations);
     } else {
       var ignoredMigrations = new HashSet<>(Arrays.asList(context.getWiki().getConfig()
           .getPropertyAsList("xwiki.store.migration.ignored")));
-      var allMigrations = getAllMigrations(context);
-      for (XWikiMigratorInterface migrator : allMigrations) {
+      for (XWikiMigratorInterface migrator : getAllMigrations(context)) {
         if (ignoredMigrations.contains(migrator.getClass().getName())
             || ignoredMigrations.contains(migrator.getVersion().toString())) {
           continue;
