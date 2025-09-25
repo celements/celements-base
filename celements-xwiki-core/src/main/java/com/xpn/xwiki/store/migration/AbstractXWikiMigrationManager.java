@@ -49,7 +49,7 @@ import com.xpn.xwiki.XWikiException;
 public abstract class AbstractXWikiMigrationManager implements XWikiMigrationManagerInterface {
 
   /** logger. */
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractXWikiMigrationManager.class);
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Internal class used to find out the migrators that are being forced in the XWiki configuration
