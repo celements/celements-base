@@ -28,7 +28,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-xwiki-core</artifactId>
-  <version>6.10-SNAPSHOT</version>
+  <version>6.11-SNAPSHOT</version>
   <description>Celements XWiki</description>
   <dependencies>
     <dependency>
@@ -577,7 +577,7 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
-      <version>6.0</version>
+      <version>6.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
