@@ -133,6 +133,12 @@ public class KeycloakService implements IdentityService {
 
   @Override
   @NotEmpty
+  public String getLogoutUrl() {
+    return getOAuth2BaseUrl() + "logout";
+  }
+
+  @Override
+  @NotEmpty
   public String getLogoutSucessUrl() {
     // TODO get celements-logout URL respecting XWikiPreferences or
     // xwiki.cfg config
