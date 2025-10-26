@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.xwiki.component.descriptor.ComponentDescriptor;
@@ -34,7 +35,14 @@ public class CelSpringContext extends AnnotationConfigApplicationContext {
   public CelSpringContext(
       @NotNull BeanNameGenerator beanNameGenerator,
       @NotNull List<Class<?>> configs) {
-    super(new XWikiShimBeanFactory());
+    this(new XWikiShimBeanFactory(), beanNameGenerator, configs);
+  }
+
+  public CelSpringContext(
+      @NotNull DefaultListableBeanFactory beanFactory,
+      @NotNull BeanNameGenerator beanNameGenerator,
+      @NotNull List<Class<?>> configs) {
+    super(beanFactory);
     setBeanNameGenerator(beanNameGenerator);
     if (configs.isEmpty()) {
       scan("com.celements.spring.config");

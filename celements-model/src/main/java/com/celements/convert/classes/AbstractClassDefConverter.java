@@ -15,7 +15,7 @@ import com.celements.model.field.FieldAccessException;
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.field.FieldMissingException;
 import com.google.common.base.Supplier;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractClassDefConverter<A, B> implements ClassDefinitionConverter<A, B> {
 
@@ -43,7 +43,7 @@ public abstract class AbstractClassDefConverter<A, B> implements ClassDefinition
   @Override
   public B apply(B instance, A data) throws ConversionException {
     if (data != null) {
-      for (ClassField<?> field : aggregateClassFields(FluentIterable.<ClassField<?>>of())) {
+      for (ClassField<?> field : aggregateClassFields(new ImmutableList.Builder<>()).build()) {
         try {
           convertField(field, getToFieldAccessor(), instance, getFromFieldAccessor(), data);
         } catch (FieldAccessException exc) {
@@ -54,8 +54,9 @@ public abstract class AbstractClassDefConverter<A, B> implements ClassDefinition
     return instance;
   }
 
-  protected FluentIterable<ClassField<?>> aggregateClassFields(FluentIterable<ClassField<?>> iter) {
-    return iter.append(getClassDef().getFields());
+  protected ImmutableList.Builder<ClassField<?>> aggregateClassFields(
+      ImmutableList.Builder<ClassField<?>> builder) {
+    return builder.addAll(getClassDef().getFields());
   }
 
   private static <V, A, B> void convertField(ClassField<V> field, FieldAccessor<A> toAccessor, A to,
