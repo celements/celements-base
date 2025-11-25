@@ -238,9 +238,10 @@ public class Package {
   public boolean add(XWikiDocument doc, int defaultAction, XWikiContext context)
       throws XWikiException {
     if (doCheckEditRights() && !context.getWiki().checkAccess("edit", doc, context)) {
+      LOG.debug("add - no edit rights on doc [{}:{}]", doc.getFullName(), doc.getLanguage());
       return false;
     }
-
+    LOG.debug("add - doc [{}:{}]", doc.getFullName(), doc.getLanguage());
     for (DocumentInfo di : this.files) {
       if (di.getFullName().equals(doc.getFullName())
           && (di.getLanguage().equals(doc.getLanguage()))) {
@@ -289,28 +290,28 @@ public class Package {
     return add(doc, action, context);
   }
 
-  public boolean add(String docFullName, int DefaultAction, XWikiContext context)
+  public boolean add(String docFullName, int defaultAction, XWikiContext context)
       throws XWikiException {
     XWikiDocument doc = context.getWiki().getDocument(docFullName, context);
-    add(doc, DefaultAction, context);
+    add(doc, defaultAction, context);
     List<String> languages = doc.getTranslationList(context);
     for (String language : languages) {
       if (((language != null) && !language.equals("")
           && !language.equals(doc.getDefaultLanguage()))) {
-        add(doc.getTranslatedDocument(language, context), DefaultAction, context);
+        add(doc.getTranslatedDocument(language, context), defaultAction, context);
       }
     }
 
     return true;
   }
 
-  public boolean add(String docFullName, String language, int DefaultAction, XWikiContext context)
+  public boolean add(String docFullName, String language, int defaultAction, XWikiContext context)
       throws XWikiException {
     XWikiDocument doc = context.getWiki().getDocument(docFullName, context);
     if ((language == null) || (language.equals(""))) {
-      add(doc, DefaultAction, context);
+      add(doc, defaultAction, context);
     } else {
-      add(doc.getTranslatedDocument(language, context), DefaultAction, context);
+      add(doc.getTranslatedDocument(language, context), defaultAction, context);
     }
 
     return true;
@@ -462,16 +463,13 @@ public class Package {
        */
       for (XWikiDocument doc : docsToLoad) {
         if (documentExistInPackageFile(doc.getFullName(), doc.getLanguage(), description)) {
-          this.add(doc, context);
+          add(doc, context);
         } else {
-          LOG.warn("document " + doc.getFullName() + " does not exist in package definition."
-              + " It will not be installed.");
-          // It will be listed in the "skipped documents" section after the
-          // import.
+          LOG.warn("import - doc [{}:{}] not listed in package, skipping",
+              doc.getFullName(), doc.getLanguage());
           addToSkipped(doc.getFullName(), context);
         }
       }
-
       updateFileInfos(description);
     } catch (DocumentException e) {
       throw new PackageException(XWikiException.ERROR_XWIKI_UNKNOWN, "Error when reading the XML");
@@ -529,7 +527,6 @@ public class Package {
     if (this.files == null) {
       return;
     }
-
     for (DocumentInfo docInfo : this.files) {
       if (docInfo.getFullName().equals(docName) && docInfo.getLanguage().equals(language)) {
         docInfo.setAction(defaultAction);
@@ -652,9 +649,8 @@ public class Package {
 
     int result = DocumentInfo.INSTALL_OK;
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Package installing document " + doc.getFullName() + " " + doc.getLanguage());
-    }
+    LOG.debug("installDocument - doc [{}:{}], action [{}]", doc.getFullName(), doc.getLanguage(),
+        DocumentInfo.actionToString(doc.getAction()));
 
     if (doc.getAction() == DocumentInfo.ACTION_SKIP) {
       addToSkipped(doc.getFullName() + ":" + doc.getLanguage(), context);
@@ -810,7 +806,6 @@ public class Package {
     if (fullName.endsWith(":")) {
       fullName = fullName.substring(0, fullName.length() - 1);
     }
-
     getSkipped(context).add(fullName);
   }
 

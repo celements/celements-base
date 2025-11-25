@@ -8,6 +8,7 @@ import org.xwiki.model.reference.WikiReference;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.user.api.XWikiUser;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiResponse;
 
@@ -22,6 +23,8 @@ public final class XWikiExecutionProp {
       "xwiki.instance", XWiki.class);
   public static final Property<XWikiContext> XWIKI_CONTEXT = new Property<>(
       "xwikicontext", XWikiContext.class);
+  public static final Property<XWikiUser> XWIKI_USER = new Property<>(
+      "xwiki.user", XWikiUser.class);
 
   public static final Property<XWikiRequest> XWIKI_REQUEST = new Property<>(
       "xwiki.request", XWikiRequest.class);

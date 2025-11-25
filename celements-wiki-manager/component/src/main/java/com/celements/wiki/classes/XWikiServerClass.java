@@ -95,7 +95,7 @@ public class XWikiServerClass extends AbstractClassDefinition implements ClassDe
       CLASS_REF, "secure")
           .prettyName("Secure")
           .defaultValue(0)
-          .displayType("checkbox")
+          .dictionaryKey("checkbox")
           .displayFormType("select")
           .build();
 
@@ -109,7 +109,15 @@ public class XWikiServerClass extends AbstractClassDefinition implements ClassDe
       CLASS_REF, "iswikitemplate")
           .prettyName("Template")
           .defaultValue(0)
-          .displayType("checkbox")
+          .dictionaryKey("checkbox")
+          .displayFormType("select")
+          .build();
+
+  public static final ClassField<Boolean> FIELD_OICD_ACTIVE = new BooleanField.Builder(
+      CLASS_REF, "oicd-active")
+          .prettyName("OpenID Connect active")
+          .defaultValue(0)
+          .dictionaryKey("checkbox")
           .displayFormType("select")
           .build();
 

@@ -21,6 +21,8 @@
 
 package com.xpn.xwiki;
 
+import static com.celements.spring.context.SpringContextProvider.*;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,6 +37,8 @@ import java.util.function.Supplier;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
+import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
@@ -92,7 +96,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private XWiki wiki;
 
-  private XWikiEngineContext engine_context;
+  private XWikiEngineContext engineContext;
 
   private XWikiRequest request;
 
@@ -105,8 +109,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
   private String orig_database;
 
   private String database;
-
-  private XWikiUser user;
 
   private static final String USER_KEY = "user";
 
@@ -179,11 +181,11 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public XWikiEngineContext getEngineContext() {
-    return this.engine_context;
+    return this.engineContext;
   }
 
-  public void setEngineContext(XWikiEngineContext engine_context) {
-    this.engine_context = engine_context;
+  public void setEngineContext(XWikiEngineContext engineContext) {
+    this.engineContext = engineContext;
   }
 
   public XWikiRequest getRequest() {
@@ -326,10 +328,10 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   public void setUser(String user, boolean main) {
     if (user == null) {
-      this.user = null;
+      getExecutionContext().removeProperty(XWikiExecutionProp.XWIKI_USER.getName());
       remove(USER_KEY);
     } else {
-      this.user = new XWikiUser(user, main);
+      getExecutionContext().set(XWikiExecutionProp.XWIKI_USER, new XWikiUser(user, main));
       put(USER_KEY, user);
     }
   }
@@ -339,8 +341,8 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public String getUser() {
-    if (this.user != null) {
-      return this.user.getUser();
+    if (getXWikiUser() != null) {
+      return getXWikiUser().getUser();
     } else {
       return XWikiRightService.GUEST_USER_FULLNAME;
     }
@@ -352,7 +354,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public XWikiUser getXWikiUser() {
-    return this.user;
+    return getExecutionContext().get(XWikiExecutionProp.XWIKI_USER).orElse(null);
   }
 
   public String getLanguage() {
@@ -583,6 +585,10 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private XWikiConfigSource getXWikiCfg() {
     return Utils.getComponent(XWikiConfigSource.class);
+  }
+
+  private ExecutionContext getExecutionContext() {
+    return getBeanFactory().getBean(Execution.class).getContext();
   }
 
 }

@@ -46,6 +46,8 @@ public class ModelUtilsTest extends AbstractComponentTest {
 
   @Test
   public void test_getDatabaseName() {
+    WikiReference mainWiki = new WikiReference("main");
+    expect(getMock(XWikiConfigSource.class).getMainWikiName()).andReturn(mainWiki.getName());
     String prefix = "cel_";
     expect(getMock(XWikiConfigSource.class).getProperty("xwiki.db.prefix", "")).andReturn(prefix);
 

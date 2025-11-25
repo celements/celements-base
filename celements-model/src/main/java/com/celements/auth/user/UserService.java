@@ -138,7 +138,10 @@ public interface UserService {
    *          the login value
    * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
    *         unique. Excludes suspended Users from the return value.
+   * @deprecated instead use {@link #getPossibleUserForLoginField}
+   * @since 6.9
    */
+  @Deprecated(since = "6.9", forRemoval = true)
   @NotNull
   com.google.common.base.Optional<User> getUserForLoginField(@NotNull String login);
 
@@ -151,8 +154,6 @@ public interface UserService {
    *          list of user fields for which one can login, e.g. 'name', 'email' or 'validkey'
    * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
    *         unique. Excludes suspended Users from the return value.
-   */
-  /**
    * @deprecated instead use {@link #getPossibleUserForLoginField} with
    *             {@link User#isSuspended()}
    * @since 6.5
@@ -161,6 +162,17 @@ public interface UserService {
   @NotNull
   com.google.common.base.Optional<User> getUserForLoginField(@NotNull String login,
       @Nullable Collection<String> possibleLoginFields);
+
+  /**
+   * looks up the user by the given login value with {@link #getPossibleLoginFields()}
+   *
+   * @param login
+   *          the login value
+   * @return the matched {@link User} instance or absent if the given login doesn't match or isn't
+   *         unique. includes suspended Users in return value.
+   */
+  @NotNull
+  Optional<User> getPossibleUserForLoginField(@NotNull String login);
 
   /**
    * looks up the user by the given login value with the possible login fields.
