@@ -20,9 +20,7 @@
  */
 package org.xwiki.observation.remote;
 
-import java.util.List;
-
-import org.xwiki.component.annotation.ComponentRole;
+import java.util.Optional;
 
 /**
  * Provide configuration for remote observation manager.
@@ -30,8 +28,9 @@ import org.xwiki.component.annotation.ComponentRole;
  * @version $Id$
  * @since 2.0M3
  */
-@ComponentRole
 public interface RemoteObservationManagerConfiguration {
+
+  String CFG_KEY = "celements.observation.remote";
 
   /**
    * @return indicate if the remote observation manager is enabled
@@ -39,13 +38,8 @@ public interface RemoteObservationManagerConfiguration {
   boolean isEnabled();
 
   /**
-   * @return the channels to start at init
-   */
-  List<String> getChannels();
-
-  /**
    * @return the identifier of the network adapter implementation to use to actually send and
    *         receive network messages
    */
-  String getNetworkAdapter();
+  Optional<String> getImplementation();
 }

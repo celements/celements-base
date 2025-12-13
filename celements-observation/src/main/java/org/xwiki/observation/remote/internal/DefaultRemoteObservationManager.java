@@ -20,14 +20,13 @@
  */
 package org.xwiki.observation.remote.internal;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.stereotype.Service;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
@@ -49,8 +48,8 @@ import org.xwiki.observation.remote.converter.EventConverterManager;
  * @version $Id$
  * @since 2.0M3
  */
-@Component
-public class DefaultRemoteObservationManager implements RemoteObservationManager, Initializable {
+@Service
+public class DefaultRemoteObservationManager implements RemoteObservationManager {
 
   private static final Logger LOGGER = LoggerFactory
       .getLogger(DefaultRemoteObservationManager.class);
@@ -58,89 +57,94 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
   /**
    * Access {@link RemoteObservationManager} configuration.
    */
-  @Requirement
-  private RemoteObservationManagerConfiguration configuration;
+  private final RemoteObservationManagerConfiguration configuration;
 
   /**
    * Used to convert local event from and to remote event.
    */
-  @Requirement
-  private EventConverterManager eventConverterManager;
+  private final EventConverterManager eventConverterManager;
 
   /**
    * Used to inject event coming from network.
    */
-  @Requirement
-  private ObservationManager observationManager;
+  private final ObservationManager observationManager;
 
   /**
    * Used to set some extra informations about the current event injected to the local
    * {@link ObservationManager}.
    */
-  @Requirement
-  private RemoteObservationManagerContext remoteEventManagerContext;
+  private final RemoteObservationManagerContext remoteEventManagerContext;
 
   /**
    * Used to initialize ExecutionContext for the remote->local thread.
    */
-  @Requirement
-  private Execution execution;
+  private final Execution execution;
 
   /**
    * Used to initialize ExecutionContext for the remote->local thread.
    */
-  @Requirement
-  private ExecutionContextManager executionContextManager;
+  private final ExecutionContextManager executionContextManager;
 
   /**
    * Used to lookup the network adapter.
    */
-  @Requirement
-  private ComponentManager componentManager;
+  private final BeanFactory beanFactory;
 
   /**
    * The network adapter to use to actually send and receive network messages.
    */
   private NetworkAdapter networkAdapter;
 
-  @Override
-  public void initialize() throws InitializationException {
-    try {
-      String networkAdapterHint = this.configuration.getNetworkAdapter();
-      this.networkAdapter = this.componentManager.lookup(NetworkAdapter.class, networkAdapterHint);
-    } catch (ComponentLookupException e) {
-      throw new InitializationException("Failed to initialize network adapter ["
-          + this.configuration.getNetworkAdapter() + "]", e);
-    }
+  @Inject
+  public DefaultRemoteObservationManager(
+      RemoteObservationManagerConfiguration configuration,
+      EventConverterManager eventConverterManager,
+      ObservationManager observationManager,
+      RemoteObservationManagerContext remoteEventManagerContext,
+      Execution execution,
+      ExecutionContextManager executionContextManager,
+      BeanFactory beanFactory) {
+    this.configuration = configuration;
+    this.eventConverterManager = eventConverterManager;
+    this.observationManager = observationManager;
+    this.remoteEventManagerContext = remoteEventManagerContext;
+    this.execution = execution;
+    this.executionContextManager = executionContextManager;
+    this.beanFactory = beanFactory;
+  }
 
-    // start configured channels
-    for (String channelId : this.configuration.getChannels()) {
-      try {
-        startChannel(channelId);
-      } catch (RemoteEventException e) {
-        LOGGER.error("Failed to start channel [" + channelId + "]", e);
-      }
+  @PostConstruct
+  public void initialize() {
+    networkAdapter = configuration.getImplementation()
+        .map(name -> beanFactory.getBean(name, NetworkAdapter.class))
+        .orElse(null);
+    if (networkAdapter == null) {
+      LOGGER.info("Remote observation manager is disabled");
+      return;
+    }
+    try {
+      networkAdapter.start(this::notify);
+    } catch (RemoteEventException e) {
+      LOGGER.error("Failed to start adapter", e);
     }
   }
 
   @Override
   public void notify(LocalEventData localEvent) {
-    if (this.remoteEventManagerContext.isRemoteState()) {
-      // the event is a remote event
-      return;
+    if (networkAdapter == null) {
+      throw new IllegalStateException("Remote observation manager is disabled");
     }
-
-    // Convert local->remote
+    if (this.remoteEventManagerContext.isRemoteState()) {
+      return; // the event is a remote event
+    }
     RemoteEventData remoteEvent = this.eventConverterManager.createRemoteEventData(localEvent);
-
     // if remote event data is not filled it mean the message should not be sent to the network
     if (remoteEvent != null) {
-      this.networkAdapter.send(remoteEvent);
+      networkAdapter.send(remoteEvent);
     }
-
     if (localEvent.getEvent() instanceof ApplicationStoppedEvent) {
       try {
-        this.networkAdapter.stopAllChannels();
+        networkAdapter.stop();
       } catch (RemoteEventException e) {
         LOGGER.error("Failed to stop channels", e);
       }
@@ -166,16 +170,6 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
       }
       execution.removeContext();
     }
-  }
-
-  @Override
-  public void startChannel(String channelId) throws RemoteEventException {
-    this.networkAdapter.startChannel(channelId);
-  }
-
-  @Override
-  public void stopChannel(String channelId) throws RemoteEventException {
-    this.networkAdapter.stopChannel(channelId);
   }
 
   private void initEContext() throws ExecutionContextException {

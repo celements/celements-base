@@ -1,14 +1,13 @@
 package org.xwiki.observation.remote.internal;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import static com.google.common.base.Strings.*;
+
 import java.util.Optional;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 
@@ -22,39 +21,24 @@ import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 public class DefaultRemoteObservationManagerConfiguration
     implements RemoteObservationManagerConfiguration {
 
-  @Requirement
-  private ComponentManager componentManager;
+  private final ConfigurationSource configSource;
+
+  @Inject
+  public DefaultRemoteObservationManagerConfiguration(
+      @Named("xwikiproperties") ConfigurationSource configSource) {
+    this.configSource = configSource;
+  }
 
   @Override
   public boolean isEnabled() {
-    return getConfigSource()
-        .map(cfg -> cfg.getProperty("observation.remote.enabled", Boolean.class))
-        .filter(Objects::nonNull)
-        .orElse(false);
+    return getImplementation().isPresent();
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public List<String> getChannels() {
-    return getConfigSource()
-        .map(cfg -> cfg.getProperty("observation.remote.channels", List.class))
-        .filter(Objects::nonNull)
-        .orElse(Collections.emptyList());
-  }
-
-  @Override
-  public String getNetworkAdapter() {
-    return getConfigSource()
-        .map(cfg -> cfg.getProperty("observation.remote.networkadapter", "jgroups"))
-        .orElse("jgroups");
-  }
-
-  private Optional<ConfigurationSource> getConfigSource() {
-    try {
-      return Optional.of(componentManager.lookup(ConfigurationSource.class, "xwikiproperties"));
-    } catch (ComponentLookupException e) {
-      return Optional.empty();
-    }
+  public Optional<String> getImplementation() {
+    return Optional.ofNullable(configSource.getProperty(CFG_KEY, String.class))
+        .map(str -> nullToEmpty(str).trim())
+        .filter(s -> !s.isEmpty());
   }
 
 }
