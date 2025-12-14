@@ -36,7 +36,6 @@ import org.xwiki.observation.event.ApplicationStoppedEvent;
 import org.xwiki.observation.remote.LocalEventData;
 import org.xwiki.observation.remote.NetworkAdapter;
 import org.xwiki.observation.remote.RemoteEventData;
-import org.xwiki.observation.remote.RemoteEventException;
 import org.xwiki.observation.remote.RemoteObservationManager;
 import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 import org.xwiki.observation.remote.RemoteObservationManagerContext;
@@ -115,18 +114,15 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
 
   @PostConstruct
   public void initialize() {
-    networkAdapter = configuration.getImplementation()
+    var adapter = configuration.getImplementation()
         .map(name -> beanFactory.getBean(name, NetworkAdapter.class))
         .orElse(null);
-    if (networkAdapter == null) {
+    if (adapter == null) {
       LOGGER.info("Remote observation manager is disabled");
       return;
     }
-    try {
-      networkAdapter.start(this::notify);
-    } catch (RemoteEventException e) {
-      LOGGER.error("Failed to start adapter", e);
-    }
+    adapter.start(this::notify);
+    networkAdapter = adapter;
   }
 
   @Override
@@ -143,11 +139,7 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
       networkAdapter.send(remoteEvent);
     }
     if (localEvent.getEvent() instanceof ApplicationStoppedEvent) {
-      try {
-        networkAdapter.stop();
-      } catch (RemoteEventException e) {
-        LOGGER.error("Failed to stop channels", e);
-      }
+      networkAdapter.stop();
     }
   }
 

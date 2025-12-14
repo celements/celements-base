@@ -1,29 +1,20 @@
 package com.celements.observation.remote.kafka;
 
+import static com.google.common.base.Preconditions.*;
+import static java.nio.charset.StandardCharsets.*;
 import static org.springframework.util.SerializationUtils.*;
 
-import java.lang.management.ManagementFactory;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.management.JMException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -33,154 +24,202 @@ import org.springframework.kafka.listener.AcknowledgingMessageListener;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.stereotype.Component;
-import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.observation.remote.NetworkAdapter;
 import org.xwiki.observation.remote.RemoteEventData;
-import org.xwiki.observation.remote.RemoteEventException;
-import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 
+/**
+ * {@link NetworkAdapter} implementation that broadcasts {@link RemoteEventData} via Apache Kafka.
+ * <p>
+ * Bootstrap servers, topic and client id are provided by {@link KafkaConfig}.
+ * <p>
+ * Call {@link #start(Consumer)} to initialize and start a Kafka producer and a single-threaded
+ * Kafka consumer for the topic configured in {@link KafkaConfig}. Call {@link #stop()} to stop
+ * the consumer/producer.
+ * <p>
+ * For loop prevention, outgoing messages include an {@code origin} header containing the
+ * configured {@code clientId}. Incoming messages with the same {@code origin} are ignored.
+ * <p>
+ * The consumer implements at-most-once processing semantics by immediately acknowledging records,
+ * even when deserialization fails.
+ * <p>
+ * If {@link KafkaConfig} provides a {@link BytesEncryptor}, message payloads are encrypted before
+ * sending and decrypted on reception. The authenticated encryptor detects payload tampering and
+ * provides confidentiality for payloads in transit and at rest outside the application process.
+ */
 @Component("kafka")
 public class KafkaNetworkAdapter implements NetworkAdapter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaNetworkAdapter.class);
 
-  private static final String CFG_PREFIX = RemoteObservationManagerConfiguration.CFG_KEY
-      + ".kafka.";
-  private static final String ORIGIN = "origin";
+  private static final String KEY_ORIGIN = "origin";
+  private static final String KEY_ENCRYPTED = "encrypted";
+  private static final String ENCRYPTION_VERSION = "v1";
 
-  private final String servers;
-  private final String topic;
-  private final String clientId;
+  private final KafkaConfig config;
 
+  private DefaultKafkaProducerFactory<String, byte[]> producerFactory;
   private KafkaTemplate<String, byte[]> producer;
+
   private DefaultKafkaConsumerFactory<String, byte[]> consumerFactory;
   private ConcurrentMessageListenerContainer<String, byte[]> consumer;
 
+  private BytesEncryptor encryptor;
+
   @Inject
-  public KafkaNetworkAdapter(ConfigurationSource cfgSrc) {
-    this.servers = cfgSrc.getProperty(CFG_PREFIX + "servers", "").trim();
-    this.topic = cfgSrc.getProperty(CFG_PREFIX + "topic", "").trim();
-    this.clientId = getJvmRoute();
+  public KafkaNetworkAdapter(KafkaConfig kafkaConfig) {
+    this.config = kafkaConfig;
   }
 
   @PostConstruct
-  public void initialize() {
-    if (servers.isEmpty() || topic.isEmpty() || clientId.isEmpty()) {
-      throw new IllegalStateException("configuration missing");
+  public void init() {
+    producerFactory = config.buildProducerFactory();
+    consumerFactory = config.buildConsumerFactory();
+    encryptor = config.buildEncryptor().orElse(null);
+    LOGGER.info("initialized (servers={}, topic={}, clientId={}, encryption={})",
+        config.getServers(), config.getTopic(), config.getClientId(),
+        (encryptor != null ? "enabled" : "disabled"));
+  }
+
+  @Override
+  public synchronized void start(Consumer<RemoteEventData> onRemoteEvent) {
+    startProducer();
+    startConsumer(onRemoteEvent);
+  }
+
+  private void startProducer() {
+    if (producer != null) {
+      return;
     }
-    producer = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(Map.of(
-        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers,
-        ProducerConfig.CLIENT_ID_CONFIG, clientId,
-        ProducerConfig.ACKS_CONFIG, "all",
-        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true",
-        ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, "600000", // 10 minutes
-        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class)));
-    consumerFactory = new DefaultKafkaConsumerFactory<>(Map.of(
-        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, servers,
-        ConsumerConfig.GROUP_ID_CONFIG, clientId,
-        ConsumerConfig.CLIENT_ID_CONFIG, clientId,
-        ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest",
-        ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false",
-        ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "50",
-        ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed",
-        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class));
-    LOGGER.info("initialized (servers={}, topic={}, clientId={})", servers, topic, clientId);
+    checkState(producerFactory != null, "not initialized");
+    producer = new KafkaTemplate<>(producerFactory);
+    LOGGER.info("startProducer - topic [{}]", config.getTopic());
+  }
+
+  private void startConsumer(Consumer<RemoteEventData> onRemoteEvent) {
+    if ((consumer != null) && consumer.isRunning()) {
+      return;
+    }
+    checkState(consumerFactory != null, "not initialized");
+    ContainerProperties props = new ContainerProperties(config.getTopic());
+    props.setAckMode(AckMode.MANUAL_IMMEDIATE);
+    AcknowledgingMessageListener<String, byte[]> listener;
+    listener = (kafkaRecord, ack) -> receive(kafkaRecord, ack, onRemoteEvent);
+    props.setMessageListener(listener);
+    consumer = new ConcurrentMessageListenerContainer<>(consumerFactory, props);
+    consumer.setConcurrency(1);
+    consumer.start();
+    LOGGER.info("startConsumer - topic [{}]", config.getTopic());
   }
 
   @Override
   public void send(RemoteEventData remoteEvent) {
     if (producer == null) {
-      return; // not initialized
+      LOGGER.warn("send - producer not started; dropping message: {}", remoteEvent);
+      return;
     }
-    final byte[] payload;
+    List<RecordHeader> headers = new ArrayList<>();
+    // loop prevention
+    headers.add(new RecordHeader(KEY_ORIGIN, config.getClientId().getBytes(UTF_8)));
+    byte[] payload;
     try {
       payload = serialize(remoteEvent);
-    } catch (IllegalArgumentException e) {
+      if (encryptor != null) {
+        payload = encryptor.encrypt(payload);
+        headers.add(new RecordHeader(KEY_ENCRYPTED, ENCRYPTION_VERSION.getBytes(UTF_8)));
+      }
+    } catch (Exception e) {
       LOGGER.error("Failed to serialize RemoteEventData; dropping message", e);
       return;
     }
-    var kafkaRecord = new ProducerRecord<>(topic, "observation", payload);
-    // self-sign
-    var originHeader = new RecordHeader(ORIGIN, clientId.getBytes(StandardCharsets.UTF_8));
-    kafkaRecord.headers().add(originHeader);
+    var kafkaRecord = new ProducerRecord<>(config.getTopic(), "observation", payload);
+    headers.forEach(kafkaRecord.headers()::add);
     producer.send(kafkaRecord).addCallback(
-        result -> LOGGER.trace("sent to [{}]: {}", topic, remoteEvent),
-        exc -> LOGGER.error("send to [{}] failed: {}", topic, remoteEvent, exc));
+        result -> LOGGER.debug("sent to [{}]: {}", config.getTopic(), remoteEvent),
+        exc -> LOGGER.error("send to [{}] failed: {}", config.getTopic(), remoteEvent, exc));
   }
 
-  @Override
-  public synchronized void start(Consumer<RemoteEventData> onRemoteEvent)
-      throws RemoteEventException {
-    if (consumerFactory == null) {
-      throw new IllegalStateException("KafkaNetworkAdapter not initialized");
-    } else if ((consumer != null) && consumer.isRunning()) {
-      return;
-    }
-    AcknowledgingMessageListener<String, byte[]> listener = (kafkaRecord, ack) -> {
-      try {
+  private void receive(ConsumerRecord<String, byte[]> kafkaRecord, Acknowledgment ack,
+      Consumer<RemoteEventData> onRemoteEvent) {
+    try {
+      if (checkOrigin(kafkaRecord) && checkEncryption(kafkaRecord)) {
         extractEvent(kafkaRecord).ifPresent(onRemoteEvent::accept);
-        ack.acknowledge();
-      } catch (Exception e) {
-        LOGGER.warn("Remote event handler failed; will retry message later", e);
       }
-    };
-    ContainerProperties props = new ContainerProperties(topic);
-    props.setAckMode(AckMode.MANUAL_IMMEDIATE);
-    props.setMessageListener(listener);
-    consumer = new ConcurrentMessageListenerContainer<>(consumerFactory, props);
-    consumer.setConcurrency(1);
-    consumer.start();
-    LOGGER.info("Kafka remote observation consumer started (topic={})", topic);
+    } catch (Exception e) {
+      LOGGER.warn("receive - failed to process message: {}", kafkaRecord.timestamp(), e);
+    } finally {
+      ack.acknowledge(); // always acknowledge to avoid indefinite reprocessing
+    }
+  }
+
+  private boolean checkOrigin(ConsumerRecord<String, byte[]> kafkaRecord) {
+    var origin = Optional.ofNullable(kafkaRecord.headers().lastHeader(KEY_ORIGIN))
+        .map(header -> new String(header.value(), UTF_8))
+        .orElse("");
+    if (config.getClientId().equals(origin)) {
+      LOGGER.debug("receive - skipping loop message: {}", kafkaRecord.timestamp());
+      return false;
+    }
+    return true;
+  }
+
+  private boolean checkEncryption(ConsumerRecord<String, byte[]> kafkaRecord) {
+    var version = getEncryption(kafkaRecord);
+    if (version.isPresent() && (encryptor == null)) {
+      LOGGER.warn("receive - no encryptor, unable to decrypt message: {}", kafkaRecord.timestamp());
+      return false;
+    } else if (version.isPresent() && !version.get().equals(ENCRYPTION_VERSION)) {
+      LOGGER.warn("receive - unsupported encryption version {}, dropping message: {}",
+          version.get(), kafkaRecord.timestamp());
+      return false;
+    }
+    return true;
+  }
+
+  private Optional<String> getEncryption(ConsumerRecord<String, byte[]> kafkaRecord) {
+    return Optional.ofNullable(kafkaRecord.headers().lastHeader(KEY_ENCRYPTED))
+        .map(header -> new String(header.value(), UTF_8));
   }
 
   private Optional<RemoteEventData> extractEvent(ConsumerRecord<String, byte[]> kafkaRecord) {
-    var origin = Optional.ofNullable(kafkaRecord.headers().lastHeader(ORIGIN))
-        .map(header -> new String(header.value(), StandardCharsets.UTF_8))
-        .orElse("");
-    if (clientId.equals(origin)) {
-      LOGGER.trace("receive - skipping self-signed message: {}", kafkaRecord.timestamp());
-      return Optional.empty();
+    var isEncrypted = getEncryption(kafkaRecord).isPresent();
+    var payload = kafkaRecord.value();
+    if (isEncrypted) {
+      try {
+        payload = encryptor.decrypt(payload);
+      } catch (Exception e) {
+        LOGGER.warn("receive - failed to decrypt message: {}", kafkaRecord.timestamp(), e);
+        return Optional.empty();
+      }
     }
     try {
-      var remoteEvent = deserialize(kafkaRecord.value());
+      var remoteEvent = deserialize(payload);
       if (remoteEvent instanceof RemoteEventData) {
-        LOGGER.trace("receive - from [{}]: {}", topic, remoteEvent);
+        LOGGER.debug("receive - from [{}]: {}", config.getTopic(), remoteEvent);
         return Optional.of((RemoteEventData) remoteEvent);
       } else {
-        LOGGER.warn("receive - invalid remote event data: {}", kafkaRecord);
+        LOGGER.warn("receive - invalid remote message: {}", kafkaRecord.timestamp());
       }
     } catch (IllegalArgumentException | IllegalStateException e) {
-      LOGGER.warn("receive - failed to deserialize data: {}", kafkaRecord, e);
+      LOGGER.warn("receive - failed to deserialize data: {}", kafkaRecord.timestamp(), e);
     }
     return Optional.empty();
   }
 
   @Override
-  public synchronized void stop() throws RemoteEventException {
-    if (consumer == null) {
-      return;
-    }
+  public synchronized void stop() {
+    LOGGER.info("stop - topic [{}]", config.getTopic());
     try {
+      if (consumer == null) {
+        return;
+      }
       consumer.stop();
-      LOGGER.info("Kafka remote observation consumer stopped (topic={})", topic);
-    } catch (Exception e) {
-      throw new RemoteEventException("Failed to stop Kafka consumer", e);
+      LOGGER.info("stop - topic [{}]", config.getTopic());
     } finally {
+      producer = null;
       consumer = null;
-    }
-  }
-
-  private String getJvmRoute() {
-    try {
-      MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-      ObjectName name = new ObjectName("Catalina:type=Engine");
-      return Objects.toString(mBeanServer.getAttribute(name, "jvmRoute"), "");
-    } catch (JMException e) {
-      LOGGER.error("Failed to get JVM route", e);
-      return "";
     }
   }
 }

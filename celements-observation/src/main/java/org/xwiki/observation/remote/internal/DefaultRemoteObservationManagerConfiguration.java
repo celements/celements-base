@@ -25,7 +25,7 @@ public class DefaultRemoteObservationManagerConfiguration
 
   @Inject
   public DefaultRemoteObservationManagerConfiguration(
-      @Named("xwikiproperties") ConfigurationSource configSource) {
+      @Named("allproperties") ConfigurationSource configSource) {
     this.configSource = configSource;
   }
 
