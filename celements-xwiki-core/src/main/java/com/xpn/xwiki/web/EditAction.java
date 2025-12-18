@@ -21,9 +21,9 @@
 package com.xpn.xwiki.web;
 
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.velocity.VelocityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -33,7 +33,7 @@ import com.xpn.xwiki.doc.XWikiLock;
 
 public class EditAction extends XWikiAction {
 
-  private static final Log log = LogFactory.getLog(EditAction.class);
+  private static final Logger log = LoggerFactory.getLogger(EditAction.class);
 
   @Override
   public String render(XWikiContext context) throws XWikiException {
@@ -48,6 +48,16 @@ public class EditAction extends XWikiAction {
     boolean hasTranslation = false;
     if (doc != context.get("tdoc")) {
       hasTranslation = true;
+    }
+
+    XWikiDocument tdocDebug = (XWikiDocument) context.get("tdoc");
+    if (tdocDebug != null) {
+      log.debug("starting edit action with doc.defLang/lang={}/{}, tdoc.defLang/lang={}/{},"
+          + " hasTranslation={}", doc.getDefaultLanguage(), doc.getLanguage(),
+          tdocDebug.getDefaultLanguage(), tdocDebug.getLanguage(), hasTranslation);
+    } else {
+      log.debug("starting edit action with doc.defLang/lang={}/{}, tdoc=null,"
+          + " hasTranslation={}", doc.getDefaultLanguage(), doc.getLanguage(), hasTranslation);
     }
 
     // we need to clone so that nothing happens in memory
@@ -170,7 +180,6 @@ public class EditAction extends XWikiAction {
           tdoc.setLock(context.getUser(), context);
         }
       } catch (Exception e) {
-        e.printStackTrace();
         // Lock should never make XWiki fail
         // But we should log any related information
         log.error("Exception while setting up lock", e);
