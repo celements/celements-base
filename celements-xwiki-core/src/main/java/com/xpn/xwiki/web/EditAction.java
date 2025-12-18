@@ -33,7 +33,7 @@ import com.xpn.xwiki.doc.XWikiLock;
 
 public class EditAction extends XWikiAction {
 
-  private static final Logger log = LoggerFactory.getLogger(EditAction.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EditAction.class);
 
   @Override
   public String render(XWikiContext context) throws XWikiException {
@@ -52,11 +52,11 @@ public class EditAction extends XWikiAction {
 
     XWikiDocument tdocDebug = (XWikiDocument) context.get("tdoc");
     if (tdocDebug != null) {
-      log.debug("starting edit action with doc.defLang/lang={}/{}, tdoc.defLang/lang={}/{},"
+      LOGGER.debug("starting edit action with doc.defLang/lang={}/{}, tdoc.defLang/lang={}/{},"
           + " translationLoaded={}", doc.getDefaultLanguage(), doc.getLanguage(),
           tdocDebug.getDefaultLanguage(), tdocDebug.getLanguage(), translationLoaded);
     } else {
-      log.debug("starting edit action with doc.defLang/lang={}/{}, tdoc=null,"
+      LOGGER.debug("starting edit action with doc.defLang/lang={}/{}, tdoc=null,"
           + " translationLoaded={}", doc.getDefaultLanguage(), doc.getLanguage(),
           translationLoaded);
     }
@@ -122,7 +122,7 @@ public class EditAction extends XWikiAction {
       }
 
       if (languagetoedit.equals("")) {
-        // In this case the created document is going to be the default document
+        // In this case edit the default document (sanitize if isNew)
         tdoc = doc;
         context.put("tdoc", doc);
         vcontext.put("tdoc", vcontext.get("doc"));
@@ -130,10 +130,10 @@ public class EditAction extends XWikiAction {
           doc.setDefaultLanguage(language);
           doc.setLanguage("");
         }
-        log.debug("edit action after creating default doc with doc.defLang/lang={}/{},"
-            + " tdoc.defLang/lang={}/{}, tdoc.isTrans={}",
+        LOGGER.debug("edit action for default doc with doc.defLang/lang={}/{},"
+            + " tdoc.defLang/lang={}/{}, tdoc.isTrans={}, doc.isNew={}",
             doc.getDefaultLanguage(), doc.getLanguage(),
-            tdoc.getDefaultLanguage(), tdoc.getLanguage(), tdoc.isTrans());
+            tdoc.getDefaultLanguage(), tdoc.getLanguage(), tdoc.isTrans(), doc.isNew());
       } else {
         // If the translated doc object is the same as the doc object
         // this means the translated doc did not exists so we need to create it
@@ -144,7 +144,7 @@ public class EditAction extends XWikiAction {
           tdoc.setContent(doc.getContent());
           context.put("tdoc", tdoc);
           vcontext.put("tdoc", tdoc.newDocument(context));
-          log.debug("edit action after creating translated doc with doc.defLang/lang={}/{},"
+          LOGGER.debug("edit action after creating translated doc with doc.defLang/lang={}/{},"
               + " tdoc.defLang/lang={}/{}, tdoc.isTrans={}",
               doc.getDefaultLanguage(), doc.getLanguage(),
               tdoc.getDefaultLanguage(), tdoc.getLanguage(), tdoc.isTrans());
@@ -178,7 +178,7 @@ public class EditAction extends XWikiAction {
           return "docalreadyexists";
         }
       }
-      log.debug("ending edit action with doc.defLang/lang={}/{}, tdoc2.defLang/lang={}/{},"
+      LOGGER.debug("ending edit action with doc.defLang/lang={}/{}, tdoc2.defLang/lang={}/{},"
           + " tdoc2.isTrans={}", doc.getDefaultLanguage(), doc.getLanguage(),
           tdoc2.getDefaultLanguage(), tdoc2.getLanguage(), tdoc2.isTrans());
 
@@ -192,7 +192,7 @@ public class EditAction extends XWikiAction {
       } catch (Exception e) {
         // Lock should never make XWiki fail
         // But we should log any related information
-        log.error("Exception while setting up lock", e);
+        LOGGER.error("Exception while setting up lock", e);
       }
     }
 
