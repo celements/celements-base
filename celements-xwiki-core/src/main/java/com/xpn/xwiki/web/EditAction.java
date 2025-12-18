@@ -41,23 +41,24 @@ public class EditAction extends XWikiAction {
     String content = request.getParameter("content");
     String title = request.getParameter("title");
     XWikiDocument doc = context.getDoc();
-    XWiki xwiki = context.getWiki();
+    XWiki xwiki = getXWiki();
     XWikiForm form = context.getForm();
     VelocityContext vcontext = (VelocityContext) context.get("vcontext");
 
-    boolean hasTranslation = false;
+    boolean translationLoaded = false;
     if (doc != context.get("tdoc")) {
-      hasTranslation = true;
+      translationLoaded = true;
     }
 
     XWikiDocument tdocDebug = (XWikiDocument) context.get("tdoc");
     if (tdocDebug != null) {
       log.debug("starting edit action with doc.defLang/lang={}/{}, tdoc.defLang/lang={}/{},"
-          + " hasTranslation={}", doc.getDefaultLanguage(), doc.getLanguage(),
-          tdocDebug.getDefaultLanguage(), tdocDebug.getLanguage(), hasTranslation);
+          + " translationLoaded={}", doc.getDefaultLanguage(), doc.getLanguage(),
+          tdocDebug.getDefaultLanguage(), tdocDebug.getLanguage(), translationLoaded);
     } else {
       log.debug("starting edit action with doc.defLang/lang={}/{}, tdoc=null,"
-          + " hasTranslation={}", doc.getDefaultLanguage(), doc.getLanguage(), hasTranslation);
+          + " translationLoaded={}", doc.getDefaultLanguage(), doc.getLanguage(),
+          translationLoaded);
     }
 
     // we need to clone so that nothing happens in memory
@@ -67,12 +68,12 @@ public class EditAction extends XWikiAction {
 
     // Check for edit section
     String sectionContent = "";
-    int sectionNumber = 0;
+    Integer sectionNumber = 0;
     if ((request.getParameter("section") != null) && xwiki.hasSectionEdit(context)) {
       sectionNumber = NumberUtils.toInt(request.getParameter("section"));
       sectionContent = doc.getContentOfSection(sectionNumber);
     }
-    vcontext.put("sectionNumber", new Integer(sectionNumber));
+    vcontext.put("sectionNumber", sectionNumber);
 
     synchronized (doc) {
       XWikiDocument tdoc = (XWikiDocument) context.get("tdoc");
@@ -94,10 +95,10 @@ public class EditAction extends XWikiAction {
         doc.setDefaultLanguage(defaultLanguage);
       }
       if (doc.isNew() && doc.getDefaultLanguage().equals("")) {
-        doc.setDefaultLanguage(context.getWiki().getLanguagePreference(context));
+        doc.setDefaultLanguage(getXWiki().getLanguagePreference(context));
       }
 
-      String language = context.getWiki().getLanguagePreference(context);
+      String language = getXWiki().getLanguagePreference(context);
       String languagefromrequest = context.getRequest().getParameter("language");
       languagefromrequest = (languagefromrequest == null) ? "" : languagefromrequest;
       String languagetoedit = languagefromrequest.equals("") ? language : languagefromrequest;
@@ -116,7 +117,7 @@ public class EditAction extends XWikiAction {
       // explicitely set in the URL
       // then we edit the default doc, otherwise this can cause to create translations without
       // wanting it.
-      if ((!hasTranslation) && languagefromrequest.equals("")) {
+      if ((!translationLoaded) && languagefromrequest.equals("")) {
         languagetoedit = "";
       }
 
@@ -136,13 +137,11 @@ public class EditAction extends XWikiAction {
       } else {
         // If the translated doc object is the same as the doc object
         // this means the translated doc did not exists so we need to create it
-        if ((!hasTranslation) && context.getWiki().isMultiLingual(context)) {
-          tdoc = new XWikiDocument(doc.getSpace(), doc.getName());
-          tdoc.setLanguage(languagetoedit);
+        if ((!translationLoaded) && getXWiki().isMultiLingual(context)) {
+          tdoc = doc.getTranslatedDocument(languagetoedit, context);
+          tdoc = tdoc.clone();
+          tdoc.setTitle(doc.getTitle());
           tdoc.setContent(doc.getContent());
-          tdoc.setSyntaxId(doc.getSyntaxId());
-          tdoc.setAuthor(context.getUser());
-          tdoc.setStore(doc.getStore());
           context.put("tdoc", tdoc);
           vcontext.put("tdoc", tdoc.newDocument(context));
           log.debug("edit action after creating translated doc with doc.defLang/lang={}/{},"

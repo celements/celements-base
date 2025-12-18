@@ -316,10 +316,6 @@ public abstract class XWikiAction extends Action {
     }
   }
 
-  private XWiki getXWiki() {
-    return getBeanFactory().getBean(XWikiProvider.class).get().orElseThrow();
-  }
-
   public String getRealPath(String path) {
     return this.servlet.getServletContext().getRealPath(path);
   }
@@ -461,4 +457,9 @@ public abstract class XWikiAction extends Action {
     }
     return true;
   }
+
+  protected XWiki getXWiki() {
+    return getBeanFactory().getBean(XWikiProvider.class).get().orElseThrow();
+  }
+
 }
