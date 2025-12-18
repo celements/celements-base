@@ -19,6 +19,10 @@
  */
 package com.xpn.xwiki;
 
+import static com.celements.common.MoreObjectsCel.*;
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static com.celements.execution.XWikiExecutionProp.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,6 +68,7 @@ import org.apache.commons.net.smtp.SMTPClient;
 import org.apache.commons.net.smtp.SMTPReply;
 import org.apache.ecs.Filter;
 import org.apache.ecs.filter.CharacterFilter;
+import org.apache.ecs.xhtml.textarea;
 import org.apache.velocity.VelocityContext;
 import org.hibernate.HibernateException;
 import org.securityfilter.filter.URLPatternMatcher;
