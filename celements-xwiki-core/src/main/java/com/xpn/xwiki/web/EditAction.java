@@ -129,6 +129,10 @@ public class EditAction extends XWikiAction {
           doc.setDefaultLanguage(language);
           doc.setLanguage("");
         }
+        log.debug("edit action after creating default doc with doc.defLang/lang={}/{},"
+            + " tdoc.defLang/lang={}/{}, tdoc.isTrans={}",
+            doc.getDefaultLanguage(), doc.getLanguage(),
+            tdoc.getDefaultLanguage(), tdoc.getLanguage(), tdoc.isTrans());
       } else {
         // If the translated doc object is the same as the doc object
         // this means the translated doc did not exists so we need to create it
@@ -141,6 +145,10 @@ public class EditAction extends XWikiAction {
           tdoc.setStore(doc.getStore());
           context.put("tdoc", tdoc);
           vcontext.put("tdoc", tdoc.newDocument(context));
+          log.debug("edit action after creating translated doc with doc.defLang/lang={}/{},"
+              + " tdoc.defLang/lang={}/{}, tdoc.isTrans={}",
+              doc.getDefaultLanguage(), doc.getLanguage(),
+              tdoc.getDefaultLanguage(), tdoc.getLanguage(), tdoc.isTrans());
         }
       }
 
@@ -171,6 +179,9 @@ public class EditAction extends XWikiAction {
           return "docalreadyexists";
         }
       }
+      log.debug("ending edit action with doc.defLang/lang={}/{}, tdoc2.defLang/lang={}/{},"
+          + " tdoc2.isTrans={}", doc.getDefaultLanguage(), doc.getLanguage(),
+          tdoc2.getDefaultLanguage(), tdoc2.getLanguage(), tdoc2.isTrans());
 
       /* Setup a lock */
       try {
