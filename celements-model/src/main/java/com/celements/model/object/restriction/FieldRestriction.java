@@ -25,7 +25,7 @@ public class FieldRestriction<O, T> extends ClassRestriction<O> {
   }
 
   public FieldRestriction(@NotNull ObjectBridge<?, O> bridge, @NotNull ClassField<T> field,
-      @NotNull Collection<T> values) {
+      @NotNull Collection<? extends T> values) {
     super(bridge, field.getClassReference());
     this.field = checkNotNull(field);
     this.values = ImmutableSet.copyOf(values);
