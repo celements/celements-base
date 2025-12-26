@@ -41,7 +41,7 @@ public class XObjectStringFieldAccessor implements StringFieldAccessor<BaseObjec
     try {
       var value = Optional.ofNullable(obj)
           .flatMap(o -> getAndNormalizeValue(o, fieldName));
-      LOGGER.info("get - obj [{}], field [{}], value [{}]", obj, fieldName, value);
+      LOGGER.trace("get - obj [{}], field [{}], value [{}]", obj, fieldName, value);
       return value;
     } catch (ClassCastException | IllegalArgumentException exc) {
       throw createException("failed to get value", obj, fieldName, exc);
@@ -65,7 +65,7 @@ public class XObjectStringFieldAccessor implements StringFieldAccessor<BaseObjec
     }
     try {
       obj.set(fieldName, newValue, context.getXWikiContext());
-      LOGGER.info("set - obj [{}], field [{}], newValue [{}], oldValue [{}]",
+      LOGGER.debug("set - obj [{}], field [{}], newValue [{}], oldValue [{}]",
           obj, fieldName, newValue, currentValue);
       return true;
     } catch (ClassCastException | IllegalArgumentException exc) {

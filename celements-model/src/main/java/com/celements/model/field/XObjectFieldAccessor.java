@@ -45,7 +45,7 @@ public class XObjectFieldAccessor extends AbstractFieldAccessor<BaseObject> {
       return strFieldAccessor.get(obj, field.getName())
           .flatMap(val -> resolvePropertyValue(field, val));
     }
-    LOGGER.info("get - obj [{}], field [{}], value [{}]", obj, field, value);
+    LOGGER.trace("get - obj [{}], field [{}], value [{}]", obj, field, value);
     return value;
   }
 
@@ -83,7 +83,7 @@ public class XObjectFieldAccessor extends AbstractFieldAccessor<BaseObject> {
     var serializeValue = serializePropertyValue(field, newValue).orElse(null);
     boolean dirty = strFieldAccessor.set(obj, field.getName(), serializeValue);
     if (dirty) {
-      LOGGER.info("set - obj [{}], field [{}], newValue [{}]", obj, field, newValue);
+      LOGGER.debug("set - obj [{}], field [{}], newValue [{}]", obj, field, newValue);
     }
     return dirty;
   }
