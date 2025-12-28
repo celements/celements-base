@@ -1837,7 +1837,7 @@ public class XWiki implements EventListener {
           return language;
         }
       }
-    } catch (Exception exp) {
+    } catch (XWikiException exp) {
       LOGGER.debug("get language from user preference doc failed.", exp);
     }
 
