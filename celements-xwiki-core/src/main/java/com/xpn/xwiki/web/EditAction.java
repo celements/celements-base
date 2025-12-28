@@ -62,7 +62,10 @@ public class EditAction extends XWikiAction {
     }
 
     // we need to clone so that nothing happens in memory
-    doc = doc.clone();
+    if (doc.isFromCache()) {
+      doc = doc.clone();
+      doc.setFromCache(false);
+    }
     context.put("doc", doc);
     vcontext.put("doc", doc.newDocument(context));
 
@@ -139,7 +142,10 @@ public class EditAction extends XWikiAction {
         // this means the translated doc did not exists so we need to create it
         if ((!translationLoaded) && getXWiki().isMultiLingual(context)) {
           tdoc = doc.getTranslatedDocument(languagetoedit, context);
-          tdoc = tdoc.clone();
+          if (tdoc.isFromCache()) {
+            tdoc = doc.clone();
+            tdoc.setFromCache(false);
+          }
           tdoc.setTitle(doc.getTitle());
           tdoc.setContent(doc.getContent());
           context.put("tdoc", tdoc);
@@ -151,7 +157,11 @@ public class EditAction extends XWikiAction {
         }
       }
 
-      XWikiDocument tdoc2 = tdoc.clone();
+      XWikiDocument tdoc2 = tdoc;
+      if (tdoc2.isFromCache()) {
+        tdoc2.clone();
+        tdoc2.setFromCache(false);
+      }
       if (content != null) {
         tdoc2.setContent(content);
         tdoc2.setTitle(title);
