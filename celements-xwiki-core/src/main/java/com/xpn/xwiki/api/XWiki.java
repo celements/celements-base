@@ -165,7 +165,6 @@ public class XWiki extends Api {
           getXWikiContext())) {
         return null;
       }
-
       return doc.newDocument(getXWikiContext());
     } catch (Exception ex) {
       LOG.warn("Failed to access document " + reference + ": " + ex.getMessage());
@@ -218,7 +217,6 @@ public class XWiki extends Api {
         getXWikiContext())) {
       return null;
     }
-
     return doc.newDocument(getXWikiContext());
   }
 
@@ -425,7 +423,6 @@ public class XWiki extends Api {
         getXWikiContext())) {
       return null;
     }
-
     return doc.newDocument(getXWikiContext());
   }
 
@@ -447,14 +444,12 @@ public class XWiki extends Api {
       // Finally we return null, otherwise showing search result is a real pain
       return null;
     }
-
     try {
       XWikiDocument revdoc = this.xwiki.getDocument(doc.getDoc(), rev, getXWikiContext());
       return revdoc.newDocument(getXWikiContext());
     } catch (Exception e) {
       // Can't read versioned document
       LOG.error("Failed to read versioned document", e);
-
       return null;
     }
   }

@@ -137,7 +137,7 @@ public class Document extends Api {
    */
   public XWikiDocument getDocument() {
     if (hasProgrammingRights()) {
-      return this.doc;
+      return getDoc();
     } else {
       return null;
     }
@@ -151,9 +151,9 @@ public class Document extends Api {
   protected XWikiDocument getDoc() {
     if (!this.cloned) {
       this.doc = this.doc.clone();
+      this.doc.setFromCache(false);
       this.cloned = true;
     }
-
     return this.doc;
   }
 
