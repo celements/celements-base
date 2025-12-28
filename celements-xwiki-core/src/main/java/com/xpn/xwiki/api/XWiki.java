@@ -165,10 +165,6 @@ public class XWiki extends Api {
           getXWikiContext())) {
         return null;
       }
-      if (doc.isFromCache()) {
-        doc = doc.clone();
-        doc.setFromCache(false);
-      }
       return doc.newDocument(getXWikiContext());
     } catch (Exception ex) {
       LOG.warn("Failed to access document " + reference + ": " + ex.getMessage());
@@ -220,10 +216,6 @@ public class XWiki extends Api {
     if (!this.xwiki.getRightService().hasAccessLevel("view", author, doc.getFullName(),
         getXWikiContext())) {
       return null;
-    }
-    if (doc.isFromCache()) {
-      doc = doc.clone();
-      doc.setFromCache(false);
     }
     return doc.newDocument(getXWikiContext());
   }
@@ -431,10 +423,6 @@ public class XWiki extends Api {
         getXWikiContext())) {
       return null;
     }
-    if (doc.isFromCache()) {
-      doc = doc.clone();
-      doc.setFromCache(false);
-    }
     return doc.newDocument(getXWikiContext());
   }
 
@@ -458,10 +446,6 @@ public class XWiki extends Api {
     }
     try {
       XWikiDocument revdoc = this.xwiki.getDocument(doc.getDoc(), rev, getXWikiContext());
-      if (revdoc.isFromCache()) {
-        revdoc = revdoc.clone();
-        revdoc.setFromCache(false);
-      }
       return revdoc.newDocument(getXWikiContext());
     } catch (Exception e) {
       // Can't read versioned document
@@ -931,10 +915,6 @@ public class XWiki extends Api {
         try {
           if (obj instanceof XWikiDocument) {
             XWikiDocument doc = (XWikiDocument) obj;
-            if (doc.isFromCache()) {
-              doc = doc.clone();
-              doc.setFromCache(false);
-            }
             Document wrappedDoc = doc.newDocument(getXWikiContext());
             result.add(wrappedDoc);
           } else if (obj instanceof Document) {
