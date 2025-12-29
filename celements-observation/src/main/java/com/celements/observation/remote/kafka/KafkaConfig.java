@@ -1,6 +1,7 @@
 package com.celements.observation.remote.kafka;
 
 import static com.google.common.base.Preconditions.*;
+import static org.xwiki.observation.remote.RemoteObservationManagerConfiguration.*;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;
@@ -26,15 +27,11 @@ import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 
 import com.google.common.base.Suppliers;
 
 @Component
 public class KafkaConfig {
-
-  private static final String CFG_PREFIX = RemoteObservationManagerConfiguration.CFG_KEY
-      + ".kafka.";
 
   private final ConfigurationSource configSource;
 
@@ -49,7 +46,7 @@ public class KafkaConfig {
   }
 
   private Supplier<String> servers = Suppliers.memoize(() -> getConfigSource()
-      .getProperty(CFG_PREFIX + "servers", "").trim());
+      .getProperty("kafka.servers", "").trim());
 
   /**
    * Kafka bootstrap servers as a comma-separated list.
@@ -59,7 +56,7 @@ public class KafkaConfig {
   }
 
   private Supplier<String> topic = Suppliers.memoize(() -> getConfigSource()
-      .getProperty(CFG_PREFIX + "topic", "").trim());
+      .getProperty(CFG_KEY + ".kafka.topic", "").trim());
 
   /**
    * Kafka topic to use for remote observation events.
@@ -147,9 +144,9 @@ public class KafkaConfig {
    */
   public Optional<BytesEncryptor> buildEncryptor() {
     // openssl rand -base64 32
-    var cryptoPass = configSource.getProperty(CFG_PREFIX + "crypto.pass", "").trim();
+    var cryptoPass = configSource.getProperty(CFG_KEY + ".kafka.crypto.pass", "").trim();
     // openssl rand -hex 16
-    var cryptoSalt = configSource.getProperty(CFG_PREFIX + "crypto.salt", "").trim();
+    var cryptoSalt = configSource.getProperty(CFG_KEY + ".kafka.crypto.salt", "").trim();
     if (!cryptoPass.isEmpty() && !cryptoSalt.isEmpty()) {
       return Optional.of(Encryptors.stronger(cryptoPass, cryptoSalt));
     }
