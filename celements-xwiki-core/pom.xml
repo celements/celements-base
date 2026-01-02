@@ -644,8 +644,6 @@
               <exclude>**/com/xpn/xwiki/render/XWikiVelocityRendererTest.java</exclude>
               <exclude>**/com/xpn/xwiki/web/XWikiMessageToolTest.java</exclude>
             </excludes>
-            <!-- Prevent Out Of Memory errors resulting from tests that do no free up the memory correctly -->
-            <forkMode>pertest</forkMode>
           </configuration>
         </plugin>
       </plugins>
