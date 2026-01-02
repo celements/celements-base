@@ -17,6 +17,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -50,6 +51,7 @@ import org.xwiki.observation.remote.RemoteEventData;
  * provides confidentiality for payloads in transit and at rest outside the application process.
  */
 @Component("kafka")
+@Lazy
 public class KafkaNetworkAdapter implements NetworkAdapter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaNetworkAdapter.class);
