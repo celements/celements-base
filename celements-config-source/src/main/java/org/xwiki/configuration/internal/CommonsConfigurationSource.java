@@ -35,7 +35,7 @@ import one.util.streamex.StreamEx;
 
 /**
  * Wrap a Commons Configuration instance into a XWiki {@link ConfigurationSource}. This allows us to
- * reuse the <a href="http://commons.apache.org/configuration/"numerous types of Configuration<a/>
+ * reuse the <a href="http://commons.apache.org/configuration/">numerous types of Configuration</a>
  * provided by Commons Configuration (properties file, XML files, databases, etc).
  *
  * @version $Id$

@@ -27,12 +27,9 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Supplier;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-
-import one.util.streamex.StreamEx;
 
 public class XWikiConfig extends Properties {
 
@@ -113,16 +110,16 @@ public class XWikiConfig extends Properties {
   }
 
   public Optional<String> getPropertyOpt(String key) {
+    return getEnvProperty(key)
+        .or(() -> Optional.ofNullable(super.getProperty(key)))
+        .map(String::trim);
+  }
+
+  private Optional<String> getEnvProperty(String key) {
     var envKey = Optional.ofNullable(key)
         .map(k -> k.replace('.', '_').replace('-', '_'))
         .orElse("");
-    return StreamEx.<Supplier<String>>of(
-        () -> System.getenv(envKey.toUpperCase()),
-        () -> System.getenv(envKey),
-        () -> super.getProperty(key))
-        .map(Supplier::get)
-        .filter(s -> s != null)
-        .map(String::trim)
-        .findFirst();
+    return Optional.ofNullable(System.getenv(envKey.toUpperCase()))
+        .or(() -> Optional.ofNullable(System.getenv(envKey)));
   }
 }
