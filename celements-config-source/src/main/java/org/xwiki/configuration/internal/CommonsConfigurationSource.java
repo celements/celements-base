@@ -110,9 +110,9 @@ public class CommonsConfigurationSource implements ConfigurationSource {
             .map(value -> converterManager.convert(valueClass, value))
             .orElse(null);
       }
-    } catch (org.apache.commons.configuration.ConversionException | ConversionException e) {
-      throw new ConversionException(
-          "Key [" + key + "] is not of type [" + valueClass.getName() + "]", e);
+    } catch (org.apache.commons.configuration.ConversionException
+        | org.xwiki.properties.converter.ConversionException e) {
+      throw new ConversionException("[" + key + "] is not of type [" + valueClass + "]", e);
     }
     return result;
   }
