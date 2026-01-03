@@ -26,10 +26,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Splitter;
+import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -49,13 +50,8 @@ public class XWikiPluginManager {
 
   public XWikiPluginManager() {}
 
-  public XWikiPluginManager(String classList, XWikiContext context) {
-    String[] classNames = StringUtils.split(classList, " ,");
-    addPlugins(classNames, context);
-  }
-
-  public XWikiPluginManager(String[] classNames, XWikiContext context) {
-    addPlugins(classNames, context);
+  public XWikiPluginManager(XWikiContext context) {
+    initInterface(context);
   }
 
   @SuppressWarnings("unchecked")
@@ -102,14 +98,8 @@ public class XWikiPluginManager {
     }
   }
 
-  public void addPlugins(String[] classNames, XWikiContext context) {
-    if (context.getURLFactory() == null) {
-      context
-          .setURLFactory(context.getWiki().getURLFactoryService()
-              .createURLFactory(context.getMode(), context));
-    }
-    initInterface();
-    for (String className : classNames) {
+  public void addPlugins(String plugins, XWikiContext context) {
+    for (String className : XWikiConfig.SPLITTER.splitToList(plugins)) {
       addPlugin(className, className, context);
     }
   }
@@ -126,10 +116,14 @@ public class XWikiPluginManager {
     this.plugins = plugins;
   }
 
-  public void initInterface() {
+  public void initInterface(XWikiContext context) {
+    if (context.getURLFactory() == null) {
+      context.setURLFactory(context.getWiki().getURLFactoryService()
+          .createURLFactory(context.getMode(), context));
+    }
     for (Method method : XWikiPluginInterface.class.getMethods()) {
       String name = method.getName();
-      functionList.put(name, new Vector<XWikiPluginInterface>());
+      functionList.put(name, new Vector<>());
     }
   }
 
