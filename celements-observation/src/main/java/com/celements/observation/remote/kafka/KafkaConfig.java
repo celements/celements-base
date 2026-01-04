@@ -3,17 +3,12 @@ package com.celements.observation.remote.kafka;
 import static com.google.common.base.Preconditions.*;
 import static org.xwiki.observation.remote.RemoteObservationManagerConfiguration.*;
 
-import java.lang.management.ManagementFactory;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.management.JMException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -33,11 +28,14 @@ import com.google.common.base.Suppliers;
 @Component
 public class KafkaConfig {
 
+  private final String clientId;
   private final ConfigurationSource configSource;
 
   @Inject
   public KafkaConfig(
+      @Named("nodeName") String nodeName,
       @Named("allproperties") ConfigurationSource configSource) {
+    this.clientId = nodeName;
     this.configSource = configSource;
   }
 
@@ -65,25 +63,8 @@ public class KafkaConfig {
     return topic.get();
   }
 
-  private Supplier<String> clientId = Suppliers.memoize(this::getJvmRoute);
-
   public String getClientId() {
-    return clientId.get();
-  }
-
-  /**
-   * Reads the Tomcat jvmRoute via JMX. It provides a stable, node-specific identifier in clustered
-   * environments and avoids having to configure an explicit Kafka client id.
-   */
-  private String getJvmRoute() {
-    try {
-      MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-      ObjectName name = new ObjectName("Catalina:type=Engine");
-      return Objects.toString(mBeanServer.getAttribute(name, "jvmRoute"), "");
-    } catch (JMException e) {
-      // without a clientId, message loop prevention and grouping semantics would break.
-      throw new IllegalStateException("Failed to read jvmRoute", e);
-    }
+    return clientId;
   }
 
   /**

@@ -22,14 +22,20 @@
 package com.xpn.xwiki;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 
 public class XWikiConfig extends Properties {
+
+  public static final Splitter SPLITTER = Splitter
+      .on(CharMatcher.anyOf(",").or(CharMatcher.whitespace()))
+      .trimResults().omitEmptyStrings();
 
   public XWikiConfig() {
     // Default constructor so that properties can be added after constructing the instance
@@ -37,10 +43,9 @@ public class XWikiConfig extends Properties {
   }
 
   public XWikiConfig(String path) throws XWikiException {
-    try {
-      FileInputStream fis = new FileInputStream(path);
+    try (FileInputStream fis = new FileInputStream(path)) {
       loadConfig(fis, path);
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       Object[] args = { path };
       throw new XWikiException(XWikiException.MODULE_XWIKI_CONFIG,
           XWikiException.ERROR_XWIKI_CONFIG_FILENOTFOUND, "Configuration file {0} not found", e,
@@ -71,7 +76,11 @@ public class XWikiConfig extends Properties {
    *          - name of property
    */
   public String[] getPropertyAsList(String param) {
-    return StringUtils.split(getProperty(param, ""), " ,");
+    return getPropertyList(param).toArray(new String[0]);
+  }
+
+  public List<String> getPropertyList(String param) {
+    return SPLITTER.splitToList(getProperty(param, ""));
   }
 
   /**
@@ -84,7 +93,7 @@ public class XWikiConfig extends Properties {
    */
   @Override
   public String getProperty(String key, String defaultValue) {
-    return StringUtils.trim(super.getProperty(key, defaultValue));
+    return getPropertyOpt(key).orElse(defaultValue);
   }
 
   /**
@@ -97,6 +106,20 @@ public class XWikiConfig extends Properties {
    */
   @Override
   public String getProperty(String key) {
-    return StringUtils.trim(super.getProperty(key));
+    return getPropertyOpt(key).orElse(null);
+  }
+
+  public Optional<String> getPropertyOpt(String key) {
+    return getEnvProperty(key)
+        .or(() -> Optional.ofNullable(super.getProperty(key)))
+        .map(String::trim);
+  }
+
+  private Optional<String> getEnvProperty(String key) {
+    var envKey = Optional.ofNullable(key)
+        .map(k -> k.replace('.', '_').replace('-', '_'))
+        .orElse("");
+    return Optional.ofNullable(System.getenv(envKey.toUpperCase()))
+        .or(() -> Optional.ofNullable(System.getenv(envKey)));
   }
 }

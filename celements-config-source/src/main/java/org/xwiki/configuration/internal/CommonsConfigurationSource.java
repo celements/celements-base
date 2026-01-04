@@ -19,22 +19,24 @@
  */
 package org.xwiki.configuration.internal;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import static com.google.common.base.Preconditions.*;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.configuration.Configuration;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.configuration.ConversionException;
 import org.xwiki.properties.ConverterManager;
+
+import one.util.streamex.StreamEx;
 
 /**
  * Wrap a Commons Configuration instance into a XWiki {@link ConfigurationSource}. This allows us to
- * reuse the <a href=
- * "http://commons.apache.org/configuration/"numerous types of Configuration<a/> provided by Commons
- * Configuration
- * (properties file, XML files, databases, etc).
+ * reuse the <a href="http://commons.apache.org/configuration/">numerous types of Configuration</a>
+ * provided by Commons Configuration (properties file, XML files, databases, etc).
  *
  * @version $Id$
  * @since 1.6M1
@@ -61,7 +63,9 @@ public class CommonsConfigurationSource implements ConfigurationSource {
   @Override
   @SuppressWarnings("unchecked")
   public <T> T getProperty(String key, T defaultValue) {
-    return getProperty(key, defaultValue, (Class<T>) defaultValue.getClass());
+    checkNotNull(defaultValue);
+    return getPropertyOpt(key, (Class<T>) defaultValue.getClass())
+        .orElse(defaultValue);
   }
 
   /**
@@ -72,7 +76,16 @@ public class CommonsConfigurationSource implements ConfigurationSource {
   @Override
   @SuppressWarnings("unchecked")
   public <T> T getProperty(String key) {
-    return (T) this.configuration.getProperty(key);
+    var envProp = getEnvProperty(key);
+    if (envProp.isPresent()) {
+      return (T) envProp.get();
+    }
+    return (T) configuration.getProperty(key);
+  }
+
+  @Override
+  public <T> Optional<T> getPropertyOpt(String key) {
+    return Optional.ofNullable(getProperty(key));
   }
 
   /**
@@ -85,24 +98,27 @@ public class CommonsConfigurationSource implements ConfigurationSource {
   public <T> T getProperty(String key, Class<T> valueClass) {
     T result = null;
     try {
-      if (String.class.getName().equals(valueClass.getName())) {
-        result = (T) this.configuration.getString(key);
+      if (String.class.equals(valueClass)) {
+        result = (T) getEnvProperty(key)
+            .orElseGet(() -> configuration.getString(key));
       } else if (List.class.isAssignableFrom(valueClass)) {
-        result = (T) this.configuration.getList(key);
+        result = (T) configuration.getList(key);
       } else if (Properties.class.isAssignableFrom(valueClass)) {
-        result = (T) this.configuration.getProperties(key);
-      } else if (null != getProperty(key)) {
-        result = this.converterManager.convert(valueClass, getProperty(key));
+        result = (T) configuration.getProperties(key);
+      } else {
+        result = getPropertyOpt(key)
+            .map(value -> converterManager.convert(valueClass, value))
+            .orElse(null);
       }
-    } catch (org.apache.commons.configuration.ConversionException e) {
-      throw new org.xwiki.configuration.ConversionException("Key [" + key + "] is not of type ["
-          + valueClass.getName() + "]", e);
-    } catch (org.xwiki.properties.converter.ConversionException e) {
-      throw new org.xwiki.configuration.ConversionException("Key [" + key + "] is not of type ["
-          + valueClass.getName() + "]", e);
+    } catch (org.apache.commons.configuration.ConversionException
+        | org.xwiki.properties.converter.ConversionException e) {
+      throw new ConversionException("[" + key + "] is not of type [" + valueClass + "]", e);
     }
-
     return result;
+  }
+
+  public <T> Optional<T> getPropertyOpt(String key, Class<T> valueClass) {
+    return Optional.ofNullable(getProperty(key, valueClass));
   }
 
   /**
@@ -111,14 +127,8 @@ public class CommonsConfigurationSource implements ConfigurationSource {
    * @see ConfigurationSource#getKeys()
    */
   @Override
-  @SuppressWarnings("unchecked")
   public List<String> getKeys() {
-    List<String> keysList = new ArrayList<>();
-    Iterator keys = this.configuration.getKeys();
-    while (keys.hasNext()) {
-      keysList.add((String) keys.next());
-    }
-    return keysList;
+    return StreamEx.of(configuration.getKeys()).toList();
   }
 
   /**
@@ -128,7 +138,7 @@ public class CommonsConfigurationSource implements ConfigurationSource {
    */
   @Override
   public boolean containsKey(String key) {
-    return this.configuration.containsKey(key);
+    return getEnvProperty(key).isPresent() || configuration.containsKey(key);
   }
 
   /**
@@ -138,15 +148,15 @@ public class CommonsConfigurationSource implements ConfigurationSource {
    */
   @Override
   public boolean isEmpty() {
-    return this.configuration.isEmpty();
+    return configuration.isEmpty();
   }
 
-  private <T> T getProperty(String key, T defaultValue, Class<T> valueClass) {
-    T result = getProperty(key, valueClass);
-    if (result == null) {
-      result = defaultValue;
-    }
-    return result;
+  private Optional<String> getEnvProperty(String key) {
+    var envKey = Optional.ofNullable(key)
+        .map(k -> k.replace('.', '_').replace('-', '_'))
+        .orElse("");
+    return Optional.ofNullable(System.getenv(envKey.toUpperCase()))
+        .or(() -> Optional.ofNullable(System.getenv(envKey)));
   }
 
 }
