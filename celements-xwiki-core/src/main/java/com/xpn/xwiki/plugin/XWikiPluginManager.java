@@ -29,7 +29,6 @@ import java.util.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Splitter;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -95,6 +94,12 @@ public class XWikiPluginManager {
     for (String name : functionList.keySet()) {
       Vector<XWikiPluginInterface> pluginList = functionList.get(name);
       pluginList.remove(plugin);
+    }
+  }
+
+  public void addPlugins(String[] classNames, XWikiContext context) {
+    for (String className : classNames) {
+      addPlugin(className, className, context);
     }
   }
 
