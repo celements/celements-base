@@ -582,10 +582,10 @@ public class XWiki implements EventListener {
     XWikiContext context = getContext();
     var cfg = Utils.getComponent(XWikiConfigSource.class);
     var pm = new XWikiPluginManager(context);
+    setPluginManager(pm);
     pm.addPlugins(getXWikiPreference("plugins", context), context);
     pm.addPlugins(cfg.getProperty("xwiki.plugins", ""), context);
     pm.addPlugins(cfg.getProperty("xwiki.plugins.additional", ""), context);
-    setPluginManager(pm);
   }
 
   /**
