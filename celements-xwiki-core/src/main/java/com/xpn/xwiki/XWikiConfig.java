@@ -21,6 +21,8 @@
 
 package com.xpn.xwiki;
 
+import static org.xwiki.configuration.SystemEnvUtils.*;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -110,16 +112,8 @@ public class XWikiConfig extends Properties {
   }
 
   public Optional<String> getPropertyOpt(String key) {
-    return getEnvProperty(key)
+    return getEnv(key)
         .or(() -> Optional.ofNullable(super.getProperty(key)))
         .map(String::trim);
-  }
-
-  private Optional<String> getEnvProperty(String key) {
-    var envKey = Optional.ofNullable(key)
-        .map(k -> k.replace('.', '_').replace('-', '_'))
-        .orElse("");
-    return Optional.ofNullable(System.getenv(envKey.toUpperCase()))
-        .or(() -> Optional.ofNullable(System.getenv(envKey)));
   }
 }
