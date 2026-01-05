@@ -580,11 +580,12 @@ public class XWiki implements EventListener {
 
   public void loadPlugins() {
     XWikiContext context = getContext();
-    setPluginManager(new XWikiPluginManager(getXWikiPreference("plugins", context), context));
-    String plugins = Param("xwiki.plugins", "");
-    if (!plugins.equals("")) {
-      getPluginManager().addPlugins(StringUtils.split(plugins, " ,"), context);
-    }
+    var cfg = Utils.getComponent(XWikiConfigSource.class);
+    var pm = new XWikiPluginManager(context);
+    pm.addPlugins(getXWikiPreference("plugins", context), context);
+    pm.addPlugins(cfg.getProperty("xwiki.plugins", ""), context);
+    pm.addPlugins(cfg.getProperty("xwiki.plugins.additional", ""), context);
+    setPluginManager(pm);
   }
 
   /**
