@@ -82,6 +82,7 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
    * Response: {} on success.
    */
   @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PreAuthorize("permitAll()")
   public Object upload(@RequestParam("path") String path,
       @RequestParam("file") List<MultipartFile> files) {
     String dirPath = normalizeDirPath(path);
