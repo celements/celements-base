@@ -1,6 +1,5 @@
 com.celements.common.classes.ClassesCompositorComponent
 com.celements.web.classes.oldcore.XWikiRightsClass
-com.celements.filebase.AttachmentService
 com.celements.rights.CelementsRightScriptService
 com.celements.common.observation.converter.AnnotationEventConverter
 com.celements.xwikiPatches.SpacePreferencesConfigurationSource

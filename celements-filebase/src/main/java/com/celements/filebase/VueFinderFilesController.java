@@ -1,5 +1,7 @@
 package com.celements.filebase;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLConnection;
 import java.time.Instant;
 import java.util.Date;
@@ -11,17 +13,21 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.matcher.AllAttachmentMatcher;
 import com.celements.spring.security.AuthenticatedBaseController;
@@ -67,6 +73,34 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
     } catch (FileBaseLoadException exp) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Folder not found.", exp);
     }
+  }
+
+  /**
+   * Upload files as attachments to the directory document.
+   * POST /api/files/upload?path=local://public/FileRepo
+   * multipart/form-data: file=<binary> (can be repeated)
+   * Response: {} on success.
+   */
+  @PostMapping(path = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public Object upload(@RequestParam("path") String path,
+      @RequestParam("file") List<MultipartFile> files) {
+    String dirPath = normalizeDirPath(path);
+    // TODO extend filebase for directory support
+    for (MultipartFile file : files) {
+      if ((file == null) || file.isEmpty()) {
+        continue;
+      }
+      String original = file.getOriginalFilename();
+      String fileName = StringUtils.hasText(original) ? original : "upload.bin";
+
+      try (InputStream in = file.getInputStream()) {
+        fileBaseService.addFile(in, fileName, "Uploaded via VueFinder");
+      } catch (IOException | FileBaseAddFileException exp) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fileupload failed.",
+            exp);
+      }
+    }
+    return java.util.Collections.emptyMap();
   }
 
   /**

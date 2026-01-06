@@ -1,9 +1,11 @@
 package com.celements.filebase;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.xwiki.component.annotation.ComponentRole;
 
+import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.exceptions.FileNotExistsException;
 import com.celements.filebase.matcher.IAttachmentMatcher;
@@ -22,4 +24,9 @@ public interface IFileBaseServiceRole {
   public List<XWikiAttachment> getFilesNameMatch(IAttachmentMatcher attMatcher)
       throws FileBaseLoadException;
 
+  public XWikiAttachment addFile(InputStream in, String filename, String username, String comment)
+      throws FileBaseAddFileException;
+
+  public XWikiAttachment addFile(InputStream in, String filename, String comment)
+      throws FileBaseAddFileException;
 }
