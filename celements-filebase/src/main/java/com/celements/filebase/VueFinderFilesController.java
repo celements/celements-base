@@ -50,9 +50,9 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
 
   /**
    * List files (attachments) in a "directory" (XWiki document).
-   * GET /api/files/?path=local://public/FileRepo
+   * GET /api/files?path=local://public/FileRepo
    */
-  @GetMapping(path = "/")
+  @GetMapping(path = "")
   @PreAuthorize("permitAll()")
   public ListResponse list(@RequestParam(name = "path", required = false) String path) {
     String dirPath = normalizeDirPath(path);
