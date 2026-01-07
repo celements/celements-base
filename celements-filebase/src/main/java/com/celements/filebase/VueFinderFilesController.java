@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -12,6 +13,8 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,6 +41,8 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 @RestControllerAdvice
 @RequestMapping("/files")
 public class VueFinderFilesController extends AuthenticatedBaseController {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(VueFinderFilesController.class);
 
   private static final String STORAGE = "local";
 
@@ -105,6 +111,33 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   }
 
   /**
+   * Delete files (attachments).
+   * POST /api/files/delete?path=local://public/FileRepo
+   * body: { "items": [ { "path": "local://public/FileRepo/a.png", "type":"file" } ] }
+   * Response: updated list (same structure as GET /). :contentReference[oaicite:5]{index=5}
+   */
+  @PostMapping(path = "/delete")
+  @PreAuthorize("permitAll()")
+  public ListResponse delete(@RequestBody DeleteRequest body) {
+    String dirPath = normalizeDirPath(body.path);
+    List<String> refs = new ArrayList<>();
+    if ((body.items != null)) {
+      for (DeleteItem item : body.items) {
+        if ((item == null) || !"file".equalsIgnoreCase(item.type)) {
+          continue;
+        }
+        String delFileName = normalizeFileName(item.path);
+        LOGGER.debug("add filename '{}' to delete list", delFileName);
+        refs.add(delFileName);
+      }
+    }
+    if (!refs.isEmpty()) {
+      fileBaseService.deleteFileList(refs);
+    }
+    return list(dirPath);
+  }
+
+  /**
    * Directory path normalization:
    * - null/empty -> local://
    * - ensure scheme
@@ -119,6 +152,12 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
       p = p.substring(0, p.length() - 1);
     }
     return p;
+  }
+
+  String normalizeFileName(String path) {
+    String p = StringUtils.hasText(path) ? path.trim() : (STORAGE + "://");
+    var parts = p.split("://|/");
+    return parts[Math.max(0, parts.length - 1)];
   }
 
   private FileItem toFileItem(String dirPath, XWikiAttachment att) {
@@ -192,6 +231,18 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
     public long last_modified; // unix seconds
     public String mime_type;
     public String visibility; // "public"/"private"
+  }
+
+  public static class DeleteRequest {
+
+    public String path;
+    public List<DeleteItem> items;
+  }
+
+  public static class DeleteItem {
+
+    public String path;
+    public String type;
   }
 
   @ExceptionHandler(ResponseStatusException.class)

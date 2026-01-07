@@ -29,4 +29,6 @@ public interface IFileBaseServiceRole {
 
   public XWikiAttachment addFile(InputStream in, String filename, String comment)
       throws FileBaseAddFileException;
+
+  public int deleteFileList(List<String> files);
 }

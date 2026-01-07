@@ -2,11 +2,13 @@ package com.celements.filebase;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.filebase.exceptions.FileBaseAddFileException;
@@ -95,6 +97,27 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
   public XWikiAttachment addFile(InputStream in, String filename, String comment)
       throws FileBaseAddFileException {
     return addFile(in, filename, null, comment);
+  }
+
+  @Override
+  public int deleteFileList(List<String> filenames) {
+    try {
+      final DocumentReference fileBaseDocRef = getFileBaseDoc().getDocRef();
+      return attService.deleteAttachmentList(filenames.stream()
+          .filter(fn -> {
+            try {
+              return existsFileNameEqual(fn);
+            } catch (FileBaseLoadException e) {
+              LOGGER.error("FileBase loading failed. Skipping delete for " + fn, e);
+              return false;
+            }
+          })
+          .map(fn -> new AttachmentReference(fn, fileBaseDocRef))
+          .collect(Collectors.toList()));
+    } catch (FileBaseLoadException exp) {
+      LOGGER.error("FileBase loading failed.", exp);
+      return -1;
+    }
   }
 
 }
