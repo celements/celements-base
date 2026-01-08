@@ -143,9 +143,10 @@ public class EditAction extends XWikiAction {
         if ((!translationLoaded) && getXWiki().isMultiLingual(context)) {
           tdoc = doc.getTranslatedDocument(languagetoedit, context);
           if (tdoc.isFromCache()) {
-            tdoc = doc.clone();
+            tdoc = tdoc.clone();
             tdoc.setFromCache(false);
           }
+          tdoc.setLanguage(languagetoedit);
           tdoc.setTitle(doc.getTitle());
           tdoc.setContent(doc.getContent());
           context.put("tdoc", tdoc);
