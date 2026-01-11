@@ -1,5 +1,7 @@
 package com.xpn.xwiki.store;
 
+import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -14,16 +16,38 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentContent;
 import com.xpn.xwiki.doc.XWikiDocument;
 
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
+import software.amazon.awssdk.core.checksums.ResponseChecksumValidation;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+
 @Component
 public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
     implements XWikiAttachmentStoreInterface {
 
   private static final Log log = LogFactory.getLog(XWikiHibernateAttachmentStore.class);
 
+  private S3Client s3Client;
+
   /**
    * Empty constructor needed for component manager.
    */
-  public XWikiHibernateAttachmentStore() {}
+  public XWikiHibernateAttachmentStore() {
+    s3Client = S3Client.builder()
+        .endpointOverride(URI.create("https://fsn1.your-objectstorage.com"))
+        .region(Region.of("eu-central"))
+        .credentialsProvider(StaticCredentialsProvider
+            .create(AwsBasicCredentials.builder()
+                .accessKeyId("FIGYTJ2VE7JJ1K5BC3AS")
+                .secretAccessKey("H2di8Cgp8pMNZRAz4HCZLSG2K41F66tFcTT9697A")
+                .build()))
+        .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
+        .responseChecksumValidation(ResponseChecksumValidation.WHEN_REQUIRED)
+        .build();
+  }
 
   @Override
   public void saveAttachmentContent(XWikiAttachment attachment, XWikiContext context,
@@ -52,6 +76,15 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
       try {
         if (attachdb != null) {
           context.setDatabase(attachdb);
+        }
+
+        try (InputStream data = content.getContentInputStream()) {
+          s3Client.putObject(builder -> builder
+              .bucket("cel-filebase")
+              .key(db + ":" + content.getId())
+              .contentLength(content.getSize())
+              .contentType(attachment.getMimeType(context)),
+              RequestBody.fromInputStream(data, content.getSize()));
         }
 
         Query query = session.createQuery(

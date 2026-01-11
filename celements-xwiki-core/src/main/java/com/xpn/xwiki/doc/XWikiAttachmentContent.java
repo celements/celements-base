@@ -251,14 +251,14 @@ public class XWikiAttachmentContent implements Cloneable {
     IOUtils.copy(is, this.file.getOutputStream());
     this.setContentDirty(true);
 
-    this.attachment.setFilesize(this.getSize());
+    this.attachment.setFilesize((int) this.getSize());
   }
 
   /**
    * @return the true size of the content of the attachment.
    * @since 2.3M2
    */
-  public int getSize() {
-    return (int) this.file.getSize();
+  public long getSize() {
+    return this.file.getSize();
   }
 }

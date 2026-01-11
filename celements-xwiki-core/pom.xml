@@ -85,6 +85,11 @@
       <groupId>struts</groupId>
       <artifactId>struts</artifactId>
     </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>2.41.5</version>
+    </dependency>
 
     <!-- Spring -->
     <dependency>

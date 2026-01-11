@@ -170,7 +170,7 @@ public class XWikiAttachment implements Cloneable {
       this.doc.loadAttachmentContent(this, context);
     }
 
-    return this.attachment_content.getSize();
+    return (int) this.attachment_content.getSize();
   }
 
   public String getFilename() {
