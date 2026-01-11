@@ -57,4 +57,11 @@ public interface XWikiAttachmentStoreInterface {
       boolean bTransaction) throws XWikiException;
 
   void cleanUp(XWikiContext context);
+
+  AttachmentContentStore getContentStore();
+
+  boolean hasVersioningSupport();
+
+  AttachmentVersioningStore getVersioningStore();
+
 }

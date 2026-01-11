@@ -1,5 +1,7 @@
 package com.celements.store;
 
+import static com.celements.spring.context.SpringContextProvider.*;
+
 import java.util.Optional;
 
 import org.xwiki.component.manager.ComponentLookupException;
@@ -7,6 +9,10 @@ import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.configuration.ConfigurationSource;
 
 import com.google.common.primitives.Ints;
+import com.xpn.xwiki.store.AttachmentContentStore;
+import com.xpn.xwiki.store.AttachmentVersioningStore;
+import com.xpn.xwiki.store.HibernateAttachmentContentStore;
+import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
 import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
@@ -28,6 +34,31 @@ public final class StoreFactory {
     return getOptionalStore(XWikiRecycleBinStoreInterface.class, "celements.store.recyclebin");
   }
 
+  public static XWikiAttachmentStoreInterface getAttachmentStore() {
+    try {
+      String hint = getConfigSource().getProperty("celements.store.attachment");
+      return getComponentManager().lookup(XWikiAttachmentStoreInterface.class, hint);
+    } catch (ComponentLookupException exc) {
+      throw new IllegalStateException("failed looking up attachment store", exc);
+    }
+  }
+
+  public static AttachmentContentStore getAttachmentContentStore() {
+    String beanName = getConfigSource().getProperty("celements.store.attachment.content",
+        HibernateAttachmentContentStore.class.getName());
+    return getBeanFactory().getBean(beanName, AttachmentContentStore.class);
+  }
+
+  public static AttachmentVersioningStore getAttachmentVersioningStore() {
+    try {
+      var beanName = getConfigSource().getProperty("celements.store.attachment.versioning", "");
+      return getComponentManager().lookup(AttachmentVersioningStore.class,
+          !beanName.isEmpty() ? beanName : "void");
+    } catch (ComponentLookupException exc) {
+      throw new IllegalStateException("failed looking up attachment versioning store", exc);
+    }
+  }
+
   private static <T> Optional<T> getOptionalStore(Class<T> type, String key) {
     try {
       String enabled = getConfigSource().getProperty(key + ".enabled", "false").toLowerCase();
@@ -42,8 +73,8 @@ public final class StoreFactory {
     }
   }
 
-  private static ConfigurationSource getConfigSource() throws ComponentLookupException {
-    return getComponentManager().lookup(ConfigurationSource.class, "allproperties");
+  private static ConfigurationSource getConfigSource() {
+    return Utils.getComponent(ConfigurationSource.class, "allproperties");
   }
 
   private static ComponentManager getComponentManager() {

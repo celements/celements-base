@@ -184,9 +184,6 @@ public class XWiki implements EventListener {
   /** The attachment storage (excluding attachment history). */
   private XWikiAttachmentStoreInterface attachmentStore;
 
-  /** Store for attachment archives. */
-  private AttachmentVersioningStore attachmentVersioningStore;
-
   /** Document versioning storage. */
   private XWikiVersioningStoreInterface versioningStore;
 
@@ -377,17 +374,11 @@ public class XWiki implements EventListener {
         "com.xpn.xwiki.criteria.impl.XWikiCriteriaServiceImpl", context));
 
     LOGGER.trace("initialising AttachmentStore...");
-    setAttachmentStore(Utils.getComponent(XWikiAttachmentStoreInterface.class, Param(
-        "xwiki.store.attachment.hint")));
+    setAttachmentStore(StoreFactory.getAttachmentStore());
 
     LOGGER.trace("initialising VersioningStore...");
     setVersioningStore(Utils.getComponent(XWikiVersioningStoreInterface.class, Param(
         "xwiki.store.versioning.hint")));
-
-    LOGGER.trace("initialising AttachmentVersioningStore...");
-    setAttachmentVersioningStore(Utils.getComponent(AttachmentVersioningStore.class,
-        hasAttachmentVersioning(context) ? Param("xwiki.store.attachment.versioning.hint")
-            : "void"));
 
     LOGGER.trace("initialising RecycleBinStore...");
     StoreFactory.getRecycleBinStore().ifPresent(this::setRecycleBinStore);
@@ -782,7 +773,7 @@ public class XWiki implements EventListener {
   }
 
   public AttachmentVersioningStore getAttachmentVersioningStore() {
-    return this.attachmentVersioningStore;
+    return getAttachmentStore().getVersioningStore();
   }
 
   public XWikiVersioningStoreInterface getVersioningStore() {
@@ -2214,10 +2205,6 @@ public class XWiki implements EventListener {
 
   public void setAttachmentStore(XWikiAttachmentStoreInterface attachmentStore) {
     this.attachmentStore = attachmentStore;
-  }
-
-  public void setAttachmentVersioningStore(AttachmentVersioningStore avStore) {
-    this.attachmentVersioningStore = avStore;
   }
 
   public void setVersioningStore(XWikiVersioningStoreInterface versioningStore) {
@@ -5150,7 +5137,7 @@ public class XWiki implements EventListener {
 
   @Deprecated
   public boolean hasAttachmentVersioning(XWikiContext context) {
-    return ("1".equals(Param("xwiki.store.attachment.versioning", "1")));
+    return getAttachmentStore().hasVersioningSupport();
   }
 
   public String getExternalAttachmentURL(String fullName, String filename, XWikiContext context) {

@@ -33,11 +33,8 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentArchive;
 
 /**
- * Void store for attachment versioning when it is disabled. ("xwiki.store.attachment.versioning=0"
- * parameter is set in
- * xwiki.cfg) It says what there is only one version of attachment - latest. It doesn't store
- * anything. It is safe to
- * use with any stores.
+ * Void store for attachment versioning when it is disabled. It says what there is only one version
+ * of attachment - latest. It doesn't store anything. It is safe to use with any stores.
  *
  * @version $Id$
  * @since 1.4M2

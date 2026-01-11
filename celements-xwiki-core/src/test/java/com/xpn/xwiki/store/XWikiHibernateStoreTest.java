@@ -29,6 +29,8 @@ import org.hibernate.Transaction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.test.MockConfigurationSource;
 
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.test.AbstractComponentTest;
@@ -44,7 +46,9 @@ public class XWikiHibernateStoreTest extends AbstractComponentTest {
   XWikiHibernateStore store;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
+    var cfgSrc = new MockConfigurationSource();
+    registerComponentMock(ConfigurationSource.class, "allproperties", cfgSrc);
     store = Utils.getComponent(XWikiHibernateStore.class);
     store.setPath("whatever");
   }

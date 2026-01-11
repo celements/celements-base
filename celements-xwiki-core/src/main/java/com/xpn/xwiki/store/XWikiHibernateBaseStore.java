@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.WikiReference;
@@ -54,6 +55,9 @@ public class XWikiHibernateBaseStore implements Initializable {
 
   @Requirement
   protected XWikiConfigSource xwikiCfg;
+
+  @Requirement("allproperties")
+  protected ConfigurationSource cfgSrc;
 
   private String hibpath = DEFAULT_CFG_PATH;
 
