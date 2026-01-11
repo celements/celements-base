@@ -47,10 +47,16 @@ public class XWikiPluginManager {
 
   private Map<String, Vector<XWikiPluginInterface>> functionList = new HashMap<>();
 
-  public XWikiPluginManager() {}
+  public XWikiPluginManager() {
+    initInterface();
+  }
 
   public XWikiPluginManager(XWikiContext context) {
-    initInterface(context);
+    this();
+    if (context.getURLFactory() == null) {
+      context.setURLFactory(context.getWiki().getURLFactoryService()
+          .createURLFactory(context.getMode(), context));
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -121,11 +127,7 @@ public class XWikiPluginManager {
     this.plugins = plugins;
   }
 
-  public void initInterface(XWikiContext context) {
-    if (context.getURLFactory() == null) {
-      context.setURLFactory(context.getWiki().getURLFactoryService()
-          .createURLFactory(context.getMode(), context));
-    }
+  public void initInterface() {
     for (Method method : XWikiPluginInterface.class.getMethods()) {
       String name = method.getName();
       functionList.put(name, new Vector<>());
