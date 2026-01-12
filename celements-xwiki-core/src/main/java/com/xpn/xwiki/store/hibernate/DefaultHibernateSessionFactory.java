@@ -20,10 +20,14 @@
 package com.xpn.xwiki.store.hibernate;
 
 import static com.celements.common.MoreObjectsCel.*;
+import static org.xwiki.configuration.SystemEnvUtils.*;
 
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
@@ -35,6 +39,8 @@ import org.xwiki.component.annotation.Component;
 
 import com.celements.init.CelementsStoppedEvent;
 import com.xpn.xwiki.util.Util;
+
+import one.util.streamex.StreamEx;
 
 /**
  * Default implementation for {@link HibernateSessionFactory}.
@@ -54,60 +60,49 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory,
 
     /**
      * Whether the Hibernate Configuration has alreayd been initialized or not. We do this so that
-     * the
-     * Hibernate {@link org.hibernate.cfg.Configuration#configure()} methods can be called several
-     * times in a
-     * row without causing some Duplicate Mapping errors, see our overridden
+     * the Hibernate {@link org.hibernate.cfg.Configuration#configure()} methods can be called
+     * several times in a row without causing some Duplicate Mapping errors, see our overridden
      * {@link #getConfigurationInputStream(String)} below.
      */
     private boolean isConfigurationInitialized;
 
     @Override
     public Configuration configure() throws HibernateException {
-      Configuration configuration;
-      if (this.isConfigurationInitialized) {
-        configuration = this;
-      } else {
-        configuration = super.configure();
-        this.isConfigurationInitialized = true;
-      }
-      return configuration;
+      return configure(() -> super.configure());
     }
 
     @Override
     public Configuration configure(String resource) throws HibernateException {
-      Configuration configuration;
-      if (this.isConfigurationInitialized) {
-        configuration = this;
-      } else {
-        configuration = super.configure(resource);
-        this.isConfigurationInitialized = true;
-      }
-      return configuration;
+      return configure(() -> super.configure(resource));
     }
 
     @Override
     public Configuration configure(URL url) throws HibernateException {
-      Configuration configuration;
-      if (this.isConfigurationInitialized) {
-        configuration = this;
-      } else {
-        configuration = super.configure(url);
-        this.isConfigurationInitialized = true;
-      }
-      return configuration;
+      return configure(() -> super.configure(url));
     }
 
     @Override
     public Configuration configure(File configFile) throws HibernateException {
-      Configuration configuration;
-      if (this.isConfigurationInitialized) {
-        configuration = this;
+      return configure(() -> super.configure(configFile));
+    }
+
+    private Configuration configure(Supplier<Configuration> supplier) throws HibernateException {
+      Configuration cfg;
+      if (isConfigurationInitialized) {
+        cfg = this;
       } else {
-        configuration = super.configure(configFile);
-        this.isConfigurationInitialized = true;
+        cfg = applyEnvOverride(supplier.get());
+        isConfigurationInitialized = true;
       }
-      return configuration;
+      return cfg;
+    }
+
+    private Configuration applyEnvOverride(Configuration cfg) {
+      StreamEx.of(Set.copyOf(cfg.getProperties().stringPropertyNames()))
+          .mapToEntry(key -> getEnv(key.startsWith("hibernate.") ? key : "hibernate." + key))
+          .filterValues(Optional::isPresent)
+          .forKeyValue((key, override) -> cfg.setProperty(key, override.get()));
+      return cfg;
     }
 
     // there is no #configure(InputStream) so we use #configure(String) and override

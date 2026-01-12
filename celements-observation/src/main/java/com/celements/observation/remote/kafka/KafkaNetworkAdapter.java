@@ -4,8 +4,8 @@ import static com.google.common.base.Preconditions.*;
 import static java.nio.charset.StandardCharsets.*;
 import static org.springframework.util.SerializationUtils.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -30,6 +30,8 @@ import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.stereotype.Component;
 import org.xwiki.observation.remote.NetworkAdapter;
 import org.xwiki.observation.remote.RemoteEventData;
+
+import one.util.streamex.EntryStream;
 
 /**
  * {@link NetworkAdapter} implementation that broadcasts {@link RemoteEventData} via Apache Kafka.
@@ -56,6 +58,7 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaNetworkAdapter.class);
 
+  private static final String KEY_EVENT = "event";
   private static final String KEY_ORIGIN = "origin";
   private static final String KEY_ENCRYPTED = "encrypted";
   private static final String ENCRYPTION_VERSION = "v1";
@@ -122,22 +125,26 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
       LOGGER.warn("send - producer not started; dropping message: {}", remoteEvent);
       return;
     }
-    List<RecordHeader> headers = new ArrayList<>();
+    Map<String, String> headers = new HashMap<>();
+    headers.put(KEY_EVENT, remoteEvent.getEvent().getClass().getSimpleName());
     // loop prevention
-    headers.add(new RecordHeader(KEY_ORIGIN, config.getClientId().getBytes(UTF_8)));
+    headers.put(KEY_ORIGIN, config.getClientId());
     byte[] payload;
     try {
       payload = serialize(remoteEvent);
       if (encryptor != null) {
         payload = encryptor.encrypt(payload);
-        headers.add(new RecordHeader(KEY_ENCRYPTED, ENCRYPTION_VERSION.getBytes(UTF_8)));
+        headers.put(KEY_ENCRYPTED, ENCRYPTION_VERSION);
       }
     } catch (Exception e) {
       LOGGER.error("Failed to serialize RemoteEventData; dropping message", e);
       return;
     }
     var kafkaRecord = new ProducerRecord<>(config.getTopic(), "observation", payload);
-    headers.forEach(kafkaRecord.headers()::add);
+    EntryStream.of(headers)
+        .mapValues(v -> v.getBytes(UTF_8))
+        .mapKeyValue(RecordHeader::new)
+        .forEach(kafkaRecord.headers()::add);
     producer.send(kafkaRecord).addCallback(
         result -> LOGGER.debug("sent to [{}]: {}", config.getTopic(), remoteEvent),
         exc -> LOGGER.error("send to [{}] failed: {}", config.getTopic(), remoteEvent, exc));
