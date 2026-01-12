@@ -20,6 +20,7 @@
 package org.xwiki.configuration.internal;
 
 import static com.google.common.base.Preconditions.*;
+import static org.xwiki.configuration.SystemEnvUtils.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,7 +77,7 @@ public class CommonsConfigurationSource implements ConfigurationSource {
   @Override
   @SuppressWarnings("unchecked")
   public <T> T getProperty(String key) {
-    var envProp = getEnvProperty(key);
+    var envProp = getEnv(key);
     if (envProp.isPresent()) {
       return (T) envProp.get();
     }
@@ -99,7 +100,7 @@ public class CommonsConfigurationSource implements ConfigurationSource {
     T result = null;
     try {
       if (String.class.equals(valueClass)) {
-        result = (T) getEnvProperty(key)
+        result = (T) getEnv(key)
             .orElseGet(() -> configuration.getString(key));
       } else if (List.class.isAssignableFrom(valueClass)) {
         result = (T) configuration.getList(key);
@@ -138,7 +139,7 @@ public class CommonsConfigurationSource implements ConfigurationSource {
    */
   @Override
   public boolean containsKey(String key) {
-    return getEnvProperty(key).isPresent() || configuration.containsKey(key);
+    return getEnv(key).isPresent() || configuration.containsKey(key);
   }
 
   /**
@@ -149,14 +150,6 @@ public class CommonsConfigurationSource implements ConfigurationSource {
   @Override
   public boolean isEmpty() {
     return configuration.isEmpty();
-  }
-
-  private Optional<String> getEnvProperty(String key) {
-    var envKey = Optional.ofNullable(key)
-        .map(k -> k.replace('.', '_').replace('-', '_'))
-        .orElse("");
-    return Optional.ofNullable(System.getenv(envKey.toUpperCase()))
-        .or(() -> Optional.ofNullable(System.getenv(envKey)));
   }
 
 }

@@ -1,63 +1,53 @@
 package com.celements.servlet;
 
-import java.lang.management.ManagementFactory;
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import javax.management.JMException;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import one.util.streamex.StreamEx;
+import org.xwiki.configuration.SystemEnvUtils;
 
 @Configuration
 public class NodeConfig {
 
-  @Bean(name = "nodeName")
-  public String nodeName() {
-    return StreamEx.of(
-        getJvmRoute(),
-        getSystemProperty(),
-        getSystemEnv(),
-        getRuntimeMXBeanName())
-        .map(Supplier::get)
-        .flatMap(Optional::stream)
+  @Bean
+  public NodeIdentity nodeIdentity() {
+    return new NodeIdentity(
+        getEnv("app.name"),
+        getEnv("cluster.name"),
+        getEnv("node.name"));
+  }
+
+  private String getEnv(String key) {
+    return SystemEnvUtils.getEnv(key)
         .map(String::trim)
         .filter(name -> !name.isEmpty())
-        .findFirst()
-        .orElseThrow(() -> new IllegalStateException("Cannot determine node name"));
+        .orElseThrow(() -> new IllegalStateException("Cannot determine " + key));
   }
 
-  /**
-   * Reads the Tomcat jvmRoute via JMX. It provides a stable, node-specific identifier in clustered
-   * environments.
-   */
-  private Supplier<Optional<String>> getJvmRoute() {
-    return () -> {
-      try {
-        MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-        ObjectName name = new ObjectName("Catalina:type=Engine");
-        return Optional.ofNullable(mBeanServer.getAttribute(name, "jvmRoute"))
-            .map(Object::toString);
-      } catch (JMException e) {
-        return Optional.empty();
-      }
-    };
-  }
+  public static class NodeIdentity {
 
-  private Supplier<Optional<String>> getSystemProperty() {
-    return () -> Optional.ofNullable(System.getProperty("NODE_NAME"));
-  }
+    private final String appName;
+    private final String clusterName;
+    private final String nodeName;
 
-  private Supplier<Optional<String>> getSystemEnv() {
-    return () -> Optional.ofNullable(System.getenv("NODE_NAME"));
-  }
+    private NodeIdentity(String appName, String clusterName, String nodeName) {
+      this.appName = appName;
+      this.clusterName = clusterName;
+      this.nodeName = nodeName;
+    }
 
-  private Supplier<Optional<String>> getRuntimeMXBeanName() {
-    return () -> Optional.ofNullable(ManagementFactory.getRuntimeMXBean().getName())
-        .map(name -> name.substring(name.indexOf('@') + 1));
+    public String appName() {
+      return appName;
+    }
+
+    public String clusterName() {
+      return clusterName;
+    }
+
+    public String nodeName() {
+      return nodeName;
+    }
+
+    public String nodeId() {
+      return appName + ":" + clusterName + ":" + nodeName;
+    }
   }
 }
