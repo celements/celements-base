@@ -23,19 +23,20 @@ import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
 
+import com.celements.servlet.NodeConfig.NodeIdentity;
 import com.google.common.base.Suppliers;
 
 @Component
 public class KafkaConfig {
 
-  private final String clientId;
+  private final NodeIdentity nodeIdentity;
   private final ConfigurationSource configSource;
 
   @Inject
   public KafkaConfig(
-      @Named("nodeName") String nodeName,
+      NodeIdentity nodeIdentity,
       @Named("allproperties") ConfigurationSource configSource) {
-    this.clientId = nodeName;
+    this.nodeIdentity = nodeIdentity;
     this.configSource = configSource;
   }
 
@@ -53,18 +54,15 @@ public class KafkaConfig {
     return servers.get();
   }
 
-  private Supplier<String> topic = Suppliers.memoize(() -> getConfigSource()
-      .getProperty(CFG_KEY + ".kafka.topic", "").trim());
-
   /**
    * Kafka topic to use for remote observation events.
    */
   public String getTopic() {
-    return topic.get();
+    return "observation.remote." + nodeIdentity.clusterName();
   }
 
   public String getClientId() {
-    return clientId;
+    return nodeIdentity.nodeName();
   }
 
   /**
