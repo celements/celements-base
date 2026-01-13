@@ -1,11 +1,16 @@
 package com.xpn.xwiki.store;
 
+import javax.validation.constraints.NotEmpty;
+
 import org.xwiki.component.annotation.ComponentRole;
 
 import com.xpn.xwiki.doc.XWikiAttachmentContent;
 
 @ComponentRole
 public interface AttachmentContentStore {
+
+  @NotEmpty
+  String getStoreName();
 
   void saveContent(XWikiAttachmentContent content) throws AttachmentContentStoreException;
 

@@ -60,8 +60,6 @@ public interface XWikiAttachmentStoreInterface {
 
   AttachmentContentStore getContentStore();
 
-  boolean hasVersioningSupport();
-
   AttachmentVersioningStore getVersioningStore();
 
 }

@@ -25,9 +25,9 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
   private final Supplier<AttachmentContentStore> contentStore = Suppliers
       .memoize(StoreFactory::getAttachmentContentStore);
   private final Supplier<Optional<AttachmentContentStore>> contentStoreFallback = Suppliers
-      .memoize(() -> Optional.<AttachmentContentStore>of(
-          getBeanFactory().getBean(HibernateAttachmentContentStore.class))
-          .filter(store -> !(contentStore.get() instanceof HibernateAttachmentContentStore)));
+      .memoize(() -> Optional.of(getBeanFactory()
+          .getBean(HibernateAttachmentContentStore.STORE_NAME, AttachmentContentStore.class))
+          .filter(store -> !store.getStoreName().equals(contentStore.get().getStoreName())));
   private final Supplier<AttachmentVersioningStore> versioningStore = Suppliers
       .memoize(StoreFactory::getAttachmentVersioningStore);
 
@@ -242,11 +242,6 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
   @Override
   public AttachmentContentStore getContentStore() {
     return contentStore.get();
-  }
-
-  @Override
-  public boolean hasVersioningSupport() {
-    return getVersioningStore().getClass() != VoidAttachmentVersioningStore.class;
   }
 
   @Override

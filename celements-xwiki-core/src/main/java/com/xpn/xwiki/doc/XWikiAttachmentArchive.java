@@ -21,22 +21,25 @@
 
 package com.xpn.xwiki.doc;
 
+import static com.celements.spring.context.SpringContextProvider.*;
+
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.rcs.Archive;
 import org.suigeneris.jrcs.rcs.Version;
 import org.suigeneris.jrcs.rcs.impl.Node;
 import org.suigeneris.jrcs.util.ToString;
 
+import com.celements.store.att.AttachmentContentPolicy;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 
 public class XWikiAttachmentArchive implements Cloneable {
 
-  private static final Log LOG = LogFactory.getLog(XWikiAttachmentArchive.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiAttachmentArchive.class);
 
   private XWikiAttachment attachment;
 
@@ -87,13 +90,6 @@ public class XWikiAttachmentArchive implements Cloneable {
   }
 
   public byte[] getArchive() throws XWikiException {
-    return getArchive(null);
-  }
-
-  public byte[] getArchive(XWikiContext context) throws XWikiException {
-    if ((this.archive == null) && (context != null)) {
-      updateArchive(this.attachment.getContent(context), context);
-    }
     if (this.archive == null) {
       return new byte[0];
     } else {
@@ -129,11 +125,12 @@ public class XWikiAttachmentArchive implements Cloneable {
    *          the XWikiContext for the request used to load the correct attachment content from the
    *          database.
    */
-  public void updateArchive(byte[] data, XWikiContext context) throws XWikiException {
+  public void updateArchive() throws XWikiException {
     try {
       this.attachment.incrementVersion();
       this.attachment.setDate(new Date());
-      String sdata = this.attachment.toStringXML(true, false, context);
+      boolean includeContent = getAttachmentContentPolicy().includeInArchive();
+      String sdata = this.attachment.toStringXML(includeContent, false);
       Object[] lines = ToString.stringToArray(sdata);
 
       if (this.archive != null) {
@@ -196,6 +193,16 @@ public class XWikiAttachmentArchive implements Cloneable {
       revattach.fromXML(scontent);
       revattach.setDoc(attachment.getDoc());
       revattach.setVersion(rev);
+      /*
+       * If the RCS archive is loaded from Hibernate (legacy), the content is already injected
+       * above by fromXML.
+       * If an alternative content storage is used (e.g. S3), this loads the content here.
+       * It is expected that AttachmentContentStore.loadContent impl can resolve the correct
+       * revision based solely on attachment metadata (doc, filename, version).
+       */
+      if (revattach.getAttachment_content() == null) {
+        revattach.loadContent(context);
+      }
       return revattach;
     } catch (Exception e) {
       Object[] args = { attachment.getFilename() };
@@ -203,5 +210,9 @@ public class XWikiAttachmentArchive implements Cloneable {
           XWikiException.ERROR_XWIKI_STORE_ATTACHMENT_ARCHIVEFORMAT,
           "Exception while manipulating the archive for file {0}", e, args);
     }
+  }
+
+  private AttachmentContentPolicy getAttachmentContentPolicy() {
+    return getBeanFactory().getBean(AttachmentContentPolicy.class);
   }
 }

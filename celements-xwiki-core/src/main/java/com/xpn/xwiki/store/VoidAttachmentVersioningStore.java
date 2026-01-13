@@ -57,9 +57,11 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
    */
   public VoidAttachmentVersioningStore() {}
 
-  /**
-   * {@inheritDoc}
-   */
+  @Override
+  public boolean hasVersioning() {
+    return false;
+  }
+
   @Override
   public void deleteArchive(XWikiAttachment attachment, XWikiContext context, boolean transaction)
       throws XWikiException {
@@ -116,7 +118,7 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
      * {@inheritDoc}
      */
     @Override
-    public void updateArchive(byte[] data, XWikiContext context) throws XWikiException {
+    public void updateArchive() throws XWikiException {
       getAttachment().incrementVersion();
       getAttachment().setDate(new Date());
     }
@@ -133,8 +135,8 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
      * {@inheritDoc}
      */
     @Override
-    public byte[] getArchive(XWikiContext context) throws XWikiException {
-      String sdata = getAttachment().toStringXML(true, false, context);
+    public byte[] getArchive() throws XWikiException {
+      String sdata = getAttachment().toStringXML(true, false);
       Object[] lines = ToString.stringToArray(sdata);
       Archive archive = new Archive(lines, getAttachment().getFilename(),
           getAttachment().getVersion());

@@ -1,5 +1,7 @@
 package com.xpn.xwiki.store;
 
+import javax.inject.Named;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -8,8 +10,16 @@ import org.springframework.stereotype.Component;
 import com.xpn.xwiki.doc.XWikiAttachmentContent;
 
 @Component
+@Named(HibernateAttachmentContentStore.STORE_NAME)
 public class HibernateAttachmentContentStore extends XWikiHibernateBaseStore
     implements AttachmentContentStore {
+
+  public static final String STORE_NAME = "store.attachment.content.hibernate";
+
+  @Override
+  public String getStoreName() {
+    return STORE_NAME;
+  }
 
   @Override
   public void saveContent(XWikiAttachmentContent content) throws AttachmentContentStoreException {

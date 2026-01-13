@@ -22,8 +22,8 @@ package com.xpn.xwiki.store.migration.hibernate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -40,7 +40,7 @@ import com.xpn.xwiki.store.migration.XWikiMigratorInterface;
 public class XWikiHibernateMigrationManager extends AbstractXWikiMigrationManager {
 
   /** logger */
-  protected static final Log LOG = LogFactory.getLog(XWikiHibernateMigrationManager.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(XWikiHibernateMigrationManager.class);
 
   /** {@inheritDoc} */
   public XWikiHibernateMigrationManager(XWikiContext context) throws XWikiException {

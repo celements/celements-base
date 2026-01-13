@@ -45,15 +45,14 @@ public final class StoreFactory {
 
   public static AttachmentContentStore getAttachmentContentStore() {
     String beanName = getConfigSource().getProperty("celements.store.attachment.content",
-        HibernateAttachmentContentStore.class.getName());
+        HibernateAttachmentContentStore.STORE_NAME);
     return getBeanFactory().getBean(beanName, AttachmentContentStore.class);
   }
 
   public static AttachmentVersioningStore getAttachmentVersioningStore() {
     try {
-      var beanName = getConfigSource().getProperty("celements.store.attachment.versioning", "");
       return getComponentManager().lookup(AttachmentVersioningStore.class,
-          !beanName.isEmpty() ? beanName : "void");
+          getConfigSource().getProperty("celements.store.attachment.versioning", "default"));
     } catch (ComponentLookupException exc) {
       throw new IllegalStateException("failed looking up attachment versioning store", exc);
     }

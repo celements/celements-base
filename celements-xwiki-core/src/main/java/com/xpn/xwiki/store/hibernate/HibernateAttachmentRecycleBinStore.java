@@ -19,6 +19,8 @@
  */
 package com.xpn.xwiki.store.hibernate;
 
+import static com.celements.spring.context.SpringContextProvider.*;
+
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +32,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.xwiki.component.annotation.Component;
 
+import com.celements.store.att.AttachmentContentPolicy;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.DeletedAttachment;
@@ -69,8 +72,10 @@ public class HibernateAttachmentRecycleBinStore extends XWikiHibernateBaseStore
   public void saveToRecycleBin(XWikiAttachment attachment, String deleter, Date date,
       XWikiContext context,
       boolean bTransaction) throws XWikiException {
+    boolean includeContent = getBeanFactory().getBean(AttachmentContentPolicy.class)
+        .includeInRecycleBin();
     final DeletedAttachment trashAtachment = new DeletedAttachment(attachment, deleter, date,
-        context);
+        includeContent);
     executeWrite(context, bTransaction, session -> {
       session.save(trashAtachment);
       return null;

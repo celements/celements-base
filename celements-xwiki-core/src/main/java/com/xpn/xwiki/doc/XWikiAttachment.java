@@ -24,6 +24,7 @@ package com.xpn.xwiki.doc;
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.spring.context.SpringContextProvider.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,11 +32,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -43,6 +43,8 @@ import org.dom4j.dom.DOMDocument;
 import org.dom4j.dom.DOMElement;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.rcs.Archive;
 import org.suigeneris.jrcs.rcs.Version;
 import org.xwiki.context.Execution;
@@ -56,7 +58,7 @@ import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
 
 public class XWikiAttachment implements Cloneable {
 
-  private static final Log LOG = LogFactory.getLog(XWikiAttachment.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiAttachment.class);
 
   private XWikiDocument doc;
 
@@ -288,6 +290,12 @@ public class XWikiAttachment implements Cloneable {
     this.isMetaDataDirty = metaDataDirty;
   }
 
+  @Deprecated
+  public String toStringXML(boolean bWithAttachmentContent, boolean bWithVersions,
+      XWikiContext context) throws XWikiException {
+    return toStringXML(bWithAttachmentContent, bWithVersions);
+  }
+
   /**
    * Retrieve an attachment as an XML string. You should prefer
    * {@link #toXML(com.xpn.xwiki.internal.xml.XMLWriter, boolean, boolean, com.xpn.xwiki.XWikiContext)
@@ -303,8 +311,7 @@ public class XWikiAttachment implements Cloneable {
    * @throws XWikiException
    *           when an error occurs during wiki operations
    */
-  public String toStringXML(boolean bWithAttachmentContent, boolean bWithVersions,
-      XWikiContext context)
+  public String toStringXML(boolean bWithAttachmentContent, boolean bWithVersions)
       throws XWikiException {
     // This is very bad. baos holds the entire attachment on the heap, then it makes a copy when
     // toByteArray
@@ -470,17 +477,14 @@ public class XWikiAttachment implements Cloneable {
     setAuthor(docel.element("author").getText());
     setVersion(docel.element("version").getText());
     setComment(docel.element("comment").getText());
-
     String sdate = docel.element("date").getText();
     Date date = new Date(Long.parseLong(sdate));
     setDate(date);
-
-    Element contentel = docel.element("content");
-    if (contentel != null) {
-      String base64content = contentel.getText();
-      byte[] content = Base64.decodeBase64(base64content.getBytes());
-      setContent(content);
-    }
+    Optional.ofNullable(docel.element("content"))
+        .map(el -> el.getText().trim())
+        .filter(content -> !content.isEmpty())
+        .map(content -> Base64.decodeBase64(content.getBytes()))
+        .ifPresent(this::setContent);
     Element archiveel = docel.element("versions");
     if (archiveel != null) {
       String archive = archiveel.getText();
@@ -609,16 +613,16 @@ public class XWikiAttachment implements Cloneable {
    *
    * @param data
    *          a byte array with the binary content of the attachment
-   * @deprecated use {@link #setContent(java.io.InputStream, int)} instead
+   * @deprecated use {@link #setContent(java.io.InputStream)} instead
    */
   @Deprecated
   public void setContent(byte[] data) {
-    if (this.attachment_content == null) {
-      this.attachment_content = new XWikiAttachmentContent();
-      this.attachment_content.setAttachment(this);
+    data = (data != null) ? data : new byte[0];
+    try (InputStream is = new ByteArrayInputStream(data)) {
+      setContent(is);
+    } catch (IOException e) {
+      throw new RuntimeException("This should never happen", e);
     }
-
-    this.attachment_content.setContent(data);
   }
 
   /**
@@ -630,15 +634,11 @@ public class XWikiAttachment implements Cloneable {
    *          the length in byte to read
    * @throws IOException
    *           when an error occurs during streaming operation
-   * @since 2.3M2
+   * @deprecated use {@link #setContent(java.io.InputStream)} instead
    */
+  @Deprecated
   public void setContent(InputStream is, int length) throws IOException {
-    if (this.attachment_content == null) {
-      this.attachment_content = new XWikiAttachmentContent();
-      this.attachment_content.setAttachment(this);
-    }
-
-    this.attachment_content.setContent(is, length);
+    setContent(is);
   }
 
   /**
@@ -651,11 +651,11 @@ public class XWikiAttachment implements Cloneable {
    * @since 2.6M1
    */
   public void setContent(InputStream is) throws IOException {
-    if (this.attachment_content == null) {
-      this.attachment_content = new XWikiAttachmentContent(this);
+    if (attachment_content == null) {
+      attachment_content = new XWikiAttachmentContent();
+      attachment_content.setAttachment(this);
     }
-
-    this.attachment_content.setContent(is);
+    attachment_content.setContent(is);
   }
 
   public void loadContent(XWikiContext context) throws XWikiException {
@@ -691,10 +691,7 @@ public class XWikiAttachment implements Cloneable {
     if (this.attachment_content == null) {
       return;
     }
-
-    // XWikiAttachmentArchive no longer uses the byte array passed as it's first parameter making it
-    // redundant.
-    loadArchive(context).updateArchive(null, context);
+    loadArchive(context).updateArchive();
   }
 
   public String getMimeType() {
@@ -731,7 +728,6 @@ public class XWikiAttachment implements Cloneable {
     if (StringUtils.equals(rev, this.getVersion())) {
       return this;
     }
-
     return loadArchive(context).getRevision(this, rev, context);
   }
 

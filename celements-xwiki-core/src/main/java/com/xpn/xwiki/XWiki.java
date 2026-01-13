@@ -375,6 +375,8 @@ public class XWiki implements EventListener {
 
     LOGGER.trace("initialising AttachmentStore...");
     setAttachmentStore(StoreFactory.getAttachmentStore());
+    getAttachmentStore().getContentStore(); // force init
+    getAttachmentStore().getVersioningStore(); // force init
 
     LOGGER.trace("initialising VersioningStore...");
     setVersioningStore(Utils.getComponent(XWikiVersioningStoreInterface.class, Param(
@@ -5137,7 +5139,7 @@ public class XWiki implements EventListener {
 
   @Deprecated
   public boolean hasAttachmentVersioning(XWikiContext context) {
-    return getAttachmentStore().hasVersioningSupport();
+    return getAttachmentStore().getVersioningStore().hasVersioning();
   }
 
   public String getExternalAttachmentURL(String fullName, String filename, XWikiContext context) {

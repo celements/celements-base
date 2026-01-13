@@ -19,9 +19,9 @@
  */
 package com.xpn.xwiki.store.hibernate;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 
 import com.xpn.xwiki.XWikiContext;
@@ -42,16 +42,19 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
     implements AttachmentVersioningStore {
 
   /** logger. */
-  private static final Log LOG = LogFactory.getLog(HibernateAttachmentVersioningStore.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(HibernateAttachmentVersioningStore.class);
 
   /**
    * Empty constructor needed for component manager.
    */
   public HibernateAttachmentVersioningStore() {}
 
-  /**
-   * {@inheritDoc}
-   */
+  @Override
+  public boolean hasVersioning() {
+    return true;
+  }
+
   @Override
   public XWikiAttachmentArchive loadArchive(final XWikiAttachment attachment, XWikiContext context,
       boolean bTransaction) throws XWikiException {

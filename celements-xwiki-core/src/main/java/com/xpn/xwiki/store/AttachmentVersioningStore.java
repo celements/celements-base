@@ -35,6 +35,8 @@ import com.xpn.xwiki.doc.XWikiAttachmentArchive;
 @ComponentRole
 public interface AttachmentVersioningStore {
 
+  boolean hasVersioning();
+
   /**
    * Load attachment archive from store.
    *

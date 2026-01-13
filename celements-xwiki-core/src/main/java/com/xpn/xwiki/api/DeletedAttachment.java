@@ -22,8 +22,8 @@ package com.xpn.xwiki.api;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
@@ -47,7 +47,7 @@ import com.xpn.xwiki.util.Programming;
 public class DeletedAttachment extends Api {
 
   /** Logging helper object. */
-  private static final Log LOG = LogFactory.getLog(DeletedAttachment.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DeletedAttachment.class);
 
   /** The internal object wrapped by this API. */
   private final com.xpn.xwiki.doc.DeletedAttachment deletedAttachment;

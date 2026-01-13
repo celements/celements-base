@@ -24,13 +24,12 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.diff.PatchFailedException;
 import org.suigeneris.jrcs.rcs.Archive;
 import org.suigeneris.jrcs.rcs.InvalidFileFormatException;
@@ -56,7 +55,7 @@ import com.xpn.xwiki.doc.XWikiDocumentArchive;
 public class XWikiRCSArchive extends Archive {
 
   /** logger. */
-  private static final Log LOG = LogFactory.getLog(XWikiRCSArchive.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiRCSArchive.class);
 
   /**
    * Used to serialize {@link XWikiDocumentArchive}.
@@ -85,8 +84,8 @@ public class XWikiRCSArchive extends Archive {
         nodes.put(node.getVersion(), node);
       }
       XWikiJRCSNode last = null;
-      for (Iterator it = nodes.keySet().iterator(); it.hasNext();) {
-        Version ver = (Version) it.next();
+      for (Object element : nodes.keySet()) {
+        Version ver = (Version) element;
         XWikiJRCSNode node = (XWikiJRCSNode) nodes.get(ver);
         if (last != null) {
           last.setRCSNext(node);
@@ -288,8 +287,8 @@ public class XWikiRCSArchive extends Archive {
   public Collection getNodes(long docId)
       throws NodeNotFoundException, InvalidFileFormatException, PatchFailedException {
     Collection result = new ArrayList(nodes.size());
-    for (Iterator it = nodes.values().iterator(); it.hasNext();) {
-      XWikiJRCSNode node = new XWikiJRCSNode((Node) it.next());
+    for (Object element : nodes.values()) {
+      XWikiJRCSNode node = new XWikiJRCSNode((Node) element);
       XWikiRCSNodeInfo nodeInfo = new XWikiRCSNodeInfo();
       nodeInfo.setId(new XWikiRCSNodeId(docId, node.getVersion()));
       nodeInfo.setDiff(node.isDiff());
