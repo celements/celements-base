@@ -63,26 +63,19 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
   }
 
   @Override
-  public void deleteArchive(XWikiAttachment attachment, XWikiContext context, boolean transaction)
+  public void deleteArchive(XWikiAttachment attachment, boolean transaction)
       throws XWikiException {
     // Don't do anything since it's a void implementation.
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public void saveArchive(XWikiAttachmentArchive archive, XWikiContext context, boolean transaction)
+  public void saveArchive(XWikiAttachmentArchive archive, boolean transaction)
       throws XWikiException {
     // Don't do anything since it's a void implementation.
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public XWikiAttachmentArchive loadArchive(XWikiAttachment attachment, XWikiContext context,
-      boolean transaction)
+  public XWikiAttachmentArchive loadArchive(XWikiAttachment attachment, boolean transaction)
       throws XWikiException {
     XWikiAttachmentArchive archive = attachment.getAttachment_archive();
     if (!(archive instanceof VoidAttachmentArchive)) {
@@ -163,9 +156,9 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
      * {@inheritDoc}
      */
     @Override
-    public XWikiAttachment getRevision(XWikiAttachment attachment, String rev, XWikiContext context)
+    public XWikiAttachment getRevision(Version v)
         throws XWikiException {
-      return (attachment.getVersion().equals(rev)) ? attachment : null;
+      return (getAttachment().getVersion().equals(v.toString())) ? getAttachment() : null;
     }
 
     /**

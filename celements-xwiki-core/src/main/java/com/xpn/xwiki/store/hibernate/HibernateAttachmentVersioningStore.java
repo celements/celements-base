@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 
-import com.xpn.xwiki.XWikiContext;
+import com.celements.execution.XWikiExecutionProp;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentArchive;
@@ -56,12 +56,13 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
   }
 
   @Override
-  public XWikiAttachmentArchive loadArchive(final XWikiAttachment attachment, XWikiContext context,
-      boolean bTransaction) throws XWikiException {
+  public XWikiAttachmentArchive loadArchive(final XWikiAttachment attachment, boolean bTransaction)
+      throws XWikiException {
     try {
       final XWikiAttachmentArchive archive = new XWikiAttachmentArchive();
       archive.setAttachment(attachment);
-      executeRead(context, bTransaction, session -> {
+      var wiki = getEContext().get(XWikiExecutionProp.WIKI).orElseThrow();
+      executeRead(wiki, bTransaction, session -> {
         try {
           session.load(archive, archive.getId());
         } catch (ObjectNotFoundException e) {
@@ -79,28 +80,22 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public void saveArchive(final XWikiAttachmentArchive archive, XWikiContext context,
-      boolean bTransaction)
+  public void saveArchive(final XWikiAttachmentArchive archive, boolean bTransaction)
       throws XWikiException {
-    executeWrite(context, bTransaction, session -> {
+    var wiki = getEContext().get(XWikiExecutionProp.WIKI).orElseThrow();
+    executeWrite(wiki, bTransaction, session -> {
       session.saveOrUpdate(archive);
       return null;
     });
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public void deleteArchive(final XWikiAttachment attachment, final XWikiContext context,
-      boolean bTransaction)
+  public void deleteArchive(final XWikiAttachment attachment, boolean bTransaction)
       throws XWikiException {
     try {
-      executeWrite(context, bTransaction, session -> {
+      var wiki = getEContext().get(XWikiExecutionProp.WIKI).orElseThrow();
+      executeWrite(wiki, bTransaction, session -> {
         XWikiAttachmentArchive archive = new XWikiAttachmentArchive();
         archive.setAttachment(attachment);
         session.delete(archive);

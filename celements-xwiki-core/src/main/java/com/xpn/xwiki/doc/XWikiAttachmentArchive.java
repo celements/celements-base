@@ -34,7 +34,6 @@ import org.suigeneris.jrcs.rcs.impl.Node;
 import org.suigeneris.jrcs.util.ToString;
 
 import com.celements.store.att.AttachmentContentPolicy;
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 
 public class XWikiAttachmentArchive implements Cloneable {
@@ -165,17 +164,16 @@ public class XWikiAttachmentArchive implements Cloneable {
     return versions;
   }
 
-  public XWikiAttachment getRevision(XWikiAttachment attachment, String rev, XWikiContext context)
-      throws XWikiException {
+  public XWikiAttachment getRevision(String rev) throws XWikiException {
+    if ((rev == null) || (archive == null)) {
+      return null;
+    }
+    return getRevision(archive.getRevisionVersion(rev));
+  }
+
+  public XWikiAttachment getRevision(Version v) throws XWikiException {
     try {
-      Archive archive = getRCSArchive();
-
-      if (archive == null) {
-        return null;
-      }
-
-      Version v = archive.getRevisionVersion(rev);
-      if (v == null) {
+      if ((v == null) || (archive == null)) {
         return null;
       }
       Object[] lines = archive.getRevision(v);
@@ -187,12 +185,11 @@ public class XWikiAttachmentArchive implements Cloneable {
           content.append("\n");
         }
       }
-
       String scontent = content.toString();
       XWikiAttachment revattach = new XWikiAttachment();
       revattach.fromXML(scontent);
       revattach.setDoc(attachment.getDoc());
-      revattach.setVersion(rev);
+      revattach.setVersion(v.toString());
       /*
        * If the RCS archive is loaded from Hibernate (legacy), the content is already injected
        * above by fromXML.
@@ -201,7 +198,7 @@ public class XWikiAttachmentArchive implements Cloneable {
        * revision based solely on attachment metadata (doc, filename, version).
        */
       if (revattach.getAttachment_content() == null) {
-        revattach.loadContent(context);
+        revattach.loadContent();
       }
       return revattach;
     } catch (Exception e) {

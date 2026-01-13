@@ -401,10 +401,9 @@ public class XWikiAttachment implements Cloneable {
     if (bWithAttachmentContent) {
       el = new DOMElement("content");
       // We need to make sure content is loaded
-      loadContent(context);
-      XWikiAttachmentContent acontent = getAttachment_content();
+      XWikiAttachmentContent acontent = loadContent();
       if (acontent != null) {
-        wr.writeBase64(el, getAttachment_content().getContentInputStream());
+        wr.writeBase64(el, acontent.getContentInputStream());
       } else {
         el.addText("");
         wr.write(el);
@@ -413,7 +412,7 @@ public class XWikiAttachment implements Cloneable {
 
     if (bWithVersions) {
       // We need to make sure content is loaded
-      XWikiAttachmentArchive aarchive = loadArchive(context);
+      XWikiAttachmentArchive aarchive = loadArchive();
       if (aarchive != null) {
         el = new DOMElement("versions");
         try {
@@ -658,10 +657,10 @@ public class XWikiAttachment implements Cloneable {
     attachment_content.setContent(is);
   }
 
-  public void loadContent(XWikiContext context) throws XWikiException {
+  public XWikiAttachmentContent loadContent() throws XWikiException {
     if (this.attachment_content == null) {
       try {
-        getAttachmentStore().loadAttachmentContent(this, context, true);
+        getAttachmentStore().loadAttachmentContent(this, getXContext(), true);
       } catch (Exception ex) {
         LOG.warn(String.format("Failed to load content for attachment [%s@%s]. "
             + "This attachment is broken, please consider re-uploading it. " + "Internal error: %s",
@@ -669,13 +668,14 @@ public class XWikiAttachment implements Cloneable {
             ex.getMessage()));
       }
     }
+    return this.attachment_content;
   }
 
-  public XWikiAttachmentArchive loadArchive(XWikiContext context) throws XWikiException {
+  public XWikiAttachmentArchive loadArchive() throws XWikiException {
     if (this.attachment_archive == null) {
       try {
         this.attachment_archive = getAttachmentStore().getVersioningStore()
-            .loadArchive(this, context, true);
+            .loadArchive(this, true);
       } catch (Exception ex) {
         LOG.warn(String.format("Failed to load archive for attachment [%s@%s]. "
             + "This attachment is broken, please consider re-uploading it. " + "Internal error: %s",
@@ -687,11 +687,11 @@ public class XWikiAttachment implements Cloneable {
     return this.attachment_archive;
   }
 
-  public void updateContentArchive(XWikiContext context) throws XWikiException {
+  public void updateContentArchive() throws XWikiException {
     if (this.attachment_content == null) {
       return;
     }
-    loadArchive(context).updateArchive();
+    loadArchive().updateArchive();
   }
 
   public String getMimeType() {
@@ -728,7 +728,7 @@ public class XWikiAttachment implements Cloneable {
     if (StringUtils.equals(rev, this.getVersion())) {
       return this;
     }
-    return loadArchive(context).getRevision(this, rev, context);
+    return loadArchive().getRevision(rev);
   }
 
   @Override

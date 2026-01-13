@@ -3428,10 +3428,15 @@ public class XWikiDocument implements DocumentModelBridge {
     setContentDirty(true);
   }
 
+  @Deprecated
   public void loadAttachments(XWikiContext context) throws XWikiException {
+    loadAttachments();
+  }
+
+  public void loadAttachments() throws XWikiException {
     for (XWikiAttachment attachment : getAttachmentList()) {
-      attachment.loadContent(context);
-      attachment.loadArchive(context);
+      attachment.loadContent();
+      attachment.loadArchive();
     }
   }
 
@@ -5795,8 +5800,8 @@ public class XWikiDocument implements DocumentModelBridge {
    */
   public XWikiDocument copyDocument(DocumentReference newDocumentReference, XWikiContext context)
       throws XWikiException {
-    loadAttachments(context);
-    loadArchive(context);
+    loadAttachments();
+    getDocumentArchive();
 
     XWikiDocument newdoc = duplicate(newDocumentReference);
     newdoc.setOriginalDocument(null);

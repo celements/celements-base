@@ -48,7 +48,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
     try {
       XWikiAttachmentContent content = attachment.getAttachment_content();
       if (content.isContentDirty()) {
-        attachment.updateContentArchive(context);
+        attachment.updateContentArchive();
       }
       if (bTransaction) {
         bTransaction = beginTransaction();
@@ -61,9 +61,9 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
         }
         getContentStore().saveContent(content);
         if (attachment.getAttachment_archive() == null) {
-          attachment.loadArchive(context);
+          attachment.loadArchive();
         }
-        getVersioningStore().saveArchive(attachment.getAttachment_archive(), context, false);
+        getVersioningStore().saveArchive(attachment.getAttachment_archive(), false);
         if (parentUpdate) {
           context.getWiki().getStore().saveXWikiDoc(attachment.getDoc(), context, true);
         }
@@ -198,7 +198,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
           logger.warn("Error loading content when deleting {}", attachment);
         }
         // delete attachment archive
-        getVersioningStore().deleteArchive(attachment, context, false);
+        getVersioningStore().deleteArchive(attachment, false);
         // delete attachment meta data
         try {
           session.delete(attachment);
