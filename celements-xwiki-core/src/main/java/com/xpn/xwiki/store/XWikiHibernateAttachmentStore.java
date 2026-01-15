@@ -136,6 +136,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
         try {
           getContentStore().loadContent(content);
         } catch (Exception e) {
+          // content load failed, try legacy fallback store first before rethrowing
           contentStoreFallback.get().ifPresent(rethrowConsumer(s -> s.loadContent(content)));
           contentStoreFallback.get().orElseThrow(() -> e);
         }

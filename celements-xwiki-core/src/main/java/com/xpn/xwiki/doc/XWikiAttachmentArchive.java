@@ -25,6 +25,9 @@ import static com.celements.spring.context.SpringContextProvider.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,21 +176,16 @@ public class XWikiAttachmentArchive implements Cloneable {
 
   public XWikiAttachment getRevision(Version v) throws XWikiException {
     try {
-      if ((v == null) || (archive == null)) {
+      if (Objects.equals(v, attachment.getRCSVersion())) {
+        return attachment;
+      } else if ((v == null) || (archive == null)) {
         return null;
       }
-      Object[] lines = archive.getRevision(v);
-      StringBuffer content = new StringBuffer();
-      for (int i = 0; i < lines.length; i++) {
-        String line = lines[i].toString();
-        content.append(line);
-        if (i != (lines.length - 1)) {
-          content.append("\n");
-        }
-      }
-      String scontent = content.toString();
+      String xml = Stream.of(archive.getRevision(v))
+          .map(Object::toString)
+          .collect(Collectors.joining("\n"));
       XWikiAttachment revattach = new XWikiAttachment();
-      revattach.fromXML(scontent);
+      revattach.fromXML(xml);
       revattach.setDoc(attachment.getDoc());
       revattach.setVersion(v.toString());
       /*

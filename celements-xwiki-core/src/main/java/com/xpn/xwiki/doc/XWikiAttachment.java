@@ -32,10 +32,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -564,7 +564,6 @@ public class XWikiAttachment implements Cloneable {
       this.attachment_archive = new XWikiAttachmentArchive();
       this.attachment_archive.setAttachment(this);
     }
-
     this.attachment_archive.setRCSArchive(archive);
   }
 
@@ -573,8 +572,9 @@ public class XWikiAttachment implements Cloneable {
       this.attachment_archive = new XWikiAttachmentArchive();
       this.attachment_archive.setAttachment(this);
     }
-
-    this.attachment_archive.setArchive(data.getBytes());
+    if (data != null) {
+      this.attachment_archive.setArchive(data.getBytes());
+    }
   }
 
   public synchronized Version[] getVersions() {
@@ -653,7 +653,9 @@ public class XWikiAttachment implements Cloneable {
       attachment_content = new XWikiAttachmentContent();
       attachment_content.setAttachment(this);
     }
-    attachment_content.setContent(is);
+    if (is != null) {
+      attachment_content.setContent(is);
+    }
   }
 
   public XWikiAttachmentContent loadContent() throws XWikiException {
@@ -680,9 +682,9 @@ public class XWikiAttachment implements Cloneable {
             + "This attachment is broken, please consider re-uploading it. " + "Internal error: %s",
             getFilename(), (this.doc != null) ? this.doc.getFullName() : "<unknown>",
             ex.getMessage()));
+        setArchive((String) null);
       }
     }
-
     return this.attachment_archive;
   }
 
@@ -724,7 +726,7 @@ public class XWikiAttachment implements Cloneable {
 
   public XWikiAttachment getAttachmentRevision(String rev, XWikiContext context)
       throws XWikiException {
-    if (StringUtils.equals(rev, this.getVersion())) {
+    if (Objects.equals(rev, this.getVersion())) {
       return this;
     }
     return loadArchive().getRevision(rev);
