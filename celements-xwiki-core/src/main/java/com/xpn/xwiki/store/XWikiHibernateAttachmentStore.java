@@ -215,6 +215,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
           while (iter.hasNext()) {
             if (attachment.getFilename().equals(iter.next().getFilename())) {
               iter.remove();
+              break;
             }
           }
           context.getWiki().getStore().saveXWikiDoc(attachment.getDoc(), context, false);

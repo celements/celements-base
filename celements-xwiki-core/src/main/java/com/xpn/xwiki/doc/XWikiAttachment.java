@@ -177,8 +177,7 @@ public class XWikiAttachment implements Cloneable {
     if (this.attachment_content == null) {
       this.doc.loadAttachmentContent(this, context);
     }
-
-    return (int) this.attachment_content.getSize();
+    return this.attachment_content.getSize();
   }
 
   public String getFilename() {
@@ -620,7 +619,7 @@ public class XWikiAttachment implements Cloneable {
     try (InputStream is = new ByteArrayInputStream(data)) {
       setContent(is);
     } catch (IOException e) {
-      throw new RuntimeException("This should never happen", e);
+      throw new RuntimeException("Failed to set attachment content from byte array", e);
     }
   }
 
