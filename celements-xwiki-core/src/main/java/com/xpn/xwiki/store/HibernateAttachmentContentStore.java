@@ -23,6 +23,7 @@ public class HibernateAttachmentContentStore extends XWikiHibernateBaseStore
 
   @Override
   public void saveContent(XWikiAttachmentContent content) throws AttachmentContentStoreException {
+    logger.info("saveContent - {}", content.getAttachment());
     try {
       Session session = getSession();
       Query query = session.createQuery(
@@ -40,6 +41,7 @@ public class HibernateAttachmentContentStore extends XWikiHibernateBaseStore
 
   @Override
   public void loadContent(XWikiAttachmentContent content) throws AttachmentContentStoreException {
+    logger.info("loadContent - {}", content.getAttachment());
     try {
       Session session = getSession();
       session.load(content, Long.valueOf(content.getId()));
@@ -50,6 +52,7 @@ public class HibernateAttachmentContentStore extends XWikiHibernateBaseStore
 
   @Override
   public void deleteContent(XWikiAttachmentContent content) throws AttachmentContentStoreException {
+    logger.info("deleteContent - {}", content.getAttachment());
     try {
       Session session = getSession();
       session.delete(content);
