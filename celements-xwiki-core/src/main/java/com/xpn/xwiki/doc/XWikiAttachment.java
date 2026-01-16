@@ -660,30 +660,15 @@ public class XWikiAttachment implements Cloneable {
 
   public XWikiAttachmentContent loadContent() throws XWikiException {
     if (this.attachment_content == null) {
-      try {
-        getAttachmentStore().loadAttachmentContent(this, getXContext(), true);
-      } catch (Exception ex) {
-        LOG.warn(String.format("Failed to load content for attachment [%s@%s]. "
-            + "This attachment is broken, please consider re-uploading it. " + "Internal error: %s",
-            getFilename(), (this.doc != null) ? this.doc.getFullName() : "<unknown>",
-            ex.getMessage()));
-      }
+      getAttachmentStore().loadAttachmentContent(this, getXContext(), true);
     }
     return this.attachment_content;
   }
 
   public XWikiAttachmentArchive loadArchive() throws XWikiException {
     if (this.attachment_archive == null) {
-      try {
-        this.attachment_archive = getAttachmentStore().getVersioningStore()
-            .loadArchive(this, true);
-      } catch (Exception ex) {
-        LOG.warn(String.format("Failed to load archive for attachment [%s@%s]. "
-            + "This attachment is broken, please consider re-uploading it. " + "Internal error: %s",
-            getFilename(), (this.doc != null) ? this.doc.getFullName() : "<unknown>",
-            ex.getMessage()));
-        setArchive((String) null);
-      }
+      this.attachment_archive = getAttachmentStore().getVersioningStore()
+          .loadArchive(this, true);
     }
     return this.attachment_archive;
   }
