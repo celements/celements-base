@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -405,6 +406,23 @@ public class XWiki implements EventListener {
     Utils.getComponent(ObservationManager.class).addListener(this);
 
     LOGGER.debug("XWiki init done");
+  }
+
+  public String printConfig() {
+    return "XWiki "
+        + "[ mainStore=" + getStore().getClass().getName()
+        + ", notCacheStore=" + getNotCacheStore().getClass().getName()
+        + ", versioningStore=" + getVersioningStore().getClass().getName()
+        + ", recycleBinStore=" + Optional.ofNullable(getRecycleBinStore())
+            .map(s -> s.getClass().getName()).orElse("none")
+        + ", attachmentStore=" + getAttachmentStore().getClass().getName()
+        + ", attachmentContentStore=" + getAttachmentStore().getContentStore().getClass().getName()
+        + ", attachmentVersioningStore=" + getAttachmentStore().getVersioningStore()
+            .getClass().getName()
+        + ", attachmentRecycleBinStore=" + Optional.ofNullable(getAttachmentRecycleBinStore())
+            .map(s -> s.getClass().getName()).orElse("none")
+        + ", renderingEngine=" + getRenderingEngine().getClass().getName()
+        + "]";
   }
 
   /**

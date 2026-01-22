@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 
-import com.celements.execution.XWikiExecutionProp;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentArchive;
@@ -61,7 +60,7 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
     try {
       final XWikiAttachmentArchive archive = new XWikiAttachmentArchive();
       archive.setAttachment(attachment);
-      var wiki = getEContext().get(XWikiExecutionProp.WIKI).orElseThrow();
+      var wiki = attachment.getWikiReference();
       executeRead(wiki, bTransaction, session -> {
         try {
           session.load(archive, archive.getId());
@@ -83,7 +82,7 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
   @Override
   public void saveArchive(final XWikiAttachmentArchive archive, boolean bTransaction)
       throws XWikiException {
-    var wiki = getEContext().get(XWikiExecutionProp.WIKI).orElseThrow();
+    var wiki = archive.getAttachment().getWikiReference();
     executeWrite(wiki, bTransaction, session -> {
       session.saveOrUpdate(archive);
       return null;
@@ -94,7 +93,7 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
   public void deleteArchive(final XWikiAttachment attachment, boolean bTransaction)
       throws XWikiException {
     try {
-      var wiki = getEContext().get(XWikiExecutionProp.WIKI).orElseThrow();
+      var wiki = attachment.getWikiReference();
       executeWrite(wiki, bTransaction, session -> {
         XWikiAttachmentArchive archive = new XWikiAttachmentArchive();
         archive.setAttachment(attachment);
