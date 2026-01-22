@@ -18,6 +18,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentContent;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.store.hibernate.HibernateAttachmentContentStore;
 
 @Component
 public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore

@@ -11,10 +11,10 @@ import org.xwiki.configuration.ConfigurationSource;
 import com.google.common.primitives.Ints;
 import com.xpn.xwiki.store.AttachmentContentStore;
 import com.xpn.xwiki.store.AttachmentVersioningStore;
-import com.xpn.xwiki.store.HibernateAttachmentContentStore;
 import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
 import com.xpn.xwiki.store.XWikiRecycleBinStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
+import com.xpn.xwiki.store.hibernate.HibernateAttachmentContentStore;
 import com.xpn.xwiki.web.Utils;
 
 public final class StoreFactory {

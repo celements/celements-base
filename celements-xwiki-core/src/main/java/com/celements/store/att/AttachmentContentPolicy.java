@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import org.springframework.stereotype.Component;
 
 import com.celements.init.XWikiProvider;
-import com.xpn.xwiki.store.HibernateAttachmentContentStore;
+import com.xpn.xwiki.store.hibernate.HibernateAttachmentContentStore;
 
 /**
  * Policy component that decides whether attachment binary content should be embedded into

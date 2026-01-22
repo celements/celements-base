@@ -1,4 +1,4 @@
-package com.xpn.xwiki.store;
+package com.xpn.xwiki.store.hibernate;
 
 import javax.inject.Named;
 
@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentContent;
+import com.xpn.xwiki.store.AttachmentContentStore;
+import com.xpn.xwiki.store.XWikiHibernateBaseStore;
 
 @Component
 @Named(HibernateAttachmentContentStore.STORE_NAME)
