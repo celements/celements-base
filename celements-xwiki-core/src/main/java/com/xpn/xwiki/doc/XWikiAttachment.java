@@ -53,6 +53,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.init.XWikiProvider;
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.internal.xml.DOMXMLWriter;
@@ -76,8 +77,6 @@ public class XWikiAttachment implements Cloneable {
   private String comment;
 
   private Date date;
-
-  private AttachmentReference attRef;
 
   private XWikiAttachmentContent attachment_content;
 
@@ -194,7 +193,6 @@ public class XWikiAttachment implements Cloneable {
     if (!filename.equals(this.filename)) {
       setMetaDataDirty(true);
       this.filename = filename;
-      setAttachmentReference();
     }
   }
 
@@ -256,17 +254,13 @@ public class XWikiAttachment implements Cloneable {
 
   public void setDoc(XWikiDocument doc) {
     this.doc = doc;
-    setAttachmentReference();
   }
 
   public AttachmentReference getAttachmentReference() {
-    return attRef;
-  }
-
-  private void setAttachmentReference() {
-    if ((doc != null) && (filename != null)) {
-      attRef = new AttachmentReference(filename, doc.getDocumentReference());
+    if ((doc != null) && !Strings.isNullOrEmpty(filename)) {
+      return new AttachmentReference(filename, doc.getDocumentReference());
     }
+    return null;
   }
 
   public DocumentReference getDocumentReference() {
