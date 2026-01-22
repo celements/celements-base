@@ -48,6 +48,9 @@ import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.rcs.Archive;
 import org.suigeneris.jrcs.rcs.Version;
 import org.xwiki.context.Execution;
+import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.WikiReference;
 
 import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.XWikiContext;
@@ -73,6 +76,8 @@ public class XWikiAttachment implements Cloneable {
   private String comment;
 
   private Date date;
+
+  private AttachmentReference attRef;
 
   private XWikiAttachmentContent attachment_content;
 
@@ -189,6 +194,7 @@ public class XWikiAttachment implements Cloneable {
     if (!filename.equals(this.filename)) {
       setMetaDataDirty(true);
       this.filename = filename;
+      setAttachmentReference();
     }
   }
 
@@ -250,6 +256,29 @@ public class XWikiAttachment implements Cloneable {
 
   public void setDoc(XWikiDocument doc) {
     this.doc = doc;
+    setAttachmentReference();
+  }
+
+  public AttachmentReference getAttachmentReference() {
+    return attRef;
+  }
+
+  private void setAttachmentReference() {
+    if ((doc != null) && (filename != null)) {
+      attRef = new AttachmentReference(filename, doc.getDocumentReference());
+    }
+  }
+
+  public DocumentReference getDocumentReference() {
+    return Optional.ofNullable(getAttachmentReference())
+        .map(AttachmentReference::getDocumentReference)
+        .orElse(null);
+  }
+
+  public WikiReference getWikiReference() {
+    return Optional.ofNullable(getDocumentReference())
+        .map(DocumentReference::getWikiReference)
+        .orElse(null);
   }
 
   public Date getDate() {

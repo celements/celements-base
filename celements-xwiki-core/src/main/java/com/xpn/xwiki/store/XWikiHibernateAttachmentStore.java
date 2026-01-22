@@ -6,6 +6,7 @@ import static com.celements.spring.context.SpringContextProvider.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.hibernate.Session;
 import org.xwiki.component.annotation.Component;
@@ -51,8 +52,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
       if (content.isContentDirty()) {
         attachment.updateContentArchive();
       }
-      var attWiki = Optional.ofNullable(attachment.getDoc())
-          .map(doc -> doc.getDocRef().getWikiReference()).orElse(null);
+      var attWiki = attachment.getWikiReference();
       if (attWiki != null) {
         context.setDatabase(attWiki.getName());
       }
@@ -94,7 +94,9 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
     }
     try {
       if (bTransaction) {
-        bTransaction = beginTransaction();
+        bTransaction = beginTransaction(attachments.stream()
+            .map(XWikiAttachment::getWikiReference)
+            .findFirst().orElse(null));
       }
       for (XWikiAttachment att : attachments) {
         saveAttachmentContent(att, false, context, false);
@@ -121,8 +123,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
       boolean bTransaction) throws XWikiException {
     String currentDb = context.getDatabase();
     try {
-      var attWiki = Optional.ofNullable(attachment.getDoc())
-          .map(doc -> doc.getDocRef().getWikiReference()).orElse(null);
+      var attWiki = attachment.getWikiReference();
       if (attWiki != null) {
         context.setDatabase(attWiki.getName());
       }
@@ -168,8 +169,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
       XWikiContext context, boolean bTransaction) throws XWikiException {
     String currentDb = context.getDatabase();
     try {
-      var attWiki = Optional.ofNullable(attachment.getDoc())
-          .map(doc -> doc.getDocRef().getWikiReference()).orElse(null);
+      var attWiki = attachment.getWikiReference();
       if (attWiki != null) {
         context.setDatabase(attWiki.getName());
       }
@@ -178,22 +178,14 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
       }
       Session session = getSession();
       // delete attachment content
-      try {
-        loadAttachmentContent(attachment, context, false);
-        var content = attachment.getAttachment_content();
-        try {
-          getContentStore().deleteContent(content);
-        } catch (Exception e) {
-          logger.info("Error deleting content for {}", attachment);
-        }
-        try {
-          contentStoreFallback.get().ifPresent(rethrowConsumer(s -> s.deleteContent(content)));
-        } catch (Exception e) {
-          logger.info("Error deleting content for {}", attachment);
-        }
-      } catch (Exception e) {
-        logger.warn("Error loading content when deleting {}", attachment);
-      }
+      Stream.of(Optional.of(getContentStore()), contentStoreFallback.get())
+          .flatMap(Optional::stream).forEach(store -> {
+            try {
+              store.deleteContent(attachment);
+            } catch (Exception e) {
+              logger.info("Error deleting content for {}", attachment);
+            }
+          });
       // delete attachment archive
       getVersioningStore().deleteArchive(attachment, false);
       // delete attachment meta data

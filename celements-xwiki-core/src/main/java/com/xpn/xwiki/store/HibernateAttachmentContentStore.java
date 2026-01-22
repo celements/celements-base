@@ -7,6 +7,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Component;
 
+import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentContent;
 
 @Component
@@ -51,13 +52,20 @@ public class HibernateAttachmentContentStore extends XWikiHibernateBaseStore
   }
 
   @Override
-  public void deleteContent(XWikiAttachmentContent content) throws AttachmentContentStoreException {
-    logger.info("deleteContent - {}", content.getAttachment());
+  public void deleteContent(XWikiAttachment attachment) throws AttachmentContentStoreException {
+    logger.info("deleteContent - {}", attachment);
     try {
       Session session = getSession();
-      session.delete(content);
+      session.createQuery("delete from " + XWikiAttachmentContent.class.getName() + " where id = ?")
+          .setLong(0, attachment.getId())
+          .executeUpdate();
     } catch (Exception e) {
       throw new AttachmentContentStoreException("Failed deleting attachment", e);
     }
+  }
+
+  @Override
+  public void deleteContent(XWikiAttachmentContent content) throws AttachmentContentStoreException {
+    deleteContent(content.getAttachment());
   }
 }

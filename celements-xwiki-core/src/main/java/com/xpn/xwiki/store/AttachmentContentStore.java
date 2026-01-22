@@ -4,6 +4,7 @@ import javax.validation.constraints.NotEmpty;
 
 import org.xwiki.component.annotation.ComponentRole;
 
+import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentContent;
 
 @ComponentRole
@@ -15,6 +16,8 @@ public interface AttachmentContentStore {
   void saveContent(XWikiAttachmentContent content) throws AttachmentContentStoreException;
 
   void loadContent(XWikiAttachmentContent content) throws AttachmentContentStoreException;
+
+  void deleteContent(XWikiAttachment attachment) throws AttachmentContentStoreException;
 
   void deleteContent(XWikiAttachmentContent content) throws AttachmentContentStoreException;
 
