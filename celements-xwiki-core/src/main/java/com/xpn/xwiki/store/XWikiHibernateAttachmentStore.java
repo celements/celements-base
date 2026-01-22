@@ -45,30 +45,27 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
   @Override
   public void saveAttachmentContent(XWikiAttachment attachment, boolean parentUpdate,
       XWikiContext context, boolean bTransaction) throws XWikiException {
+    String currentDb = context.getDatabase();
     try {
       XWikiAttachmentContent content = attachment.getAttachment_content();
       if (content.isContentDirty()) {
         attachment.updateContentArchive();
       }
-      if (bTransaction) {
-        bTransaction = beginTransaction();
+      var attWiki = Optional.ofNullable(attachment.getDoc())
+          .map(doc -> doc.getDocRef().getWikiReference()).orElse(null);
+      if (attWiki != null) {
+        context.setDatabase(attWiki.getName());
       }
-      String db = context.getDatabase();
-      String attachdb = (attachment.getDoc() == null) ? null : attachment.getDoc().getDatabase();
-      try {
-        if (attachdb != null) {
-          context.setDatabase(attachdb);
-        }
-        getContentStore().saveContent(content);
-        if (attachment.getAttachment_archive() == null) {
-          attachment.loadArchive();
-        }
-        getVersioningStore().saveArchive(attachment.getAttachment_archive(), false);
-        if (parentUpdate) {
-          context.getWiki().getStore().saveXWikiDoc(attachment.getDoc(), context, true);
-        }
-      } finally {
-        context.setDatabase(db);
+      if (bTransaction) {
+        bTransaction = beginTransaction(attWiki);
+      }
+      getContentStore().saveContent(content);
+      if (attachment.getAttachment_archive() == null) {
+        attachment.loadArchive();
+      }
+      getVersioningStore().saveArchive(attachment.getAttachment_archive(), false);
+      if (parentUpdate) {
+        context.getWiki().getStore().saveXWikiDoc(attachment.getDoc(), context, true);
       }
       if (bTransaction) {
         endTransaction(true);
@@ -79,6 +76,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SAVING_ATTACHMENT,
           "Exception while saving {0}", e, args);
     } finally {
+      context.setDatabase(currentDb);
       try {
         if (bTransaction) {
           endTransaction(false);
@@ -121,29 +119,26 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
   @Override
   public void loadAttachmentContent(XWikiAttachment attachment, XWikiContext context,
       boolean bTransaction) throws XWikiException {
+    String currentDb = context.getDatabase();
     try {
+      var attWiki = Optional.ofNullable(attachment.getDoc())
+          .map(doc -> doc.getDocRef().getWikiReference()).orElse(null);
+      if (attWiki != null) {
+        context.setDatabase(attWiki.getName());
+      }
       if (bTransaction) {
-        bTransaction = beginTransaction();
+        bTransaction = beginTransaction(attWiki);
       }
-      String db = context.getDatabase();
-      String attachdb = (attachment.getDoc() == null) ? null : attachment.getDoc().getDatabase();
+      XWikiAttachmentContent content = new XWikiAttachmentContent(attachment);
+      attachment.setAttachment_content(content);
       try {
-        if (attachdb != null) {
-          context.setDatabase(attachdb);
-        }
-        XWikiAttachmentContent content = new XWikiAttachmentContent(attachment);
-        attachment.setAttachment_content(content);
-        try {
-          getContentStore().loadContent(content);
-        } catch (Exception e) {
-          // content load failed, try legacy fallback store first before rethrowing
-          contentStoreFallback.get().ifPresent(rethrowConsumer(s -> s.loadContent(content)));
-          contentStoreFallback.get().orElseThrow(() -> e);
-        }
-        content.setContentDirty(false);
-      } finally {
-        context.setDatabase(db);
+        getContentStore().loadContent(content);
+      } catch (Exception e) {
+        // content load failed, try legacy fallback store first before rethrowing
+        contentStoreFallback.get().ifPresent(rethrowConsumer(s -> s.loadContent(content)));
+        contentStoreFallback.get().orElseThrow(() -> e);
       }
+      content.setContentDirty(false);
       if (bTransaction) {
         endTransaction(false);
       }
@@ -153,6 +148,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_LOADING_ATTACHMENT,
           "Exception while loading {0}", e, args);
     } finally {
+      context.setDatabase(currentDb);
       try {
         if (bTransaction) {
           endTransaction(false);
@@ -170,44 +166,41 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
   @Override
   public void deleteXWikiAttachment(XWikiAttachment attachment, boolean parentUpdate,
       XWikiContext context, boolean bTransaction) throws XWikiException {
+    String currentDb = context.getDatabase();
     try {
+      var attWiki = Optional.ofNullable(attachment.getDoc())
+          .map(doc -> doc.getDocRef().getWikiReference()).orElse(null);
+      if (attWiki != null) {
+        context.setDatabase(attWiki.getName());
+      }
       if (bTransaction) {
-        bTransaction = beginTransaction();
+        bTransaction = beginTransaction(attWiki);
       }
       Session session = getSession();
-      String db = context.getDatabase();
-      String attachdb = (attachment.getDoc() == null) ? null : attachment.getDoc().getDatabase();
+      // delete attachment content
       try {
-        if (attachdb != null) {
-          context.setDatabase(attachdb);
-        }
-        // delete attachment content
+        loadAttachmentContent(attachment, context, false);
+        var content = attachment.getAttachment_content();
         try {
-          loadAttachmentContent(attachment, context, false);
-          var content = attachment.getAttachment_content();
-          try {
-            getContentStore().deleteContent(content);
-          } catch (Exception e) {
-            logger.info("Error deleting content for {}", attachment);
-          }
-          try {
-            contentStoreFallback.get().ifPresent(rethrowConsumer(s -> s.deleteContent(content)));
-          } catch (Exception e) {
-            logger.info("Error deleting content for {}", attachment);
-          }
+          getContentStore().deleteContent(content);
         } catch (Exception e) {
-          logger.warn("Error loading content when deleting {}", attachment);
+          logger.info("Error deleting content for {}", attachment);
         }
-        // delete attachment archive
-        getVersioningStore().deleteArchive(attachment, false);
-        // delete attachment meta data
         try {
-          session.delete(attachment);
+          contentStoreFallback.get().ifPresent(rethrowConsumer(s -> s.deleteContent(content)));
         } catch (Exception e) {
-          logger.warn("Error deleting meta data for {}", attachment);
+          logger.info("Error deleting content for {}", attachment);
         }
-      } finally {
-        context.setDatabase(db);
+      } catch (Exception e) {
+        logger.warn("Error loading content when deleting {}", attachment);
+      }
+      // delete attachment archive
+      getVersioningStore().deleteArchive(attachment, false);
+      // delete attachment meta data
+      try {
+        session.delete(attachment);
+      } catch (Exception e) {
+        logger.warn("Error deleting meta data for {}", attachment);
       }
       // update parent document
       try {
@@ -233,6 +226,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_DELETING_ATTACHMENT,
           "Exception while deleting {0}", e, args);
     } finally {
+      context.setDatabase(currentDb);
       try {
         if (bTransaction) {
           endTransaction(false);
