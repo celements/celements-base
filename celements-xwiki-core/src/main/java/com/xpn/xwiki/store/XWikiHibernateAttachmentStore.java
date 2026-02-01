@@ -6,7 +6,6 @@ import static com.celements.spring.context.SpringContextProvider.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import org.hibernate.Session;
 import org.xwiki.component.annotation.Component;
@@ -116,7 +115,6 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
         }
       } catch (Exception e) {}
     }
-
   }
 
   @Override
@@ -179,14 +177,13 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
       }
       Session session = getSession();
       // delete attachment content
-      Stream.of(Optional.of(getContentStore()), contentStoreFallback.get())
-          .flatMap(Optional::stream).forEach(store -> {
-            try {
-              store.deleteContent(attachment);
-            } catch (Exception e) {
-              logger.info("Error deleting content for {}", attachment);
-            }
-          });
+      try {
+        // only delete from hib store since main store (s3) is cleaned async
+        contentStoreFallback.get().orElse(getContentStore())
+            .deleteContent(attachment);
+      } catch (Exception e) {
+        logger.info("Error deleting content for {}", attachment);
+      }
       // delete attachment archive
       getVersioningStore().deleteArchive(attachment, false);
       // delete attachment meta data
