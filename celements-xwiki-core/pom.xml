@@ -20,57 +20,60 @@
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   *
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+>
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>6.4</version>
+    <version>7.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-xwiki-core</artifactId>
-  <version>6.12-SNAPSHOT</version>
+  <version>7.0-SNAPSHOT</version>
   <description>Celements XWiki</description>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>6.2</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>6.1</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>6.0</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>6.2</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source</artifactId>
-      <version>6.2</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-observation</artifactId>
-      <version>6.2</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>6.3</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -577,7 +580,7 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
-      <version>6.1</version>
+      <version>7.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -639,13 +642,11 @@
             </includes>
             <excludes>
               <!-- exclude these old jmock tests, they don't run on new jvm's -->
-              <exclude>**/com/xpn/xwiki/plugin/zipexplorer/ZipExplorerTest.java</exclude>              
+              <exclude>**/com/xpn/xwiki/plugin/zipexplorer/ZipExplorerTest.java</exclude>
               <exclude>**/com/xpn/xwiki/render/XWikiRadeoxRendererTest</exclude>
               <exclude>**/com/xpn/xwiki/render/XWikiVelocityRendererTest.java</exclude>
               <exclude>**/com/xpn/xwiki/web/XWikiMessageToolTest.java</exclude>
             </excludes>
-            <!-- Prevent Out Of Memory errors resulting from tests that do no free up the memory correctly -->
-            <forkMode>pertest</forkMode>
           </configuration>
         </plugin>
       </plugins>

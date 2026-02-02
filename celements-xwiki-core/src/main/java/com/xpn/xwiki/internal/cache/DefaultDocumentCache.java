@@ -23,7 +23,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Supplier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.event.AbstractDocumentEvent;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.bridge.event.DocumentDeletedEvent;
@@ -42,6 +45,9 @@ import org.xwiki.observation.EventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.Event;
 
+import com.google.common.base.Suppliers;
+import com.xpn.xwiki.web.Utils;
+
 /**
  * Specialized cache component related to documents. It automatically clean the cache when the
  * document is related.
@@ -56,6 +62,8 @@ import org.xwiki.observation.event.Event;
 @Component
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
 public class DefaultDocumentCache<C> implements DocumentCache<C> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDocumentCache.class);
 
   /**
    * Event listened by the component.
@@ -148,8 +156,8 @@ public class DefaultDocumentCache<C> implements DocumentCache<C> {
   /**
    * Used to register as event listener to invalidate the cache.
    */
-  @Requirement
-  private ObservationManager observationManager;
+  private Supplier<ObservationManager> observationManager = Suppliers
+      .memoize(() -> Utils.getComponent(ObservationManager.class));
 
   /**
    * {@inheritDoc}
@@ -167,8 +175,11 @@ public class DefaultDocumentCache<C> implements DocumentCache<C> {
         .setConfigurationId(cacheConfiguration.getConfigurationId() + ".mapping");
 
     this.mappingCache = this.cacheManager.createNewCache(cacheConfiguration);
-
-    this.observationManager.addListener(this.listener);
+    try {
+      this.observationManager.get().addListener(this.listener);
+    } catch (Exception e) {
+      LOGGER.error("Failed to register document cache listener for cache [{}]", this.name, e);
+    }
   }
 
   // cache
