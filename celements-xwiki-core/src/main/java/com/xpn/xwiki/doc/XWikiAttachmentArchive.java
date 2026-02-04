@@ -180,12 +180,11 @@ public class XWikiAttachmentArchive implements Cloneable {
   }
 
   public Version[] getVersions() {
-    Node[] nodes = getRCSArchive().changeLog();
+    Node[] nodes = (archive != null) ? archive.changeLog() : new Node[0];
     Version[] versions = new Version[nodes.length];
     for (int i = 0; i < nodes.length; i++) {
       versions[i] = nodes[i].getVersion();
     }
-
     return versions;
   }
 
