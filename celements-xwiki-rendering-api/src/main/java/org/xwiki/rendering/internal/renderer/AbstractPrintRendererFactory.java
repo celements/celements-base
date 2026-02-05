@@ -27,36 +27,36 @@ import org.xwiki.rendering.renderer.PrintRendererFactory;
 import org.xwiki.rendering.renderer.printer.WikiPrinter;
 
 /**
- * Common code for {@link org.xwiki.rendering.renderer.PrintRendererFactory}, implements the logic to lookup and call
+ * Common code for {@link org.xwiki.rendering.renderer.PrintRendererFactory}, implements the logic
+ * to lookup and call
  * the matching Print Renderer.
  * 
  * @version $Id$
  * @since 2.0M3
  */
-public abstract class AbstractPrintRendererFactory implements PrintRendererFactory
-{
-    /**
-     * Used to lookup the {@link PrintRenderer}.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+public abstract class AbstractPrintRendererFactory implements PrintRendererFactory {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see PrintRendererFactory#createRenderer(org.xwiki.rendering.renderer.printer.WikiPrinter)
-     */
-    public PrintRenderer createRenderer(WikiPrinter printer)
-    {
-        PrintRenderer renderer;
-        try {
-            renderer = this.componentManager.lookup(PrintRenderer.class, getSyntax().toIdString());
-        } catch (ComponentLookupException e) {
-            throw new RuntimeException("Failed to create [" + getSyntax().toString() + "] renderer", e);
-        }
+  /**
+   * Used to lookup the {@link PrintRenderer}.
+   */
+  @Requirement
+  private ComponentManager componentManager;
 
-        renderer.setPrinter(printer);
-
-        return renderer;
+  /**
+   * {@inheritDoc}
+   * 
+   * @see PrintRendererFactory#createRenderer(org.xwiki.rendering.renderer.printer.WikiPrinter)
+   */
+  public PrintRenderer createRenderer(WikiPrinter printer) {
+    PrintRenderer renderer;
+    try {
+      renderer = this.componentManager.lookup(PrintRenderer.class, getSyntax().toIdString());
+    } catch (ComponentLookupException e) {
+      throw new RuntimeException("Failed to create [" + getSyntax().toString() + "] renderer", e);
     }
+
+    renderer.setPrinter(printer);
+
+    return renderer;
+  }
 }

@@ -40,39 +40,44 @@ import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
  */
 @Component("xhtml/1.0")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class XHTMLRenderer extends AbstractChainingPrintRenderer implements Initializable
-{
-    /**
-     * To render link events into XHTML. This is done so that it's pluggable because link rendering depends on how
-     * the underlying system wants to handle it. For example for XWiki we check if the document exists, we get the
-     * document URL, etc.
-     */
-    @Requirement
-    private XHTMLLinkRenderer linkRenderer;
+public class XHTMLRenderer extends AbstractChainingPrintRenderer implements Initializable {
 
-    /**
-     * To render image events into XHTML. This is done so that it's pluggable because image rendering depends
-     * on how the underlying system wants to handle it. For example for XWiki we check if the image exists as a
-     * document attachments, we get its URL, etc.
-     */
-    @Requirement
-    private XHTMLImageRenderer imageRenderer;
+  /**
+   * To render link events into XHTML. This is done so that it's pluggable because link rendering
+   * depends on how
+   * the underlying system wants to handle it. For example for XWiki we check if the document
+   * exists, we get the
+   * document URL, etc.
+   */
+  @Requirement
+  private XHTMLLinkRenderer linkRenderer;
 
-    /**
-     * {@inheritDoc}
-     * @see Initializable#initialize()
-     * @since 2.0M3
-     */
-    public void initialize() throws InitializationException
-    {
-        ListenerChain chain = new ListenerChain();
-        setListenerChain(chain);
+  /**
+   * To render image events into XHTML. This is done so that it's pluggable because image rendering
+   * depends
+   * on how the underlying system wants to handle it. For example for XWiki we check if the image
+   * exists as a
+   * document attachments, we get its URL, etc.
+   */
+  @Requirement
+  private XHTMLImageRenderer imageRenderer;
 
-        // Construct the listener chain in the right order. Listeners early in the chain are called before listeners
-        // placed later in the chain.
-        chain.addListener(this);
-        chain.addListener(new BlockStateChainingListener(chain));
-        chain.addListener(new EmptyBlockChainingListener(chain));
-        chain.addListener(new XHTMLChainingRenderer(this.linkRenderer, this.imageRenderer, chain));
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see Initializable#initialize()
+   * @since 2.0M3
+   */
+  public void initialize() throws InitializationException {
+    ListenerChain chain = new ListenerChain();
+    setListenerChain(chain);
+
+    // Construct the listener chain in the right order. Listeners early in the chain are called
+    // before listeners
+    // placed later in the chain.
+    chain.addListener(this);
+    chain.addListener(new BlockStateChainingListener(chain));
+    chain.addListener(new EmptyBlockChainingListener(chain));
+    chain.addListener(new XHTMLChainingRenderer(this.linkRenderer, this.imageRenderer, chain));
+  }
 }

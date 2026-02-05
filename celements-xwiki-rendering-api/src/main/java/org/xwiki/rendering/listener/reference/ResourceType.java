@@ -34,121 +34,119 @@ package org.xwiki.rendering.listener.reference;
  * @version $Id$
  * @since 2.5RC1
  */
-public class ResourceType
-{
-    /**
-     * Special type to be used when the type of the resource is not known.
-     */
-    public static final ResourceType UNKNOWN = new ResourceType("unknown");
+public class ResourceType {
 
-    /**
-     * Represents a Document.
-     */
-    public static final ResourceType DOCUMENT = new ResourceType("doc");
+  /**
+   * Special type to be used when the type of the resource is not known.
+   */
+  public static final ResourceType UNKNOWN = new ResourceType("unknown");
 
-    /**
-     * Represents an URL.
-     */
-    public static final ResourceType URL = new ResourceType("url");
+  /**
+   * Represents a Document.
+   */
+  public static final ResourceType DOCUMENT = new ResourceType("doc");
 
-    /**
-     * Represents a document in another wiki.
-     */
-    public static final ResourceType INTERWIKI = new ResourceType("interwiki");
-    
-    /**
-     * Represents a relative URL in the current wiki.
-     */
-    public static final ResourceType PATH = new ResourceType("path");
+  /**
+   * Represents an URL.
+   */
+  public static final ResourceType URL = new ResourceType("url");
 
-    /**
-     * Represents a mail.
-     */
-    public static final ResourceType MAILTO = new ResourceType("mailto");
+  /**
+   * Represents a document in another wiki.
+   */
+  public static final ResourceType INTERWIKI = new ResourceType("interwiki");
 
-    /**
-     * Represents an attachment.
-     */
-    public static final ResourceType ATTACHMENT = new ResourceType("attach");
+  /**
+   * Represents a relative URL in the current wiki.
+   */
+  public static final ResourceType PATH = new ResourceType("path");
 
-    /**
-     * Represents an icon.
-     */
-    public static final ResourceType ICON = new ResourceType("icon");
+  /**
+   * Represents a mail.
+   */
+  public static final ResourceType MAILTO = new ResourceType("mailto");
 
-    /**
-     * Represents a UNC (Universal Naming Convention) (eg "\\myserver\myshare\mydoc.txt").
-     * @since 2.7M1
-     */
-    public static final ResourceType UNC = new ResourceType("unc");
+  /**
+   * Represents an attachment.
+   */
+  public static final ResourceType ATTACHMENT = new ResourceType("attach");
 
-    /**
-     * @see #getScheme()
-     */
-    private String scheme;
+  /**
+   * Represents an icon.
+   */
+  public static final ResourceType ICON = new ResourceType("icon");
 
-    /**
-     * @param scheme see {@link #getScheme()}
-     */
-    public ResourceType(String scheme)
-    {
-        setScheme(scheme);
+  /**
+   * Represents a UNC (Universal Naming Convention) (eg "\\myserver\myshare\mydoc.txt").
+   * 
+   * @since 2.7M1
+   */
+  public static final ResourceType UNC = new ResourceType("unc");
+
+  /**
+   * @see #getScheme()
+   */
+  private String scheme;
+
+  /**
+   * @param scheme
+   *          see {@link #getScheme()}
+   */
+  public ResourceType(String scheme) {
+    setScheme(scheme);
+  }
+
+  /**
+   * @return the type of the link (eg "doc" for links to documents, etc)
+   */
+  public String getScheme() {
+    return this.scheme;
+  }
+
+  /**
+   * @param scheme
+   *          see {@link #getScheme()}
+   */
+  public void setScheme(String scheme) {
+    this.scheme = scheme;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    // Random number. See http://www.technofundo.com/tech/java/equalhash.html for the detail of this
+    // algorithm.
+    int hash = 8;
+    hash = 31 * hash + (null == getScheme() ? 0 : getScheme().hashCode());
+    return hash;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see Object#equals(Object)
+   */
+  @Override
+  public boolean equals(Object object) {
+    boolean result;
+
+    // See http://www.technofundo.com/tech/java/equalhash.html for the detail of this algorithm.
+    if (this == object) {
+      result = true;
+    } else {
+      if ((object == null) || (object.getClass() != this.getClass())) {
+        result = false;
+      } else {
+        // object must be ResourceType at this point
+        ResourceType type = (ResourceType) object;
+        result = (getScheme() == type.getScheme() || (getScheme() != null
+            && getScheme().equals(type.getScheme())));
+      }
     }
-
-    /**
-     * @return the type of the link (eg "doc" for links to documents, etc)
-     */
-    public String getScheme()
-    {
-        return this.scheme;
-    }
-
-    /**
-     * @param scheme see {@link #getScheme()}
-     */
-    public void setScheme(String scheme)
-    {
-        this.scheme = scheme;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see Object#hashCode()
-     */
-    @Override
-    public int hashCode()
-    {
-        // Random number. See http://www.technofundo.com/tech/java/equalhash.html for the detail of this
-        // algorithm.
-        int hash = 8;
-        hash = 31 * hash + (null == getScheme() ? 0 : getScheme().hashCode());
-        return hash;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see Object#equals(Object)
-     */
-    @Override
-    public boolean equals(Object object)
-    {
-        boolean result;
-
-        // See http://www.technofundo.com/tech/java/equalhash.html for the detail of this algorithm.
-        if (this == object) {
-            result = true;
-        } else {
-            if ((object == null) || (object.getClass() != this.getClass())) {
-                result = false;
-            } else {
-                // object must be ResourceType at this point
-                ResourceType type = (ResourceType) object;
-                result = (getScheme() == type.getScheme() || (getScheme() != null
-                    && getScheme().equals(type.getScheme())));
-            }
-        }
-        return result;
-    }
+    return result;
+  }
 }

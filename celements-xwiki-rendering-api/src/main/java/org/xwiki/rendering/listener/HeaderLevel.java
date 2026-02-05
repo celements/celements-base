@@ -23,89 +23,88 @@ package org.xwiki.rendering.listener;
  * @version $Id$
  * @since 1.5M2
  */
-public enum HeaderLevel
-{
-    /**
-     * Header of level 1.
-     */
-    LEVEL1,
+public enum HeaderLevel {
 
-    /**
-     * Header of level 2.
-     */
-    LEVEL2,
+  /**
+   * Header of level 1.
+   */
+  LEVEL1,
 
-    /**
-     * Header of level 3.
-     */
-    LEVEL3,
+  /**
+   * Header of level 2.
+   */
+  LEVEL2,
 
-    /**
-     * Header of level 4.
-     */
-    LEVEL4,
+  /**
+   * Header of level 3.
+   */
+  LEVEL3,
 
-    /**
-     * Header of level 5.
-     */
-    LEVEL5,
+  /**
+   * Header of level 4.
+   */
+  LEVEL4,
 
-    /**
-     * Header of level 6.
-     */
-    LEVEL6;
+  /**
+   * Header of level 5.
+   */
+  LEVEL5,
 
-    /**
-     * @return the header level as integer
-     */
-    public int getAsInt()
-    {
-        return this.ordinal() + 1;
+  /**
+   * Header of level 6.
+   */
+  LEVEL6;
+
+  /**
+   * @return the header level as integer
+   */
+  public int getAsInt() {
+    return this.ordinal() + 1;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Enum#toString()
+   */
+  @Override
+  public String toString() {
+    return "" + getAsInt();
+  }
+
+  /**
+   * Convert provided integer into the corresponding header level enum entry.
+   * 
+   * @param value
+   *          the header level as integer
+   * @return the header level as enum entry
+   */
+  public static HeaderLevel parseInt(int value) {
+    HeaderLevel result;
+    switch (value) {
+      case 1:
+        result = HeaderLevel.LEVEL1;
+        break;
+      case 2:
+        result = HeaderLevel.LEVEL2;
+        break;
+      case 3:
+        result = HeaderLevel.LEVEL3;
+        break;
+      case 4:
+        result = HeaderLevel.LEVEL4;
+        break;
+      case 5:
+        result = HeaderLevel.LEVEL5;
+        break;
+      case 6:
+        result = HeaderLevel.LEVEL6;
+        break;
+      default:
+        throw new IllegalArgumentException(
+            "Invalid level [" + value + "]. Only levels 1 to 6 are allowed.");
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Enum#toString()
-     */
-    @Override
-    public String toString()
-    {
-        return "" + getAsInt();
-    }
-
-    /**
-     * Convert provided integer into the corresponding header level enum entry.
-     * 
-     * @param value the header level as integer
-     * @return the header level as enum entry
-     */
-    public static HeaderLevel parseInt(int value)
-    {
-        HeaderLevel result;
-        switch (value) {
-            case 1:
-                result = HeaderLevel.LEVEL1;
-                break;
-            case 2:
-                result = HeaderLevel.LEVEL2;
-                break;
-            case 3:
-                result = HeaderLevel.LEVEL3;
-                break;
-            case 4:
-                result = HeaderLevel.LEVEL4;
-                break;
-            case 5:
-                result = HeaderLevel.LEVEL5;
-                break;
-            case 6:
-                result = HeaderLevel.LEVEL6;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid level [" + value + "]. Only levels 1 to 6 are allowed.");
-        }
-
-        return result;
-    }
+    return result;
+  }
 }

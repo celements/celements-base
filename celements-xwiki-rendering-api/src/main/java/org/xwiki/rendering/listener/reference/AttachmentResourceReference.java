@@ -27,37 +27,37 @@ import org.apache.commons.lang.StringUtils;
  * @version $Id$
  * @since 2.5RC1
  */
-public class AttachmentResourceReference extends ResourceReference
-{
-    /**
-     * The name of the parameter representing the Query String.
-     */
-    public static final String QUERY_STRING = "queryString";
+public class AttachmentResourceReference extends ResourceReference {
 
-    /**
-     * @param reference see {@link #getReference()}
-     */
-    public AttachmentResourceReference(String reference)
-    {
-        super(reference, ResourceType.ATTACHMENT);
-    }
+  /**
+   * The name of the parameter representing the Query String.
+   */
+  public static final String QUERY_STRING = "queryString";
 
-    /**
-     * @return the query string for specifying parameters that will be used in the rendered URL or null if no query
-     *         string has been specified. Example: "mydata1=5&mydata2=Hello"
-     */
-    public String getQueryString()
-    {
-        return getParameter(QUERY_STRING);
-    }
+  /**
+   * @param reference
+   *          see {@link #getReference()}
+   */
+  public AttachmentResourceReference(String reference) {
+    super(reference, ResourceType.ATTACHMENT);
+  }
 
-    /**
-     * @param queryString see {@link #getQueryString()}
-     */
-    public void setQueryString(String queryString)
-    {
-        if (!StringUtils.isEmpty(queryString)) {
-            setParameter(QUERY_STRING, queryString);
-        }
+  /**
+   * @return the query string for specifying parameters that will be used in the rendered URL or
+   *         null if no query
+   *         string has been specified. Example: "mydata1=5&mydata2=Hello"
+   */
+  public String getQueryString() {
+    return getParameter(QUERY_STRING);
+  }
+
+  /**
+   * @param queryString
+   *          see {@link #getQueryString()}
+   */
+  public void setQueryString(String queryString) {
+    if (!StringUtils.isEmpty(queryString)) {
+      setParameter(QUERY_STRING, queryString);
     }
+  }
 }

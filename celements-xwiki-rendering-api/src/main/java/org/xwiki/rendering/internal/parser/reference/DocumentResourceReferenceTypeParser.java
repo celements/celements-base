@@ -31,28 +31,28 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * @since 2.5RC1
  */
 @Component("doc")
-public class DocumentResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser
-{
-    /**
-     * {@inheritDoc}
-     * @see AbstractURIResourceReferenceTypeParser#getType()
-     */
-    public ResourceType getType()
-    {
-        return ResourceType.DOCUMENT;
-    }
+public class DocumentResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractURIResourceReferenceTypeParser#parse(String)
-     */
-    @Override
-    public ResourceReference parse(String reference)
-    {
-        // Note that we construct a DocumentResourceReference object so that the user who calls
-        // {@link ResourceReferenceParser#parse} can cast it to a DocumentResourceReference object if the type is of
-        // type Document.
-        return new DocumentResourceReference(reference);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractURIResourceReferenceTypeParser#getType()
+   */
+  public ResourceType getType() {
+    return ResourceType.DOCUMENT;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractURIResourceReferenceTypeParser#parse(String)
+   */
+  @Override
+  public ResourceReference parse(String reference) {
+    // Note that we construct a DocumentResourceReference object so that the user who calls
+    // {@link ResourceReferenceParser#parse} can cast it to a DocumentResourceReference object if
+    // the type is of
+    // type Document.
+    return new DocumentResourceReference(reference);
+  }
 }

@@ -30,16 +30,15 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
  * @since 2.5RC1
  */
 @Component("xwiki/2.1/image")
-public class XWikiSyntaxImageReferenceSerializer extends XWikiSyntaxLinkReferenceSerializer
-{
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer#serialize(
-     *org.xwiki.rendering.listener.reference.ResourceReference)
-     */
-    public String serialize(ResourceReference reference)
-    {
-        return "image:" + super.serialize(reference);
-    }
+public class XWikiSyntaxImageReferenceSerializer extends XWikiSyntaxLinkReferenceSerializer {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer#serialize(
+   *      org.xwiki.rendering.listener.reference.ResourceReference)
+   */
+  public String serialize(ResourceReference reference) {
+    return "image:" + super.serialize(reference);
+  }
 }

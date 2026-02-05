@@ -32,26 +32,24 @@ import org.xwiki.rendering.wiki.WikiModel;
  * @version $Id$
  * @since 2.5RC1
  */
-public class XWiki20ImageReferenceParserTest extends AbstractImageReferenceParserTest
-{
-    @Override
-    protected void registerComponents() throws Exception
-    {
-        // Create a Mock WikiModel implementation so that the link parser works in wiki mode
-        registerMockComponent(WikiModel.class);
+public class XWiki20ImageReferenceParserTest extends AbstractImageReferenceParserTest {
 
-        this.parser = getComponentManager().lookup(ResourceReferenceParser.class, "xwiki/2.0/image");
-    }
+  @Override
+  protected void registerComponents() throws Exception {
+    // Create a Mock WikiModel implementation so that the link parser works in wiki mode
+    registerComponentMock(WikiModel.class);
+    this.parser = getComponentManager().lookup(ResourceReferenceParser.class, "xwiki/2.0/image");
+  }
 
-    @Test
-    public void testParseImages() throws Exception
-    {
-        // Verify that "attach:" prefix isn't taken into account in XWiki Syntax 2.0.
-        ResourceReference reference = parser.parse("attach:wiki:space.page@filename");
-        Assert.assertEquals(ResourceType.ATTACHMENT, reference.getType());
-        Assert.assertEquals("attach:wiki:space.page@filename", reference.getReference());
-        Assert.assertFalse(reference.isTyped());
-        Assert.assertEquals("Typed = [false] Type = [attach] Reference = [attach:wiki:space.page@filename]",
-            reference.toString());
-    }
+  @Test
+  public void testParseImages() throws Exception {
+    // Verify that "attach:" prefix isn't taken into account in XWiki Syntax 2.0.
+    ResourceReference reference = parser.parse("attach:wiki:space.page@filename");
+    Assert.assertEquals(ResourceType.ATTACHMENT, reference.getType());
+    Assert.assertEquals("attach:wiki:space.page@filename", reference.getReference());
+    Assert.assertFalse(reference.isTyped());
+    Assert.assertEquals(
+        "Typed = [false] Type = [attach] Reference = [attach:wiki:space.page@filename]",
+        reference.toString());
+  }
 }

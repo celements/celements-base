@@ -27,62 +27,63 @@ import org.apache.commons.lang.StringUtils;
  * @version $Id$
  * @since 2.5RC1
  */
-public class DocumentResourceReference extends ResourceReference
-{
-    /**
-     * The name of the parameter representing the Query String.
-     */
-    public static final String QUERY_STRING = "queryString";
+public class DocumentResourceReference extends ResourceReference {
 
-    /**
-     * The name of the parameter representing the Anchor.
-     */
-    public static final String ANCHOR = "anchor";
-    
-    /**
-     * @param reference see {@link #getReference()}
-     */
-    public DocumentResourceReference(String reference)
-    {
-        super(reference, ResourceType.DOCUMENT);
-    }
-    
-    /**
-     * @return the query string for specifying parameters that will be used in the rendered URL or null if no query
-     *         string has been specified. Example: "mydata1=5&mydata2=Hello"
-     */
-    public String getQueryString()
-    {
-        return getParameter(QUERY_STRING);
-    }
+  /**
+   * The name of the parameter representing the Query String.
+   */
+  public static final String QUERY_STRING = "queryString";
 
-    /**
-     * @param queryString see {@link #getQueryString()}
-     */
-    public void setQueryString(String queryString)
-    {
-        if (!StringUtils.isEmpty(queryString)) {
-            setParameter(QUERY_STRING, queryString);
-        }
-    }
+  /**
+   * The name of the parameter representing the Anchor.
+   */
+  public static final String ANCHOR = "anchor";
 
-    /**
-     * @return the anchor name pointing to an anchor defined in the referenced document or null if no anchor has been
-     *         specified (in which case the reference points to the top of the document). Note that in XWiki anchors are
-     *         automatically created for titles. Example: "TableOfContentAnchor"
-     */
-    public String getAnchor()
-    {
-        return getParameter(ANCHOR);
-    }
+  /**
+   * @param reference
+   *          see {@link #getReference()}
+   */
+  public DocumentResourceReference(String reference) {
+    super(reference, ResourceType.DOCUMENT);
+  }
 
-    /**
-     * @param anchor see {@link #getAnchor()}
-     */
-    public void setAnchor(String anchor)
-    {
-        if (!StringUtils.isEmpty(anchor)) {
-            setParameter(ANCHOR, anchor);
-        }
+  /**
+   * @return the query string for specifying parameters that will be used in the rendered URL or
+   *         null if no query
+   *         string has been specified. Example: "mydata1=5&mydata2=Hello"
+   */
+  public String getQueryString() {
+    return getParameter(QUERY_STRING);
+  }
+
+  /**
+   * @param queryString
+   *          see {@link #getQueryString()}
+   */
+  public void setQueryString(String queryString) {
+    if (!StringUtils.isEmpty(queryString)) {
+      setParameter(QUERY_STRING, queryString);
     }
+  }
+
+  /**
+   * @return the anchor name pointing to an anchor defined in the referenced document or null if no
+   *         anchor has been
+   *         specified (in which case the reference points to the top of the document). Note that in
+   *         XWiki anchors are
+   *         automatically created for titles. Example: "TableOfContentAnchor"
+   */
+  public String getAnchor() {
+    return getParameter(ANCHOR);
+  }
+
+  /**
+   * @param anchor
+   *          see {@link #getAnchor()}
+   */
+  public void setAnchor(String anchor) {
+    if (!StringUtils.isEmpty(anchor)) {
+      setParameter(ANCHOR, anchor);
+    }
+  }
 }

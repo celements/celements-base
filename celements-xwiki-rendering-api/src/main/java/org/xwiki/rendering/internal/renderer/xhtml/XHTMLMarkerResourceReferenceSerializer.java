@@ -28,53 +28,59 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
 
 /**
  * Serialize a Resource Reference into XHTML comments using the syntax
- * {@code (isTyped)|-|(type)|-|(reference)|-|(parameters: key="value")}. This is used for example to save a Link or
+ * {@code (isTyped)|-|(type)|-|(reference)|-|(parameters: key="value")}. This is used for example to
+ * save a Link or
  * Image Reference in XHTML Comment in the Annotated XHTML Renderer.
  *
  * @version $Id$
  * @since 2.5RC1
  */
 @Component("xhtmlmarker")
-public class XHTMLMarkerResourceReferenceSerializer implements ResourceReferenceSerializer
-{
-    /**
-     * Character to separate Link reference and parameters in XHTML comments.
-     */
-    private static final String COMMENT_SEPARATOR = "|-|";
+public class XHTMLMarkerResourceReferenceSerializer implements ResourceReferenceSerializer {
 
-    /**
-     * Used to print Link Parameters in XHTML comments.
-     */
-    private ParametersPrinter parametersPrinter = new ParametersPrinter();
+  /**
+   * Character to separate Link reference and parameters in XHTML comments.
+   */
+  private static final String COMMENT_SEPARATOR = "|-|";
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer#serialize(ResourceReference)
-     */
-    public String serialize(ResourceReference reference)
-    {
-        StringBuilder buffer = new StringBuilder();
+  /**
+   * Used to print Link Parameters in XHTML comments.
+   */
+  private ParametersPrinter parametersPrinter = new ParametersPrinter();
 
-        // Print if the Resource Reference is typed, the Resource Reference Type and the Reference itself
-        buffer.append(reference.isTyped());
-        buffer.append(COMMENT_SEPARATOR);
-        buffer.append(reference.getType().getScheme());
-        buffer.append(COMMENT_SEPARATOR);
-        buffer.append(reference.getReference());
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer#serialize(ResourceReference)
+   */
+  public String serialize(ResourceReference reference) {
+    StringBuilder buffer = new StringBuilder();
 
-        // Print Resource Reference parameters. We need to do this so that the XHTML parser doesn't have
-        // to parse the query string to extract the parameters. Doing so could lead to false result since
-        // for example the XHTML renderer can add a parent parameter in the query string for links to non
-        // existing documents.
-        //
-        // Also note that we don't need to print Resource Reference parameters since they are added as XHTML class
-        // attributes by the XHTML Renderer and thus the XHTML parser will be able to get them again as attributes.
-        Map<String, String> linkReferenceParameters = reference.getParameters();
-        if (!linkReferenceParameters.isEmpty()) {
-            buffer.append(COMMENT_SEPARATOR);
-            buffer.append(this.parametersPrinter.print(linkReferenceParameters, '\\'));
-        }
+    // Print if the Resource Reference is typed, the Resource Reference Type and the Reference
+    // itself
+    buffer.append(reference.isTyped());
+    buffer.append(COMMENT_SEPARATOR);
+    buffer.append(reference.getType().getScheme());
+    buffer.append(COMMENT_SEPARATOR);
+    buffer.append(reference.getReference());
 
-        return buffer.toString();
+    // Print Resource Reference parameters. We need to do this so that the XHTML parser doesn't have
+    // to parse the query string to extract the parameters. Doing so could lead to false result
+    // since
+    // for example the XHTML renderer can add a parent parameter in the query string for links to
+    // non
+    // existing documents.
+    //
+    // Also note that we don't need to print Resource Reference parameters since they are added as
+    // XHTML class
+    // attributes by the XHTML Renderer and thus the XHTML parser will be able to get them again as
+    // attributes.
+    Map<String, String> linkReferenceParameters = reference.getParameters();
+    if (!linkReferenceParameters.isEmpty()) {
+      buffer.append(COMMENT_SEPARATOR);
+      buffer.append(this.parametersPrinter.print(linkReferenceParameters, '\\'));
     }
+
+    return buffer.toString();
+  }
 }

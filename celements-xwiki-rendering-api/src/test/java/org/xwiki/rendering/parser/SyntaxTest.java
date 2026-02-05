@@ -19,9 +19,10 @@
  */
 package org.xwiki.rendering.parser;
 
-import junit.framework.TestCase;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.syntax.SyntaxType;
+
+import junit.framework.TestCase;
 
 /**
  * Unit tests for {@link org.xwiki.rendering.syntax.Syntax}.
@@ -29,36 +30,33 @@ import org.xwiki.rendering.syntax.SyntaxType;
  * @version $Id$
  * @since 1.5M2
  */
-public class SyntaxTest extends TestCase
-{
-    public void testEquality()
-    {
-        Syntax syntax1 = new Syntax(new SyntaxType("mytype", "My Type"), "1.0");
-        Syntax syntax2 = new Syntax(new SyntaxType("mytype", "My Type"), "1.0");
-        Syntax syntax3 = new Syntax(new SyntaxType("mytype", "Still same type"), "1.0");
+public class SyntaxTest extends TestCase {
 
-        assertEquals("mytype", syntax1.getType().getId());
-        assertEquals("My Type", syntax1.getType().getName());
+  public void testEquality() {
+    Syntax syntax1 = new Syntax(new SyntaxType("mytype", "My Type"), "1.0");
+    Syntax syntax2 = new Syntax(new SyntaxType("mytype", "My Type"), "1.0");
+    Syntax syntax3 = new Syntax(new SyntaxType("mytype", "Still same type"), "1.0");
 
-        assertEquals(syntax2, syntax1);
-        // The syntax type name is not part of the equality test.
-        assertEquals(syntax3, syntax1);
-    }
+    assertEquals("mytype", syntax1.getType().getId());
+    assertEquals("My Type", syntax1.getType().getName());
 
-    public void testNonEquality()
-    {
-        Syntax syntax1 = new Syntax(SyntaxType.XWIKI, "1.0");
-        Syntax syntax2 = new Syntax(SyntaxType.XWIKI, "2.0");
-        Syntax syntax3 = new Syntax(SyntaxType.CONFLUENCE, "1.0");
+    assertEquals(syntax2, syntax1);
+    // The syntax type name is not part of the equality test.
+    assertEquals(syntax3, syntax1);
+  }
 
-        assertFalse(syntax2.equals(syntax1));
-        assertFalse(syntax3.equals(syntax1));
-    }
+  public void testNonEquality() {
+    Syntax syntax1 = new Syntax(SyntaxType.XWIKI, "1.0");
+    Syntax syntax2 = new Syntax(SyntaxType.XWIKI, "2.0");
+    Syntax syntax3 = new Syntax(SyntaxType.CONFLUENCE, "1.0");
 
-    public void testToString()
-    {
-        Syntax syntax = new Syntax(SyntaxType.XWIKI, "1.0");
-        assertEquals("XWiki 1.0", syntax.toString());
-        assertEquals("xwiki/1.0", syntax.toIdString());
-    }
+    assertFalse(syntax2.equals(syntax1));
+    assertFalse(syntax3.equals(syntax1));
+  }
+
+  public void testToString() {
+    Syntax syntax = new Syntax(SyntaxType.XWIKI, "1.0");
+    assertEquals("XWiki 1.0", syntax.toString());
+    assertEquals("xwiki/1.0", syntax.toIdString());
+  }
 }

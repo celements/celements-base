@@ -31,64 +31,62 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.8.3
  */
-public class GroupBlock extends AbstractFatherBlock
-{
-    /**
-     * Create an empty group block with no children. This is useful when the user wants to call
-     * {@link #addChild(Block)} manually for adding children one by one after the block is
-     * constructed.
-     */
-    public GroupBlock()
-    {
-        this(Collections.<Block> emptyList());
-    }
+public class GroupBlock extends AbstractFatherBlock {
 
-    /**
-     * Create an empty group block with no children. This is useful when the user wants to call
-     * {@link #addChild(Block)} manually for adding children one by one after the block is
-     * constructed.
-     * 
-     * @param parameters the parameters of the group
-     */
-    public GroupBlock(Map<String, String> parameters)
-    {
-        this(Collections.<Block> emptyList(), parameters);
-    }
+  /**
+   * Create an empty group block with no children. This is useful when the user wants to call
+   * {@link #addChild(Block)} manually for adding children one by one after the block is
+   * constructed.
+   */
+  public GroupBlock() {
+    this(Collections.<Block>emptyList());
+  }
 
-    /**
-     * @param blocks the children blocks of the group
-     */
-    public GroupBlock(List<Block> blocks)
-    {
-        super(blocks);
-    }
+  /**
+   * Create an empty group block with no children. This is useful when the user wants to call
+   * {@link #addChild(Block)} manually for adding children one by one after the block is
+   * constructed.
+   * 
+   * @param parameters
+   *          the parameters of the group
+   */
+  public GroupBlock(Map<String, String> parameters) {
+    this(Collections.<Block>emptyList(), parameters);
+  }
 
-    /**
-     * @param blocks the children blocks of the group
-     * @param parameters the parameters of the group
-     */
-    public GroupBlock(List<Block> blocks, Map<String, String> parameters)
-    {
-        super(blocks, parameters);
-    }
+  /**
+   * @param blocks
+   *          the children blocks of the group
+   */
+  public GroupBlock(List<Block> blocks) {
+    super(blocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginGroup(getParameters());
-    }
+  /**
+   * @param blocks
+   *          the children blocks of the group
+   * @param parameters
+   *          the parameters of the group
+   */
+  public GroupBlock(List<Block> blocks, Map<String, String> parameters) {
+    super(blocks, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endGroup(getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginGroup(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endGroup(getParameters());
+  }
 }

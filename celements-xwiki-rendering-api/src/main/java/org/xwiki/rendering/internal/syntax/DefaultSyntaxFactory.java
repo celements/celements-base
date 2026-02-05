@@ -34,36 +34,36 @@ import org.xwiki.rendering.syntax.SyntaxType;
  * @since 1.5M2
  */
 @Component
-public class DefaultSyntaxFactory extends AbstractLogEnabled implements SyntaxFactory
-{
-    /**
-     * Used to cut the syntax identifier into syntax name and syntax version.
-     */
-    private static final Pattern SYNTAX_PATTERN = Pattern.compile("(.*)\\/(.*)");
+public class DefaultSyntaxFactory extends AbstractLogEnabled implements SyntaxFactory {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.syntax.SyntaxFactory#createSyntaxFromIdString(java.lang.String)
-     */
-    public Syntax createSyntaxFromIdString(String syntaxIdAsString) throws ParseException
-    {
-        if (syntaxIdAsString == null) {
-            throw new ParseException("The passed Syntax cannot be NULL");
-        }
+  /**
+   * Used to cut the syntax identifier into syntax name and syntax version.
+   */
+  private static final Pattern SYNTAX_PATTERN = Pattern.compile("(.*)\\/(.*)");
 
-        Matcher matcher = SYNTAX_PATTERN.matcher(syntaxIdAsString);
-        if (!matcher.matches()) {
-            throw new ParseException("Invalid Syntax format [" + syntaxIdAsString + "]");
-        }
-
-        String syntaxId = matcher.group(1);
-        String version = matcher.group(2);
-
-        // Use the id as both the human readable name and the technical id (since the syntax string doesn't contain
-        // any information about the pretty name of a syntax type).
-        SyntaxType syntaxType = new SyntaxType(syntaxId, syntaxId);
-
-        return new Syntax(syntaxType, version);
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.syntax.SyntaxFactory#createSyntaxFromIdString(java.lang.String)
+   */
+  public Syntax createSyntaxFromIdString(String syntaxIdAsString) throws ParseException {
+    if (syntaxIdAsString == null) {
+      throw new ParseException("The passed Syntax cannot be NULL");
     }
+
+    Matcher matcher = SYNTAX_PATTERN.matcher(syntaxIdAsString);
+    if (!matcher.matches()) {
+      throw new ParseException("Invalid Syntax format [" + syntaxIdAsString + "]");
+    }
+
+    String syntaxId = matcher.group(1);
+    String version = matcher.group(2);
+
+    // Use the id as both the human readable name and the technical id (since the syntax string
+    // doesn't contain
+    // any information about the pretty name of a syntax type).
+    SyntaxType syntaxType = new SyntaxType(syntaxId, syntaxId);
+
+    return new Syntax(syntaxType, version);
+  }
 }

@@ -22,58 +22,56 @@ package org.xwiki.rendering.listener.chaining;
 import java.util.Map;
 
 /**
- * Provides information on whether we're inside a group. Note that this listener is separated from the
- * {@link org.xwiki.rendering.listener.chaining.BlockStateChainingListener} class because we don't want this listener to
- * be stackable (since we need to create new instance of stackable listeners to reset states when we encounter
+ * Provides information on whether we're inside a group. Note that this listener is separated from
+ * the
+ * {@link org.xwiki.rendering.listener.chaining.BlockStateChainingListener} class because we don't
+ * want this listener to
+ * be stackable (since we need to create new instance of stackable listeners to reset states when we
+ * encounter
  * a begin group event but we also need to know we're inside a group).
  * 
  * @version $Id$
  * @since 1.8.3
  */
-public class GroupStateChainingListener extends AbstractChainingListener
-{
-    private int groupDepth = 0;
+public class GroupStateChainingListener extends AbstractChainingListener {
 
-    public GroupStateChainingListener(ListenerChain listenerChain)
-    {
-        setListenerChain(listenerChain);
-    }
+  private int groupDepth = 0;
 
-    public int getDocumentDepth()
-    {
-        return this.groupDepth;
-    }
+  public GroupStateChainingListener(ListenerChain listenerChain) {
+    setListenerChain(listenerChain);
+  }
 
-    public boolean isInGroup()
-    {
-        return this.groupDepth > 0;
-    }
+  public int getDocumentDepth() {
+    return this.groupDepth;
+  }
 
-    // Events
+  public boolean isInGroup() {
+    return this.groupDepth > 0;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
-     */
-    @Override
-    public void beginGroup(Map<String, String> parameters)
-    {
-        ++this.groupDepth;
+  // Events
 
-        super.beginGroup(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
+   */
+  @Override
+  public void beginGroup(Map<String, String> parameters) {
+    ++this.groupDepth;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endGroup(Map)
-     */
-    @Override
-    public void endGroup(Map<String, String> parameters)
-    {
-        super.endGroup(parameters);
+    super.beginGroup(parameters);
+  }
 
-        --this.groupDepth;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endGroup(Map)
+   */
+  @Override
+  public void endGroup(Map<String, String> parameters) {
+    super.endGroup(parameters);
+
+    --this.groupDepth;
+  }
 }

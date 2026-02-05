@@ -31,96 +31,99 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter;
 
 /**
- * Default implementation for rendering links as XHTML. The implementation is pluggable in the sense that the
- * implementation is done by {@link org.xwiki.rendering.internal.renderer.xhtml.link.XHTMLLinkTypeRenderer}
- * implementation, each in charge of handling a given {@link org.xwiki.rendering.listener.reference.ResourceType}.
+ * Default implementation for rendering links as XHTML. The implementation is pluggable in the sense
+ * that the
+ * implementation is done by
+ * {@link org.xwiki.rendering.internal.renderer.xhtml.link.XHTMLLinkTypeRenderer}
+ * implementation, each in charge of handling a given
+ * {@link org.xwiki.rendering.listener.reference.ResourceType}.
  *
  * @version $Id$
  * @since 2.0M3
  */
 @Component
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class DefaultXHTMLLinkRenderer implements XHTMLLinkRenderer
-{
-    @Requirement
-    private XHTMLLinkTypeRenderer defaultLinkTypeRenderer;
+public class DefaultXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
-    @Requirement
-    protected ComponentManager componentManager;
+  @Requirement
+  private XHTMLLinkTypeRenderer defaultLinkTypeRenderer;
 
-    /**
-     * The XHTML printer to use to output links as XHTML.
-     */
-    private XHTMLWikiPrinter xhtmlPrinter;
+  @Requirement
+  protected ComponentManager componentManager;
 
-    /**
-     * @see #setHasLabel(boolean)
-     */
-    private boolean hasLabel;
+  /**
+   * The XHTML printer to use to output links as XHTML.
+   */
+  private XHTMLWikiPrinter xhtmlPrinter;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#setHasLabel(boolean)
-     */
-    public void setHasLabel(boolean hasLabel)
-    {
-        this.hasLabel = hasLabel;
+  /**
+   * @see #setHasLabel(boolean)
+   */
+  private boolean hasLabel;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#setHasLabel(boolean)
+   */
+  public void setHasLabel(boolean hasLabel) {
+    this.hasLabel = hasLabel;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#setXHTMLWikiPrinter(XHTMLWikiPrinter)
+   */
+  public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer) {
+    this.xhtmlPrinter = printer;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#getXHTMLWikiPrinter()
+   */
+  public XHTMLWikiPrinter getXHTMLWikiPrinter() {
+    return this.xhtmlPrinter;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#beginLink(org.xwiki.rendering.listener.reference.ResourceReference ,
+   *      boolean, Map)
+   */
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    getXHTMLLinkTypeRenderer(reference).beginLink(reference, isFreeStandingURI, parameters);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#endLink(org.xwiki.rendering.listener.reference.ResourceReference ,
+   *      boolean, Map)
+   */
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    getXHTMLLinkTypeRenderer(reference).endLink(reference, isFreeStandingURI, parameters);
+  }
+
+  private XHTMLLinkTypeRenderer getXHTMLLinkTypeRenderer(ResourceReference reference) {
+    XHTMLLinkTypeRenderer renderer;
+
+    // TODO: This is probably not very performant since it's called at each begin/endLink.
+    try {
+      renderer = this.componentManager.lookup(XHTMLLinkTypeRenderer.class,
+          reference.getType().getScheme());
+    } catch (ComponentLookupException e) {
+      // There's no specific XHTML Link Type Renderer for the passed link type, use the default
+      // renderer.
+      renderer = this.defaultLinkTypeRenderer;
     }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#setXHTMLWikiPrinter(XHTMLWikiPrinter)
-     */
-    public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer)
-    {
-        this.xhtmlPrinter = printer;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#getXHTMLWikiPrinter()
-     */
-    public XHTMLWikiPrinter getXHTMLWikiPrinter()
-    {
-        return this.xhtmlPrinter;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#beginLink(org.xwiki.rendering.listener.reference.ResourceReference , boolean, Map)
-     */
-    public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        getXHTMLLinkTypeRenderer(reference).beginLink(reference, isFreeStandingURI, parameters);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#endLink(org.xwiki.rendering.listener.reference.ResourceReference , boolean, Map)
-     */
-    public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        getXHTMLLinkTypeRenderer(reference).endLink(reference, isFreeStandingURI, parameters);
-    }
-
-    private XHTMLLinkTypeRenderer getXHTMLLinkTypeRenderer(ResourceReference reference)
-    {
-        XHTMLLinkTypeRenderer renderer;
-
-        // TODO: This is probably not very performant since it's called at each begin/endLink.
-        try {
-            renderer = this.componentManager.lookup(XHTMLLinkTypeRenderer.class, reference.getType().getScheme());
-        } catch (ComponentLookupException e) {
-            // There's no specific XHTML Link Type Renderer for the passed link type, use the default renderer.
-            renderer = this.defaultLinkTypeRenderer;
-        }
-        renderer.setHasLabel(this.hasLabel);
-        renderer.setXHTMLWikiPrinter(getXHTMLWikiPrinter());
-        return renderer;
-    }
+    renderer.setHasLabel(this.hasLabel);
+    renderer.setXHTMLWikiPrinter(getXHTMLWikiPrinter());
+    return renderer;
+  }
 }

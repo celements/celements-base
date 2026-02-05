@@ -30,41 +30,46 @@ import org.xwiki.rendering.listener.chaining.LookaheadChainingListener;
 import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
 
 /**
- * XWiki Syntax Renderer implementation common to XWiki Syntax versions greater than 2.0 (X>iki Syntax 2.0,
+ * XWiki Syntax Renderer implementation common to XWiki Syntax versions greater than 2.0 (X>iki
+ * Syntax 2.0,
  * XWiki Syntax 2.1, etc).
- *  
+ * 
  * @version $Id$
  * @since 2.5M2
  */
-public abstract class AbstractXWikiSyntaxRenderer extends AbstractChainingPrintRenderer implements Initializable
-{
-    /**
-     * Allows extending classes to choose which implementation to use.
-     * 
-     * @param chain the rendering chain, see {@link org.xwiki.rendering.listener.chaining.ListenerChain}
-     * @return the XWiki Syntax renderer containing the implementation to use for handling the listener's events
-     */
-    protected abstract ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain);
+public abstract class AbstractXWikiSyntaxRenderer extends AbstractChainingPrintRenderer
+    implements Initializable {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Initializable#initialize()
-     */
-    public void initialize() throws InitializationException
-    {
-        ListenerChain chain = new XWikiSyntaxListenerChain();
-        setListenerChain(chain);
+  /**
+   * Allows extending classes to choose which implementation to use.
+   * 
+   * @param chain
+   *          the rendering chain, see {@link org.xwiki.rendering.listener.chaining.ListenerChain}
+   * @return the XWiki Syntax renderer containing the implementation to use for handling the
+   *         listener's events
+   */
+  protected abstract ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain);
 
-        // Construct the listener chain in the right order. Listeners early in the chain are called before listeners
-        // placed later in the chain. This chain allows using several listeners that make it easier
-        // to write the XWiki Syntax chaining listener, for example for saving states (are we in a list, in a
-        // paragraph, are we starting a new line, etc).
-        chain.addListener(this);
-        chain.addListener(new LookaheadChainingListener(chain, 2));
-        chain.addListener(new GroupStateChainingListener(chain));
-        chain.addListener(new BlockStateChainingListener(chain));
-        chain.addListener(new ConsecutiveNewLineStateChainingListener(chain));
-        chain.addListener(createXWikiSyntaxChainingRenderer(chain));
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see Initializable#initialize()
+   */
+  public void initialize() throws InitializationException {
+    ListenerChain chain = new XWikiSyntaxListenerChain();
+    setListenerChain(chain);
+
+    // Construct the listener chain in the right order. Listeners early in the chain are called
+    // before listeners
+    // placed later in the chain. This chain allows using several listeners that make it easier
+    // to write the XWiki Syntax chaining listener, for example for saving states (are we in a list,
+    // in a
+    // paragraph, are we starting a new line, etc).
+    chain.addListener(this);
+    chain.addListener(new LookaheadChainingListener(chain, 2));
+    chain.addListener(new GroupStateChainingListener(chain));
+    chain.addListener(new BlockStateChainingListener(chain));
+    chain.addListener(new ConsecutiveNewLineStateChainingListener(chain));
+    chain.addListener(createXWikiSyntaxChainingRenderer(chain));
+  }
 }

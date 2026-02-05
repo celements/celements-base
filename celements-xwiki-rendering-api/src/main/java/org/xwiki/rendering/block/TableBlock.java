@@ -30,34 +30,34 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.6M2
  */
-public class TableBlock extends AbstractFatherBlock
-{
-    /**
-     * @param list the list of children blocks of the table block (generally a list of {@link TableRowBlock}).
-     * @param parameters the parameters of the table.
-     */
-    public TableBlock(List<Block> list, Map<String, String> parameters)
-    {
-        super(list, parameters);
-    }
+public class TableBlock extends AbstractFatherBlock {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginTable(getParameters());
-    }
+  /**
+   * @param list
+   *          the list of children blocks of the table block (generally a list of
+   *          {@link TableRowBlock}).
+   * @param parameters
+   *          the parameters of the table.
+   */
+  public TableBlock(List<Block> list, Map<String, String> parameters) {
+    super(list, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endTable(getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginTable(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endTable(getParameters());
+  }
 }

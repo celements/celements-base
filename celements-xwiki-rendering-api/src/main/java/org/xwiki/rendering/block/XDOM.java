@@ -32,100 +32,101 @@ import java.util.Map;
  * @version $Id$
  * @since 1.5M2
  */
-public class XDOM extends AbstractFatherBlock
-{
-    /**
-     * Constructs an empty XDOM. Useful for example when calling a macro that doesn't use the XDOM parameter passed to
-     * it.
-     */
-    public static final XDOM EMPTY = new XDOM(Collections.<Block> emptyList());
+public class XDOM extends AbstractFatherBlock {
 
-    /**
-     * Stateful id generator for this document. We store it in the XDOM because it is the only object which remains the
-     * same between parsing, transformation and rendering, and we need to generate ids during parsing and during
-     * transformation.
-     */
-    private IdGenerator idGenerator;
+  /**
+   * Constructs an empty XDOM. Useful for example when calling a macro that doesn't use the XDOM
+   * parameter passed to
+   * it.
+   */
+  public static final XDOM EMPTY = new XDOM(Collections.<Block>emptyList());
 
-    /**
-     * @param childBlocks the list of children blocks of the block to construct
-     * @param parameters the parameters to set
-     * @see AbstractFatherBlock#AbstractFatherBlock(List)
-     */
-    public XDOM(List<Block> childBlocks, Map<String, String> parameters)
-    {
-        super(childBlocks, parameters);
+  /**
+   * Stateful id generator for this document. We store it in the XDOM because it is the only object
+   * which remains the
+   * same between parsing, transformation and rendering, and we need to generate ids during parsing
+   * and during
+   * transformation.
+   */
+  private IdGenerator idGenerator;
 
-        this.idGenerator = new IdGenerator();
-    }
+  /**
+   * @param childBlocks
+   *          the list of children blocks of the block to construct
+   * @param parameters
+   *          the parameters to set
+   * @see AbstractFatherBlock#AbstractFatherBlock(List)
+   */
+  public XDOM(List<Block> childBlocks, Map<String, String> parameters) {
+    super(childBlocks, parameters);
 
-    /**
-     * @param childBlocks the list of children blocks of the block to construct
-     * @see AbstractFatherBlock#AbstractFatherBlock(List)
-     */
-    public XDOM(List<Block> childBlocks)
-    {
-        super(childBlocks);
+    this.idGenerator = new IdGenerator();
+  }
 
-        this.idGenerator = new IdGenerator();
-    }
+  /**
+   * @param childBlocks
+   *          the list of children blocks of the block to construct
+   * @see AbstractFatherBlock#AbstractFatherBlock(List)
+   */
+  public XDOM(List<Block> childBlocks) {
+    super(childBlocks);
 
-    /**
-     * @param childBlocks the list of children blocks of the block to construct
-     * @param idGenerator a sateful id generator for this document
-     */
-    public XDOM(List<Block> childBlocks, IdGenerator idGenerator)
-    {
-        super(childBlocks);
+    this.idGenerator = new IdGenerator();
+  }
 
-        this.idGenerator = idGenerator;
-    }
+  /**
+   * @param childBlocks
+   *          the list of children blocks of the block to construct
+   * @param idGenerator
+   *          a sateful id generator for this document
+   */
+  public XDOM(List<Block> childBlocks, IdGenerator idGenerator) {
+    super(childBlocks);
 
-    /**
-     * @return a stateful id generator for the whole document.
-     */
-    public IdGenerator getIdGenerator()
-    {
-        return this.idGenerator;
-    }
+    this.idGenerator = idGenerator;
+  }
 
-    /**
-     * @param idGenerator a stateful id generator for the whole document.
-     * @since 2.1M1
-     */
-    public void setIdGenerator(IdGenerator idGenerator)
-    {
-        this.idGenerator = idGenerator;
-    }
+  /**
+   * @return a stateful id generator for the whole document.
+   */
+  public IdGenerator getIdGenerator() {
+    return this.idGenerator;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginDocument(getParameters());
-    }
+  /**
+   * @param idGenerator
+   *          a stateful id generator for the whole document.
+   * @since 2.1M1
+   */
+  public void setIdGenerator(IdGenerator idGenerator) {
+    this.idGenerator = idGenerator;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endDocument(getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginDocument(getParameters());
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractBlock#clone()
-     */
-    @Override
-    public XDOM clone()
-    {
-        return (XDOM) super.clone();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endDocument(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractBlock#clone()
+   */
+  @Override
+  public XDOM clone() {
+    return (XDOM) super.clone();
+  }
 }

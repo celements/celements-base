@@ -31,22 +31,30 @@ import org.xwiki.rendering.syntax.Syntax;
  * @since 1.5M2
  */
 @ComponentRole
-public interface TransformationManager
-{
-    /**
-     * @param dom the XDOM on which apply transformations
-     * @param syntax the syntax of the source from where this XDOM as been generated
-     * @throws TransformationException error when applying transformations
-     * @deprecated since 2.4M1 use {@link #performTransformations(Block, TransformationContext)} instead
-     */
-    @Deprecated
-    void performTransformations(XDOM dom, Syntax syntax) throws TransformationException;
+public interface TransformationManager {
 
-    /**
-     * @param block the block to transform
-     * @param context the context of the transformation process.
-     * @throws TransformationException error when applying transformations
-     * @since 2.4M1
-     */
-    void performTransformations(Block block, TransformationContext context) throws TransformationException;
+  /**
+   * @param dom
+   *          the XDOM on which apply transformations
+   * @param syntax
+   *          the syntax of the source from where this XDOM as been generated
+   * @throws TransformationException
+   *           error when applying transformations
+   * @deprecated since 2.4M1 use {@link #performTransformations(Block, TransformationContext)}
+   *             instead
+   */
+  @Deprecated
+  void performTransformations(XDOM dom, Syntax syntax) throws TransformationException;
+
+  /**
+   * @param block
+   *          the block to transform
+   * @param context
+   *          the context of the transformation process.
+   * @throws TransformationException
+   *           error when applying transformations
+   * @since 2.4M1
+   */
+  void performTransformations(Block block, TransformationContext context)
+      throws TransformationException;
 }

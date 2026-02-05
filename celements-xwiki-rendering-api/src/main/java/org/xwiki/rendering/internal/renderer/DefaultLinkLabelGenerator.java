@@ -24,22 +24,23 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.renderer.reference.link.LinkLabelGenerator;
 
 /**
- * Basic default implementation to be used when the XWiki Rendering is used standalone, outside of XWiki.
+ * Basic default implementation to be used when the XWiki Rendering is used standalone, outside of
+ * XWiki.
  *
  * @version $Id$
  * @since 2.0M1
  */
 @Component
-public class DefaultLinkLabelGenerator implements LinkLabelGenerator
-{
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.renderer.reference.link.LinkLabelGenerator#generate(
-     *      org.xwiki.rendering.listener.reference.ResourceReference)
-     * @since 2.5RC1
-     */
-    public String generate(ResourceReference reference)
-    {
-        return reference.getReference();
-    }
+public class DefaultLinkLabelGenerator implements LinkLabelGenerator {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.renderer.reference.link.LinkLabelGenerator#generate(
+   *      org.xwiki.rendering.listener.reference.ResourceReference)
+   * @since 2.5RC1
+   */
+  public String generate(ResourceReference reference) {
+    return reference.getReference();
+  }
 }

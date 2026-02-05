@@ -22,86 +22,81 @@ package org.xwiki.rendering.listener.chaining;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Unit tests for {@link LookaheadChainingListener}.
- * 
+ *
  * @version $Id$
  * @since 1.8RC1
  */
-public class LookaheadChainingListenerTest
-{
-    public class TestChainingListener extends AbstractChainingListener
-    {
-        public int calls = 0;
+public class LookaheadChainingListenerTest {
 
-        public TestChainingListener(ListenerChain listenerChain)
-        {
-            setListenerChain(listenerChain);
-        }
+  public class TestChainingListener extends AbstractChainingListener {
 
-        @Override
-        public void beginDocument(Map<String, String> parameters)
-        {
-            this.calls++;
-        }
+    public int calls = 0;
 
-        @Override
-        public void beginParagraph(Map<String, String> parameters)
-        {
-            this.calls++;
-        }
-
-        @Override
-        public void endDocument(Map<String, String> parameters)
-        {
-            this.calls++;
-        }
-
-        @Override
-        public void endParagraph(Map<String, String> parameters)
-        {
-            this.calls++;
-        }
+    public TestChainingListener(ListenerChain listenerChain) {
+      setListenerChain(listenerChain);
     }
 
-    @Test
-    public void testLookahead()
-    {
-        ListenerChain chain = new ListenerChain();
-        LookaheadChainingListener listener = new LookaheadChainingListener(chain, 2);
-        chain.addListener(listener);
-        TestChainingListener testListener = new TestChainingListener(chain);
-        chain.addListener(testListener);
-
-        // The begin document flushes
-        listener.beginDocument(Collections.<String, String> emptyMap());
-        Assert.assertEquals(1, testListener.calls);
-
-        // 1st lookahead, nothing is sent to the test listener
-        listener.beginParagraph(Collections.<String, String> emptyMap());
-        Assert.assertEquals(1, testListener.calls);
-        Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent().eventType);
-        Assert.assertNull(listener.getNextEvent(2));
-
-        // 2nd lookahead, nothing is sent to the test listener
-        listener.beginParagraph(Collections.<String, String> emptyMap());
-        Assert.assertEquals(1, testListener.calls);
-        Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent().eventType);
-        Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent(2).eventType);
-        Assert.assertNull(listener.getNextEvent(3));
-
-        // 3rd events, the first begin paragraph is sent
-        listener.endParagraph(Collections.<String, String> emptyMap());
-        Assert.assertEquals(2, testListener.calls);
-        Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent().eventType);
-        Assert.assertEquals(EventType.END_PARAGRAPH, listener.getNextEvent(2).eventType);
-        Assert.assertNull(listener.getNextEvent(3));
-
-        // The end document flushes
-        listener.endDocument(Collections.<String, String> emptyMap());
-        Assert.assertEquals(5, testListener.calls);
-        Assert.assertNull(listener.getNextEvent());
+    @Override
+    public void beginDocument(Map<String, String> parameters) {
+      this.calls++;
     }
+
+    @Override
+    public void beginParagraph(Map<String, String> parameters) {
+      this.calls++;
+    }
+
+    @Override
+    public void endDocument(Map<String, String> parameters) {
+      this.calls++;
+    }
+
+    @Override
+    public void endParagraph(Map<String, String> parameters) {
+      this.calls++;
+    }
+  }
+
+  @Test
+  public void testLookahead() {
+    ListenerChain chain = new ListenerChain();
+    LookaheadChainingListener listener = new LookaheadChainingListener(chain, 2);
+    chain.addListener(listener);
+    TestChainingListener testListener = new TestChainingListener(chain);
+    chain.addListener(testListener);
+
+    // The begin document flushes
+    listener.beginDocument(Collections.<String, String>emptyMap());
+    Assert.assertEquals(1, testListener.calls);
+
+    // 1st lookahead, nothing is sent to the test listener
+    listener.beginParagraph(Collections.<String, String>emptyMap());
+    Assert.assertEquals(1, testListener.calls);
+    Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent().eventType);
+    Assert.assertNull(listener.getNextEvent(2));
+
+    // 2nd lookahead, nothing is sent to the test listener
+    listener.beginParagraph(Collections.<String, String>emptyMap());
+    Assert.assertEquals(1, testListener.calls);
+    Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent().eventType);
+    Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent(2).eventType);
+    Assert.assertNull(listener.getNextEvent(3));
+
+    // 3rd events, the first begin paragraph is sent
+    listener.endParagraph(Collections.<String, String>emptyMap());
+    Assert.assertEquals(2, testListener.calls);
+    Assert.assertEquals(EventType.BEGIN_PARAGRAPH, listener.getNextEvent().eventType);
+    Assert.assertEquals(EventType.END_PARAGRAPH, listener.getNextEvent(2).eventType);
+    Assert.assertNull(listener.getNextEvent(3));
+
+    // The end document flushes
+    listener.endDocument(Collections.<String, String>emptyMap());
+    Assert.assertEquals(5, testListener.calls);
+    Assert.assertNull(listener.getNextEvent());
+  }
 }

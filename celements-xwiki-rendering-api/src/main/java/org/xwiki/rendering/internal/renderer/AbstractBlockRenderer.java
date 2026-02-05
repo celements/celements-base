@@ -33,33 +33,33 @@ import org.xwiki.rendering.renderer.PrintRenderer;
  * @version $Id$
  * @since 2.0M3
  */
-public abstract class AbstractBlockRenderer implements BlockRenderer
-{
-    /**
-     * @return provide the factory to use to create a new {@link PrintRenderer}.
-     */
-    protected abstract PrintRendererFactory getPrintRendererFactory();
+public abstract class AbstractBlockRenderer implements BlockRenderer {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see BlockRenderer#render(org.xwiki.rendering.block.Block, org.xwiki.rendering.renderer.printer.WikiPrinter)
-     */
-    public void render(Block block, WikiPrinter printer)
-    {
-        render(Collections.singletonList(block), printer);
-    }
+  /**
+   * @return provide the factory to use to create a new {@link PrintRenderer}.
+   */
+  protected abstract PrintRendererFactory getPrintRendererFactory();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see BlockRenderer#render(java.util.Collection, org.xwiki.rendering.renderer.printer.WikiPrinter)
-     */
-    public void render(Collection<Block> blocks, WikiPrinter printer)
-    {
-        PrintRenderer renderer = getPrintRendererFactory().createRenderer(printer);
-        for (Block block : blocks) {
-            block.traverse(renderer);
-        }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see BlockRenderer#render(org.xwiki.rendering.block.Block,
+   *      org.xwiki.rendering.renderer.printer.WikiPrinter)
+   */
+  public void render(Block block, WikiPrinter printer) {
+    render(Collections.singletonList(block), printer);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see BlockRenderer#render(java.util.Collection,
+   *      org.xwiki.rendering.renderer.printer.WikiPrinter)
+   */
+  public void render(Collection<Block> blocks, WikiPrinter printer) {
+    PrintRenderer renderer = getPrintRendererFactory().createRenderer(printer);
+    for (Block block : blocks) {
+      block.traverse(renderer);
     }
+  }
 }

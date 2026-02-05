@@ -27,71 +27,65 @@ import java.util.Map;
  * @version $Id$
  * @since 2.7.1
  */
-public class InlineFilterListener extends WrappingListener
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.WrappingListener#beginDocument(java.util.Map)
-     */
-    @Override
-    public void beginDocument(Map<String, String> parameters)
-    {
-        // Disable this event
-    }
+public class InlineFilterListener extends WrappingListener {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.WrappingListener#endDocument(java.util.Map)
-     */
-    @Override
-    public void endDocument(Map<String, String> parameters)
-    {
-        // Disable this event
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.WrappingListener#beginDocument(java.util.Map)
+   */
+  @Override
+  public void beginDocument(Map<String, String> parameters) {
+    // Disable this event
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.WrappingListener#beginSection(java.util.Map)
-     */
-    @Override
-    public void beginSection(Map<String, String> parameters)
-    {
-        // Filter
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.WrappingListener#endDocument(java.util.Map)
+   */
+  @Override
+  public void endDocument(Map<String, String> parameters) {
+    // Disable this event
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.WrappingListener#endSection(java.util.Map)
-     */
-    @Override
-    public void endSection(Map<String, String> parameters)
-    {
-        // Filter
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.WrappingListener#beginSection(java.util.Map)
+   */
+  @Override
+  public void beginSection(Map<String, String> parameters) {
+    // Filter
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.WrappingListener#beginParagraph(java.util.Map)
-     */
-    @Override
-    public void beginParagraph(Map<String, String> parameters)
-    {
-        // Filter
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.WrappingListener#endSection(java.util.Map)
+   */
+  @Override
+  public void endSection(Map<String, String> parameters) {
+    // Filter
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.WrappingListener#endParagraph(java.util.Map)
-     */
-    @Override
-    public void endParagraph(Map<String, String> parameters)
-    {
-        // Filter
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.WrappingListener#beginParagraph(java.util.Map)
+   */
+  @Override
+  public void beginParagraph(Map<String, String> parameters) {
+    // Filter
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.WrappingListener#endParagraph(java.util.Map)
+   */
+  @Override
+  public void endParagraph(Map<String, String> parameters) {
+    // Filter
+  }
 }

@@ -30,45 +30,47 @@ import java.util.Map;
  * @version $Id$
  * @since 1.6M2
  */
-public class DefinitionListBlock extends AbstractFatherBlock implements ListBLock
-{
-    /**
-     * Construct a Definition List block with no parameters.
-     *
-     * @param childrenBlocks the blocks making the Definition list
-     */
-    public DefinitionListBlock(List<Block> childrenBlocks)
-    {
-        super(childrenBlocks);
-    }
+public class DefinitionListBlock extends AbstractFatherBlock implements ListBLock {
 
-    /**
-     * Construct a Definition List Block with parameters.
-     *
-     * @param childrenBlocks the blocks making the Definition list
-     * @param parameters see {@link org.xwiki.rendering.block.AbstractBlock#getParameter(String)} for more details on
-     *        parameters
-     */
-    public DefinitionListBlock(List<Block> childrenBlocks, Map<String, String> parameters)
-    {
-        super(childrenBlocks, parameters);
-    }
+  /**
+   * Construct a Definition List block with no parameters.
+   *
+   * @param childrenBlocks
+   *          the blocks making the Definition list
+   */
+  public DefinitionListBlock(List<Block> childrenBlocks) {
+    super(childrenBlocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginDefinitionList(getParameters());
-    }
+  /**
+   * Construct a Definition List Block with parameters.
+   *
+   * @param childrenBlocks
+   *          the blocks making the Definition list
+   * @param parameters
+   *          see {@link org.xwiki.rendering.block.AbstractBlock#getParameter(String)} for more
+   *          details on
+   *          parameters
+   */
+  public DefinitionListBlock(List<Block> childrenBlocks, Map<String, String> parameters) {
+    super(childrenBlocks, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endDefinitionList(getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginDefinitionList(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endDefinitionList(getParameters());
+  }
 }

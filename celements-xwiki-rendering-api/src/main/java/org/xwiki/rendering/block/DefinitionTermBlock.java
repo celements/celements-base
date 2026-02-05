@@ -29,33 +29,33 @@ import java.util.List;
  * @version $Id$
  * @since 1.6M2
  */
-public class DefinitionTermBlock extends AbstractFatherBlock
-{
-    /**
-     * Construct a Definition Term block.
-     *
-     * @param childrenBlocks the blocks making the Definition Term
-     */
-    public DefinitionTermBlock(List<Block> childrenBlocks)
-    {
-        super(childrenBlocks);
-    }
+public class DefinitionTermBlock extends AbstractFatherBlock {
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginDefinitionTerm();
-    }
+  /**
+   * Construct a Definition Term block.
+   *
+   * @param childrenBlocks
+   *          the blocks making the Definition Term
+   */
+  public DefinitionTermBlock(List<Block> childrenBlocks) {
+    super(childrenBlocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endDefinitionTerm();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginDefinitionTerm();
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endDefinitionTerm();
+  }
 }

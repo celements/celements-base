@@ -23,54 +23,56 @@ import org.xwiki.rendering.transformation.TransformationManager;
  * @version $Id$
  */
 @Component
-public class DefaultConverter implements Converter
-{
-    /**
-     * Used to lookup parser and renderer.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+public class DefaultConverter implements Converter {
 
-    /**
-     * Used to execute transformations.
-     */
-    @Requirement
-    private TransformationManager transformationManager;
+  /**
+   * Used to lookup parser and renderer.
+   */
+  @Requirement
+  private ComponentManager componentManager;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.converter.Converter#convert(java.io.Reader, org.xwiki.rendering.syntax.Syntax, org.xwiki.rendering.syntax.Syntax, org.xwiki.rendering.renderer.printer.WikiPrinter)
-     */
-    public void convert(Reader source, Syntax sourceSyntax, Syntax targetSyntax, WikiPrinter printer)
-        throws ConversionException
-    {
-        // Step 1: Find the parser and generate a XDOM
-        XDOM xdom;
-        try {
-            Parser parser = this.componentManager.lookup(Parser.class, sourceSyntax.toIdString());
-            xdom = parser.parse(source);
-        } catch (ComponentLookupException e) {
-            throw new ConversionException("Failed to locate Parser for syntax [" + sourceSyntax + "]", e);
-        } catch (ParseException e) {
-            throw new ConversionException("Failed to parse input source", e);
-        }
+  /**
+   * Used to execute transformations.
+   */
+  @Requirement
+  private TransformationManager transformationManager;
 
-        // Step 2: Run transformations
-        try {
-            TransformationContext context = new TransformationContext(xdom, sourceSyntax);
-            this.transformationManager.performTransformations(xdom, context);
-        } catch (TransformationException e) {
-            throw new ConversionException("Failed to execute some transformations", e);
-        }
-
-        // Step 3: Locate the Renderer and render the content in the passed printer
-        BlockRenderer renderer;
-        try {
-            renderer = this.componentManager.lookup(BlockRenderer.class, targetSyntax.toIdString());
-        } catch (ComponentLookupException e) {
-            throw new ConversionException("Failed to locate Renderer for syntax [" + targetSyntax + "]", e);
-        }
-        renderer.render(xdom, printer);
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.converter.Converter#convert(java.io.Reader,
+   *      org.xwiki.rendering.syntax.Syntax, org.xwiki.rendering.syntax.Syntax,
+   *      org.xwiki.rendering.renderer.printer.WikiPrinter)
+   */
+  public void convert(Reader source, Syntax sourceSyntax, Syntax targetSyntax, WikiPrinter printer)
+      throws ConversionException {
+    // Step 1: Find the parser and generate a XDOM
+    XDOM xdom;
+    try {
+      Parser parser = this.componentManager.lookup(Parser.class, sourceSyntax.toIdString());
+      xdom = parser.parse(source);
+    } catch (ComponentLookupException e) {
+      throw new ConversionException("Failed to locate Parser for syntax [" + sourceSyntax + "]", e);
+    } catch (ParseException e) {
+      throw new ConversionException("Failed to parse input source", e);
     }
+
+    // Step 2: Run transformations
+    try {
+      TransformationContext context = new TransformationContext(xdom, sourceSyntax);
+      this.transformationManager.performTransformations(xdom, context);
+    } catch (TransformationException e) {
+      throw new ConversionException("Failed to execute some transformations", e);
+    }
+
+    // Step 3: Locate the Renderer and render the content in the passed printer
+    BlockRenderer renderer;
+    try {
+      renderer = this.componentManager.lookup(BlockRenderer.class, targetSyntax.toIdString());
+    } catch (ComponentLookupException e) {
+      throw new ConversionException("Failed to locate Renderer for syntax [" + targetSyntax + "]",
+          e);
+    }
+    renderer.render(xdom, printer);
+  }
 }

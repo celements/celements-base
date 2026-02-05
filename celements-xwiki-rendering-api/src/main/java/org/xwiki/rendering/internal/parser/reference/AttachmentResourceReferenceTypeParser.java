@@ -29,14 +29,14 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * @since 2.5RC1
  */
 @Component("attach")
-public class AttachmentResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser
-{
-    /**
-     * {@inheritDoc}
-     * @see AbstractURIResourceReferenceTypeParser#getType()
-     */
-    public ResourceType getType()
-    {
-        return ResourceType.ATTACHMENT;
-    }
+public class AttachmentResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractURIResourceReferenceTypeParser#getType()
+   */
+  public ResourceType getType() {
+    return ResourceType.ATTACHMENT;
+  }
 }

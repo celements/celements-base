@@ -29,68 +29,62 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
  * 
  * @version $Id$
  */
-public class WikiWriter extends Writer
-{
-    public WikiWriter(WikiPrinter printer)
-    {
-        super(printer);
-    }
+public class WikiWriter extends Writer {
 
-    public void setWikiPrinter(WikiPrinter printer)
-    {
-        this.lock = printer;
-    }
+  public WikiWriter(WikiPrinter printer) {
+    super(printer);
+  }
 
-    public WikiPrinter getWikiPrinter()
-    {
-        return (WikiPrinter) this.lock;
-    }
+  public void setWikiPrinter(WikiPrinter printer) {
+    this.lock = printer;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.io.Writer#close()
-     */
-    @Override
-    public void close() throws IOException
-    {
-        // WikiPrinter does not support stream close
-    }
+  public WikiPrinter getWikiPrinter() {
+    return (WikiPrinter) this.lock;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.io.Writer#flush()
-     */
-    @Override
-    public void flush() throws IOException
-    {
-        // WikiPrinter does not support stream flush
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.io.Writer#close()
+   */
+  @Override
+  public void close() throws IOException {
+    // WikiPrinter does not support stream close
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.io.Writer#write(char[], int, int)
-     */
-    @Override
-    public void write(char[] cbuf, int off, int len) throws IOException
-    {
-        getWikiPrinter().print(new String(cbuf, off, len));
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.io.Writer#flush()
+   */
+  @Override
+  public void flush() throws IOException {
+    // WikiPrinter does not support stream flush
+  }
 
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Override it to improve speed a little. Otherwise the String is transformed in char table passed to the over
-     * methods which recreate a String.
-     * 
-     * @see java.io.Writer#write(java.lang.String)
-     */
-    @Override
-    public void write(String str) throws IOException
-    {
-        getWikiPrinter().print(str);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.io.Writer#write(char[], int, int)
+   */
+  @Override
+  public void write(char[] cbuf, int off, int len) throws IOException {
+    getWikiPrinter().print(new String(cbuf, off, len));
+  }
+
+  /**
+   * {@inheritDoc}
+   * <p>
+   * Override it to improve speed a little. Otherwise the String is transformed in char table passed
+   * to the over
+   * methods which recreate a String.
+   * 
+   * @see java.io.Writer#write(java.lang.String)
+   */
+  @Override
+  public void write(String str) throws IOException {
+    getWikiPrinter().print(str);
+  }
 
 }

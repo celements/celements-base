@@ -24,19 +24,20 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.transformation.TransformationContext;
 import org.xwiki.rendering.transformation.TransformationManager;
-import org.xwiki.test.AbstractComponentTestCase;
+
+import com.celements.common.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link DefaultTransformationManager}.
- * 
+ *
  * @version $Id$
  */
-public class DefaultTransformationManagerTest extends AbstractComponentTestCase
-{
-    @Test
-    public void testTransformations() throws Exception 
-    {
-        TransformationManager manager = getComponentManager().lookup(TransformationManager.class);
-        manager.performTransformations(XDOM.EMPTY, new TransformationContext(XDOM.EMPTY, Syntax.XWIKI_2_0));
-    }
+public class DefaultTransformationManagerTest extends AbstractComponentTest {
+
+  @Test
+  public void testTransformations() throws Exception {
+    TransformationManager manager = getComponentManager().lookup(TransformationManager.class);
+    manager.performTransformations(XDOM.EMPTY,
+        new TransformationContext(XDOM.EMPTY, Syntax.XWIKI_2_0));
+  }
 }

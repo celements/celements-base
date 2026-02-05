@@ -28,8 +28,10 @@ import org.xwiki.rendering.listener.chaining.ListenerChain;
 import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
 
 /**
- * Generates XWiki Syntax 2.0 from {@link org.xwiki.rendering.block.XDOM}. This is useful for example to convert other wiki
- * syntaxes to the XWiki syntax. It's also useful in our tests to verify that round-tripping from XWiki Syntax to the
+ * Generates XWiki Syntax 2.0 from {@link org.xwiki.rendering.block.XDOM}. This is useful for
+ * example to convert other wiki
+ * syntaxes to the XWiki syntax. It's also useful in our tests to verify that round-tripping from
+ * XWiki Syntax to the
  * DOM and back to XWiki Syntax generates the same content as the initial syntax.
  * 
  * @version $Id$
@@ -37,27 +39,28 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
  */
 @Component("xwiki/2.0")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class XWikiSyntaxRenderer extends AbstractXWikiSyntaxRenderer
-{
-    /**
-     * Needed by XWikiSyntaxChainingRenderer to serialize wiki link references.
-     */
-    @Requirement("xwiki/2.0/link")
-    private ResourceReferenceSerializer linkReferenceSerializer;
+public class XWikiSyntaxRenderer extends AbstractXWikiSyntaxRenderer {
 
-    /**
-     * Needed by XWikiSyntaxChainingRenderer to serialize wiki image references.
-     */
-    @Requirement("xwiki/2.0/image")
-    private ResourceReferenceSerializer imageReferenceSerializer;
+  /**
+   * Needed by XWikiSyntaxChainingRenderer to serialize wiki link references.
+   */
+  @Requirement("xwiki/2.0/link")
+  private ResourceReferenceSerializer linkReferenceSerializer;
 
-    /**
-     * {@inheritDoc}
-     * @see AbstractXWikiSyntaxRenderer#createXWikiSyntaxChainingRenderer(ListenerChain) 
-     */
-    @Override
-    protected ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain)
-    {
-        return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer, this.imageReferenceSerializer);
-    }
+  /**
+   * Needed by XWikiSyntaxChainingRenderer to serialize wiki image references.
+   */
+  @Requirement("xwiki/2.0/image")
+  private ResourceReferenceSerializer imageReferenceSerializer;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractXWikiSyntaxRenderer#createXWikiSyntaxChainingRenderer(ListenerChain)
+   */
+  @Override
+  protected ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain) {
+    return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer,
+        this.imageReferenceSerializer);
+  }
 }

@@ -31,21 +31,21 @@ import org.xwiki.rendering.renderer.PrintRendererFactory;
  * @since 2.5M2
  */
 @Component("xwiki/2.1")
-public class XWikiSyntaxBlockRenderer extends AbstractBlockRenderer
-{
-    /**
-     * @see #getPrintRendererFactory()  
-     */
-    @Requirement("xwiki/2.1")
-    private PrintRendererFactory xwikiSyntaxRendererFactory;
+public class XWikiSyntaxBlockRenderer extends AbstractBlockRenderer {
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
-     */
-    @Override
-    protected PrintRendererFactory getPrintRendererFactory()
-    {
-        return this.xwikiSyntaxRendererFactory;
-    }
+  /**
+   * @see #getPrintRendererFactory()
+   */
+  @Requirement("xwiki/2.1")
+  private PrintRendererFactory xwikiSyntaxRendererFactory;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
+   */
+  @Override
+  protected PrintRendererFactory getPrintRendererFactory() {
+    return this.xwikiSyntaxRendererFactory;
+  }
 }

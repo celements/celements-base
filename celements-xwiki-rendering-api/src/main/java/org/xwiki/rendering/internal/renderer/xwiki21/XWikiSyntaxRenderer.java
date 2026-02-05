@@ -37,27 +37,28 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
  */
 @Component("xwiki/2.1")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class XWikiSyntaxRenderer extends AbstractXWikiSyntaxRenderer
-{
-    /**
-     * Needed by XWikiSyntaxChainingRenderer to serialize wiki link references.
-     */
-    @Requirement("xwiki/2.1/link")
-    protected ResourceReferenceSerializer linkReferenceSerializer;
+public class XWikiSyntaxRenderer extends AbstractXWikiSyntaxRenderer {
 
-    /**
-     * Needed by XWikiSyntaxChainingRenderer to serialize wiki image references.
-     */
-    @Requirement("xwiki/2.1/image")
-    protected ResourceReferenceSerializer imageReferenceSerializer;
+  /**
+   * Needed by XWikiSyntaxChainingRenderer to serialize wiki link references.
+   */
+  @Requirement("xwiki/2.1/link")
+  protected ResourceReferenceSerializer linkReferenceSerializer;
 
-    /**
-     * {@inheritDoc}
-     * @see AbstractXWikiSyntaxRenderer#createXWikiSyntaxChainingRenderer(ListenerChain)
-     */
-    @Override
-    protected ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain)
-    {
-        return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer, this.imageReferenceSerializer);
-    }
+  /**
+   * Needed by XWikiSyntaxChainingRenderer to serialize wiki image references.
+   */
+  @Requirement("xwiki/2.1/image")
+  protected ResourceReferenceSerializer imageReferenceSerializer;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractXWikiSyntaxRenderer#createXWikiSyntaxChainingRenderer(ListenerChain)
+   */
+  @Override
+  protected ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain) {
+    return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer,
+        this.imageReferenceSerializer);
+  }
 }

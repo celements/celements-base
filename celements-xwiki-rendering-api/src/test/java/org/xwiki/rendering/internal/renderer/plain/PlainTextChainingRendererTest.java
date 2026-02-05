@@ -28,58 +28,55 @@ import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.rendering.listener.reference.DocumentResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
-import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
 import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
-import org.xwiki.test.AbstractComponentTestCase;
+import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
+
+import com.celements.common.test.AbstractComponentTest;
 
 /**
- * Unit tests for {@link PlainTextChainingRenderer} that cannot easily be performed using the Rendering Test framework.
- * 
+ * Unit tests for {@link PlainTextChainingRenderer} that cannot easily be performed using the
+ * Rendering Test framework.
+ *
  * @version $Id$
  * @since 2.1M1
  */
-public class PlainTextChainingRendererTest extends AbstractComponentTestCase
-{
-	private PlainTextRenderer renderer;
-	
-	@Before
-	public void setUp() throws Exception
-	{
-		super.setUp();
+public class PlainTextChainingRendererTest extends AbstractComponentTest {
 
-		// Force the link label generator to be null
-		this.renderer = new PlainTextRenderer();
-		ReflectionUtils.setFieldValue(this.renderer, "defaultLinkReferenceSerializer", 
-		    getComponentManager().lookup(ResourceReferenceSerializer.class, "xwiki/2.1/link"));
-		this.renderer.initialize();
-	}
-	
-    @Test
-    public void testBeginLinkWhenLinkLabelGeneratorIsNull() throws Exception
-    {
-        DefaultWikiPrinter printer = new DefaultWikiPrinter();
-        this.renderer.setPrinter(printer);
+  private PlainTextRenderer renderer;
 
-        DocumentResourceReference reference = new DocumentResourceReference("reference");
-        reference.setAnchor("anchor");
-        reference.setQueryString("param=value");
+  @Before
+  public void prepare() throws Exception {
+    // Force the link label generator to be null
+    this.renderer = new PlainTextRenderer();
+    ReflectionUtils.setFieldValue(this.renderer, "defaultLinkReferenceSerializer",
+        getComponentManager().lookup(ResourceReferenceSerializer.class, "xwiki/2.1/link"));
+    this.renderer.initialize();
+  }
 
-        this.renderer.beginLink(reference, false, Collections.<String, String> emptyMap());
-        this.renderer.endLink(reference, false, Collections.<String, String> emptyMap());
+  @Test
+  public void testBeginLinkWhenLinkLabelGeneratorIsNull() throws Exception {
+    DefaultWikiPrinter printer = new DefaultWikiPrinter();
+    this.renderer.setPrinter(printer);
 
-        Assert.assertEquals("reference", printer.toString());
-    }
+    DocumentResourceReference reference = new DocumentResourceReference("reference");
+    reference.setAnchor("anchor");
+    reference.setQueryString("param=value");
 
-    @Test
-    public void testBeginLinkWhenExternalLink() throws Exception
-    {
-        DefaultWikiPrinter printer = new DefaultWikiPrinter();
-        this.renderer.setPrinter(printer);
+    this.renderer.beginLink(reference, false, Collections.<String, String>emptyMap());
+    this.renderer.endLink(reference, false, Collections.<String, String>emptyMap());
 
-        ResourceReference reference = new ResourceReference("http://some/url", ResourceType.URL);
-        this.renderer.beginLink(reference, false, Collections.<String, String> emptyMap());
-        this.renderer.endLink(reference, false, Collections.<String, String> emptyMap());
+    Assert.assertEquals("reference", printer.toString());
+  }
 
-        Assert.assertEquals("http://some/url", printer.toString());
-    }
+  @Test
+  public void testBeginLinkWhenExternalLink() throws Exception {
+    DefaultWikiPrinter printer = new DefaultWikiPrinter();
+    this.renderer.setPrinter(printer);
+
+    ResourceReference reference = new ResourceReference("http://some/url", ResourceType.URL);
+    this.renderer.beginLink(reference, false, Collections.<String, String>emptyMap());
+    this.renderer.endLink(reference, false, Collections.<String, String>emptyMap());
+
+    Assert.assertEquals("http://some/url", printer.toString());
+  }
 }

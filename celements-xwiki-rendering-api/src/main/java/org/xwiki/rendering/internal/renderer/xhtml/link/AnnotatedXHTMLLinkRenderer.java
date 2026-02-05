@@ -38,79 +38,78 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
  */
 @Component("annotated")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer
-{
-    /**
-     * Used to print Image reference as XHTML comments.
-     */
-    @Requirement("xhtmlmarker")
-    private ResourceReferenceSerializer xhtmlMarkerSerializer;
+public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
-    /**
-     * The default XHTML Link Renderer that we're wrapping.
-     */
-    @Requirement
-    private XHTMLLinkRenderer defaultLinkRenderer;
+  /**
+   * Used to print Image reference as XHTML comments.
+   */
+  @Requirement("xhtmlmarker")
+  private ResourceReferenceSerializer xhtmlMarkerSerializer;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#setXHTMLWikiPrinter(org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter)
-     */
-    public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer)
-    {
-        this.defaultLinkRenderer.setXHTMLWikiPrinter(printer);
-    }
+  /**
+   * The default XHTML Link Renderer that we're wrapping.
+   */
+  @Requirement
+  private XHTMLLinkRenderer defaultLinkRenderer;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#setHasLabel(boolean)
-     */
-    public void setHasLabel(boolean hasLabel)
-    {
-        this.defaultLinkRenderer.setHasLabel(hasLabel);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#setXHTMLWikiPrinter(org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter)
+   */
+  public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer) {
+    this.defaultLinkRenderer.setXHTMLWikiPrinter(printer);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.LinkListener#beginLink(org.xwiki.rendering.listener.reference.ResourceReference ,
-     *      boolean, java.util.Map)
-     */
-    public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        // Add an XML comment as a placeholder so that the XHTML parser can find the document name.
-        // Otherwise it would be too difficult to transform a URL into a document name especially since
-        // a link can refer to an external URL.
-        StringBuffer buffer = new StringBuffer("startwikilink:");
-        buffer.append(this.xhtmlMarkerSerializer.serialize(reference));
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#setHasLabel(boolean)
+   */
+  public void setHasLabel(boolean hasLabel) {
+    this.defaultLinkRenderer.setHasLabel(hasLabel);
+  }
 
-        getXHTMLWikiPrinter().printXMLComment(buffer.toString(), true);
-        this.defaultLinkRenderer.beginLink(reference, isFreeStandingURI, parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.LinkListener#beginLink(org.xwiki.rendering.listener.reference.ResourceReference
+   *      ,
+   *      boolean, java.util.Map)
+   */
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    // Add an XML comment as a placeholder so that the XHTML parser can find the document name.
+    // Otherwise it would be too difficult to transform a URL into a document name especially since
+    // a link can refer to an external URL.
+    StringBuffer buffer = new StringBuffer("startwikilink:");
+    buffer.append(this.xhtmlMarkerSerializer.serialize(reference));
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.LinkListener#endLink(org.xwiki.rendering.listener.reference.ResourceReference ,
-     *      boolean, java.util.Map)
-     */
-    public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        this.defaultLinkRenderer.endLink(reference, isFreeStandingURI, parameters);
+    getXHTMLWikiPrinter().printXMLComment(buffer.toString(), true);
+    this.defaultLinkRenderer.beginLink(reference, isFreeStandingURI, parameters);
+  }
 
-        // Add a XML comment to signify the end of the link.
-        getXHTMLWikiPrinter().printXMLComment("stopwikilink");
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.LinkListener#endLink(org.xwiki.rendering.listener.reference.ResourceReference
+   *      ,
+   *      boolean, java.util.Map)
+   */
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    this.defaultLinkRenderer.endLink(reference, isFreeStandingURI, parameters);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see XHTMLLinkRenderer#getXHTMLWikiPrinter()
-     */
-    public XHTMLWikiPrinter getXHTMLWikiPrinter()
-    {
-        return this.defaultLinkRenderer.getXHTMLWikiPrinter();
-    }
+    // Add a XML comment to signify the end of the link.
+    getXHTMLWikiPrinter().printXMLComment("stopwikilink");
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLLinkRenderer#getXHTMLWikiPrinter()
+   */
+  public XHTMLWikiPrinter getXHTMLWikiPrinter() {
+    return this.defaultLinkRenderer.getXHTMLWikiPrinter();
+  }
 }

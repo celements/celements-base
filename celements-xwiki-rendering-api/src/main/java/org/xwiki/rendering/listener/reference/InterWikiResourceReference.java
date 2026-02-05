@@ -20,46 +20,51 @@
 package org.xwiki.rendering.listener.reference;
 
 /**
- * Represents a reference to an external wiki(<a href="http://en.wikipedia.org/wiki/InterWiki">Inter Wiki</a>).
- * An InterWiki reference is a shorthand notation to reference a set of external URL, all having a common prefix (eg
- * http://server/some/common/prefix/a1, http://server/some/common/prefix/a2). An InterWiki reference is made of an
- * InterWiki Alias which is a name corresponding to the common URL and an InterWiki Path which is the suffix to append
+ * Represents a reference to an external wiki(<a href="http://en.wikipedia.org/wiki/InterWiki">Inter
+ * Wiki</a>).
+ * An InterWiki reference is a shorthand notation to reference a set of external URL, all having a
+ * common prefix (eg
+ * http://server/some/common/prefix/a1, http://server/some/common/prefix/a2). An InterWiki reference
+ * is made of an
+ * InterWiki Alias which is a name corresponding to the common URL and an InterWiki Path which is
+ * the suffix to append
  * to the common URL part to make the full URL.
  *
  * @version $Id$
  * @since 2.5RC1
  */
-public class InterWikiResourceReference extends ResourceReference
-{
-    /**
-     * The name of the parameter representing the InterWiki Alias.
-     */
-    public static final String INTERWIKI_ALIAS = "interWikiAlias";
+public class InterWikiResourceReference extends ResourceReference {
 
-    /**
-     * @param reference see {@link #getReference()}
-     */
-    public InterWikiResourceReference(String reference)
-    {
-        super(reference, ResourceType.INTERWIKI);
-        setTyped(true);
-    }
+  /**
+   * The name of the parameter representing the InterWiki Alias.
+   */
+  public static final String INTERWIKI_ALIAS = "interWikiAlias";
 
-    /**
-     * @param interWikiAlias see {@link #getInterWikiAlias()}
-     */
-    public void setInterWikiAlias(String interWikiAlias)
-    {
-        setParameter(INTERWIKI_ALIAS, interWikiAlias);
-    }
+  /**
+   * @param reference
+   *          see {@link #getReference()}
+   */
+  public InterWikiResourceReference(String reference) {
+    super(reference, ResourceType.INTERWIKI);
+    setTyped(true);
+  }
 
-    /**
-     * @return the <a href="http://en.wikipedia.org/wiki/InterWiki">Inter Wiki</a> alias to which the resource is
-     *         pointing to or null if not defined. Mappings between Inter Wiki aliases and actual locations are defined
-     *         in the Inter Wiki Map. Example: "wikipedia"
-     */
-    public String getInterWikiAlias()
-    {
-        return getParameter(INTERWIKI_ALIAS);
-    }
+  /**
+   * @param interWikiAlias
+   *          see {@link #getInterWikiAlias()}
+   */
+  public void setInterWikiAlias(String interWikiAlias) {
+    setParameter(INTERWIKI_ALIAS, interWikiAlias);
+  }
+
+  /**
+   * @return the <a href="http://en.wikipedia.org/wiki/InterWiki">Inter Wiki</a> alias to which the
+   *         resource is
+   *         pointing to or null if not defined. Mappings between Inter Wiki aliases and actual
+   *         locations are defined
+   *         in the Inter Wiki Map. Example: "wikipedia"
+   */
+  public String getInterWikiAlias() {
+    return getParameter(INTERWIKI_ALIAS);
+  }
 }

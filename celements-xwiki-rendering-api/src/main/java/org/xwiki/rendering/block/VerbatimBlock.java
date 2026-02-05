@@ -29,76 +29,75 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.8M2
  */
-public class VerbatimBlock extends AbstractBlock
-{
-    /**
-     * The string to protect from rendering.
-     */
-    private String protectedString;
+public class VerbatimBlock extends AbstractBlock {
 
-    /**
-     * If true the macro is located in a inline content (like paragraph, etc.).
-     */
-    private boolean isInline;
+  /**
+   * The string to protect from rendering.
+   */
+  private String protectedString;
 
-    /**
-     * @param protectedString the string to protect from rendering.
-     * @param isInline if true the macro is located in a inline content (like paragraph, etc.).
-     */
-    public VerbatimBlock(String protectedString, boolean isInline)
-    {
-        this.protectedString = protectedString;
-        this.isInline = isInline;
-    }
+  /**
+   * If true the macro is located in a inline content (like paragraph, etc.).
+   */
+  private boolean isInline;
 
-    /**
-     * @param protectedString the string to protect from rendering.
-     * @param parameters the custom parameters
-     * @param isInline if true the macro is located in a inline content (like paragraph, etc.).
-     */
-    public VerbatimBlock(String protectedString, Map<String, String> parameters, boolean isInline)
-    {
-        super(parameters);
+  /**
+   * @param protectedString
+   *          the string to protect from rendering.
+   * @param isInline
+   *          if true the macro is located in a inline content (like paragraph, etc.).
+   */
+  public VerbatimBlock(String protectedString, boolean isInline) {
+    this.protectedString = protectedString;
+    this.isInline = isInline;
+  }
 
-        this.protectedString = protectedString;
-        this.isInline = isInline;
-    }
+  /**
+   * @param protectedString
+   *          the string to protect from rendering.
+   * @param parameters
+   *          the custom parameters
+   * @param isInline
+   *          if true the macro is located in a inline content (like paragraph, etc.).
+   */
+  public VerbatimBlock(String protectedString, Map<String, String> parameters, boolean isInline) {
+    super(parameters);
 
-    /**
-     * @return the string to protect from rendering
-     */
-    public String getProtectedString()
-    {
-        return this.protectedString;
-    }
+    this.protectedString = protectedString;
+    this.isInline = isInline;
+  }
 
-    /**
-     * @return if true the macro is located in a inline content (like paragraph, etc.).
-     */
-    public boolean isInline()
-    {
-        return this.isInline;
-    }
+  /**
+   * @return the string to protect from rendering
+   */
+  public String getProtectedString() {
+    return this.protectedString;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener) 
-     */
-    public void traverse(Listener listener)
-    {
-        listener.onVerbatim(getProtectedString(), isInline(), getParameters());
-    }
+  /**
+   * @return if true the macro is located in a inline content (like paragraph, etc.).
+   */
+  public boolean isInline() {
+    return this.isInline;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#toString()
-     * @since 1.8RC2
-     */
-    @Override
-    public String toString()
-    {
-        return getProtectedString();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
+   */
+  public void traverse(Listener listener) {
+    listener.onVerbatim(getProtectedString(), isInline(), getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#toString()
+   * @since 1.8RC2
+   */
+  @Override
+  public String toString() {
+    return getProtectedString();
+  }
 }

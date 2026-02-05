@@ -34,17 +34,19 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
  */
 @Component("mailto")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class MailtoXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(ResourceReference, java.util.Map, java.util.Map)
-     */
-    @Override
-    protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
-        Map<String, String> anchorAttributes)
-    {
-        anchorAttributes.put(XHTMLLinkRenderer.HREF, reference.getType().getScheme() + ':' + reference.getReference());
-    }
+public class MailtoXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(ResourceReference, java.util.Map,
+   *      java.util.Map)
+   */
+  @Override
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
+      Map<String, String> anchorAttributes) {
+    anchorAttributes.put(XHTMLLinkRenderer.HREF,
+        reference.getType().getScheme() + ':' + reference.getReference());
+  }
 }

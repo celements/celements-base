@@ -27,49 +27,47 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.5M2
  */
-public class WordBlock extends AbstractBlock
-{
-    /**
-     * @see #getWord()
-     */
-    private String word;
+public class WordBlock extends AbstractBlock {
 
-    /**
-     * @param word the word wrapped by this block. Note that this is supposed to be a single word and space or special
-     *            symbols should be represented by other blocks
-     */
-    public WordBlock(String word)
-    {
-        this.word = word;
-    }
+  /**
+   * @see #getWord()
+   */
+  private String word;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see AbstractBlock#traverse(Listener)
-     */
-    public void traverse(Listener listener)
-    {
-        listener.onWord(getWord());
-    }
+  /**
+   * @param word
+   *          the word wrapped by this block. Note that this is supposed to be a single word and
+   *          space or special
+   *          symbols should be represented by other blocks
+   */
+  public WordBlock(String word) {
+    this.word = word;
+  }
 
-    /**
-     * @return the word wrapped by this block
-     */
-    public String getWord()
-    {
-        return this.word;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractBlock#traverse(Listener)
+   */
+  public void traverse(Listener listener) {
+    listener.onWord(getWord());
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#toString()
-     * @since 1.8RC2
-     */
-    @Override
-    public String toString()
-    {
-        return getWord();
-    }
+  /**
+   * @return the word wrapped by this block
+   */
+  public String getWord() {
+    return this.word;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#toString()
+   * @since 1.8RC2
+   */
+  @Override
+  public String toString() {
+    return getWord();
+  }
 }

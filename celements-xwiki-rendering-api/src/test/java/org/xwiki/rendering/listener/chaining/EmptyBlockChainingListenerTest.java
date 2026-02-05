@@ -19,10 +19,12 @@
  */
 package org.xwiki.rendering.listener.chaining;
 
-import org.junit.*;
-
 import java.util.Collections;
 import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit tests for {@link LookaheadChainingListener}.
@@ -30,66 +32,65 @@ import java.util.Map;
  * @version $Id$
  * @since 2.0M3
  */
-public class EmptyBlockChainingListenerTest
-{
-    private ListenerChain chain;
+public class EmptyBlockChainingListenerTest {
 
-    private EmptyBlockChainingListener listener;
+  private ListenerChain chain;
 
-    @Before
-    public void setUp()
-    {
-        chain = new ListenerChain();
-        listener = new EmptyBlockChainingListener(chain);
-        chain.addListener(listener);
-    }
+  private EmptyBlockChainingListener listener;
 
-    /**
-     * Verify that isCurrentContainerBlockEmpty return true if there's no children inside a paragraph container block.  
-     */
-    @Test
-    public void testEmptyParagraphContainer()
-    {
-        chain.addListener(new AbstractChainingListener() {
-            {
-                setListenerChain(chain);
-            }
-            
-            @Override
-            public void endParagraph(Map<String, String> parameters)
-            {
-                EmptyBlockChainingListener blockState =
-                        (EmptyBlockChainingListener) getListenerChain().getListener(EmptyBlockChainingListener.class);
-                Assert.assertTrue(blockState.isCurrentContainerBlockEmpty());
-            }
-        });
+  @Before
+  public void setUp() {
+    chain = new ListenerChain();
+    listener = new EmptyBlockChainingListener(chain);
+    chain.addListener(listener);
+  }
 
-        listener.beginParagraph(Collections.<String, String>emptyMap());
-        listener.endParagraph(Collections.<String, String>emptyMap());
-    }
+  /**
+   * Verify that isCurrentContainerBlockEmpty return true if there's no children inside a paragraph
+   * container block.
+   */
+  @Test
+  public void testEmptyParagraphContainer() {
+    chain.addListener(new AbstractChainingListener() {
 
-    /**
-     * Verify that isCurrentContainerBlockEmpty return false if there are children inside a paragraph container block.  
-     */
-    @Test
-    public void testNonEmptyParagraphContainer()
-    {
-        chain.addListener(new AbstractChainingListener() {
-            {
-                setListenerChain(chain);
-            }
+      {
+        setListenerChain(chain);
+      }
 
-            @Override
-            public void endParagraph(Map<String, String> parameters)
-            {
-                EmptyBlockChainingListener blockState =
-                        (EmptyBlockChainingListener) getListenerChain().getListener(EmptyBlockChainingListener.class);
-                Assert.assertFalse(blockState.isCurrentContainerBlockEmpty());
-            }
-        });
+      @Override
+      public void endParagraph(Map<String, String> parameters) {
+        EmptyBlockChainingListener blockState = (EmptyBlockChainingListener) getListenerChain()
+            .getListener(EmptyBlockChainingListener.class);
+        Assert.assertTrue(blockState.isCurrentContainerBlockEmpty());
+      }
+    });
 
-        listener.beginParagraph(Collections.<String, String>emptyMap());
-        listener.onWord("word");
-        listener.endParagraph(Collections.<String, String>emptyMap());
-    }
+    listener.beginParagraph(Collections.<String, String>emptyMap());
+    listener.endParagraph(Collections.<String, String>emptyMap());
+  }
+
+  /**
+   * Verify that isCurrentContainerBlockEmpty return false if there are children inside a paragraph
+   * container block.
+   */
+  @Test
+  public void testNonEmptyParagraphContainer() {
+    chain.addListener(new AbstractChainingListener() {
+
+      {
+        setListenerChain(chain);
+      }
+
+      @Override
+      public void endParagraph(Map<String, String> parameters) {
+        EmptyBlockChainingListener blockState = (EmptyBlockChainingListener) getListenerChain()
+            .getListener(EmptyBlockChainingListener.class);
+        Assert.assertFalse(blockState.isCurrentContainerBlockEmpty());
+      }
+    });
+
+    listener.beginParagraph(Collections.<String, String>emptyMap());
+    listener.onWord("word");
+    listener.endParagraph(Collections.<String, String>emptyMap());
+  }
 }

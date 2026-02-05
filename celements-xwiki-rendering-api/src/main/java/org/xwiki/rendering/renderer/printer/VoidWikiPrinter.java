@@ -19,43 +19,38 @@
  */
 package org.xwiki.rendering.renderer.printer;
 
-
 /**
  * A WikiPrinter implementation which does not do anything.
  * 
  * @version $Id$
  */
-public class VoidWikiPrinter implements WikiPrinter
-{
-    /**
-     * Unique instance of {@link VoidWikiPrinter}.
-     */
-    public static final VoidWikiPrinter VOIDWIKIPRINTER = new VoidWikiPrinter();
+public class VoidWikiPrinter implements WikiPrinter {
 
-    /**
-     * Use {@link #VOIDWIKIPRINTER}.
-     */
-    private VoidWikiPrinter()
-    {
-    }
+  /**
+   * Unique instance of {@link VoidWikiPrinter}.
+   */
+  public static final VoidWikiPrinter VOIDWIKIPRINTER = new VoidWikiPrinter();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.renderer.printer.WikiPrinter#print(java.lang.String)
-     */
-    public void print(String text)
-    {
-        // Don't do anything
-    }
+  /**
+   * Use {@link #VOIDWIKIPRINTER}.
+   */
+  private VoidWikiPrinter() {}
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.renderer.printer.WikiPrinter#println(java.lang.String)
-     */
-    public void println(String text)
-    {
-        // Don't do anything
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.renderer.printer.WikiPrinter#print(java.lang.String)
+   */
+  public void print(String text) {
+    // Don't do anything
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.renderer.printer.WikiPrinter#println(java.lang.String)
+   */
+  public void println(String text) {
+    // Don't do anything
+  }
 }

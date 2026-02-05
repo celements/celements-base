@@ -22,29 +22,37 @@ package org.xwiki.rendering.block;
 import org.xwiki.rendering.listener.Listener;
 
 /**
- * A type of {@link Block} that has children Blocks. For example the Paragraph Block, the Bold Block, the List Block,
+ * A type of {@link Block} that has children Blocks. For example the Paragraph Block, the Bold
+ * Block, the List Block,
  * etc.
  * 
  * @version $Id$
  * @since 1.5M2
  */
-public interface FatherBlock extends Block
-{
-    /**
-     * Send {@link org.xwiki.rendering.listener.Listener} events corresponding to the start of the father block. For
-     * example for a Bold block, this allows an XHTML Listener (aka a Renderer) to output <code>&lt;b&gt;</code>.
-     * 
-     * @param listener the listener that will receive the events sent by the father block before the children blocks
-     *            have emitted their own events.
-     */
-    void before(Listener listener);
+public interface FatherBlock extends Block {
 
-    /**
-     * Send {@link Listener} events corresponding to the end of the father block. For example for a Bold block, this
-     * allows an XHTML Listener (aka a Renderer) to output <code>&lt;/b&gt;</code>.
-     * 
-     * @param listener the listener that will receive the events sent by the father block after the children blocks have
-     *            emitted their own events.
-     */
-    void after(Listener listener);
+  /**
+   * Send {@link org.xwiki.rendering.listener.Listener} events corresponding to the start of the
+   * father block. For
+   * example for a Bold block, this allows an XHTML Listener (aka a Renderer) to output
+   * <code>&lt;b&gt;</code>.
+   * 
+   * @param listener
+   *          the listener that will receive the events sent by the father block before the children
+   *          blocks
+   *          have emitted their own events.
+   */
+  void before(Listener listener);
+
+  /**
+   * Send {@link Listener} events corresponding to the end of the father block. For example for a
+   * Bold block, this
+   * allows an XHTML Listener (aka a Renderer) to output <code>&lt;/b&gt;</code>.
+   * 
+   * @param listener
+   *          the listener that will receive the events sent by the father block after the children
+   *          blocks have
+   *          emitted their own events.
+   */
+  void after(Listener listener);
 }

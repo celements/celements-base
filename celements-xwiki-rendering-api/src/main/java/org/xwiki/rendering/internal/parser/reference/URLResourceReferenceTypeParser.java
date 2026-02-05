@@ -33,38 +33,37 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * @since 2.5RC1
  */
 @Component("url")
-public class URLResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser
-{
-    /**
-     * URL matching pattern.
-     */
-    private static final Pattern URL_SCHEME_PATTERN = Pattern.compile("[a-zA-Z0-9+.-]*://");
+public class URLResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractURIResourceReferenceTypeParser#getType()
-     */
-    public ResourceType getType()
-    {
-        return ResourceType.URL;
-    }
+  /**
+   * URL matching pattern.
+   */
+  private static final Pattern URL_SCHEME_PATTERN = Pattern.compile("[a-zA-Z0-9+.-]*://");
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractURIResourceReferenceTypeParser#parse(String)
-     */
-    @Override
-    public ResourceReference parse(String reference)
-    {
-        ResourceReference resultReference = null;
-        Matcher matcher = URL_SCHEME_PATTERN.matcher(reference);
-        if (matcher.lookingAt()) {
-            // We don't parse the URL since it can contain unknown protocol for the JVM but protocols known by the
-            // browser (such as skype:// for example).
-            resultReference = new ResourceReference(reference, getType());
-        }
-        return resultReference;
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractURIResourceReferenceTypeParser#getType()
+   */
+  public ResourceType getType() {
+    return ResourceType.URL;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractURIResourceReferenceTypeParser#parse(String)
+   */
+  @Override
+  public ResourceReference parse(String reference) {
+    ResourceReference resultReference = null;
+    Matcher matcher = URL_SCHEME_PATTERN.matcher(reference);
+    if (matcher.lookingAt()) {
+      // We don't parse the URL since it can contain unknown protocol for the JVM but protocols
+      // known by the
+      // browser (such as skype:// for example).
+      resultReference = new ResourceReference(reference, getType());
     }
+    return resultReference;
+  }
 }

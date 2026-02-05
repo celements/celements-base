@@ -31,17 +31,19 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * @since 2.5RC1
  */
 @ComponentRole
-public interface ResourceReferenceTypeParser
-{
-    /**
-     * @return the resource type (document, url, attachment, etc).
-     */
-    ResourceType getType();
+public interface ResourceReferenceTypeParser {
 
-    /**
-     * @param reference the raw resource reference to parse
-     * @return the parsed resource information if the passed reference can be parsed by this type parser or null if
-     *         the passed reference isn't valid
-     */
-    ResourceReference parse(String reference);
+  /**
+   * @return the resource type (document, url, attachment, etc).
+   */
+  ResourceType getType();
+
+  /**
+   * @param reference
+   *          the raw resource reference to parse
+   * @return the parsed resource information if the passed reference can be parsed by this type
+   *         parser or null if
+   *         the passed reference isn't valid
+   */
+  ResourceReference parse(String reference);
 }

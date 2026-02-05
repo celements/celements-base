@@ -22,7 +22,8 @@ package org.xwiki.rendering.internal.block;
 import java.util.Arrays;
 import java.util.Collections;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.MacroMarkerBlock;
 import org.xwiki.rendering.block.ParagraphBlock;
@@ -34,17 +35,17 @@ import org.xwiki.rendering.block.XDOM;
  * @version $Id$
  * @since 2.6
  */
-public class ProtectedBlockFilterTest
-{
-    @Test
-    public void testGetNextSibling()
-    {
-        ProtectedBlockFilter pbf = new ProtectedBlockFilter();
-        Block b1 = new ParagraphBlock(Collections.<Block>emptyList());
-        Block b2 = new MacroMarkerBlock("code", Collections.<String, String>emptyMap(), Collections.<Block>emptyList(),
-            false);
-        Block b3 = new ParagraphBlock(Collections.<Block>emptyList());
-        XDOM xdom = new XDOM(Arrays.asList(b1, b2, b3));
-        Assert.assertEquals(b3, pbf.getNextSibling(b1));
-    }
+public class ProtectedBlockFilterTest {
+
+  @Test
+  public void testGetNextSibling() {
+    ProtectedBlockFilter pbf = new ProtectedBlockFilter();
+    Block b1 = new ParagraphBlock(Collections.<Block>emptyList());
+    Block b2 = new MacroMarkerBlock("code", Collections.<String, String>emptyMap(),
+        Collections.<Block>emptyList(),
+        false);
+    Block b3 = new ParagraphBlock(Collections.<Block>emptyList());
+    XDOM xdom = new XDOM(Arrays.asList(b1, b2, b3));
+    Assert.assertEquals(b3, pbf.getNextSibling(b1));
+  }
 }

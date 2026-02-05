@@ -30,32 +30,36 @@ import org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter;
  * @since 1.8RC3
  */
 @ComponentRole
-public interface XHTMLLinkRenderer extends LinkListener
-{
-    /**
-     * The name of the XHTML anchor element.
-     */
-    String ANCHOR = "a";
-    
-    /**
-     * The name of the XHTML anchor element reference parameter.
-     */
-    String HREF = "href";
+public interface XHTMLLinkRenderer extends LinkListener {
 
-    /**
-     * @param printer the XHTML printer to use to output links as XHTML
-     */
-    void setXHTMLWikiPrinter(XHTMLWikiPrinter printer);
+  /**
+   * The name of the XHTML anchor element.
+   */
+  String ANCHOR = "a";
 
-    /**
-     * @return the XHTML printer to use to output links as XHTML
-     * @since 2.0M3
-     */
-    XHTMLWikiPrinter getXHTMLWikiPrinter();
+  /**
+   * The name of the XHTML anchor element reference parameter.
+   */
+  String HREF = "href";
 
-    /**
-     * @param hasLabel true if the link to be rendered has a label specified or false otherwise. If no label has been
-     *            specified then it's up to the XHTML renderer implementation to generate a default label.
-     */
-    void setHasLabel(boolean hasLabel);
+  /**
+   * @param printer
+   *          the XHTML printer to use to output links as XHTML
+   */
+  void setXHTMLWikiPrinter(XHTMLWikiPrinter printer);
+
+  /**
+   * @return the XHTML printer to use to output links as XHTML
+   * @since 2.0M3
+   */
+  XHTMLWikiPrinter getXHTMLWikiPrinter();
+
+  /**
+   * @param hasLabel
+   *          true if the link to be rendered has a label specified or false otherwise. If no label
+   *          has been
+   *          specified then it's up to the XHTML renderer implementation to generate a default
+   *          label.
+   */
+  void setHasLabel(boolean hasLabel);
 }

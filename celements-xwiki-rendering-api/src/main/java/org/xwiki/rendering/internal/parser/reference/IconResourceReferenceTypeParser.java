@@ -29,15 +29,14 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * @since 2.6M1
  */
 @Component("icon")
-public class IconResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser
-{
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.internal.parser.reference.AbstractURIResourceReferenceTypeParser#getType()
-     */
-    public ResourceType getType()
-    {
-        return ResourceType.ICON;
-    }
+public class IconResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.internal.parser.reference.AbstractURIResourceReferenceTypeParser#getType()
+   */
+  public ResourceType getType() {
+    return ResourceType.ICON;
+  }
 }

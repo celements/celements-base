@@ -25,30 +25,31 @@ import org.xwiki.rendering.internal.renderer.AbstractBlockRenderer;
 import org.xwiki.rendering.renderer.PrintRendererFactory;
 
 /**
- * Print only plain text information. For example it remove anything which need a specific syntax a simple plain text
- * editor can't support like the style, link, image, etc. This renderer is mainly used to generate a simple as possible
+ * Print only plain text information. For example it remove anything which need a specific syntax a
+ * simple plain text
+ * editor can't support like the style, link, image, etc. This renderer is mainly used to generate a
+ * simple as possible
  * label like in a TOC.
  * 
  * @version $Id$
  * @since 2.0M3
  */
 @Component("plain/1.0")
-public class PlainTextBlockRenderer extends AbstractBlockRenderer
-{
-    /**
-     * Used to create new plain/1.0 {@link org.xwiki.rendering.renderer.PrintRenderer}s. 
-     */
-    @Requirement("plain/1.0")
-    private PrintRendererFactory plainTextRendererFactory;
+public class PlainTextBlockRenderer extends AbstractBlockRenderer {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
-     */
-    @Override
-    protected PrintRendererFactory getPrintRendererFactory()
-    {
-        return this.plainTextRendererFactory;
-    }
+  /**
+   * Used to create new plain/1.0 {@link org.xwiki.rendering.renderer.PrintRenderer}s.
+   */
+  @Requirement("plain/1.0")
+  private PrintRendererFactory plainTextRendererFactory;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
+   */
+  @Override
+  protected PrintRendererFactory getPrintRendererFactory() {
+    return this.plainTextRendererFactory;
+  }
 }

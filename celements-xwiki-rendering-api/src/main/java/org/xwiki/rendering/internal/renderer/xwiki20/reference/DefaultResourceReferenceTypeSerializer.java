@@ -25,28 +25,28 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer;
 
 /**
- * Serialize a link by outputting the link type (if the link is typed) followed by the link reference
+ * Serialize a link by outputting the link type (if the link is typed) followed by the link
+ * reference
  * (ie "(linktype):(reference)").
- *  
+ * 
  * @version $Id$
  * @since 2.5RC1
  */
 @Component("xwiki/2.0")
-public class DefaultResourceReferenceTypeSerializer implements ResourceReferenceTypeSerializer
-{
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer#serialize(org.xwiki.rendering.listener.reference.ResourceReference)
-     */
-    public String serialize(ResourceReference reference)
-    {
-        StringBuffer result = new StringBuffer();
-        if (reference.isTyped()) {
-            result.append(reference.getType().getScheme());
-            result.append(DefaultResourceReferenceParser.TYPE_SEPARATOR);
-        }
-        result.append(reference.getReference());
-        return result.toString();
+public class DefaultResourceReferenceTypeSerializer implements ResourceReferenceTypeSerializer {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer#serialize(org.xwiki.rendering.listener.reference.ResourceReference)
+   */
+  public String serialize(ResourceReference reference) {
+    StringBuffer result = new StringBuffer();
+    if (reference.isTyped()) {
+      result.append(reference.getType().getScheme());
+      result.append(DefaultResourceReferenceParser.TYPE_SEPARATOR);
     }
+    result.append(reference.getReference());
+    return result.toString();
+  }
 }

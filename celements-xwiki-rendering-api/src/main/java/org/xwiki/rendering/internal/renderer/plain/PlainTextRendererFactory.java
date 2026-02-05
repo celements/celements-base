@@ -30,14 +30,14 @@ import org.xwiki.rendering.internal.renderer.AbstractPrintRendererFactory;
  * @since 2.0M3
  */
 @Component("plain/1.0")
-public class PlainTextRendererFactory extends AbstractPrintRendererFactory
-{
-    /**
-     * {@inheritDoc}
-     * @see AbstractPrintRendererFactory#getSyntax()
-     */
-    public Syntax getSyntax()
-    {
-        return Syntax.PLAIN_1_0;
-    }
+public class PlainTextRendererFactory extends AbstractPrintRendererFactory {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractPrintRendererFactory#getSyntax()
+   */
+  public Syntax getSyntax() {
+    return Syntax.PLAIN_1_0;
+  }
 }

@@ -25,26 +25,29 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
 
 /**
  * Allows creating {@link Renderer}s of a given type (one factory implementation per Renderer type).
- * We need a factory since we need to pass a {@link WikiPrinter} object to the created Renderer. In addition this
- * factory allows us to be able to return the {@link org.xwiki.rendering.syntax.Syntax} supported by the Renderer without needing to create an
+ * We need a factory since we need to pass a {@link WikiPrinter} object to the created Renderer. In
+ * addition this
+ * factory allows us to be able to return the {@link org.xwiki.rendering.syntax.Syntax} supported by
+ * the Renderer without needing to create an
  * instance of it.
  * 
  * @version $Id$
  * @since 1.6M2
  */
 @ComponentRole
-public interface PrintRendererFactory
-{
-    /**
-     * @return the Syntax supported by the Renderer type
-     * @since 2.0M3
-     */
-    Syntax getSyntax();
+public interface PrintRendererFactory {
 
-    /**
-     * @param printer the printer to use to output renderer data
-     * @return a new Renderer instance (stateful)
-     * @since 2.0M3
-     */
-    PrintRenderer createRenderer(WikiPrinter printer);
+  /**
+   * @return the Syntax supported by the Renderer type
+   * @since 2.0M3
+   */
+  Syntax getSyntax();
+
+  /**
+   * @param printer
+   *          the printer to use to output renderer data
+   * @return a new Renderer instance (stateful)
+   * @since 2.0M3
+   */
+  PrintRenderer createRenderer(WikiPrinter printer);
 }

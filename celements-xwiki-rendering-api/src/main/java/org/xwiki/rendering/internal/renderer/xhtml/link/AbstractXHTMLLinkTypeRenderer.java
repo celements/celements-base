@@ -31,151 +31,158 @@ import java.util.Map;
 
 /**
  * Common code for XHTML Link Type Renderer implementations.
- *  
+ * 
  * @version $Id$
  * @since 2.5M2
  */
-public abstract class AbstractXHTMLLinkTypeRenderer implements XHTMLLinkTypeRenderer
-{
-    /**
-     * The XHTML element <code>class</code> parameter.
-     */
-    protected static final String CLASS = "class";
+public abstract class AbstractXHTMLLinkTypeRenderer implements XHTMLLinkTypeRenderer {
 
-    /**
-     * The name of the XHTML format element.
-     */
-    protected static final String SPAN = "span";
+  /**
+   * The XHTML element <code>class</code> parameter.
+   */
+  protected static final String CLASS = "class";
 
-    /**
-     * Used to look for {@link org.xwiki.rendering.renderer.reference.link.URILabelGenerator} component implementations
-     * when computing labels.
-     */
-    @Requirement
-    protected ComponentManager componentManager;
+  /**
+   * The name of the XHTML format element.
+   */
+  protected static final String SPAN = "span";
 
-    /**
-     * The XHTML printer to use to output links as XHTML.
-     */
-    private XHTMLWikiPrinter xhtmlPrinter;
+  /**
+   * Used to look for {@link org.xwiki.rendering.renderer.reference.link.URILabelGenerator}
+   * component implementations
+   * when computing labels.
+   */
+  @Requirement
+  protected ComponentManager componentManager;
 
-    /**
-     * @see #setHasLabel(boolean)
-     */
-    private boolean hasLabel;
+  /**
+   * The XHTML printer to use to output links as XHTML.
+   */
+  private XHTMLWikiPrinter xhtmlPrinter;
 
-    /**
-     * @return See {@link #setHasLabel(boolean)}
-     */
-    protected boolean hasLabel()
-    {
-        return this.hasLabel;
+  /**
+   * @see #setHasLabel(boolean)
+   */
+  private boolean hasLabel;
+
+  /**
+   * @return See {@link #setHasLabel(boolean)}
+   */
+  protected boolean hasLabel() {
+    return this.hasLabel;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XHTMLLinkTypeRenderer#setHasLabel(boolean)
+   */
+  public void setHasLabel(boolean hasLabel) {
+    this.hasLabel = hasLabel;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XHTMLLinkTypeRenderer#setXHTMLWikiPrinter(org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter)
+   */
+  public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer) {
+    this.xhtmlPrinter = printer;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XHTMLLinkTypeRenderer#getXHTMLWikiPrinter()
+   */
+  public XHTMLWikiPrinter getXHTMLWikiPrinter() {
+    return this.xhtmlPrinter;
+  }
+
+  /**
+   * Hook called when rendering the beginning of a link to allow implementation classes to augment
+   * the passed span and
+   * anchor attributes as they see fit.
+   *
+   * @param reference
+   *          the reference of the link being rendered
+   * @param spanAttributes
+   *          the HTML attributes for the SPAN HTML element added around the ANCHOR HTML element
+   * @param anchorAttributes
+   *          the HTML attributes for the ANCHOR element
+   */
+  protected abstract void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
+      Map<String, String> anchorAttributes);
+
+  /**
+   * Default implementation for computing a link label when no label has been specified. Can be
+   * overwritten by
+   * implementations to provide a different algorithm.
+   *
+   * @param reference
+   *          the reference of the link for which to compute the label
+   * @return the computed label
+   */
+  protected String computeLabel(ResourceReference reference) {
+    // Look for a component implementing URILabelGenerator with a role hint matching the link
+    // scheme.
+    // If not found then use the full reference as the label.
+    // If there's no scheme separator then use the full reference as the label. Note that this can
+    // happen
+    // when we're not in wiki mode (since all links are considered URIs when not in wiki mode).
+    String label;
+    try {
+      URILabelGenerator uriLabelGenerator = this.componentManager.lookup(URILabelGenerator.class,
+          reference.getType().getScheme());
+      label = uriLabelGenerator.generateLabel(reference);
+    } catch (ComponentLookupException e) {
+      label = reference.getReference();
+    }
+    return label;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XHTMLLinkTypeRenderer#
+   */
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    Map<String, String> spanAttributes = new LinkedHashMap<String, String>();
+    Map<String, String> anchorAttributes = new LinkedHashMap<String, String>();
+
+    // Add all parameters to the A attributes
+    anchorAttributes.putAll(parameters);
+
+    spanAttributes.put(CLASS, "wikiexternallink");
+    if (isFreeStandingURI) {
+      anchorAttributes.put(CLASS, "wikimodel-freestanding");
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see XHTMLLinkTypeRenderer#setHasLabel(boolean)
-     */
-    public void setHasLabel(boolean hasLabel)
-    {
-        this.hasLabel = hasLabel;
+    beginLinkExtraAttributes(reference, spanAttributes, anchorAttributes);
+
+    getXHTMLWikiPrinter().printXMLStartElement(SPAN, spanAttributes);
+    getXHTMLWikiPrinter().printXMLStartElement(XHTMLLinkRenderer.ANCHOR, anchorAttributes);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see XHTMLLinkRenderer#endLink(org.xwiki.rendering.listener.reference.ResourceReference ,
+   *      boolean, Map)
+   */
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    // If there was no link content then generate it based on the passed reference
+    if (!hasLabel()) {
+      getXHTMLWikiPrinter().printXMLStartElement(SPAN,
+          new String[][] { { CLASS, "wikigeneratedlinkcontent" } });
+      getXHTMLWikiPrinter().printXML(computeLabel(reference));
+      getXHTMLWikiPrinter().printXMLEndElement(SPAN);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see XHTMLLinkTypeRenderer#setXHTMLWikiPrinter(org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter)
-     */
-    public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer)
-    {
-        this.xhtmlPrinter = printer;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see XHTMLLinkTypeRenderer#getXHTMLWikiPrinter()
-     */
-    public XHTMLWikiPrinter getXHTMLWikiPrinter()
-    {
-        return this.xhtmlPrinter;
-    }
-
-    /**
-     * Hook called when rendering the beginning of a link to allow implementation classes to augment the passed span and
-     * anchor attributes as they see fit.
-     *
-     * @param reference the reference of the link being rendered
-     * @param spanAttributes the HTML attributes for the SPAN HTML element added around the ANCHOR HTML element
-     * @param anchorAttributes the HTML attributes for the ANCHOR element
-     */
-    protected abstract void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
-        Map<String, String> anchorAttributes);
-
-    /**
-     * Default implementation for computing a link label when no label has been specified. Can be overwritten by
-     * implementations to provide a different algorithm.
-     *
-     * @param reference the reference of the link for which to compute the label
-     * @return the computed label
-     */
-    protected String computeLabel(ResourceReference reference)
-    {
-        // Look for a component implementing URILabelGenerator with a role hint matching the link scheme.
-        // If not found then use the full reference as the label.
-        // If there's no scheme separator then use the full reference as the label. Note that this can happen
-        // when we're not in wiki mode (since all links are considered URIs when not in wiki mode).
-        String label;
-        try {
-            URILabelGenerator uriLabelGenerator = this.componentManager.lookup(URILabelGenerator.class,
-                reference.getType().getScheme());
-            label = uriLabelGenerator.generateLabel(reference);
-        } catch (ComponentLookupException e) {
-            label = reference.getReference();
-        }
-        return label;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see XHTMLLinkTypeRenderer#
-     */
-    public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        Map<String, String> spanAttributes = new LinkedHashMap<String, String>();
-        Map<String, String> anchorAttributes = new LinkedHashMap<String, String>();
-
-        // Add all parameters to the A attributes
-        anchorAttributes.putAll(parameters);
-
-        spanAttributes.put(CLASS, "wikiexternallink");
-        if (isFreeStandingURI) {
-            anchorAttributes.put(CLASS, "wikimodel-freestanding");
-        }
-
-        beginLinkExtraAttributes(reference, spanAttributes, anchorAttributes);
-
-        getXHTMLWikiPrinter().printXMLStartElement(SPAN, spanAttributes);
-        getXHTMLWikiPrinter().printXMLStartElement(XHTMLLinkRenderer.ANCHOR, anchorAttributes);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @see XHTMLLinkRenderer#endLink(org.xwiki.rendering.listener.reference.ResourceReference , boolean, Map)
-     */
-    public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        // If there was no link content then generate it based on the passed reference
-        if (!hasLabel()) {
-            getXHTMLWikiPrinter().printXMLStartElement(SPAN, new String[][]{{CLASS, "wikigeneratedlinkcontent"}});
-            getXHTMLWikiPrinter().printXML(computeLabel(reference));
-            getXHTMLWikiPrinter().printXMLEndElement(SPAN);
-        }
-
-        getXHTMLWikiPrinter().printXMLEndElement(XHTMLLinkRenderer.ANCHOR);
-        getXHTMLWikiPrinter().printXMLEndElement(SPAN);
-    }
+    getXHTMLWikiPrinter().printXMLEndElement(XHTMLLinkRenderer.ANCHOR);
+    getXHTMLWikiPrinter().printXMLEndElement(SPAN);
+  }
 }

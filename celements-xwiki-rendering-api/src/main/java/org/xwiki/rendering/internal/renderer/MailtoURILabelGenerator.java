@@ -31,16 +31,16 @@ import org.xwiki.rendering.renderer.reference.link.URILabelGenerator;
  * @since 2.2RC1
  */
 @Component("mailto")
-public class MailtoURILabelGenerator implements URILabelGenerator
-{
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.renderer.reference.link.URILabelGenerator#generateLabel(
-     *org.xwiki.rendering.listener.reference.ResourceReference)
-     */
-    public String generateLabel(ResourceReference reference)
-    {
-        // Remove the query string (if any).
-        return StringUtils.substringBefore(reference.getReference(), "?");
-    }
+public class MailtoURILabelGenerator implements URILabelGenerator {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.renderer.reference.link.URILabelGenerator#generateLabel(
+   *      org.xwiki.rendering.listener.reference.ResourceReference)
+   */
+  public String generateLabel(ResourceReference reference) {
+    // Remove the query string (if any).
+    return StringUtils.substringBefore(reference.getReference(), "?");
+  }
 }

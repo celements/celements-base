@@ -37,81 +37,85 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
  * @since 2.5M2
  */
 public class XWikiSyntaxResourceRenderer
-    extends org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxResourceRenderer
-{
-    /**
-     * Parameter name under which to serialize the query string in XWiki Syntax 2.1.
-     */
-    private static final String QUERY_STRING = "queryString";
+    extends org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxResourceRenderer {
 
-    /**
-     * Parameter name under which to serialize the query string in XWiki Syntax 2.1.
-     */
-    private static final String ANCHOR = "anchor";
+  /**
+   * Parameter name under which to serialize the query string in XWiki Syntax 2.1.
+   */
+  private static final String QUERY_STRING = "queryString";
 
-    /**
-     * @param listenerChain the rendering chain
-     * @param referenceSerializer the serializer implementation to use to serialize link references
-     * @since 2.5RC1
-     */
-    public XWikiSyntaxResourceRenderer(XWikiSyntaxListenerChain listenerChain,
-        ResourceReferenceSerializer referenceSerializer)
-    {
-        super(listenerChain, referenceSerializer);
+  /**
+   * Parameter name under which to serialize the query string in XWiki Syntax 2.1.
+   */
+  private static final String ANCHOR = "anchor";
+
+  /**
+   * @param listenerChain
+   *          the rendering chain
+   * @param referenceSerializer
+   *          the serializer implementation to use to serialize link references
+   * @since 2.5RC1
+   */
+  public XWikiSyntaxResourceRenderer(XWikiSyntaxListenerChain listenerChain,
+      ResourceReferenceSerializer referenceSerializer) {
+    super(listenerChain, referenceSerializer);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxResourceRenderer#printParameters(
+   *      XWikiSyntaxEscapeWikiPrinter, org.xwiki.rendering.listener.reference.ResourceReference ,
+   *      java.util.Map)
+   */
+  @Override
+  protected void printParameters(XWikiSyntaxEscapeWikiPrinter printer, ResourceReference reference,
+      Map<String, String> parameters) {
+    // Print the Query String and Anchor as parameters if they're defined and if the link is a link
+    // to a document.
+    boolean shouldPrintSeparator = true;
+
+    // The XWiki Syntax 2.1 supports two special reference parameters for document references:
+    // - queryString and anchor.
+    // The XWiki Syntax 2.1 supports one special reference parameters for attachment references:
+    // - queryString.
+    if (reference.getType().equals(ResourceType.DOCUMENT)) {
+      // Print first the query string
+      String queryString = reference.getParameter(DocumentResourceReference.QUERY_STRING);
+      if (!StringUtils.isEmpty(queryString)) {
+        printer.print(PARAMETER_SEPARATOR);
+        printer.print(this.parametersPrinter.print(QUERY_STRING, queryString, '~'));
+        shouldPrintSeparator = false;
+      }
+      // Then print the anchor
+      String anchor = reference.getParameter(DocumentResourceReference.ANCHOR);
+      if (!StringUtils.isEmpty(anchor)) {
+        if (shouldPrintSeparator) {
+          printer.print(PARAMETER_SEPARATOR);
+        } else {
+          printer.print(" ");
+        }
+        printer.print(this.parametersPrinter.print(ANCHOR, anchor, '~'));
+        shouldPrintSeparator = false;
+      }
+    } else if (reference.getType().equals(ResourceType.ATTACHMENT)) {
+      String queryString = reference.getParameter(AttachmentResourceReference.QUERY_STRING);
+      if (!StringUtils.isEmpty(queryString)) {
+        printer.print(PARAMETER_SEPARATOR);
+        printer.print(this.parametersPrinter.print(QUERY_STRING, queryString, '~'));
+        shouldPrintSeparator = false;
+      }
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxResourceRenderer#printParameters(
-     *      XWikiSyntaxEscapeWikiPrinter, org.xwiki.rendering.listener.reference.ResourceReference , java.util.Map)
-     */
-    @Override
-    protected void printParameters(XWikiSyntaxEscapeWikiPrinter printer, ResourceReference reference,
-        Map<String, String> parameters)
-    {
-        // Print the Query String and Anchor as parameters if they're defined and if the link is a link to a document.
-        boolean shouldPrintSeparator = true;
-
-        // The XWiki Syntax 2.1 supports two special reference parameters for document references:
-        // - queryString and anchor.
-        // The XWiki Syntax 2.1 supports one special reference parameters for attachment references:
-        // - queryString.
-        if (reference.getType().equals(ResourceType.DOCUMENT)) {
-            // Print first the query string
-            String queryString = reference.getParameter(DocumentResourceReference.QUERY_STRING);
-            if (!StringUtils.isEmpty(queryString)) {
-                printer.print(PARAMETER_SEPARATOR);
-                printer.print(this.parametersPrinter.print(QUERY_STRING, queryString, '~'));
-                shouldPrintSeparator = false;
-            }
-            // Then print the anchor
-            String anchor = reference.getParameter(DocumentResourceReference.ANCHOR);
-            if (!StringUtils.isEmpty(anchor)) {
-                if (shouldPrintSeparator) {
-                    printer.print(PARAMETER_SEPARATOR);
-                } else {
-                    printer.print(" ");
-                }
-                printer.print(this.parametersPrinter.print(ANCHOR, anchor, '~'));
-                shouldPrintSeparator = false;
-            }
-        } else if (reference.getType().equals(ResourceType.ATTACHMENT)) {
-            String queryString = reference.getParameter(AttachmentResourceReference.QUERY_STRING);
-            if (!StringUtils.isEmpty(queryString)) {
-                printer.print(PARAMETER_SEPARATOR);
-                printer.print(this.parametersPrinter.print(QUERY_STRING, queryString, '~'));
-                shouldPrintSeparator = false;
-            }
-        }
-
-        // Add all Link parameters but only if there isn't a Link Reference parameter of the same name...
-        if (!parameters.isEmpty()) {
-            if (shouldPrintSeparator) {
-                printer.print(PARAMETER_SEPARATOR);
-            } else {
-                printer.print(" ");
-            }
-            printer.print(this.parametersPrinter.print(parameters, '~'));
-        }
+    // Add all Link parameters but only if there isn't a Link Reference parameter of the same
+    // name...
+    if (!parameters.isEmpty()) {
+      if (shouldPrintSeparator) {
+        printer.print(PARAMETER_SEPARATOR);
+      } else {
+        printer.print(" ");
+      }
+      printer.print(this.parametersPrinter.print(parameters, '~'));
     }
+  }
 }

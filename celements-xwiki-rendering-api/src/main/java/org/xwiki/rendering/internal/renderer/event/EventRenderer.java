@@ -28,29 +28,32 @@ import org.xwiki.rendering.listener.chaining.ListenerChain;
 import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
 
 /**
- * Print names of events. Useful for debugging and tracing in general. Note that this class is not located in the test
- * source tree since it's currently used at runtime by the WYSIWYG editor for its runtime debug mode.
+ * Print names of events. Useful for debugging and tracing in general. Note that this class is not
+ * located in the test
+ * source tree since it's currently used at runtime by the WYSIWYG editor for its runtime debug
+ * mode.
  * 
  * @version $Id$
  * @since 2.0M3
  */
 @Component("event/1.0")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class EventRenderer extends AbstractChainingPrintRenderer implements Initializable
-{
-    /**
-     * {@inheritDoc}
-     * @see Initializable#initialize()
-     * @since 2.0M3
-     */
-    public void initialize() throws InitializationException
-    {
-        ListenerChain chain = new ListenerChain();
-        setListenerChain(chain);
+public class EventRenderer extends AbstractChainingPrintRenderer implements Initializable {
 
-        // Construct the listener chain in the right order. Listeners early in the chain are called before listeners
-        // placed later in the chain.
-        chain.addListener(this);
-        chain.addListener(new EventsChainingRenderer(chain));
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see Initializable#initialize()
+   * @since 2.0M3
+   */
+  public void initialize() throws InitializationException {
+    ListenerChain chain = new ListenerChain();
+    setListenerChain(chain);
+
+    // Construct the listener chain in the right order. Listeners early in the chain are called
+    // before listeners
+    // placed later in the chain.
+    chain.addListener(this);
+    chain.addListener(new EventsChainingRenderer(chain));
+  }
 }

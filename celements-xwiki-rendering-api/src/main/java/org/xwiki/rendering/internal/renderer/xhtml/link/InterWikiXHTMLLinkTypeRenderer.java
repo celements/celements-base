@@ -38,32 +38,34 @@ import java.util.Properties;
  */
 @Component("interwiki")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class InterWikiXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
-{
-    /**
-     * Used to get access to the InterWiki definitions.
-     */
-    @Requirement
-    private RenderingConfiguration renderingConfiguration;
+public class InterWikiXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(org.xwiki.rendering.listener.reference.ResourceReference ,
-     *      java.util.Map, java.util.Map)
-     */
-    @Override
-    protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
-        Map<String, String> anchorAttributes)
-    {
-        // Look for an InterWiki definition for the passed Link. If not found then simply use the InterWiki Path.
-        String interWikiAlias = reference.getParameter(InterWikiResourceReference.INTERWIKI_ALIAS);
-        Properties definitions = this.renderingConfiguration.getInterWikiDefinitions();
-        if (definitions.containsKey(interWikiAlias)) {
-            anchorAttributes.put(XHTMLLinkRenderer.HREF, definitions.getProperty(interWikiAlias)
-                + reference.getReference());
-        } else {
-            anchorAttributes.put(XHTMLLinkRenderer.HREF, reference.getReference());
-        }
+  /**
+   * Used to get access to the InterWiki definitions.
+   */
+  @Requirement
+  private RenderingConfiguration renderingConfiguration;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(org.xwiki.rendering.listener.reference.ResourceReference
+   *      ,
+   *      java.util.Map, java.util.Map)
+   */
+  @Override
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
+      Map<String, String> anchorAttributes) {
+    // Look for an InterWiki definition for the passed Link. If not found then simply use the
+    // InterWiki Path.
+    String interWikiAlias = reference.getParameter(InterWikiResourceReference.INTERWIKI_ALIAS);
+    Properties definitions = this.renderingConfiguration.getInterWikiDefinitions();
+    if (definitions.containsKey(interWikiAlias)) {
+      anchorAttributes.put(XHTMLLinkRenderer.HREF, definitions.getProperty(interWikiAlias)
+          + reference.getReference());
+    } else {
+      anchorAttributes.put(XHTMLLinkRenderer.HREF, reference.getReference());
     }
+  }
 }

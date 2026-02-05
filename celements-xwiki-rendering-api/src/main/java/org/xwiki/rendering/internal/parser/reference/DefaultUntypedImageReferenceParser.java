@@ -26,43 +26,45 @@ import org.xwiki.rendering.parser.ResourceReferenceParser;
 import org.xwiki.rendering.parser.ResourceReferenceTypeParser;
 
 /**
- * Considers all passed images references to be untyped and tries to guess the type by first looking for a URL
+ * Considers all passed images references to be untyped and tries to guess the type by first looking
+ * for a URL
  * and then considering it's a reference to an attachment.
  *
  * @version $Id$
  * @since 2.6M1
  */
 @Component("image/untyped")
-public class DefaultUntypedImageReferenceParser implements ResourceReferenceParser
-{
-    /**
-     * Parser to parse link references pointing to URLs.
-     */
-    @Requirement("url")
-    private ResourceReferenceTypeParser urlResourceReferenceTypeParser;
+public class DefaultUntypedImageReferenceParser implements ResourceReferenceParser {
 
-    /**
-     * Parser to parse link references pointing to attachments.
-     */
-    @Requirement("attach")
-    private ResourceReferenceTypeParser attachmentResourceReferenceTypeParser;
+  /**
+   * Parser to parse link references pointing to URLs.
+   */
+  @Requirement("url")
+  private ResourceReferenceTypeParser urlResourceReferenceTypeParser;
 
-    /**
-     * {@inheritDoc}
-     * @see ResourceReferenceParser#parse(String)
-     */
-    public ResourceReference parse(String rawReference)
-    {
-        // Try to guess the link type. It can be either:
-        // - a URL (specified without the "url" type)
-        // - a reference to an attachment (specified without the "attach" type)
-        ResourceReference reference = this.urlResourceReferenceTypeParser.parse(rawReference);
-        if (reference == null) {
-            // What remains is considered to be a link to an attachment, use the attachment link type parser to
-            // parse.
-            reference = this.attachmentResourceReferenceTypeParser.parse(rawReference);
-        }
-        reference.setTyped(false);
-        return reference;
+  /**
+   * Parser to parse link references pointing to attachments.
+   */
+  @Requirement("attach")
+  private ResourceReferenceTypeParser attachmentResourceReferenceTypeParser;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see ResourceReferenceParser#parse(String)
+   */
+  public ResourceReference parse(String rawReference) {
+    // Try to guess the link type. It can be either:
+    // - a URL (specified without the "url" type)
+    // - a reference to an attachment (specified without the "attach" type)
+    ResourceReference reference = this.urlResourceReferenceTypeParser.parse(rawReference);
+    if (reference == null) {
+      // What remains is considered to be a link to an attachment, use the attachment link type
+      // parser to
+      // parse.
+      reference = this.attachmentResourceReferenceTypeParser.parse(rawReference);
     }
+    reference.setTyped(false);
+    return reference;
+  }
 }

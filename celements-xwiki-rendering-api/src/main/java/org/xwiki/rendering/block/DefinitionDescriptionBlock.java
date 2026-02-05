@@ -29,33 +29,33 @@ import java.util.List;
  * @version $Id$
  * @since 1.6M2
  */
-public class DefinitionDescriptionBlock extends AbstractFatherBlock
-{
-    /**
-     * Construct a Definition Description block.
-     *
-     * @param childrenBlocks the blocks making the description
-     */
-    public DefinitionDescriptionBlock(List<Block> childrenBlocks)
-    {
-        super(childrenBlocks);
-    }
+public class DefinitionDescriptionBlock extends AbstractFatherBlock {
 
-    /**
-     * {@inheritDoc}
-     * @see AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginDefinitionDescription();
-    }
+  /**
+   * Construct a Definition Description block.
+   *
+   * @param childrenBlocks
+   *          the blocks making the description
+   */
+  public DefinitionDescriptionBlock(List<Block> childrenBlocks) {
+    super(childrenBlocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endDefinitionDescription();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginDefinitionDescription();
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endDefinitionDescription();
+  }
 }

@@ -19,6 +19,8 @@
  */
 package org.xwiki.rendering.scaffolding;
 
+import java.util.List;
+
 import org.xwiki.rendering.block.Block;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.renderer.PrintRenderer;
@@ -26,34 +28,32 @@ import org.xwiki.rendering.renderer.PrintRendererFactory;
 import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
 import org.xwiki.rendering.renderer.printer.WikiPrinter;
 
-import java.util.List;
-
 /**
- * Class to be imported in unit tests as a static import and which contains helper methods to assert Rendering Blocks.
+ * Class to be imported in unit tests as a static import and which contains helper methods to assert
+ * Rendering Blocks.
  *
  * @version $Id$
  * @since 2.4M2
  */
-public class BlockAssert
-{
-    /**
-     * Protect constructor since it is a static only class
-     */
-    protected BlockAssert()
-    {
-        // Nothing to do
-    }
+public class BlockAssert {
 
-    public static void assertBlocks(String expected, List<Block> blocks, PrintRendererFactory factory) throws Exception
-    {
-        // Assert the result by parsing it through the EventsRenderer to generate easily
-        // assertable events.
-        XDOM dom = new XDOM(blocks);
-        WikiPrinter printer = new DefaultWikiPrinter();
+  /**
+   * Protect constructor since it is a static only class
+   */
+  protected BlockAssert() {
+    // Nothing to do
+  }
 
-        PrintRenderer eventRenderer = factory.createRenderer(printer);
+  public static void assertBlocks(String expected, List<Block> blocks, PrintRendererFactory factory)
+      throws Exception {
+    // Assert the result by parsing it through the EventsRenderer to generate easily
+    // assertable events.
+    XDOM dom = new XDOM(blocks);
+    WikiPrinter printer = new DefaultWikiPrinter();
 
-        dom.traverse(eventRenderer);
-        junit.framework.Assert.assertEquals(expected, printer.toString());
-    }
+    PrintRenderer eventRenderer = factory.createRenderer(printer);
+
+    dom.traverse(eventRenderer);
+    junit.framework.Assert.assertEquals(expected, printer.toString());
+  }
 }

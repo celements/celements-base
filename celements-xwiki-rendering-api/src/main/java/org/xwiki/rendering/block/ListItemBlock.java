@@ -29,33 +29,33 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.5M2
  */
-public class ListItemBlock extends AbstractFatherBlock
-{
-    /**
-     * Constructs a list item Block.
-     * 
-     * @param childrenBlocks the blocks representing the list item content
-     */
-    public ListItemBlock(List<Block> childrenBlocks)
-    {
-        super(childrenBlocks);
-    }
+public class ListItemBlock extends AbstractFatherBlock {
 
-    /**
-     * {@inheritDoc}
-     * @see AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginListItem();
-    }
+  /**
+   * Constructs a list item Block.
+   * 
+   * @param childrenBlocks
+   *          the blocks representing the list item content
+   */
+  public ListItemBlock(List<Block> childrenBlocks) {
+    super(childrenBlocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)   
-     */
-    public void after(Listener listener)
-    {
-        listener.endListItem();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginListItem();
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endListItem();
+  }
 }

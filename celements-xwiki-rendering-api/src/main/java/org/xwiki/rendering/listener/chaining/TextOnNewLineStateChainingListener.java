@@ -28,400 +28,379 @@ import org.xwiki.rendering.listener.ListType;
 import org.xwiki.rendering.syntax.Syntax;
 
 /**
- * Indicate if the text being written starts a new line. By text we mean Space, Special Symbol and Words. This is useful
- * for some Renderers which need to have this information. For example the XWiki Syntax renderer uses it to decide
- * whether to escape "*" characters starting new lines since otherwise they would be confused for list items.
+ * Indicate if the text being written starts a new line. By text we mean Space, Special Symbol and
+ * Words. This is useful
+ * for some Renderers which need to have this information. For example the XWiki Syntax renderer
+ * uses it to decide
+ * whether to escape "*" characters starting new lines since otherwise they would be confused for
+ * list items.
  * 
  * @version $Id$
  * @since 1.8RC1
  */
-public class TextOnNewLineStateChainingListener extends AbstractChainingListener implements StackableChainingListener
-{
-    private boolean isTextOnNewLine;
+public class TextOnNewLineStateChainingListener extends AbstractChainingListener
+    implements StackableChainingListener {
 
-    public TextOnNewLineStateChainingListener(ListenerChain listenerChain)
-    {
-        setListenerChain(listenerChain);
-    }
+  private boolean isTextOnNewLine;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see StackableChainingListener#createChainingListenerInstance()
-     */
-    public StackableChainingListener createChainingListenerInstance()
-    {
-        return new TextOnNewLineStateChainingListener(getListenerChain());
-    }
+  public TextOnNewLineStateChainingListener(ListenerChain listenerChain) {
+    setListenerChain(listenerChain);
+  }
 
-    public boolean isTextOnNewLine()
-    {
-        return this.isTextOnNewLine;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see StackableChainingListener#createChainingListenerInstance()
+   */
+  public StackableChainingListener createChainingListenerInstance() {
+    return new TextOnNewLineStateChainingListener(getListenerChain());
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionDescription()
-     */
-    @Override
-    public void beginDefinitionDescription()
-    {
-        this.isTextOnNewLine = false;
-        super.beginDefinitionDescription();
-    }
+  public boolean isTextOnNewLine() {
+    return this.isTextOnNewLine;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionList(java.util.Map)
-     * @since 2.0RC1
-     */
-    @Override
-    public void beginDefinitionList(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginDefinitionList(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionDescription()
+   */
+  @Override
+  public void beginDefinitionDescription() {
+    this.isTextOnNewLine = false;
+    super.beginDefinitionDescription();
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionTerm()
-     */
-    @Override
-    public void beginDefinitionTerm()
-    {
-        this.isTextOnNewLine = false;
-        super.beginDefinitionTerm();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionList(java.util.Map)
+   * @since 2.0RC1
+   */
+  @Override
+  public void beginDefinitionList(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginDefinitionList(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDocument(java.util.Map)
-     */
-    @Override
-    public void beginDocument(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginDocument(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionTerm()
+   */
+  @Override
+  public void beginDefinitionTerm() {
+    this.isTextOnNewLine = false;
+    super.beginDefinitionTerm();
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
-     */
-    @Override
-    public void beginGroup(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginGroup(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDocument(java.util.Map)
+   */
+  @Override
+  public void beginDocument(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginDocument(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginFormat(org.xwiki.rendering.listener.Format,
-     *      java.util.Map)
-     */
-    @Override
-    public void beginFormat(Format format, Map<String, String> parameters)
-    {
-        // This is an exception and a bit of a hack. The reason we're calling super before
-        // setting that we're no longer on a new line is for cases when we have "**" (BOLD)
-        // at the beginning of a line and we need to escape the following character if it's
-        // a space as otherwise it would be confused for a list.
-        super.beginFormat(format, parameters);
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
+   */
+  @Override
+  public void beginGroup(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginGroup(parameters);
+  }
 
-        this.isTextOnNewLine = false;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginFormat(org.xwiki.rendering.listener.Format,
+   *      java.util.Map)
+   */
+  @Override
+  public void beginFormat(Format format, Map<String, String> parameters) {
+    // This is an exception and a bit of a hack. The reason we're calling super before
+    // setting that we're no longer on a new line is for cases when we have "**" (BOLD)
+    // at the beginning of a line and we need to escape the following character if it's
+    // a space as otherwise it would be confused for a list.
+    super.beginFormat(format, parameters);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginLink(
-     *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
-     * @since 2.5RC1
-     */
-    @Override
-    public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginLink(reference, isFreeStandingURI, parameters);
-    }
+    this.isTextOnNewLine = false;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginList(org.xwiki.rendering.listener.ListType,
-     *      java.util.Map)
-     */
-    @Override
-    public void beginList(ListType listType, Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginList(listType, parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginLink(
+   *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
+   * @since 2.5RC1
+   */
+  @Override
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginLink(reference, isFreeStandingURI, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginListItem()
-     */
-    @Override
-    public void beginListItem()
-    {
-        this.isTextOnNewLine = false;
-        super.beginListItem();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginList(org.xwiki.rendering.listener.ListType,
+   *      java.util.Map)
+   */
+  @Override
+  public void beginList(ListType listType, Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginList(listType, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginMacroMarker(java.lang.String,
-     *      java.util.Map, java.lang.String, boolean)
-     */
-    @Override
-    public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline)
-    {
-        this.isTextOnNewLine = false;
-        super.beginMacroMarker(name, parameters, content, isInline);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginListItem()
+   */
+  @Override
+  public void beginListItem() {
+    this.isTextOnNewLine = false;
+    super.beginListItem();
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginParagraph(java.util.Map)
-     */
-    @Override
-    public void beginParagraph(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = true;
-        super.beginParagraph(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginMacroMarker(java.lang.String,
+   *      java.util.Map, java.lang.String, boolean)
+   */
+  @Override
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
+    this.isTextOnNewLine = false;
+    super.beginMacroMarker(name, parameters, content, isInline);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotation(java.util.Map)
-     */
-    @Override
-    public void beginQuotation(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginQuotation(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginParagraph(java.util.Map)
+   */
+  @Override
+  public void beginParagraph(Map<String, String> parameters) {
+    this.isTextOnNewLine = true;
+    super.beginParagraph(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotationLine()
-     */
-    @Override
-    public void beginQuotationLine()
-    {
-        this.isTextOnNewLine = false;
-        super.beginQuotationLine();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotation(java.util.Map)
+   */
+  @Override
+  public void beginQuotation(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginQuotation(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginHeader(org.xwiki.rendering.listener.HeaderLevel,
-     *      java.lang.String, java.util.Map)
-     */
-    @Override
-    public void beginHeader(HeaderLevel level, String id, Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginHeader(level, id, parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotationLine()
+   */
+  @Override
+  public void beginQuotationLine() {
+    this.isTextOnNewLine = false;
+    super.beginQuotationLine();
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTable(java.util.Map)
-     */
-    @Override
-    public void beginTable(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginTable(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginHeader(org.xwiki.rendering.listener.HeaderLevel,
+   *      java.lang.String, java.util.Map)
+   */
+  @Override
+  public void beginHeader(HeaderLevel level, String id, Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginHeader(level, id, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableCell(java.util.Map)
-     */
-    @Override
-    public void beginTableCell(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginTableCell(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTable(java.util.Map)
+   */
+  @Override
+  public void beginTable(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginTable(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableHeadCell(java.util.Map)
-     */
-    @Override
-    public void beginTableHeadCell(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginTableHeadCell(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableCell(java.util.Map)
+   */
+  @Override
+  public void beginTableCell(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginTableCell(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableRow(java.util.Map)
-     */
-    @Override
-    public void beginTableRow(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.beginTableRow(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableHeadCell(java.util.Map)
+   */
+  @Override
+  public void beginTableHeadCell(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginTableHeadCell(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onRawText(String, org.xwiki.rendering.syntax.Syntax)
-     */
-    @Override
-    public void onRawText(String text, Syntax syntax)
-    {
-        this.isTextOnNewLine = false;
-        super.onRawText(text, syntax);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableRow(java.util.Map)
+   */
+  @Override
+  public void beginTableRow(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.beginTableRow(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endLink(
-     *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
-     * @since 2.5RC1
-     */
-    @Override
-    public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        super.endLink(reference, isFreeStandingURI, parameters);
-        this.isTextOnNewLine = false;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onRawText(String,
+   *      org.xwiki.rendering.syntax.Syntax)
+   */
+  @Override
+  public void onRawText(String text, Syntax syntax) {
+    this.isTextOnNewLine = false;
+    super.onRawText(text, syntax);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endParagraph(java.util.Map)
-     */
-    @Override
-    public void endParagraph(Map<String, String> parameters)
-    {
-        super.endParagraph(parameters);
-        this.isTextOnNewLine = true;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endLink(
+   *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
+   * @since 2.5RC1
+   */
+  @Override
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    super.endLink(reference, isFreeStandingURI, parameters);
+    this.isTextOnNewLine = false;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endHeader(org.xwiki.rendering.listener.HeaderLevel,
-     *      java.lang.String, java.util.Map)
-     */
-    @Override
-    public void endHeader(HeaderLevel level, String id, Map<String, String> parameters)
-    {
-        super.endHeader(level, id, parameters);
-        this.isTextOnNewLine = false;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endParagraph(java.util.Map)
+   */
+  @Override
+  public void endParagraph(Map<String, String> parameters) {
+    super.endParagraph(parameters);
+    this.isTextOnNewLine = true;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endTable(java.util.Map)
-     */
-    @Override
-    public void endTable(Map<String, String> parameters)
-    {
-        super.endTable(parameters);
-        this.isTextOnNewLine = false;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endHeader(org.xwiki.rendering.listener.HeaderLevel,
+   *      java.lang.String, java.util.Map)
+   */
+  @Override
+  public void endHeader(HeaderLevel level, String id, Map<String, String> parameters) {
+    super.endHeader(level, id, parameters);
+    this.isTextOnNewLine = false;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onHorizontalLine(java.util.Map)
-     */
-    @Override
-    public void onHorizontalLine(Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.onHorizontalLine(parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endTable(java.util.Map)
+   */
+  @Override
+  public void endTable(Map<String, String> parameters) {
+    super.endTable(parameters);
+    this.isTextOnNewLine = false;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onId(java.lang.String)
-     */
-    @Override
-    public void onId(String name)
-    {
-        this.isTextOnNewLine = false;
-        super.onId(name);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onHorizontalLine(java.util.Map)
+   */
+  @Override
+  public void onHorizontalLine(Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.onHorizontalLine(parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onImage(
-     *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
-     * @since 2.5RC1
-     */
-    @Override
-    public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.onImage(reference, isFreeStandingURI, parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onId(java.lang.String)
+   */
+  @Override
+  public void onId(String name) {
+    this.isTextOnNewLine = false;
+    super.onId(name);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onNewLine()
-     */
-    @Override
-    public void onNewLine()
-    {
-        super.onNewLine();
-        this.isTextOnNewLine = true;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onImage(
+   *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
+   * @since 2.5RC1
+   */
+  @Override
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.onImage(reference, isFreeStandingURI, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onMacro(java.lang.String, java.util.Map,
-     *      java.lang.String, boolean)
-     */
-    @Override
-    public void onMacro(String id, Map<String, String> parameters, String content, boolean isInline)
-    {
-        this.isTextOnNewLine = false;
-        super.onMacro(id, parameters, content, isInline);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onNewLine()
+   */
+  @Override
+  public void onNewLine() {
+    super.onNewLine();
+    this.isTextOnNewLine = true;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onVerbatim(String, boolean, Map)
-     */
-    @Override
-    public void onVerbatim(String protectedString, boolean isInline, Map<String, String> parameters)
-    {
-        this.isTextOnNewLine = false;
-        super.onVerbatim(protectedString, isInline, parameters);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onMacro(java.lang.String,
+   *      java.util.Map,
+   *      java.lang.String, boolean)
+   */
+  @Override
+  public void onMacro(String id, Map<String, String> parameters, String content, boolean isInline) {
+    this.isTextOnNewLine = false;
+    super.onMacro(id, parameters, content, isInline);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onVerbatim(String, boolean,
+   *      Map)
+   */
+  @Override
+  public void onVerbatim(String protectedString, boolean isInline, Map<String, String> parameters) {
+    this.isTextOnNewLine = false;
+    super.onVerbatim(protectedString, isInline, parameters);
+  }
 }

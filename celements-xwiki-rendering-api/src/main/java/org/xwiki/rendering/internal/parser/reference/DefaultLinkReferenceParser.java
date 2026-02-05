@@ -26,38 +26,40 @@ import org.xwiki.rendering.listener.reference.ResourceType;
 import org.xwiki.rendering.parser.ResourceReferenceParser;
 
 /**
- * Similar to {@link org.xwiki.rendering.internal.parser.reference.DefaultResourceReferenceParser} but handles the
- * case where the resource type wasn't specified. In this case it tries to guess the type by first looking for a URL
+ * Similar to {@link org.xwiki.rendering.internal.parser.reference.DefaultResourceReferenceParser}
+ * but handles the
+ * case where the resource type wasn't specified. In this case it tries to guess the type by first
+ * looking for a URL
  * and then considering it's a reference to a document.
  *
  * @version $Id$
  * @since 2.6M1
  */
 @Component("link")
-public class DefaultLinkReferenceParser implements ResourceReferenceParser
-{
-    /**
-     * Default parser to parse typed resource references.
-     */
-    @Requirement
-    private ResourceReferenceParser defaultResourceReferenceParser;
+public class DefaultLinkReferenceParser implements ResourceReferenceParser {
 
-    /**
-     * Used to parse untyped resource reference and guess their types.
-     */
-    @Requirement("link/untyped")
-    private ResourceReferenceParser untypedLinkReferenceParser;
+  /**
+   * Default parser to parse typed resource references.
+   */
+  @Requirement
+  private ResourceReferenceParser defaultResourceReferenceParser;
 
-    /**
-     * {@inheritDoc}
-     * @see ResourceReferenceParser#parse(String)
-     */
-    public ResourceReference parse(String rawReference)
-    {
-        ResourceReference reference = this.defaultResourceReferenceParser.parse(rawReference);
-        if (reference.getType().equals(ResourceType.UNKNOWN)) {
-            reference = this.untypedLinkReferenceParser.parse(rawReference);
-        }
-        return reference;
+  /**
+   * Used to parse untyped resource reference and guess their types.
+   */
+  @Requirement("link/untyped")
+  private ResourceReferenceParser untypedLinkReferenceParser;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see ResourceReferenceParser#parse(String)
+   */
+  public ResourceReference parse(String rawReference) {
+    ResourceReference reference = this.defaultResourceReferenceParser.parse(rawReference);
+    if (reference.getType().equals(ResourceType.UNKNOWN)) {
+      reference = this.untypedLinkReferenceParser.parse(rawReference);
     }
+    return reference;
+  }
 }

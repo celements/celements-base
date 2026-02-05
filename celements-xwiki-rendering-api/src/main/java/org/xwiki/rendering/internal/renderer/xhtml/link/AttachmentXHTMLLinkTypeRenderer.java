@@ -40,52 +40,56 @@ import java.util.Map;
  */
 @Component("attach")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class AttachmentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer implements Initializable
-{
-    /**
-     * Used to serialize the attachment link to XWiki Syntax 2.0 when we're not inside a wiki.
-     * We choose the XWiki Syntax 2.0 arbitrarily. Normally the user should never use a link to an attachment when
-     * not inside a wiki. 
-     */
-    @Requirement("xwiki/2.0")
-    private ResourceReferenceTypeSerializer defaultResourceReferenceTypeSerializer;
+public class AttachmentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
+    implements Initializable {
 
-    /**
-     * Used to generate the link targeting a local document.
-     */
-    private WikiModel wikiModel;
+  /**
+   * Used to serialize the attachment link to XWiki Syntax 2.0 when we're not inside a wiki.
+   * We choose the XWiki Syntax 2.0 arbitrarily. Normally the user should never use a link to an
+   * attachment when
+   * not inside a wiki.
+   */
+  @Requirement("xwiki/2.0")
+  private ResourceReferenceTypeSerializer defaultResourceReferenceTypeSerializer;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Initializable#initialize()
-     */
-    public void initialize() throws InitializationException
-    {
-        // Try to find a WikiModel implementation and set it if it can be found. If not it means we're in
-        // non wiki mode (i.e. no attachment in wiki documents and no links to documents for example).
-        try {
-            this.wikiModel = this.componentManager.lookup(WikiModel.class);
-        } catch (ComponentLookupException e) {
-            // There's no WikiModel implementation available. this.wikiModel stays null.
-        }
+  /**
+   * Used to generate the link targeting a local document.
+   */
+  private WikiModel wikiModel;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see Initializable#initialize()
+   */
+  public void initialize() throws InitializationException {
+    // Try to find a WikiModel implementation and set it if it can be found. If not it means we're
+    // in
+    // non wiki mode (i.e. no attachment in wiki documents and no links to documents for example).
+    try {
+      this.wikiModel = this.componentManager.lookup(WikiModel.class);
+    } catch (ComponentLookupException e) {
+      // There's no WikiModel implementation available. this.wikiModel stays null.
     }
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(org.xwiki.rendering.listener.reference.ResourceReference ,
-     *      java.util.Map, java.util.Map)
-     */
-    @Override
-    protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
-        Map<String, String> anchorAttributes)
-    {
-        if (this.wikiModel != null) {
-            anchorAttributes.put(XHTMLLinkRenderer.HREF, this.wikiModel.getLinkURL(reference));
-        } else {
-            anchorAttributes.put(XHTMLLinkRenderer.HREF, this.defaultResourceReferenceTypeSerializer.serialize(
-                reference));
-        }
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(org.xwiki.rendering.listener.reference.ResourceReference
+   *      ,
+   *      java.util.Map, java.util.Map)
+   */
+  @Override
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
+      Map<String, String> anchorAttributes) {
+    if (this.wikiModel != null) {
+      anchorAttributes.put(XHTMLLinkRenderer.HREF, this.wikiModel.getLinkURL(reference));
+    } else {
+      anchorAttributes.put(XHTMLLinkRenderer.HREF,
+          this.defaultResourceReferenceTypeSerializer.serialize(
+              reference));
     }
+  }
 }

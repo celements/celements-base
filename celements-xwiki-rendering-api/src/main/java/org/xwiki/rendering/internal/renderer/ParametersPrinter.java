@@ -27,53 +27,57 @@ import java.util.Map;
  * @version $Id$
  * @since 1.9RC2
  */
-public class ParametersPrinter
-{
-    /**
-     * Quote character.
-     */
-    private static final String QUOTE = "\"";
+public class ParametersPrinter {
 
-    /**
-     * Print the parameters as a String.
-     * 
-     * @param parameters the parameters to print
-     * @param escapeChar the character used in front of a special character when need to escape it
-     * @return the printed parameters
-     */
-    public String print(Map<String, String> parameters, char escapeChar)
-    {
-        StringBuffer buffer = new StringBuffer();
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            String value = entry.getValue();
-            String key = entry.getKey();
+  /**
+   * Quote character.
+   */
+  private static final String QUOTE = "\"";
 
-            if (key != null && value != null) {
-                if (buffer.length() > 0) {
-                    buffer.append(' ');
-                }
-                buffer.append(print(key, value, escapeChar));
-            }
+  /**
+   * Print the parameters as a String.
+   * 
+   * @param parameters
+   *          the parameters to print
+   * @param escapeChar
+   *          the character used in front of a special character when need to escape it
+   * @return the printed parameters
+   */
+  public String print(Map<String, String> parameters, char escapeChar) {
+    StringBuffer buffer = new StringBuffer();
+    for (Map.Entry<String, String> entry : parameters.entrySet()) {
+      String value = entry.getValue();
+      String key = entry.getKey();
+
+      if (key != null && value != null) {
+        if (buffer.length() > 0) {
+          buffer.append(' ');
         }
-
-        return buffer.toString();
+        buffer.append(print(key, value, escapeChar));
+      }
     }
 
-    /**
-     *  Print a parameter as a String.
-     *
-     * @param parameterName the name of the parameter to print
-     * @param parameterValue the value of the parameter to print
-     * @param escapeChar the character used in front of a special character when need to escape it
-     * @return the printed parameter
-     */
-    public String print(String parameterName, String parameterValue, char escapeChar)
-    {
-        // escape the escaping character
-        String value = parameterValue.replace(String.valueOf(escapeChar), String.valueOf(escapeChar) + escapeChar);
-        // escape quote
-        value = value.replace(QUOTE, String.valueOf(escapeChar) + QUOTE);
+    return buffer.toString();
+  }
 
-        return parameterName + "=" + QUOTE + value + QUOTE;
-    }
+  /**
+   * Print a parameter as a String.
+   *
+   * @param parameterName
+   *          the name of the parameter to print
+   * @param parameterValue
+   *          the value of the parameter to print
+   * @param escapeChar
+   *          the character used in front of a special character when need to escape it
+   * @return the printed parameter
+   */
+  public String print(String parameterName, String parameterValue, char escapeChar) {
+    // escape the escaping character
+    String value = parameterValue.replace(String.valueOf(escapeChar),
+        String.valueOf(escapeChar) + escapeChar);
+    // escape quote
+    value = value.replace(QUOTE, String.valueOf(escapeChar) + QUOTE);
+
+    return parameterName + "=" + QUOTE + value + QUOTE;
+  }
 }

@@ -29,33 +29,33 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.6M1
  */
-public class HorizontalLineBlock extends AbstractBlock
-{
-    /**
-     * Construct a Horizontal Line Block with no parameters.
-     */
-    public HorizontalLineBlock()
-    {
-        super();
-    }
+public class HorizontalLineBlock extends AbstractBlock {
 
-    /**
-     * Construct a Horizontal Line Block with parameters.
-     *
-     * @param parameters see {@link org.xwiki.rendering.block.AbstractBlock#getParameter(String)} for more details on
-     *        parameters
-     */
-    public HorizontalLineBlock(Map<String, String> parameters)
-    {
-        super(parameters);
-    }
+  /**
+   * Construct a Horizontal Line Block with no parameters.
+   */
+  public HorizontalLineBlock() {
+    super();
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
-     */
-    public void traverse(Listener listener)
-    {
-        listener.onHorizontalLine(getParameters());
-    }
+  /**
+   * Construct a Horizontal Line Block with parameters.
+   *
+   * @param parameters
+   *          see {@link org.xwiki.rendering.block.AbstractBlock#getParameter(String)} for more
+   *          details on
+   *          parameters
+   */
+  public HorizontalLineBlock(Map<String, String> parameters) {
+    super(parameters);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
+   */
+  public void traverse(Listener listener) {
+    listener.onHorizontalLine(getParameters());
+  }
 }

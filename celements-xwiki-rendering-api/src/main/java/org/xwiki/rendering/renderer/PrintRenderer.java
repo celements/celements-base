@@ -29,18 +29,20 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
  * @since 1.6M1
  */
 @ComponentRole
-public interface PrintRenderer extends Renderer
-{
-    /**
-     * @return the printer to which events generate results in. For example the XHTML print renderer outputs XHTML to a
-     *         {@link WikiPrinter} and the resulting XHTML can be retrieved by calling
-     *         {@link org.xwiki.rendering.renderer.printer.WikiPrinter#toString()}
-     */
-    WikiPrinter getPrinter();
+public interface PrintRenderer extends Renderer {
 
-    /**
-     * @param printer the wiki printer to use when the Renderer needs to output rendered content
-     * @since 2.0M3
-     */
-    void setPrinter(WikiPrinter printer);
+  /**
+   * @return the printer to which events generate results in. For example the XHTML print renderer
+   *         outputs XHTML to a
+   *         {@link WikiPrinter} and the resulting XHTML can be retrieved by calling
+   *         {@link org.xwiki.rendering.renderer.printer.WikiPrinter#toString()}
+   */
+  WikiPrinter getPrinter();
+
+  /**
+   * @param printer
+   *          the wiki printer to use when the Renderer needs to output rendered content
+   * @since 2.0M3
+   */
+  void setPrinter(WikiPrinter printer);
 }

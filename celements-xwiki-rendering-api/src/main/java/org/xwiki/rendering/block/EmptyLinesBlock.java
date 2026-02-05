@@ -22,49 +22,49 @@ package org.xwiki.rendering.block;
 import org.xwiki.rendering.listener.Listener;
 
 /**
- * Represents an empty line between 2 standalone Blocks. A standalone block is block that is not included in
+ * Represents an empty line between 2 standalone Blocks. A standalone block is block that is not
+ * included in
  * another block. Standalone blocks are Paragraph, Standalone Macro, Lists, Table, etc.
  *
  * @version $Id$
  * @since 1.6M2
  */
-public class EmptyLinesBlock  extends AbstractBlock
-{
-    /**
-     * Number of empty lines between 2 standalone Blocks.
-     */
-    private int count;
+public class EmptyLinesBlock extends AbstractBlock {
 
-    /**
-     * @param count the number of empty lines between 2 standalone Blocks
-     */
-    public EmptyLinesBlock(int count)
-    {
-        setEmptyLinesCount(count);
-    }
+  /**
+   * Number of empty lines between 2 standalone Blocks.
+   */
+  private int count;
 
-    /**
-     * @return the number of empty lines between 2 standalone Blocks
-     */
-    public int getEmptyLinesCount()
-    {
-        return this.count;
-    }
+  /**
+   * @param count
+   *          the number of empty lines between 2 standalone Blocks
+   */
+  public EmptyLinesBlock(int count) {
+    setEmptyLinesCount(count);
+  }
 
-    /**
-     * @param count the number of empty lines between 2 standalone Blocks
-     */
-    public void setEmptyLinesCount(int count)
-    {
-        this.count = count;
-    }
-    
-    /**
-     * {@inheritDoc}
-     * @see AbstractBlock#traverse(Listener)
-     */
-    public void traverse(Listener listener)
-    {
-        listener.onEmptyLines(getEmptyLinesCount());
-    }
+  /**
+   * @return the number of empty lines between 2 standalone Blocks
+   */
+  public int getEmptyLinesCount() {
+    return this.count;
+  }
+
+  /**
+   * @param count
+   *          the number of empty lines between 2 standalone Blocks
+   */
+  public void setEmptyLinesCount(int count) {
+    this.count = count;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractBlock#traverse(Listener)
+   */
+  public void traverse(Listener listener) {
+    listener.onEmptyLines(getEmptyLinesCount());
+  }
 }

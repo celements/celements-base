@@ -37,91 +37,93 @@ import org.xwiki.rendering.syntax.Syntax;
  * @since 2.1M1
  */
 @Component("plain/1.0")
-public class PlainTextStreamParser implements StreamParser
-{
-    /**
-     * The characters which are considered as "special" symbols for {@link org.xwiki.rendering.block.SpecialSymbolBlock}
-     * .
-     */
-    public static final Pattern SPECIALSYMBOL_PATTERN = Pattern.compile("[!\"#$%&'()*+,-./:;<=>?@\\[\\]^_`{|}~]");
+public class PlainTextStreamParser implements StreamParser {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.parser.Parser#getSyntax()
-     */
-    public Syntax getSyntax()
-    {
-        return Syntax.PLAIN_1_0;
+  /**
+   * The characters which are considered as "special" symbols for
+   * {@link org.xwiki.rendering.block.SpecialSymbolBlock}
+   * .
+   */
+  public static final Pattern SPECIALSYMBOL_PATTERN = Pattern
+      .compile("[!\"#$%&'()*+,-./:;<=>?@\\[\\]^_`{|}~]");
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.parser.Parser#getSyntax()
+   */
+  public Syntax getSyntax() {
+    return Syntax.PLAIN_1_0;
+  }
+
+  /**
+   * Read a single char from an Reader source.
+   * 
+   * @param source
+   *          the input to read from
+   * @return the char read
+   * @throws ParseException
+   *           in case of reading error
+   */
+  private int readChar(Reader source) throws ParseException {
+    int c;
+
+    try {
+      c = source.read();
+    } catch (IOException e) {
+      throw new ParseException("Failed to read input source", e);
     }
 
-    /**
-     * Read a single char from an Reader source.
-     * 
-     * @param source the input to read from
-     * @return the char read
-     * @throws ParseException in case of reading error
-     */
-    private int readChar(Reader source) throws ParseException
-    {
-        int c;
+    return c;
+  }
 
-        try {
-            c = source.read();
-        } catch (IOException e) {
-            throw new ParseException("Failed to read input source", e);
-        }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.parser.StreamParser#parse(java.io.Reader,
+   *      org.xwiki.rendering.listener.Listener)
+   */
+  public void parse(Reader source, Listener listener) throws ParseException {
+    StringBuffer word = new StringBuffer();
+    BufferedReader bufferedSource = new BufferedReader(source);
+    int charAsInt;
 
-        return c;
-    }
+    listener.beginParagraph(Listener.EMPTY_PARAMETERS);
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.parser.StreamParser#parse(java.io.Reader, org.xwiki.rendering.listener.Listener)
-     */
-    public void parse(Reader source, Listener listener) throws ParseException
-    {
-        StringBuffer word = new StringBuffer();
-        BufferedReader bufferedSource = new BufferedReader(source);
-        int charAsInt;
-
-        listener.beginParagraph(Listener.EMPTY_PARAMETERS);
-
-        while ((charAsInt = readChar(bufferedSource)) != -1) {
-            char c = (char) charAsInt;
-            if (c == '\n') {
-                if (word.length() > 0) {
-                    listener.onWord(word.toString());
-                }
-                listener.onNewLine();
-
-                word.setLength(0);
-            } else if (c == '\r') {
-                // Do nothing, skip it
-            } else if (c == ' ') {
-                if (word.length() > 0) {
-                    listener.onWord(word.toString());
-                }
-                listener.onSpace();
-
-                word.setLength(0);
-            } else if (SPECIALSYMBOL_PATTERN.matcher(String.valueOf(c)).matches()) {
-                if (word.length() > 0) {
-                    listener.onWord(word.toString());
-                }
-                listener.onSpecialSymbol(c);
-
-                word.setLength(0);
-            } else {
-                word.append(c);
-            }
-        }
-
+    while ((charAsInt = readChar(bufferedSource)) != -1) {
+      char c = (char) charAsInt;
+      if (c == '\n') {
         if (word.length() > 0) {
-            listener.onWord(word.toString());
+          listener.onWord(word.toString());
         }
+        listener.onNewLine();
 
-        listener.endParagraph(Listener.EMPTY_PARAMETERS);
+        word.setLength(0);
+      } else if (c == '\r') {
+        // Do nothing, skip it
+      } else if (c == ' ') {
+        if (word.length() > 0) {
+          listener.onWord(word.toString());
+        }
+        listener.onSpace();
+
+        word.setLength(0);
+      } else if (SPECIALSYMBOL_PATTERN.matcher(String.valueOf(c)).matches()) {
+        if (word.length() > 0) {
+          listener.onWord(word.toString());
+        }
+        listener.onSpecialSymbol(c);
+
+        word.setLength(0);
+      } else {
+        word.append(c);
+      }
     }
+
+    if (word.length() > 0) {
+      listener.onWord(word.toString());
+    }
+
+    listener.endParagraph(Listener.EMPTY_PARAMETERS);
+  }
 }

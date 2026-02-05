@@ -24,47 +24,47 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.syntax.Syntax;
 
 /**
- * Code common to all Transformation and base implementation of priorities (see {@link Transformation#getPriority()}).
+ * Code common to all Transformation and base implementation of priorities (see
+ * {@link Transformation#getPriority()}).
  * 
  * @version $Id$
  * @since 1.5M2
  */
-public abstract class AbstractTransformation extends AbstractLogEnabled implements Transformation
-{
-    /**
-     * Execution order priority. Transformations with smaller values are executed sooner. Injected by the Component
-     * Manager.
-     */
-    private int priority = 1000;
+public abstract class AbstractTransformation extends AbstractLogEnabled implements Transformation {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Transformation#getPriority()
-     */
-    public int getPriority()
-    {
-        return this.priority;
-    }
+  /**
+   * Execution order priority. Transformations with smaller values are executed sooner. Injected by
+   * the Component
+   * Manager.
+   */
+  private int priority = 1000;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see Transformation#compareTo(Object)
-     */
-    public int compareTo(Transformation transformation)
-    {
-        return getPriority() - transformation.getPriority();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see Transformation#getPriority()
+   */
+  public int getPriority() {
+    return this.priority;
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.transformation.Transformation#transform(org.xwiki.rendering.block.XDOM ,
-     *      org.xwiki.rendering.syntax.Syntax)
-     */
-    public void transform(XDOM dom, Syntax syntax) throws TransformationException
-    {
-        transform(dom, new TransformationContext(dom, syntax));
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see Transformation#compareTo(Object)
+   */
+  public int compareTo(Transformation transformation) {
+    return getPriority() - transformation.getPriority();
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.transformation.Transformation#transform(org.xwiki.rendering.block.XDOM
+   *      ,
+   *      org.xwiki.rendering.syntax.Syntax)
+   */
+  public void transform(XDOM dom, Syntax syntax) throws TransformationException {
+    transform(dom, new TransformationContext(dom, syntax));
+  }
 }

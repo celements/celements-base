@@ -25,50 +25,50 @@ import org.xwiki.rendering.internal.renderer.ParametersPrinter;
 import org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter;
 
 /**
- * Renders a XWiki Macro into Annotated XHTML (ie the macro definition is created as XHTML comments).
+ * Renders a XWiki Macro into Annotated XHTML (ie the macro definition is created as XHTML
+ * comments).
  *
  * @version $Id$
  * @since 1.7M2
  */
-public class XHTMLMacroRenderer
-{
-    /**
-     * Character to separate Macro name, content and parameters in XHTML comments.
-     */
-    private static final String COMMENT_SEPARATOR = "|-|";
+public class XHTMLMacroRenderer {
 
-    private ParametersPrinter parametersPrinter = new ParametersPrinter();
+  /**
+   * Character to separate Macro name, content and parameters in XHTML comments.
+   */
+  private static final String COMMENT_SEPARATOR = "|-|";
 
-    public void render(XHTMLWikiPrinter printer, String name, Map<String, String> parameters, String content)
-    {
-        beginRender(printer, name, parameters, content);
-        endRender(printer);
+  private ParametersPrinter parametersPrinter = new ParametersPrinter();
+
+  public void render(XHTMLWikiPrinter printer, String name, Map<String, String> parameters,
+      String content) {
+    beginRender(printer, name, parameters, content);
+    endRender(printer);
+  }
+
+  public void beginRender(XHTMLWikiPrinter printer, String name, Map<String, String> parameters,
+      String content) {
+    StringBuilder buffer = new StringBuilder("startmacro:");
+
+    // Print name
+    buffer.append(name);
+
+    // Print parameters
+    buffer.append(COMMENT_SEPARATOR);
+    if (!parameters.isEmpty()) {
+      buffer.append(this.parametersPrinter.print(parameters, '\\'));
     }
 
-    public void beginRender(XHTMLWikiPrinter printer, String name, Map<String, String> parameters, String content)
-    {
-        StringBuilder buffer = new StringBuilder("startmacro:");
-
-        // Print name
-        buffer.append(name);
-
-        // Print parameters
-        buffer.append(COMMENT_SEPARATOR);
-        if (!parameters.isEmpty()) {
-            buffer.append(this.parametersPrinter.print(parameters, '\\'));
-        }
-
-        // Print content
-        if (content != null) {
-            buffer.append(COMMENT_SEPARATOR);
-            buffer.append(content);
-        }
-
-        printer.printXMLComment(buffer.toString(), true);
+    // Print content
+    if (content != null) {
+      buffer.append(COMMENT_SEPARATOR);
+      buffer.append(content);
     }
 
-    public void endRender(XHTMLWikiPrinter printer)
-    {
-        printer.printXMLComment("stopmacro");
-    }
+    printer.printXMLComment(buffer.toString(), true);
+  }
+
+  public void endRender(XHTMLWikiPrinter printer) {
+    printer.printXMLComment("stopmacro");
+  }
 }

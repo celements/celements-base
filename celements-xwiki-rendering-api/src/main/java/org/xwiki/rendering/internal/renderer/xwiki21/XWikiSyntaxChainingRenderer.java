@@ -31,47 +31,48 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
  * @since 2.5M2
  */
 public class XWikiSyntaxChainingRenderer
-    extends org.xwiki.rendering.internal.renderer.xwiki20.XWikiSyntaxChainingRenderer
-{
-    /**
-     * @param listenerChain the rendering listener chain
-     * @param linkReferenceSerializer the serializer to use to serialize link references
-     * @param imageReferenceSerializer the serializer to use to serialize image references
-     * @since 2.5RC1
-     */
-    public XWikiSyntaxChainingRenderer(ListenerChain listenerChain,
-        ResourceReferenceSerializer linkReferenceSerializer, ResourceReferenceSerializer imageReferenceSerializer)
-    {
-        super(listenerChain, linkReferenceSerializer, imageReferenceSerializer);
-    }
+    extends org.xwiki.rendering.internal.renderer.xwiki20.XWikiSyntaxChainingRenderer {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.internal.renderer.xwiki20.XWikiSyntaxChainingRenderer#createXWikiSyntaxLinkRenderer(
-     *      ListenerChain, org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer)
-     * @since 2.5RC1
-     *
-     */
-    @Override
-    protected XWikiSyntaxResourceRenderer
-    createXWikiSyntaxLinkRenderer(ListenerChain listenerChain, ResourceReferenceSerializer linkReferenceSerializer)
-    {
-        return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain, linkReferenceSerializer);
-    }
+  /**
+   * @param listenerChain
+   *          the rendering listener chain
+   * @param linkReferenceSerializer
+   *          the serializer to use to serialize link references
+   * @param imageReferenceSerializer
+   *          the serializer to use to serialize image references
+   * @since 2.5RC1
+   */
+  public XWikiSyntaxChainingRenderer(ListenerChain listenerChain,
+      ResourceReferenceSerializer linkReferenceSerializer,
+      ResourceReferenceSerializer imageReferenceSerializer) {
+    super(listenerChain, linkReferenceSerializer, imageReferenceSerializer);
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.internal.renderer.xwiki20.XWikiSyntaxChainingRenderer#createXWikiSyntaxImageRenderer(
-     *      ListenerChain, org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer)
-     * @since 2.5RC1
-     *
-     */
-    @Override
-    protected XWikiSyntaxResourceRenderer
-    createXWikiSyntaxImageRenderer(ListenerChain listenerChain, ResourceReferenceSerializer imageReferenceSerializer)
-    {
-        return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain, imageReferenceSerializer);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.internal.renderer.xwiki20.XWikiSyntaxChainingRenderer#createXWikiSyntaxLinkRenderer(
+   *      ListenerChain, org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer)
+   * @since 2.5RC1
+   */
+  @Override
+  protected XWikiSyntaxResourceRenderer createXWikiSyntaxLinkRenderer(ListenerChain listenerChain,
+      ResourceReferenceSerializer linkReferenceSerializer) {
+    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain,
+        linkReferenceSerializer);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.internal.renderer.xwiki20.XWikiSyntaxChainingRenderer#createXWikiSyntaxImageRenderer(
+   *      ListenerChain, org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer)
+   * @since 2.5RC1
+   */
+  @Override
+  protected XWikiSyntaxResourceRenderer createXWikiSyntaxImageRenderer(ListenerChain listenerChain,
+      ResourceReferenceSerializer imageReferenceSerializer) {
+    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain,
+        imageReferenceSerializer);
+  }
 }

@@ -30,14 +30,14 @@ import org.xwiki.rendering.syntax.Syntax;
  * @since 2.0M3
  */
 @Component("xhtml/1.0")
-public class XHTMLRendererFactory extends AbstractPrintRendererFactory
-{
-    /**
-     * {@inheritDoc}
-     * @see AbstractPrintRendererFactory#getSyntax()
-     */
-    public Syntax getSyntax()
-    {
-        return Syntax.XHTML_1_0;
-    }
+public class XHTMLRendererFactory extends AbstractPrintRendererFactory {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see AbstractPrintRendererFactory#getSyntax()
+   */
+  public Syntax getSyntax() {
+    return Syntax.XHTML_1_0;
+  }
 }

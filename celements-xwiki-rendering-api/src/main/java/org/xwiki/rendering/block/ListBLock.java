@@ -25,7 +25,6 @@ package org.xwiki.rendering.block;
  * @version $Id$
  * @since 1.5M2
  */
-public interface ListBLock extends Block
-{
-    // This is currently only a tagging interface and thus it has no methods.
+public interface ListBLock extends Block {
+  // This is currently only a tagging interface and thus it has no methods.
 }

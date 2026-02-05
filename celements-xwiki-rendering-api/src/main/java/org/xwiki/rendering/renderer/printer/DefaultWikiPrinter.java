@@ -25,83 +25,76 @@ package org.xwiki.rendering.renderer.printer;
  * @version $Id$
  * @since 1.6M1
  */
-public class DefaultWikiPrinter implements WikiPrinter
-{
-    /**
-     * The buffer where to put the provided {@link String}s.
-     */
-    private StringBuffer buffer;
+public class DefaultWikiPrinter implements WikiPrinter {
 
-    /**
-     * The default constructor. It initialize a new empty {@link StringBuffer}.
-     */
-    public DefaultWikiPrinter()
-    {
-        this(new StringBuffer());
-    }
+  /**
+   * The buffer where to put the provided {@link String}s.
+   */
+  private StringBuffer buffer;
 
-    /**
-     * @param buffer the {@link StringBuffer} to where to put the provided {@link String}s.
-     */
-    public DefaultWikiPrinter(StringBuffer buffer)
-    {
-        this.buffer = buffer;
-    }
+  /**
+   * The default constructor. It initialize a new empty {@link StringBuffer}.
+   */
+  public DefaultWikiPrinter() {
+    this(new StringBuffer());
+  }
 
-    /**
-     * @return the buffer containing the printed {@link String}s.
-     */
-    public StringBuffer getBuffer()
-    {
-        return this.buffer;
-    }
+  /**
+   * @param buffer
+   *          the {@link StringBuffer} to where to put the provided {@link String}s.
+   */
+  public DefaultWikiPrinter(StringBuffer buffer) {
+    this.buffer = buffer;
+  }
 
-    /**
-     * This method is protected to allow classes extending this one to override what a new line is.
-     * 
-     * @return a new line symbols
-     */
-    protected String getEOL()
-    {
-        return "\n";
-    }
+  /**
+   * @return the buffer containing the printed {@link String}s.
+   */
+  public StringBuffer getBuffer() {
+    return this.buffer;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see WikiPrinter#print(String)
-     */
-    public void print(String text)
-    {
-        getBuffer().append(text);
-    }
+  /**
+   * This method is protected to allow classes extending this one to override what a new line is.
+   * 
+   * @return a new line symbols
+   */
+  protected String getEOL() {
+    return "\n";
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see WikiPrinter#println(String)
-     */
-    public void println(String text)
-    {
-        getBuffer().append(text).append(getEOL());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see WikiPrinter#print(String)
+   */
+  public void print(String text) {
+    getBuffer().append(text);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString()
-    {
-        return getBuffer().toString();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see WikiPrinter#println(String)
+   */
+  public void println(String text) {
+    getBuffer().append(text).append(getEOL());
+  }
 
-    /**
-     * Removes the buffer's content which allows the printer to be reused.
-     */
-    public void clear()
-    {
-        getBuffer().setLength(0);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return getBuffer().toString();
+  }
+
+  /**
+   * Removes the buffer's content which allows the printer to be reused.
+   */
+  public void clear() {
+    getBuffer().setLength(0);
+  }
 }

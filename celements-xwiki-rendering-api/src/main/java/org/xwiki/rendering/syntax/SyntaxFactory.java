@@ -27,12 +27,14 @@ import org.xwiki.rendering.parser.ParseException;
  * @since 2.0RC1
  */
 @ComponentRole
-public interface SyntaxFactory
-{
-    /**
-     * @param syntaxAsIdString the syntax as a string (eg "xwiki/2.0", "plain/1.0")
-     * @return the parsed syntax as a Syntax object
-     * @throws ParseException in case the string doesn't represent a valid syntax
-     */
-    Syntax createSyntaxFromIdString(String syntaxAsIdString) throws ParseException;
+public interface SyntaxFactory {
+
+  /**
+   * @param syntaxAsIdString
+   *          the syntax as a string (eg "xwiki/2.0", "plain/1.0")
+   * @return the parsed syntax as a Syntax object
+   * @throws ParseException
+   *           in case the string doesn't represent a valid syntax
+   */
+  Syntax createSyntaxFromIdString(String syntaxAsIdString) throws ParseException;
 }

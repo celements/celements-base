@@ -28,12 +28,17 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
 import org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer;
 
 /**
- * Generate a string representation of a Link reference, in XWiki Syntax 2.0. This implementation is pluggable by
- * using internally implementations of {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer},
- * each in charge of serializing a given {@link org.xwiki.rendering.listener.reference.ResourceType}.
+ * Generate a string representation of a Link reference, in XWiki Syntax 2.0. This implementation is
+ * pluggable by
+ * using internally implementations of
+ * {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer},
+ * each in charge of serializing a given
+ * {@link org.xwiki.rendering.listener.reference.ResourceType}.
  * <p>
- * Note that {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer} component implementations
- * must use a role hint equal to the XWiki Syntax id followed by "/" and then Link Type name (eg "doc" for document
+ * Note that {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer}
+ * component implementations
+ * must use a role hint equal to the XWiki Syntax id followed by "/" and then Link Type name (eg
+ * "doc" for document
  * links, "attach" for attachment links, etc).
  * </p>
  *
@@ -41,51 +46,53 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer;
  * @since 2.5RC1
  */
 @Component("xwiki/2.0/link")
-public class XWikiSyntaxLinkReferenceSerializer implements ResourceReferenceSerializer
-{
-    /**
-     * Prefix to use for {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer} role hints.
-     */
-    private static final String COMPONENT_PREFIX = "xwiki/2.0";
+public class XWikiSyntaxLinkReferenceSerializer implements ResourceReferenceSerializer {
 
-    /**
-     * Used to lookup {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer} implementations.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+  /**
+   * Prefix to use for
+   * {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer} role hints.
+   */
+  private static final String COMPONENT_PREFIX = "xwiki/2.0";
 
-    /**
-     * Default serializer to use when no serializer is found for the link type.
-     */
-    @Requirement("xwiki/2.0")
-    private ResourceReferenceTypeSerializer defaultResourceReferenceTypeSerializer;
+  /**
+   * Used to lookup {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer}
+   * implementations.
+   */
+  @Requirement
+  private ComponentManager componentManager;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer#serialize(
-     *org.xwiki.rendering.listener.reference.ResourceReference)
-     */
-    public String serialize(ResourceReference reference)
-    {
-        String result;
+  /**
+   * Default serializer to use when no serializer is found for the link type.
+   */
+  @Requirement("xwiki/2.0")
+  private ResourceReferenceTypeSerializer defaultResourceReferenceTypeSerializer;
 
-        try {
-            result = this.componentManager.lookup(ResourceReferenceTypeSerializer.class,
-                getLinkTypeSerializerComponentPrefix() + "/" + reference.getType().getScheme()).serialize(reference);
-        } catch (ComponentLookupException e) {
-            // Failed to find serializer for the passed link type. Use the default serializer.
-            result = this.defaultResourceReferenceTypeSerializer.serialize(reference);
-        }
-        return result;
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer#serialize(
+   *      org.xwiki.rendering.listener.reference.ResourceReference)
+   */
+  public String serialize(ResourceReference reference) {
+    String result;
+
+    try {
+      result = this.componentManager.lookup(ResourceReferenceTypeSerializer.class,
+          getLinkTypeSerializerComponentPrefix() + "/" + reference.getType().getScheme())
+          .serialize(reference);
+    } catch (ComponentLookupException e) {
+      // Failed to find serializer for the passed link type. Use the default serializer.
+      result = this.defaultResourceReferenceTypeSerializer.serialize(reference);
     }
+    return result;
+  }
 
-    /**
-     * @return the role hint prefix to use when looking up
-     *         {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer} implementations.
-     */
-    protected String getLinkTypeSerializerComponentPrefix()
-    {
-        return COMPONENT_PREFIX;
-    }
+  /**
+   * @return the role hint prefix to use when looking up
+   *         {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer}
+   *         implementations.
+   */
+  protected String getLinkTypeSerializerComponentPrefix() {
+    return COMPONENT_PREFIX;
+  }
 }

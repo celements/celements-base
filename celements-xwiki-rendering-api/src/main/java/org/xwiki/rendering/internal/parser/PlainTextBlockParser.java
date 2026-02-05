@@ -29,15 +29,14 @@ import org.xwiki.rendering.syntax.Syntax;
  * @since 2.1M1
  */
 @Component("plain/1.0")
-public class PlainTextBlockParser extends AbstractBlockParser
-{
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.parser.Parser#getSyntax()
-     */
-    public Syntax getSyntax()
-    {
-        return Syntax.PLAIN_1_0;
-    }
+public class PlainTextBlockParser extends AbstractBlockParser {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.parser.Parser#getSyntax()
+   */
+  public Syntax getSyntax() {
+    return Syntax.PLAIN_1_0;
+  }
 }

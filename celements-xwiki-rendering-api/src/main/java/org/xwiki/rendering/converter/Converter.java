@@ -31,18 +31,24 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
  * @since 2.0M3
  */
 @ComponentRole
-public interface Converter
-{
-    /**
-     * Converts content from a Syntax to another and execute all registered Macro Transformations on the parsed
-     * content.
-     * 
-     * @param source the content to be converted
-     * @param sourceSyntax the Syntax in which the content is represented
-     * @param targetSyntax the Syntax to which to convert to
-     * @param printer the printer that will receive the result of the conversion
-     * @throws ConversionException in case of a conversion error (invalid Syntax, etc)
-     */
-    void convert(Reader source, Syntax sourceSyntax, Syntax targetSyntax, WikiPrinter printer)
-        throws ConversionException;
+public interface Converter {
+
+  /**
+   * Converts content from a Syntax to another and execute all registered Macro Transformations on
+   * the parsed
+   * content.
+   * 
+   * @param source
+   *          the content to be converted
+   * @param sourceSyntax
+   *          the Syntax in which the content is represented
+   * @param targetSyntax
+   *          the Syntax to which to convert to
+   * @param printer
+   *          the printer that will receive the result of the conversion
+   * @throws ConversionException
+   *           in case of a conversion error (invalid Syntax, etc)
+   */
+  void convert(Reader source, Syntax sourceSyntax, Syntax targetSyntax, WikiPrinter printer)
+      throws ConversionException;
 }

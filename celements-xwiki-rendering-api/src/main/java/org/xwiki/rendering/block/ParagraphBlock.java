@@ -28,42 +28,41 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.5M2
  */
-public class ParagraphBlock extends AbstractFatherBlock
-{
-    /**
-     * @param blocks the children blocks of the paragraph
-     */
-    public ParagraphBlock(List<Block> blocks)
-    {
-        super(blocks);
-    }
+public class ParagraphBlock extends AbstractFatherBlock {
 
-    /**
-     * @param blocks the children blocks of the paragraph
-     * @param parameters the parameters of the paragraph
-     */
-    public ParagraphBlock(List<Block> blocks, Map<String, String> parameters)
-    {
-        super(blocks, parameters);
-    }
+  /**
+   * @param blocks
+   *          the children blocks of the paragraph
+   */
+  public ParagraphBlock(List<Block> blocks) {
+    super(blocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginParagraph(getParameters());
-    }
+  /**
+   * @param blocks
+   *          the children blocks of the paragraph
+   * @param parameters
+   *          the parameters of the paragraph
+   */
+  public ParagraphBlock(List<Block> blocks, Map<String, String> parameters) {
+    super(blocks, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endParagraph(getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginParagraph(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endParagraph(getParameters());
+  }
 }

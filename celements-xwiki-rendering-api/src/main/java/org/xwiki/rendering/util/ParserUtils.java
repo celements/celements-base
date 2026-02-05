@@ -30,21 +30,22 @@ import org.xwiki.rendering.block.ParagraphBlock;
  * @version $Id$
  * @since 1.7M1
  */
-public class ParserUtils
-{
-    /**
-     * Removes any top level paragraph since for example for the following use case we don't want an extra paragraph
-     * block: <code>= hello {{velocity}}world{{/velocity}}</code>.
-     * 
-     * @param blocks the blocks to check and convert
-     */
-    public void removeTopLevelParagraph(List<Block> blocks)
-    {
-        // Remove any top level paragraph so that the result of a macro can be used inline for example.
-        // We only remove the paragraph if there's only one top level element and if it's a paragraph.
-        if ((blocks.size() == 1) && blocks.get(0) instanceof ParagraphBlock) {
-            Block paragraphBlock = blocks.remove(0);
-            blocks.addAll(0, paragraphBlock.getChildren());
-        }
+public class ParserUtils {
+
+  /**
+   * Removes any top level paragraph since for example for the following use case we don't want an
+   * extra paragraph
+   * block: <code>= hello {{velocity}}world{{/velocity}}</code>.
+   * 
+   * @param blocks
+   *          the blocks to check and convert
+   */
+  public void removeTopLevelParagraph(List<Block> blocks) {
+    // Remove any top level paragraph so that the result of a macro can be used inline for example.
+    // We only remove the paragraph if there's only one top level element and if it's a paragraph.
+    if ((blocks.size() == 1) && blocks.get(0) instanceof ParagraphBlock) {
+      Block paragraphBlock = blocks.remove(0);
+      blocks.addAll(0, paragraphBlock.getChildren());
     }
+  }
 }

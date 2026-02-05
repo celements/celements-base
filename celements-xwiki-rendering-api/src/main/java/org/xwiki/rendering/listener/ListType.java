@@ -23,15 +23,14 @@ package org.xwiki.rendering.listener;
  * @version $Id$
  * @since 1.5M2
  */
-public enum ListType
-{
-    /**
-     * Each list item start with an incremented number.
-     */
-    NUMBERED,
+public enum ListType {
+  /**
+   * Each list item start with an incremented number.
+   */
+  NUMBERED,
 
-    /**
-     * Each list item start with a bullet.
-     */
-    BULLETED
+  /**
+   * Each list item start with a bullet.
+   */
+  BULLETED
 }

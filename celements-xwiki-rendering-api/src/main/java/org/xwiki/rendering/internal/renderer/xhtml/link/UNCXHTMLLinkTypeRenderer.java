@@ -34,21 +34,23 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
  */
 @Component("unc")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class UNCXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
-{
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(ResourceReference, java.util.Map, java.util.Map)
-     */
-    @Override
-    protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
-        Map<String, String> anchorAttributes)
-    {
-        // Transform the UNC reference into a file URL of the format: file://///myserver/myshare/mydoc.txt
-        // i.e. replace all "\" chars by "/" and prefix with "file:///".
-        String fileURL = "file:///" + reference.getReference().replaceAll("\\\\", "/");
+public class UNCXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer {
 
-        anchorAttributes.put(XHTMLLinkRenderer.HREF, fileURL);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(ResourceReference, java.util.Map,
+   *      java.util.Map)
+   */
+  @Override
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
+      Map<String, String> anchorAttributes) {
+    // Transform the UNC reference into a file URL of the format:
+    // file://///myserver/myshare/mydoc.txt
+    // i.e. replace all "\" chars by "/" and prefix with "file:///".
+    String fileURL = "file:///" + reference.getReference().replaceAll("\\\\", "/");
+
+    anchorAttributes.put(XHTMLLinkRenderer.HREF, fileURL);
+  }
 }

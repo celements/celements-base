@@ -28,61 +28,59 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.5M2
  */
-public class SectionBlock extends AbstractFatherBlock
-{
-    /**
-     * @param childBlocks the children of the section
-     */
-    public SectionBlock(List<Block> childBlocks)
-    {
-        super(childBlocks);
+public class SectionBlock extends AbstractFatherBlock {
+
+  /**
+   * @param childBlocks
+   *          the children of the section
+   */
+  public SectionBlock(List<Block> childBlocks) {
+    super(childBlocks);
+  }
+
+  /**
+   * @param childBlocks
+   *          the children of the section
+   * @param parameters
+   *          the parameters of the section
+   */
+  public SectionBlock(List<Block> childBlocks, Map<String, String> parameters) {
+    super(childBlocks, parameters);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginSection(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endSection(getParameters());
+  }
+
+  /**
+   * @return the title block of the section.
+   */
+  public HeaderBlock getHeaderBlock() {
+    HeaderBlock headerBlock = null;
+
+    List<Block> children = getChildren();
+
+    if (children.size() > 0) {
+      Block firstChild = children.get(0);
+      if (firstChild instanceof HeaderBlock) {
+        headerBlock = (HeaderBlock) firstChild;
+      }
     }
 
-    /**
-     * @param childBlocks the children of the section
-     * @param parameters the parameters of the section
-     */
-    public SectionBlock(List<Block> childBlocks, Map<String, String> parameters)
-    {
-        super(childBlocks, parameters);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginSection(getParameters());
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endSection(getParameters());
-    }
-
-    /**
-     * @return the title block of the section.
-     */
-    public HeaderBlock getHeaderBlock()
-    {
-        HeaderBlock headerBlock = null;
-
-        List<Block> children = getChildren();
-
-        if (children.size() > 0) {
-            Block firstChild = children.get(0);
-            if (firstChild instanceof HeaderBlock) {
-                headerBlock = (HeaderBlock) firstChild;
-            }
-        }
-
-        return headerBlock;
-    }
+    return headerBlock;
+  }
 }

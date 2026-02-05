@@ -30,15 +30,15 @@ import org.xwiki.rendering.renderer.reference.link.URILabelGenerator;
  * @since 2.5RC1
  */
 @Component("attach")
-public class DefaultAttachmentURILabelGenerator implements URILabelGenerator
-{
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.renderer.reference.link.URILabelGenerator#generateLabel(
-     *org.xwiki.rendering.listener.reference.ResourceReference)
-     */
-    public String generateLabel(ResourceReference reference)
-    {
-        return reference.getReference();
-    }
+public class DefaultAttachmentURILabelGenerator implements URILabelGenerator {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.renderer.reference.link.URILabelGenerator#generateLabel(
+   *      org.xwiki.rendering.listener.reference.ResourceReference)
+   */
+  public String generateLabel(ResourceReference reference) {
+    return reference.getReference();
+  }
 }

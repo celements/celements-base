@@ -29,67 +29,67 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
  * @version $Id$
  * @since 1.8RC1
  */
-public abstract class AbstractChainingPrintRenderer extends AbstractChainingListener implements PrintRenderer
-{
-    /**
-     * The printer stack. Can be used to print in a specific printer and then easily return to the previous one.
-     */
-    private Stack<WikiPrinter> printers = new Stack<WikiPrinter>();
+public abstract class AbstractChainingPrintRenderer extends AbstractChainingListener
+    implements PrintRenderer {
 
-    /**
-     * @return the main printer.
-     */
-    public WikiPrinter getMainPrinter()
-    {
-        return this.printers.firstElement();
-    }
+  /**
+   * The printer stack. Can be used to print in a specific printer and then easily return to the
+   * previous one.
+   */
+  private Stack<WikiPrinter> printers = new Stack<WikiPrinter>();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.renderer.PrintRenderer#getPrinter()
-     */
-    public WikiPrinter getPrinter()
-    {
-        return this.printers.peek();
-    }
+  /**
+   * @return the main printer.
+   */
+  public WikiPrinter getMainPrinter() {
+    return this.printers.firstElement();
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see PrintRenderer#setPrinter(org.xwiki.rendering.renderer.printer.WikiPrinter)
-     * @since 2.0M3
-     */
-    public void setPrinter(WikiPrinter printer)
-    {
-        pushPrinter(printer);
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.renderer.PrintRenderer#getPrinter()
+   */
+  public WikiPrinter getPrinter() {
+    return this.printers.peek();
+  }
 
-    /**
-     * Change the current {@link WikiPrinter} with the provided one.
-     * 
-     * @param wikiPrinter the new {@link WikiPrinter} to use
-     */
-    protected void pushPrinter(WikiPrinter wikiPrinter)
-    {
-        this.printers.push(wikiPrinter);
+  /**
+   * {@inheritDoc}
+   * 
+   * @see PrintRenderer#setPrinter(org.xwiki.rendering.renderer.printer.WikiPrinter)
+   * @since 2.0M3
+   */
+  public void setPrinter(WikiPrinter printer) {
+    pushPrinter(printer);
+  }
 
-        // Since we're setting a new printer to use, make sure that all print renderers in the chain have the new
-        // printer set. Only do this if we're on the top level Print Renderer.
-        if (getListenerChain().indexOf(getClass()) == 0) {
-            ChainingListener nextListener = this;
-            while ((nextListener = getListenerChain().getNextListener(nextListener.getClass())) != null) {
-                if (PrintRenderer.class.isAssignableFrom(nextListener.getClass())) {
-                    ((PrintRenderer) nextListener).setPrinter(wikiPrinter);
-                }
-            }
+  /**
+   * Change the current {@link WikiPrinter} with the provided one.
+   * 
+   * @param wikiPrinter
+   *          the new {@link WikiPrinter} to use
+   */
+  protected void pushPrinter(WikiPrinter wikiPrinter) {
+    this.printers.push(wikiPrinter);
+
+    // Since we're setting a new printer to use, make sure that all print renderers in the chain
+    // have the new
+    // printer set. Only do this if we're on the top level Print Renderer.
+    if (getListenerChain().indexOf(getClass()) == 0) {
+      ChainingListener nextListener = this;
+      while ((nextListener = getListenerChain().getNextListener(nextListener.getClass())) != null) {
+        if (PrintRenderer.class.isAssignableFrom(nextListener.getClass())) {
+          ((PrintRenderer) nextListener).setPrinter(wikiPrinter);
         }
+      }
     }
+  }
 
-    /**
-     * Removes the current {@link WikiPrinter} and instead sets the previous printer as active.
-     */
-    protected void popPrinter()
-    {
-        this.printers.pop();
-    }
+  /**
+   * Removes the current {@link WikiPrinter} and instead sets the previous printer as active.
+   */
+  protected void popPrinter() {
+    this.printers.pop();
+  }
 }

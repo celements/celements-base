@@ -31,43 +31,43 @@ import java.util.Collections;
  * @version $Id$
  * @since 1.5M2
  */
-public abstract class AbstractFatherBlock extends AbstractBlock implements FatherBlock
-{
-    /**
-     * Constructs a block with children blocks.
-     * 
-     * @param childrenBlocks the list of children blocks of the block to construct
-     */
-    public AbstractFatherBlock(List<Block> childrenBlocks)
-    {
-        this(childrenBlocks, Collections.<String, String> emptyMap());
+public abstract class AbstractFatherBlock extends AbstractBlock implements FatherBlock {
+
+  /**
+   * Constructs a block with children blocks.
+   * 
+   * @param childrenBlocks
+   *          the list of children blocks of the block to construct
+   */
+  public AbstractFatherBlock(List<Block> childrenBlocks) {
+    this(childrenBlocks, Collections.<String, String>emptyMap());
+  }
+
+  /**
+   * Construct a block with children blocks and parameters.
+   * 
+   * @param childrenBlocks
+   *          the list of children blocks of the block to construct
+   * @param parameters
+   *          the parameters to set
+   */
+  public AbstractFatherBlock(List<Block> childrenBlocks, Map<String, String> parameters) {
+    super(parameters);
+    addChildren(childrenBlocks);
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
+   */
+  public void traverse(Listener listener) {
+    before(listener);
+
+    for (Block block : getChildren()) {
+      block.traverse(listener);
     }
 
-    /**
-     * Construct a block with children blocks and parameters.
-     * 
-     * @param childrenBlocks the list of children blocks of the block to construct
-     * @param parameters the parameters to set
-     */
-    public AbstractFatherBlock(List<Block> childrenBlocks, Map<String, String> parameters)
-    {
-        super(parameters);
-        addChildren(childrenBlocks);
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
-     */
-    public void traverse(Listener listener)
-    {
-        before(listener);
-
-        for (Block block : getChildren()) {
-            block.traverse(listener);
-        }
-
-        after(listener);
-    }
+    after(listener);
+  }
 }

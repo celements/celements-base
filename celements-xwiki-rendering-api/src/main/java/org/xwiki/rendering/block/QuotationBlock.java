@@ -31,42 +31,41 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.6M2
  */
-public class QuotationBlock extends AbstractFatherBlock
-{
-    /**
-     * @param blocks the children of the quotation
-     */
-    public QuotationBlock(List<Block> blocks)
-    {
-        super(blocks, Collections.<String, String> emptyMap());
-    }
+public class QuotationBlock extends AbstractFatherBlock {
 
-    /**
-     * @param blocks the children of the quotation
-     * @param parameters the parameters of the quotation
-     */
-    public QuotationBlock(List<Block> blocks, Map<String, String> parameters)
-    {
-        super(blocks, parameters);
-    }
+  /**
+   * @param blocks
+   *          the children of the quotation
+   */
+  public QuotationBlock(List<Block> blocks) {
+    super(blocks, Collections.<String, String>emptyMap());
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginQuotation(getParameters());
-    }
+  /**
+   * @param blocks
+   *          the children of the quotation
+   * @param parameters
+   *          the parameters of the quotation
+   */
+  public QuotationBlock(List<Block> blocks, Map<String, String> parameters) {
+    super(blocks, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endQuotation(getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginQuotation(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endQuotation(getParameters());
+  }
 }

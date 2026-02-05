@@ -21,37 +21,32 @@ package org.xwiki.rendering.renderer.printer;
 
 /**
  * Wraps a wiki printer.
- *  
+ * 
  * @version $Id$
  * @since 1.7
  */
-public class WrappingWikiPrinter implements WikiPrinter
-{
-    private WikiPrinter printer;
+public class WrappingWikiPrinter implements WikiPrinter {
 
-    public WrappingWikiPrinter(WikiPrinter printer)
-    {
-        this.printer = printer;
-    }
+  private WikiPrinter printer;
 
-    public void print(String text)
-    {
-        getWrappedPrinter().print(text);
-    }
+  public WrappingWikiPrinter(WikiPrinter printer) {
+    this.printer = printer;
+  }
 
-    public void println(String text)
-    {
-        getWrappedPrinter().println(text);
-    }
+  public void print(String text) {
+    getWrappedPrinter().print(text);
+  }
 
-    public WikiPrinter getWrappedPrinter()
-    {
-        return this.printer;
-    }
-    
-    @Override
-    public String toString()
-    {
-        return getWrappedPrinter().toString();
-    }
+  public void println(String text) {
+    getWrappedPrinter().println(text);
+  }
+
+  public WikiPrinter getWrappedPrinter() {
+    return this.printer;
+  }
+
+  @Override
+  public String toString() {
+    return getWrappedPrinter().toString();
+  }
 }

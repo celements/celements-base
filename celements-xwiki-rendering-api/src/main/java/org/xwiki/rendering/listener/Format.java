@@ -25,45 +25,44 @@ package org.xwiki.rendering.listener;
  * @version $Id$
  * @since 1.6M1
  */
-public enum Format
-{
-    /**
-     * Bold style.
-     */
-    BOLD,
+public enum Format {
+  /**
+   * Bold style.
+   */
+  BOLD,
 
-    /**
-     * Italic style.
-     */
-    ITALIC,
+  /**
+   * Italic style.
+   */
+  ITALIC,
 
-    /**
-     * Underlined style.
-     */
-    UNDERLINED,
+  /**
+   * Underlined style.
+   */
+  UNDERLINED,
 
-    /**
-     * Strikedout style.
-     */
-    STRIKEDOUT,
+  /**
+   * Strikedout style.
+   */
+  STRIKEDOUT,
 
-    /**
-     * Superscript style.
-     */
-    SUPERSCRIPT,
+  /**
+   * Superscript style.
+   */
+  SUPERSCRIPT,
 
-    /**
-     * Subscript style.
-     */
-    SUBSCRIPT,
+  /**
+   * Subscript style.
+   */
+  SUBSCRIPT,
 
-    /**
-     * Monospace style.
-     */
-    MONOSPACE,
+  /**
+   * Monospace style.
+   */
+  MONOSPACE,
 
-    /**
-     * No style.
-     */
-    NONE
+  /**
+   * No style.
+   */
+  NONE
 }

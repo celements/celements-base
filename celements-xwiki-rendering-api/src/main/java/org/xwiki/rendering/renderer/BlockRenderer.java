@@ -31,18 +31,22 @@ import org.xwiki.rendering.block.Block;
  * @since 2.0M3
  */
 @ComponentRole
-public interface BlockRenderer
-{
-    /**
-     * @param block the block to render in the target syntax
-     * @param printer the object where to output the result of the rendering
-     */
-    void render(Block block, WikiPrinter printer);
+public interface BlockRenderer {
 
-    /**
-     * @param blocks the list of blocks to render in the target syntax
-     * @param printer the object where to output the result of the rendering
-     * @todo remove this API once we introduce the notion of BlockCollection
-     */
-    void render(Collection<Block> blocks, WikiPrinter printer);
+  /**
+   * @param block
+   *          the block to render in the target syntax
+   * @param printer
+   *          the object where to output the result of the rendering
+   */
+  void render(Block block, WikiPrinter printer);
+
+  /**
+   * @param blocks
+   *          the list of blocks to render in the target syntax
+   * @param printer
+   *          the object where to output the result of the rendering
+   * @todo remove this API once we introduce the notion of BlockCollection
+   */
+  void render(Collection<Block> blocks, WikiPrinter printer);
 }

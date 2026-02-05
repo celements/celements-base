@@ -31,18 +31,18 @@ import org.xwiki.rendering.renderer.PrintRendererFactory;
  * @since 2.0M3
  */
 @Component("xhtml/1.0")
-public class XHTMLBlockRenderer extends AbstractBlockRenderer
-{
-    @Requirement("xhtml/1.0")
-    private PrintRendererFactory xhtmlRendererFactory;
+public class XHTMLBlockRenderer extends AbstractBlockRenderer {
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
-     */
-    @Override
-    protected PrintRendererFactory getPrintRendererFactory()
-    {
-        return this.xhtmlRendererFactory;
-    }
+  @Requirement("xhtml/1.0")
+  private PrintRendererFactory xhtmlRendererFactory;
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
+   */
+  @Override
+  protected PrintRendererFactory getPrintRendererFactory() {
+    return this.xhtmlRendererFactory;
+  }
 }

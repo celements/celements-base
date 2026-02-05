@@ -32,18 +32,22 @@ import org.xwiki.rendering.syntax.Syntax;
  * @since 2.1M1
  */
 @ComponentRole
-public interface StreamParser
-{
-    /**
-     * @return the wiki syntax the parser is implementing
-     */
-    Syntax getSyntax();
+public interface StreamParser {
 
-    /**
-     * @param source the content to parse
-     * @param listener receive event for each element
-     * @throws ParseException if the source cannot be read or an unexpected error happens during the parsing. Parsers
-     *             should be written to not generate any error as much as possible.
-     */
-    void parse(Reader source, Listener listener) throws ParseException;
+  /**
+   * @return the wiki syntax the parser is implementing
+   */
+  Syntax getSyntax();
+
+  /**
+   * @param source
+   *          the content to parse
+   * @param listener
+   *          receive event for each element
+   * @throws ParseException
+   *           if the source cannot be read or an unexpected error happens during the parsing.
+   *           Parsers
+   *           should be written to not generate any error as much as possible.
+   */
+  void parse(Reader source, Listener listener) throws ParseException;
 }

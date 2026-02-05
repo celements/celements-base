@@ -29,15 +29,14 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * @since 2.5RC1
  */
 @Component("path")
-public class PathResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser
-{
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractURIResourceReferenceTypeParser#getType()
-     */
-    public ResourceType getType()
-    {
-        return ResourceType.PATH;
-    }
+public class PathResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractURIResourceReferenceTypeParser#getType()
+   */
+  public ResourceType getType() {
+    return ResourceType.PATH;
+  }
 }

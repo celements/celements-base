@@ -30,14 +30,14 @@ import org.xwiki.rendering.syntax.Syntax;
  * @since 2.5M2
  */
 @Component("xwiki/2.1")
-public class XWikiSyntaxRendererFactory extends AbstractPrintRendererFactory
-{
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.internal.renderer.AbstractPrintRendererFactory#getSyntax()
-     */
-    public Syntax getSyntax()
-    {
-        return Syntax.XWIKI_2_1;
-    }
+public class XWikiSyntaxRendererFactory extends AbstractPrintRendererFactory {
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.internal.renderer.AbstractPrintRendererFactory#getSyntax()
+   */
+  public Syntax getSyntax() {
+    return Syntax.XWIKI_2_1;
+  }
 }

@@ -32,58 +32,58 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.6M1
  */
-public class FormatBlock extends AbstractFatherBlock
-{
-    /**
-     * The formatting to apply to the children blocks.
-     */
-    private Format format;
+public class FormatBlock extends AbstractFatherBlock {
 
-    /**
-     * @param childrenBlocks the nested children blocks
-     * @param format the formatting to apply to the children blocks
-     */
-    public FormatBlock(List<Block> childrenBlocks, Format format)
-    {
-        this(childrenBlocks, format, Collections.<String, String> emptyMap());
-    }
+  /**
+   * The formatting to apply to the children blocks.
+   */
+  private Format format;
 
-    /**
-     * @param childrenBlocks the nested children blocks
-     * @param format the formatting to apply to the children blocks
-     * @param parameters the custom parameters
-     */
-    public FormatBlock(List<Block> childrenBlocks, Format format, Map<String, String> parameters)
-    {
-        super(childrenBlocks, parameters);
-        this.format = format;
-    }
+  /**
+   * @param childrenBlocks
+   *          the nested children blocks
+   * @param format
+   *          the formatting to apply to the children blocks
+   */
+  public FormatBlock(List<Block> childrenBlocks, Format format) {
+    this(childrenBlocks, format, Collections.<String, String>emptyMap());
+  }
 
-    /**
-     * @return the formatting to apply to the children blocks
-     */
-    public Format getFormat()
-    {
-        return this.format;
-    }
+  /**
+   * @param childrenBlocks
+   *          the nested children blocks
+   * @param format
+   *          the formatting to apply to the children blocks
+   * @param parameters
+   *          the custom parameters
+   */
+  public FormatBlock(List<Block> childrenBlocks, Format format, Map<String, String> parameters) {
+    super(childrenBlocks, parameters);
+    this.format = format;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginFormat(getFormat(), getParameters());
-    }
+  /**
+   * @return the formatting to apply to the children blocks
+   */
+  public Format getFormat() {
+    return this.format;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endFormat(getFormat(), getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginFormat(getFormat(), getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endFormat(getFormat(), getParameters());
+  }
 }

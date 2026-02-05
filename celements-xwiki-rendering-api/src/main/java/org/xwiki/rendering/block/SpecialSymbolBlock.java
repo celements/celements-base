@@ -27,48 +27,45 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.5M2
  */
-public class SpecialSymbolBlock extends AbstractBlock
-{
-    /**
-     * The symbol.
-     */
-    private char symbol;
+public class SpecialSymbolBlock extends AbstractBlock {
 
-    /**
-     * @param symbol the symbol
-     */
-    public SpecialSymbolBlock(char symbol)
-    {
-        this.symbol = symbol;
-    }
+  /**
+   * The symbol.
+   */
+  private char symbol;
 
-    /**
-     * @return the symbol
-     */
-    public char getSymbol()
-    {
-        return this.symbol;
-    }
+  /**
+   * @param symbol
+   *          the symbol
+   */
+  public SpecialSymbolBlock(char symbol) {
+    this.symbol = symbol;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.Block#traverse(org.xwiki.rendering.listener.Listener)
-     */
-    public void traverse(Listener listener)
-    {
-        listener.onSpecialSymbol(getSymbol());
-    }
+  /**
+   * @return the symbol
+   */
+  public char getSymbol() {
+    return this.symbol;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#toString()
-     * @since 1.8RC2
-     */
-    @Override
-    public String toString()
-    {
-        return String.valueOf(getSymbol());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.Block#traverse(org.xwiki.rendering.listener.Listener)
+   */
+  public void traverse(Listener listener) {
+    listener.onSpecialSymbol(getSymbol());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see java.lang.Object#toString()
+   * @since 1.8RC2
+   */
+  @Override
+  public String toString() {
+    return String.valueOf(getSymbol());
+  }
 }

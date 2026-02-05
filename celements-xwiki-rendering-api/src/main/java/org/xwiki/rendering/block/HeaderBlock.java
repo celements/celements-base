@@ -29,107 +29,111 @@ import org.xwiki.rendering.listener.HeaderLevel;
  * @version $Id$
  * @since 1.5M2
  */
-public class HeaderBlock extends AbstractFatherBlock
-{
-    /**
-     * The level of the header.
-     */
-    private HeaderLevel level;
+public class HeaderBlock extends AbstractFatherBlock {
 
-    /**
-     * The id of the header.
-     */
-    private String id;
+  /**
+   * The level of the header.
+   */
+  private HeaderLevel level;
 
-    /**
-     * @param childBlocks the children of the header.
-     * @param level the level of the header
-     */
-    public HeaderBlock(List<Block> childBlocks, HeaderLevel level)
-    {
-        super(childBlocks);
+  /**
+   * The id of the header.
+   */
+  private String id;
 
-        this.level = level;
-    }
+  /**
+   * @param childBlocks
+   *          the children of the header.
+   * @param level
+   *          the level of the header
+   */
+  public HeaderBlock(List<Block> childBlocks, HeaderLevel level) {
+    super(childBlocks);
 
-    /**
-     * @param childBlocks the children of the header.
-     * @param level the level of the header
-     * @param parameters the parameters of the header
-     */
-    public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters)
-    {
-        super(childBlocks, parameters);
+    this.level = level;
+  }
 
-        this.level = level;
-    }
+  /**
+   * @param childBlocks
+   *          the children of the header.
+   * @param level
+   *          the level of the header
+   * @param parameters
+   *          the parameters of the header
+   */
+  public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters) {
+    super(childBlocks, parameters);
 
-    /**
-     * @param childBlocks the children of the header.
-     * @param level the level of the header
-     * @param id the id of the header.
-     */
-    public HeaderBlock(List<Block> childBlocks, HeaderLevel level, String id)
-    {
-        this(childBlocks, level);
+    this.level = level;
+  }
 
-        this.id = id;
-    }
+  /**
+   * @param childBlocks
+   *          the children of the header.
+   * @param level
+   *          the level of the header
+   * @param id
+   *          the id of the header.
+   */
+  public HeaderBlock(List<Block> childBlocks, HeaderLevel level, String id) {
+    this(childBlocks, level);
 
-    /**
-     * @param childBlocks the children of the header.
-     * @param level the level of the header
-     * @param parameters the parameters of the header
-     * @param id the id of the header.
-     */
-    public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters, String id)
-    {
-        this(childBlocks, level, parameters);
+    this.id = id;
+  }
 
-        this.id = id;
-    }
+  /**
+   * @param childBlocks
+   *          the children of the header.
+   * @param level
+   *          the level of the header
+   * @param parameters
+   *          the parameters of the header
+   * @param id
+   *          the id of the header.
+   */
+  public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters,
+      String id) {
+    this(childBlocks, level, parameters);
 
-    /**
-     * @return the level of the header
-     */
-    public HeaderLevel getLevel()
-    {
-        return this.level;
-    }
+    this.id = id;
+  }
 
-    /**
-     * @return the id of the header.
-     */
-    public String getId()
-    {
-        return this.id;
-    }
+  /**
+   * @return the level of the header
+   */
+  public HeaderLevel getLevel() {
+    return this.level;
+  }
 
-    /**
-     * @return the {@link SectionBlock} corresponding to this header
-     */
-    public SectionBlock getSection()
-    {
-        return (SectionBlock) getParent();
-    }
+  /**
+   * @return the id of the header.
+   */
+  public String getId() {
+    return this.id;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginHeader(getLevel(), getId(), getParameters());
-    }
+  /**
+   * @return the {@link SectionBlock} corresponding to this header
+   */
+  public SectionBlock getSection() {
+    return (SectionBlock) getParent();
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endHeader(getLevel(), getId(), getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginHeader(getLevel(), getId(), getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endHeader(getLevel(), getId(), getParameters());
+  }
 }

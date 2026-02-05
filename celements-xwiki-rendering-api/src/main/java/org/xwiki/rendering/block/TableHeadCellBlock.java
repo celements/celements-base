@@ -30,36 +30,35 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.6M2
  */
-public class TableHeadCellBlock extends TableCellBlock
-{
-    /**
-     * @param list the list of children blocks of the table cell block.
-     * @param parameters the parameters of the table head cell.
-     */
-    public TableHeadCellBlock(List<Block> list, Map<String, String> parameters)
-    {
-        super(list, parameters);
-    }
+public class TableHeadCellBlock extends TableCellBlock {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.TableCellBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    @Override
-    public void before(Listener listener)
-    {
-        listener.beginTableHeadCell(getParameters());
-    }
+  /**
+   * @param list
+   *          the list of children blocks of the table cell block.
+   * @param parameters
+   *          the parameters of the table head cell.
+   */
+  public TableHeadCellBlock(List<Block> list, Map<String, String> parameters) {
+    super(list, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.TableCellBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    @Override
-    public void after(Listener listener)
-    {
-        listener.endTableHeadCell(getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.TableCellBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  @Override
+  public void before(Listener listener) {
+    listener.beginTableHeadCell(getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.TableCellBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  @Override
+  public void after(Listener listener) {
+    listener.endTableHeadCell(getParameters());
+  }
 }

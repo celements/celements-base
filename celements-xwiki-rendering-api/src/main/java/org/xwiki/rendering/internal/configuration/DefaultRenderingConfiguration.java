@@ -38,91 +38,90 @@ import java.util.Properties;
  * @since 2.0M1
  */
 @Component
-public class DefaultRenderingConfiguration implements RenderingConfiguration, Initializable
-{
-    /**
-     * Holds the list of transformations to apply, sorted by priority in {@link #initialize()}.
-     */
-    @Requirement
-    private List<Transformation> transformations = new ArrayList<Transformation>();
+public class DefaultRenderingConfiguration implements RenderingConfiguration, Initializable {
 
-    /**
-     * @see #getLinkLabelFormat()
-     */
-    private String linkLabelFormat = "%p";
+  /**
+   * Holds the list of transformations to apply, sorted by priority in {@link #initialize()}.
+   */
+  @Requirement
+  private List<Transformation> transformations = new ArrayList<Transformation>();
 
-    /**
-     * @see #getInterWikiDefinitions()
-     */
-    private Properties interWikiDefinitions = new Properties();
+  /**
+   * @see #getLinkLabelFormat()
+   */
+  private String linkLabelFormat = "%p";
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Initializable#initialize()
-     */
-    public void initialize() throws InitializationException
-    {
-        // Sort transformations by priority.
-        Collections.sort(this.transformations);
-    }
+  /**
+   * @see #getInterWikiDefinitions()
+   */
+  private Properties interWikiDefinitions = new Properties();
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.configuration.RenderingConfiguration#getLinkLabelFormat()
-     */
-    public String getLinkLabelFormat()
-    {
-        return this.linkLabelFormat;
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see Initializable#initialize()
+   */
+  public void initialize() throws InitializationException {
+    // Sort transformations by priority.
+    Collections.sort(this.transformations);
+  }
 
-    /**
-     * @param linkLabelFormat the format used to decide how to display links that have no label
-     */
-    public void setLinkLabelFormat(String linkLabelFormat)
-    {
-        // This method is useful for those using the XWiki Rendering in standalone mode since it allows the rendering
-        // to work even without a configuration store.
-        this.linkLabelFormat = linkLabelFormat;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.configuration.RenderingConfiguration#getLinkLabelFormat()
+   */
+  public String getLinkLabelFormat() {
+    return this.linkLabelFormat;
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.configuration.RenderingConfiguration#getInterWikiDefinitions()
-     */
-    public Properties getInterWikiDefinitions()
-    {
-        return this.interWikiDefinitions;
-    }
+  /**
+   * @param linkLabelFormat
+   *          the format used to decide how to display links that have no label
+   */
+  public void setLinkLabelFormat(String linkLabelFormat) {
+    // This method is useful for those using the XWiki Rendering in standalone mode since it allows
+    // the rendering
+    // to work even without a configuration store.
+    this.linkLabelFormat = linkLabelFormat;
+  }
 
-    /**
-     * @param interWikiAlias see {@link org.xwiki.rendering.listener.reference.InterWikiResourceReference}
-     * @param interWikiURL see {@link org.xwiki.rendering.listener.reference.InterWikiResourceReference}
-     */
-    public void addInterWikiDefinition(String interWikiAlias, String interWikiURL)
-    {
-        // This method is useful for those using the XWiki Rendering in standalone mode since it allows the rendering
-        // to work even without a configuration store.
-        this.interWikiDefinitions.setProperty(interWikiAlias, interWikiURL);
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.configuration.RenderingConfiguration#getInterWikiDefinitions()
+   */
+  public Properties getInterWikiDefinitions() {
+    return this.interWikiDefinitions;
+  }
 
-    /**
-     * @param transformations the explicit list of transformations to execute (overrides the default list)
-     */
-    public void setTransformations(List<Transformation> transformations)
-    {
-        this.transformations = transformations;
-    }
+  /**
+   * @param interWikiAlias
+   *          see {@link org.xwiki.rendering.listener.reference.InterWikiResourceReference}
+   * @param interWikiURL
+   *          see {@link org.xwiki.rendering.listener.reference.InterWikiResourceReference}
+   */
+  public void addInterWikiDefinition(String interWikiAlias, String interWikiURL) {
+    // This method is useful for those using the XWiki Rendering in standalone mode since it allows
+    // the rendering
+    // to work even without a configuration store.
+    this.interWikiDefinitions.setProperty(interWikiAlias, interWikiURL);
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.configuration.RenderingConfiguration#getTransformations()
-     */
-    public List<Transformation> getTransformations()
-    {
-        return this.transformations;
-    }
+  /**
+   * @param transformations
+   *          the explicit list of transformations to execute (overrides the default list)
+   */
+  public void setTransformations(List<Transformation> transformations) {
+    this.transformations = transformations;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.configuration.RenderingConfiguration#getTransformations()
+   */
+  public List<Transformation> getTransformations() {
+    return this.transformations;
+  }
 }

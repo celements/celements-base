@@ -29,11 +29,13 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
  * @since 2.5RC1
  */
 @ComponentRole
-public interface ResourceReferenceTypeSerializer
-{
-    /**
-     * @param reference the link reference to serialize
-     * @return the string representation of the passed {@link org.xwiki.rendering.listener.reference.ResourceReference} object
-     */
-    String serialize(ResourceReference reference);
+public interface ResourceReferenceTypeSerializer {
+
+  /**
+   * @param reference
+   *          the link reference to serialize
+   * @return the string representation of the passed
+   *         {@link org.xwiki.rendering.listener.reference.ResourceReference} object
+   */
+  String serialize(ResourceReference reference);
 }

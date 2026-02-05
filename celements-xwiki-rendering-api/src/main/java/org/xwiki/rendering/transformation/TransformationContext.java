@@ -23,98 +23,100 @@ import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.syntax.Syntax;
 
 /**
- * The context of the transformation process. Contains information such as the current XWiki DOM for the parsed content.
+ * The context of the transformation process. Contains information such as the current XWiki DOM for
+ * the parsed content.
  * 
  * @version $Id$
  * @since 2.4M1
  */
-public class TransformationContext
-{
-    /**
-     * The complete {@link XDOM} of the content currently being transformed.
-     */
-    private XDOM xdom;
+public class TransformationContext {
 
-    /**
-     * The current syntax.
-     */
-    private Syntax syntax;
+  /**
+   * The complete {@link XDOM} of the content currently being transformed.
+   */
+  private XDOM xdom;
 
-    /**
-     * @see #getId(). Note that the id is optional.
-     */
-    private String id;
+  /**
+   * The current syntax.
+   */
+  private Syntax syntax;
 
-    /**
-     * Default constructor that doesn't set the XDOM or the Syntax. This is because setting the XDOM and the Syntax is
-     * optional and only required by some Macros to behave as expected.
-     */
-    public TransformationContext()
-    {
-        // Voluntarily empty.
-    }
+  /**
+   * @see #getId(). Note that the id is optional.
+   */
+  private String id;
 
-    /**
-     * Some macros require the XDOM and the Syntax to be set.
-     *
-     * @param xdom see {@link #setXDOM(org.xwiki.rendering.block.XDOM)}
-     * @param syntax see {@link #setSyntax(org.xwiki.rendering.syntax.Syntax)}
-     */
-    public TransformationContext(XDOM xdom, Syntax syntax)
-    {
-        setXDOM(xdom);
-        setSyntax(syntax);
-    }
+  /**
+   * Default constructor that doesn't set the XDOM or the Syntax. This is because setting the XDOM
+   * and the Syntax is
+   * optional and only required by some Macros to behave as expected.
+   */
+  public TransformationContext() {
+    // Voluntarily empty.
+  }
 
-    /**
-     * @return an id representing the transformation being evaluated. It's a free form name that Transformations can
-     *         use, for example if they need to perform some caching based on a key. For example the Velocity Macro
-     *         is using this id to pass it to the underlying Velocity Engine so that it caches macros using this key. 
-     * @since 2.4M2
-     */
-    public String getId()
-    {
-        return this.id;
-    }
+  /**
+   * Some macros require the XDOM and the Syntax to be set.
+   *
+   * @param xdom
+   *          see {@link #setXDOM(org.xwiki.rendering.block.XDOM)}
+   * @param syntax
+   *          see {@link #setSyntax(org.xwiki.rendering.syntax.Syntax)}
+   */
+  public TransformationContext(XDOM xdom, Syntax syntax) {
+    setXDOM(xdom);
+    setSyntax(syntax);
+  }
 
-    /**
-     * @param id see {@link #getId()}
-     * @since 2.4M2
-     */
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+  /**
+   * @return an id representing the transformation being evaluated. It's a free form name that
+   *         Transformations can
+   *         use, for example if they need to perform some caching based on a key. For example the
+   *         Velocity Macro
+   *         is using this id to pass it to the underlying Velocity Engine so that it caches macros
+   *         using this key.
+   * @since 2.4M2
+   */
+  public String getId() {
+    return this.id;
+  }
 
-    /**
-     * @param xdom the complete {@link XDOM} of the content currently being transformed.
-     */
-    public void setXDOM(XDOM xdom)
-    {
-        this.xdom = xdom;
-    }
+  /**
+   * @param id
+   *          see {@link #getId()}
+   * @since 2.4M2
+   */
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    /**
-     * @return the complete {@link XDOM} of the content currently being transformed.
-     */
-    public XDOM getXDOM()
-    {
-        return this.xdom;
-    }
+  /**
+   * @param xdom
+   *          the complete {@link XDOM} of the content currently being transformed.
+   */
+  public void setXDOM(XDOM xdom) {
+    this.xdom = xdom;
+  }
 
-    /**
-     * @param syntax the current syntax.
-     */
-    public void setSyntax(Syntax syntax)
-    {
-        this.syntax = syntax;
-    }
+  /**
+   * @return the complete {@link XDOM} of the content currently being transformed.
+   */
+  public XDOM getXDOM() {
+    return this.xdom;
+  }
 
-    /**
-     * @return the current syntax.
-     */
-    public Syntax getSyntax()
-    {
-        return syntax;
-    }
+  /**
+   * @param syntax
+   *          the current syntax.
+   */
+  public void setSyntax(Syntax syntax) {
+    this.syntax = syntax;
+  }
+
+  /**
+   * @return the current syntax.
+   */
+  public Syntax getSyntax() {
+    return syntax;
+  }
 }

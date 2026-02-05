@@ -33,44 +33,43 @@ import org.xwiki.rendering.wiki.WikiModel;
  * @since 2.5RC1
  */
 @Component("xwiki/2.0/image")
-public class XWiki20ImageReferenceParser implements ResourceReferenceParser
-{
-    /**
-     * Used to verify if we're in wiki mode or not by looking up an implementation of
-     * {@link org.xwiki.rendering.wiki.WikiModel}. In non wiki mode all image references are considered as URLs.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+public class XWiki20ImageReferenceParser implements ResourceReferenceParser {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.parser.ResourceReferenceParser#parse(String)
-     */
-    public ResourceReference parse(String rawReference)
-    {
-        ResourceType type;
-        if (rawReference.startsWith("http://") || !isInWikiMode()) {
-            type = ResourceType.URL;
-        } else {
-            type = ResourceType.ATTACHMENT;
-        }
-        ResourceReference result = new ResourceReference(rawReference, type);
-        result.setTyped(false);
-        return result; 
-    }
+  /**
+   * Used to verify if we're in wiki mode or not by looking up an implementation of
+   * {@link org.xwiki.rendering.wiki.WikiModel}. In non wiki mode all image references are
+   * considered as URLs.
+   */
+  @Requirement
+  private ComponentManager componentManager;
 
-    /**
-     * @return true if we're in wiki mode (ie there's no implementing class for {@link WikiModel})
-     */
-    private boolean isInWikiMode()
-    {
-        boolean result = true;
-        try {
-            this.componentManager.lookup(WikiModel.class);
-        } catch (ComponentLookupException e) {
-            result = false;
-        }
-        return result;
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.parser.ResourceReferenceParser#parse(String)
+   */
+  public ResourceReference parse(String rawReference) {
+    ResourceType type;
+    if (rawReference.startsWith("http://") || !isInWikiMode()) {
+      type = ResourceType.URL;
+    } else {
+      type = ResourceType.ATTACHMENT;
     }
+    ResourceReference result = new ResourceReference(rawReference, type);
+    result.setTyped(false);
+    return result;
+  }
+
+  /**
+   * @return true if we're in wiki mode (ie there's no implementing class for {@link WikiModel})
+   */
+  private boolean isInWikiMode() {
+    boolean result = true;
+    try {
+      this.componentManager.lookup(WikiModel.class);
+    } catch (ComponentLookupException e) {
+      result = false;
+    }
+    return result;
+  }
 }

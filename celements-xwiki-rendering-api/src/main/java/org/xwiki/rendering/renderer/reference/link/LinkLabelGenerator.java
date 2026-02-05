@@ -29,14 +29,16 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
  * @since 1.8RC2
  */
 @ComponentRole
-public interface LinkLabelGenerator
-{
-    /**
-     * Generate a clean String label for the provided {@link org.xwiki.rendering.listener.reference.ResourceReference}.
-     * 
-     * @param reference the link reference
-     * @return the generated label
-     * @since 2.5RC1
-     */
-    String generate(ResourceReference reference);
+public interface LinkLabelGenerator {
+
+  /**
+   * Generate a clean String label for the provided
+   * {@link org.xwiki.rendering.listener.reference.ResourceReference}.
+   * 
+   * @param reference
+   *          the link reference
+   * @return the generated label
+   * @since 2.5RC1
+   */
+  String generate(ResourceReference reference);
 }

@@ -30,45 +30,44 @@ import org.xwiki.rendering.parser.Parser;
 import org.xwiki.rendering.parser.StreamParser;
 
 /**
- * Common code for {@link Parser} implementation that produce a {@link XDOM} from {@link StreamParser}.
+ * Common code for {@link Parser} implementation that produce a {@link XDOM} from
+ * {@link StreamParser}.
  * 
  * @version $Id$
  * @since 2.1M1
  */
-public abstract class AbstractBlockParser implements Parser
-{
-    /**
-     * Used to lookup the {@link StreamParser} for the syntax.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+public abstract class AbstractBlockParser implements Parser {
 
-    /**
-     * @return the {@link StreamParser} to use to parser the input content
-     */
-    protected StreamParser getStreamParser()
-    {
-        StreamParser streamParser;
-        try {
-            streamParser = this.componentManager.lookup(StreamParser.class, getSyntax().toIdString());
-        } catch (ComponentLookupException e) {
-            throw new RuntimeException("Failed to create [" + getSyntax().toString() + "] renderer", e);
-        }
+  /**
+   * Used to lookup the {@link StreamParser} for the syntax.
+   */
+  @Requirement
+  private ComponentManager componentManager;
 
-        return streamParser;
+  /**
+   * @return the {@link StreamParser} to use to parser the input content
+   */
+  protected StreamParser getStreamParser() {
+    StreamParser streamParser;
+    try {
+      streamParser = this.componentManager.lookup(StreamParser.class, getSyntax().toIdString());
+    } catch (ComponentLookupException e) {
+      throw new RuntimeException("Failed to create [" + getSyntax().toString() + "] renderer", e);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.parser.Parser#parse(java.io.Reader)
-     */
-    public XDOM parse(Reader source) throws ParseException
-    {
-        XDOMGeneratorListener listener = new XDOMGeneratorListener();
+    return streamParser;
+  }
 
-        getStreamParser().parse(source, listener);
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.parser.Parser#parse(java.io.Reader)
+   */
+  public XDOM parse(Reader source) throws ParseException {
+    XDOMGeneratorListener listener = new XDOMGeneratorListener();
 
-        return listener.getXDOM();
-    }
+    getStreamParser().parse(source, listener);
+
+    return listener.getXDOM();
+  }
 }

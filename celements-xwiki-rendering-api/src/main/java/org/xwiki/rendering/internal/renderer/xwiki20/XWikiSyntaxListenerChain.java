@@ -33,45 +33,43 @@ import org.xwiki.rendering.listener.chaining.TextOnNewLineStateChainingListener;
  * @version $Id$
  * @since 1.8RC1
  */
-public class XWikiSyntaxListenerChain extends ListenerChain
-{
-    /**
-     * @return the stateful {@link LookaheadChainingListener} for this rendering session.
-     */
-    public LookaheadChainingListener getLookaheadChainingListener()
-    {
-        return (LookaheadChainingListener) getListener(LookaheadChainingListener.class);
-    }
+public class XWikiSyntaxListenerChain extends ListenerChain {
 
-    /**
-     * @return the stateful {@link BlockStateChainingListener} for this rendering session.
-     */
-    public BlockStateChainingListener getBlockStateChainingListener()
-    {
-        return (BlockStateChainingListener) getListener(BlockStateChainingListener.class);
-    }
+  /**
+   * @return the stateful {@link LookaheadChainingListener} for this rendering session.
+   */
+  public LookaheadChainingListener getLookaheadChainingListener() {
+    return (LookaheadChainingListener) getListener(LookaheadChainingListener.class);
+  }
 
-    /**
-     * @return the stateful {@link ConsecutiveNewLineStateChainingListener} for this rendering session.
-     */
-    public ConsecutiveNewLineStateChainingListener getConsecutiveNewLineStateChainingListener()
-    {
-        return (ConsecutiveNewLineStateChainingListener) getListener(ConsecutiveNewLineStateChainingListener.class);
-    }
+  /**
+   * @return the stateful {@link BlockStateChainingListener} for this rendering session.
+   */
+  public BlockStateChainingListener getBlockStateChainingListener() {
+    return (BlockStateChainingListener) getListener(BlockStateChainingListener.class);
+  }
 
-    /**
-     * @return the stateful {@link TextOnNewLineStateChainingListener} for this rendering session.
-     */
-    public TextOnNewLineStateChainingListener getTextOnNewLineStateChainingListener()
-    {
-        return (TextOnNewLineStateChainingListener) getListener(TextOnNewLineStateChainingListener.class);
-    }
+  /**
+   * @return the stateful {@link ConsecutiveNewLineStateChainingListener} for this rendering
+   *         session.
+   */
+  public ConsecutiveNewLineStateChainingListener getConsecutiveNewLineStateChainingListener() {
+    return (ConsecutiveNewLineStateChainingListener) getListener(
+        ConsecutiveNewLineStateChainingListener.class);
+  }
 
-    /**
-     * @return the stateful {@link GroupStateChainingListener} for this rendering session.
-     */
-    public GroupStateChainingListener getGroupStateChainingListener()
-    {
-        return (GroupStateChainingListener) getListener(GroupStateChainingListener.class);
-    }
+  /**
+   * @return the stateful {@link TextOnNewLineStateChainingListener} for this rendering session.
+   */
+  public TextOnNewLineStateChainingListener getTextOnNewLineStateChainingListener() {
+    return (TextOnNewLineStateChainingListener) getListener(
+        TextOnNewLineStateChainingListener.class);
+  }
+
+  /**
+   * @return the stateful {@link GroupStateChainingListener} for this rendering session.
+   */
+  public GroupStateChainingListener getGroupStateChainingListener() {
+    return (GroupStateChainingListener) getListener(GroupStateChainingListener.class);
+  }
 }

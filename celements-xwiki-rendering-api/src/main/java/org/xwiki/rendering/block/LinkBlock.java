@@ -32,93 +32,96 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
  * @version $Id$
  * @since 1.5M2
  */
-public class LinkBlock extends AbstractFatherBlock
-{
-    /**
-     * A reference to the link target. See {@link org.xwiki.rendering.listener.reference.ResourceReference} for more details.
-     */
-    private ResourceReference reference;
+public class LinkBlock extends AbstractFatherBlock {
 
-    /**
-     * If true then the link is a free standing URI directly in the text.
-     */
-    private boolean isFreeStandingURI;
+  /**
+   * A reference to the link target. See
+   * {@link org.xwiki.rendering.listener.reference.ResourceReference} for more details.
+   */
+  private ResourceReference reference;
 
-    /**
-     * @param childrenBlocks the nested children blocks
-     * @param reference the reference to the target resource to link to
-     * @param isFreeStandingURI if true then the link is a free standing URI directly in the text
-     * @since 2.5RC1
-     */
-    public LinkBlock(List<Block> childrenBlocks, ResourceReference reference, boolean isFreeStandingURI)
-    {
-        this(childrenBlocks, reference, isFreeStandingURI, Collections.<String, String> emptyMap());
-    }
+  /**
+   * If true then the link is a free standing URI directly in the text.
+   */
+  private boolean isFreeStandingURI;
 
-    /**
-     * @param childrenBlocks the nested children blocks
-     * @param reference the reference to the target resource to link to
-     * @param isFreeStandingURI if true then the link is a free standing URI directly in the text
-     * @param parameters the parameters to set
-     * @since 2.5RC1
-     */
-    public LinkBlock(List<Block> childrenBlocks, ResourceReference reference, boolean isFreeStandingURI,
-        Map<String, String> parameters)
-    {
-        super(childrenBlocks, parameters);
-        this.reference = reference;
-        this.isFreeStandingURI = isFreeStandingURI;
-    }
+  /**
+   * @param childrenBlocks
+   *          the nested children blocks
+   * @param reference
+   *          the reference to the target resource to link to
+   * @param isFreeStandingURI
+   *          if true then the link is a free standing URI directly in the text
+   * @since 2.5RC1
+   */
+  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference,
+      boolean isFreeStandingURI) {
+    this(childrenBlocks, reference, isFreeStandingURI, Collections.<String, String>emptyMap());
+  }
 
-    /**
-     * @return the reference to the target to link to
-     * @see org.xwiki.rendering.listener.reference.ResourceReference
-     * @since 2.5RC1
-     */
-    public ResourceReference getReference()
-    {
-        return this.reference;
-    }
+  /**
+   * @param childrenBlocks
+   *          the nested children blocks
+   * @param reference
+   *          the reference to the target resource to link to
+   * @param isFreeStandingURI
+   *          if true then the link is a free standing URI directly in the text
+   * @param parameters
+   *          the parameters to set
+   * @since 2.5RC1
+   */
+  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference,
+      boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    super(childrenBlocks, parameters);
+    this.reference = reference;
+    this.isFreeStandingURI = isFreeStandingURI;
+  }
 
-    /**
-     * @return true if the link is a free standing URI directly in the text, false otherwise
-     */
-    public boolean isFreeStandingURI()
-    {
-        return this.isFreeStandingURI;
-    }
+  /**
+   * @return the reference to the target to link to
+   * @see org.xwiki.rendering.listener.reference.ResourceReference
+   * @since 2.5RC1
+   */
+  public ResourceReference getReference() {
+    return this.reference;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginLink(getReference(), isFreeStandingURI(), getParameters());
-    }
+  /**
+   * @return true if the link is a free standing URI directly in the text, false otherwise
+   */
+  public boolean isFreeStandingURI() {
+    return this.isFreeStandingURI;
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endLink(getReference(), isFreeStandingURI(), getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginLink(getReference(), isFreeStandingURI(), getParameters());
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractBlock#clone(org.xwiki.rendering.block.BlockFilter)
-     * @since 1.8RC2
-     */
-    @Override
-    public LinkBlock clone(BlockFilter blockFilter)
-    {
-        LinkBlock clone = (LinkBlock) super.clone(blockFilter);
-        clone.reference = getReference().clone();
-        return clone;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endLink(getReference(), isFreeStandingURI(), getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractBlock#clone(org.xwiki.rendering.block.BlockFilter)
+   * @since 1.8RC2
+   */
+  @Override
+  public LinkBlock clone(BlockFilter blockFilter) {
+    LinkBlock clone = (LinkBlock) super.clone(blockFilter);
+    clone.reference = getReference().clone();
+    return clone;
+  }
 }

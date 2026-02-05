@@ -29,15 +29,14 @@ import org.xwiki.rendering.listener.reference.ResourceType;
  * @since 2.7M1
  */
 @Component("unc")
-public class UNCResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser
-{
-    /**
-     * {@inheritDoc}
-     *
-     * @see AbstractURIResourceReferenceTypeParser#getType()
-     */
-    public ResourceType getType()
-    {
-        return ResourceType.UNC;
-    }
+public class UNCResourceReferenceTypeParser extends AbstractURIResourceReferenceTypeParser {
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see AbstractURIResourceReferenceTypeParser#getType()
+   */
+  public ResourceType getType() {
+    return ResourceType.UNC;
+  }
 }

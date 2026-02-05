@@ -29,33 +29,31 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.6M2
  */
-public class QuotationLineBlock extends AbstractFatherBlock
-{
-    /**
-     * @param blocks the children of the quotation line
-     */
-    public QuotationLineBlock(List<Block> blocks)
-    {
-        super(blocks);
-    }
+public class QuotationLineBlock extends AbstractFatherBlock {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginQuotationLine();
-    }
+  /**
+   * @param blocks
+   *          the children of the quotation line
+   */
+  public QuotationLineBlock(List<Block> blocks) {
+    super(blocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
-     */
-    public void after(Listener listener)
-    {
-        listener.endQuotationLine();
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginQuotationLine();
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endQuotationLine();
+  }
 }

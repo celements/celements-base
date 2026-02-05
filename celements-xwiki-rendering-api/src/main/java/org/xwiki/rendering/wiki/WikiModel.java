@@ -25,47 +25,57 @@ import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 
 /**
- * Bridge between the Rendering module and a Wiki Model. Contains wiki APIs required by Rendering classes such as
- * Renderers. For example the XHTML Link Renderer needs to know if a wiki document exists in order to know how to
- * generate the HTML (in order to display a question mark for non existing documents) and it also needs to get the URL
+ * Bridge between the Rendering module and a Wiki Model. Contains wiki APIs required by Rendering
+ * classes such as
+ * Renderers. For example the XHTML Link Renderer needs to know if a wiki document exists in order
+ * to know how to
+ * generate the HTML (in order to display a question mark for non existing documents) and it also
+ * needs to get the URL
  * pointing the wiki document.
  *
  * @version $Id$
  * @since 2.0M1
  */
 @ComponentRole
-public interface WikiModel
-{
-    /**
-     * @param linkReference the reference to the link resource
-     * @return the URL to the link resource (the resource could be a document, a URL, a path, etc)
-     * @since 2.5RC1
-     */
-    String getLinkURL(ResourceReference linkReference);
+public interface WikiModel {
 
-    /**
-     * @param imageReference the reference to the image resource
-     * @param parameters the optional parameters passed to the image reference (width, height, etc)
-     * @return the URL to the image resource (the resource could be an attacment in a document, an icon, etc)
-     * @since 2.5RC1
-     */
-    String getImageURL(ResourceReference imageReference, Map<String, String> parameters);
+  /**
+   * @param linkReference
+   *          the reference to the link resource
+   * @return the URL to the link resource (the resource could be a document, a URL, a path, etc)
+   * @since 2.5RC1
+   */
+  String getLinkURL(ResourceReference linkReference);
 
-    /**
-     * @param documentReference the reference to the document
-     * @return true if the document exists and can be viewed or false otherwise
-     */
-    boolean isDocumentAvailable(ResourceReference documentReference);
+  /**
+   * @param imageReference
+   *          the reference to the image resource
+   * @param parameters
+   *          the optional parameters passed to the image reference (width, height, etc)
+   * @return the URL to the image resource (the resource could be an attacment in a document, an
+   *         icon, etc)
+   * @since 2.5RC1
+   */
+  String getImageURL(ResourceReference imageReference, Map<String, String> parameters);
 
-    /**
-     * @param documentReference the reference to the document
-     * @return the URL to view the specified wiki document
-     */
-    String getDocumentViewURL(ResourceReference documentReference);
+  /**
+   * @param documentReference
+   *          the reference to the document
+   * @return true if the document exists and can be viewed or false otherwise
+   */
+  boolean isDocumentAvailable(ResourceReference documentReference);
 
-    /**
-     * @param documentReference the reference to the document
-     * @return the URL to edit the specified wiki document
-     */
-    String getDocumentEditURL(ResourceReference documentReference);
+  /**
+   * @param documentReference
+   *          the reference to the document
+   * @return the URL to view the specified wiki document
+   */
+  String getDocumentViewURL(ResourceReference documentReference);
+
+  /**
+   * @param documentReference
+   *          the reference to the document
+   * @return the URL to edit the specified wiki document
+   */
+  String getDocumentEditURL(ResourceReference documentReference);
 }

@@ -29,21 +29,22 @@ import org.xwiki.component.annotation.Component;
  */
 @Component("xwiki/2.1/link")
 public class XWikiSyntaxLinkReferenceSerializer
-    extends org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxLinkReferenceSerializer
-{
-    /**
-     * Prefix to use for {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer} role hints.
-     */
-    private static final String COMPONENT_PREFIX = "xwiki/2.1";
+    extends
+    org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxLinkReferenceSerializer {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxLinkReferenceSerializer#getLinkTypeSerializerComponentPrefix()
-     */
-    @Override
-    protected String getLinkTypeSerializerComponentPrefix()
-    {
-        return COMPONENT_PREFIX;
-    }
+  /**
+   * Prefix to use for
+   * {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer} role hints.
+   */
+  private static final String COMPONENT_PREFIX = "xwiki/2.1";
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxLinkReferenceSerializer#getLinkTypeSerializerComponentPrefix()
+   */
+  @Override
+  protected String getLinkTypeSerializerComponentPrefix() {
+    return COMPONENT_PREFIX;
+  }
 }

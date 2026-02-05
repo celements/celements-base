@@ -27,37 +27,37 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.5M2
  */
-public final class SpaceBlock extends AbstractBlock
-{
-    /**
-     * A space block. Note that we don't make SpaceBlock a singleton since that would cause problems when using Block
-     * APIs to manipulate a tree of blocks (for example to find the position of a space block in a list using
-     * {@link java.util.List#indexOf(Object)} wich would always return the first space block).
-     * @since 2.6RC1
-     */
-    public SpaceBlock()
-    {
-        // We need to keep this constructor to override the ones in AbstractBlock
-    }
+public final class SpaceBlock extends AbstractBlock {
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.Block#traverse(org.xwiki.rendering.listener.Listener)
-     */
-    public void traverse(Listener listener)
-    {
-        listener.onSpace();
-    }
+  /**
+   * A space block. Note that we don't make SpaceBlock a singleton since that would cause problems
+   * when using Block
+   * APIs to manipulate a tree of blocks (for example to find the position of a space block in a
+   * list using
+   * {@link java.util.List#indexOf(Object)} wich would always return the first space block).
+   * 
+   * @since 2.6RC1
+   */
+  public SpaceBlock() {
+    // We need to keep this constructor to override the ones in AbstractBlock
+  }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.xwiki.rendering.block.AbstractBlock#clone()
-     */
-    @Override
-    public Block clone()
-    {
-        return this;
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.Block#traverse(org.xwiki.rendering.listener.Listener)
+   */
+  public void traverse(Listener listener) {
+    listener.onSpace();
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractBlock#clone()
+   */
+  @Override
+  public Block clone() {
+    return this;
+  }
 }

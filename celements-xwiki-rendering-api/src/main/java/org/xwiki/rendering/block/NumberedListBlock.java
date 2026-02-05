@@ -31,45 +31,47 @@ import org.xwiki.rendering.listener.Listener;
  * @version $Id$
  * @since 1.5M2
  */
-public class NumberedListBlock extends AbstractFatherBlock implements ListBLock
-{
-    /**
-     * Construct a Numbered List Block with no parameters.
-     *
-     * @param childrenBlocks the blocks making the list
-     */
-    public NumberedListBlock(List<Block> childrenBlocks)
-    {
-        super(childrenBlocks);
-    }
+public class NumberedListBlock extends AbstractFatherBlock implements ListBLock {
 
-    /**
-     * Construct a Numbered List Block with parameters.
-     *
-     * @param childrenBlocks the blocks making the list
-     * @param parameters see {@link org.xwiki.rendering.block.AbstractBlock#getParameter(String)} for more details on
-     *        parameters
-     */
-    public NumberedListBlock(List<Block> childrenBlocks, Map<String, String> parameters)
-    {
-        super(childrenBlocks, parameters);
-    }
+  /**
+   * Construct a Numbered List Block with no parameters.
+   *
+   * @param childrenBlocks
+   *          the blocks making the list
+   */
+  public NumberedListBlock(List<Block> childrenBlocks) {
+    super(childrenBlocks);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
-     */
-    public void before(Listener listener)
-    {
-        listener.beginList(ListType.NUMBERED, getParameters());
-    }
+  /**
+   * Construct a Numbered List Block with parameters.
+   *
+   * @param childrenBlocks
+   *          the blocks making the list
+   * @param parameters
+   *          see {@link org.xwiki.rendering.block.AbstractBlock#getParameter(String)} for more
+   *          details on
+   *          parameters
+   */
+  public NumberedListBlock(List<Block> childrenBlocks, Map<String, String> parameters) {
+    super(childrenBlocks, parameters);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener) 
-     */
-    public void after(Listener listener)
-    {
-        listener.endList(ListType.NUMBERED, getParameters());
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
+   */
+  public void before(Listener listener) {
+    listener.beginList(ListType.NUMBERED, getParameters());
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
+   */
+  public void after(Listener listener) {
+    listener.endList(ListType.NUMBERED, getParameters());
+  }
 }

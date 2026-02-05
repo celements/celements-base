@@ -38,44 +38,45 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
  */
 @Component("annotated")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class AnnotatedXHTMLImageRenderer implements XHTMLImageRenderer
-{
-    /**
-     * Used to print Image reference as XHTML comments.
-     */
-    @Requirement("xhtmlmarker")
-    private ResourceReferenceSerializer xhtmlMarkerSerializer;
+public class AnnotatedXHTMLImageRenderer implements XHTMLImageRenderer {
 
-    /**
-     * The default XHTML Link Renderer that we're wrapping.
-     */
-    @Requirement
-    private XHTMLImageRenderer defaultImageRenderer;
+  /**
+   * Used to print Image reference as XHTML comments.
+   */
+  @Requirement("xhtmlmarker")
+  private ResourceReferenceSerializer xhtmlMarkerSerializer;
 
-    public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer)
-    {
-        this.defaultImageRenderer.setXHTMLWikiPrinter(printer);
-    }
+  /**
+   * The default XHTML Link Renderer that we're wrapping.
+   */
+  @Requirement
+  private XHTMLImageRenderer defaultImageRenderer;
 
-    public XHTMLWikiPrinter getXHTMLWikiPrinter()
-    {
-        return this.defaultImageRenderer.getXHTMLWikiPrinter();
-    }
+  public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer) {
+    this.defaultImageRenderer.setXHTMLWikiPrinter(printer);
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see XHTMLImageRenderer#onImage(org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
-     * @since 2.5RC1
-     */
-    public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters)
-    {
-        // We need to save the image location in XML comment so that it can be reconstructed later on when moving
-        // from XHTML to wiki syntax.
-        StringBuffer buffer = new StringBuffer("startimage:");
-        buffer.append(this.xhtmlMarkerSerializer.serialize(reference));
+  public XHTMLWikiPrinter getXHTMLWikiPrinter() {
+    return this.defaultImageRenderer.getXHTMLWikiPrinter();
+  }
 
-        getXHTMLWikiPrinter().printXMLComment(buffer.toString(), true);
-        this.defaultImageRenderer.onImage(reference, isFreeStandingURI, parameters);
-        getXHTMLWikiPrinter().printXMLComment("stopimage");
-    }
+  /**
+   * {@inheritDoc}
+   * 
+   * @see XHTMLImageRenderer#onImage(org.xwiki.rendering.listener.reference.ResourceReference ,
+   *      boolean, java.util.Map)
+   * @since 2.5RC1
+   */
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    // We need to save the image location in XML comment so that it can be reconstructed later on
+    // when moving
+    // from XHTML to wiki syntax.
+    StringBuffer buffer = new StringBuffer("startimage:");
+    buffer.append(this.xhtmlMarkerSerializer.serialize(reference));
+
+    getXHTMLWikiPrinter().printXMLComment(buffer.toString(), true);
+    this.defaultImageRenderer.onImage(reference, isFreeStandingURI, parameters);
+    getXHTMLWikiPrinter().printXMLComment("stopimage");
+  }
 }

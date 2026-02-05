@@ -29,46 +29,45 @@ import org.xwiki.rendering.internal.renderer.ParametersPrinter;
  * @version $Id$
  * @since 2.0.1
  */
-public class XWikiSyntaxMacroRenderer
-{
-    private ParametersPrinter parametersPrinter = new ParametersPrinter();
+public class XWikiSyntaxMacroRenderer {
 
-    public String renderMacro(String id, Map<String, String> parameters, String content, boolean isInline)
-    {
-        StringBuffer buffer = new StringBuffer();
+  private ParametersPrinter parametersPrinter = new ParametersPrinter();
 
-        // Print begin macro
-        buffer.append("{{");
-        buffer.append(id);
+  public String renderMacro(String id, Map<String, String> parameters, String content,
+      boolean isInline) {
+    StringBuffer buffer = new StringBuffer();
 
-        // Print parameters
-        if (!parameters.isEmpty()) {
-            buffer.append(' ');
-            buffer.append(renderMacroParameters(parameters));
-        }
+    // Print begin macro
+    buffer.append("{{");
+    buffer.append(id);
 
-        // Print content and end macro
-        if (content == null) {
-            buffer.append("/}}");
-        } else {
-            buffer.append("}}");
-            if (content.length() > 0) {
-                if (!isInline) {
-                    buffer.append("\n");
-                }
-                buffer.append(content);
-                if (!isInline) {
-                    buffer.append("\n");
-                }
-            }
-            buffer.append("{{/").append(id).append("}}");
-        }
-
-        return buffer.toString();
+    // Print parameters
+    if (!parameters.isEmpty()) {
+      buffer.append(' ');
+      buffer.append(renderMacroParameters(parameters));
     }
 
-    public String renderMacroParameters(Map<String, String> parameters)
-    {
-        return this.parametersPrinter.print(parameters, '~').replace("}}", "~}~}");
+    // Print content and end macro
+    if (content == null) {
+      buffer.append("/}}");
+    } else {
+      buffer.append("}}");
+      if (content.length() > 0) {
+        if (!isInline) {
+          buffer.append("\n");
+        }
+        buffer.append(content);
+        if (!isInline) {
+          buffer.append("\n");
+        }
+      }
+      buffer.append("{{/").append(id).append("}}");
     }
+
+    return buffer.toString();
+  }
+
+  public String renderMacroParameters(Map<String, String> parameters) {
+    return this.parametersPrinter.print(parameters, '~').replace("}}", "~}~}");
+  }
 }

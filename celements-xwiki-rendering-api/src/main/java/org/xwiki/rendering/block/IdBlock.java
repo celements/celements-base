@@ -27,37 +27,36 @@ import org.xwiki.rendering.listener.Listener;
  *
  * @version $Id$
  * @since 1.6M1
- * @see Listener#onId(String) 
+ * @see Listener#onId(String)
  */
-public class IdBlock extends AbstractBlock
-{
-    /**
-     * The unique name for the reference/location.
-     */
-    private String name;
+public class IdBlock extends AbstractBlock {
 
-    /**
-     * @param name the unique name for the reference/location.
-     */
-    public IdBlock(String name)
-    {
-        this.name = name;
-    }
+  /**
+   * The unique name for the reference/location.
+   */
+  private String name;
 
-    /**
-     * @return the reference/location name
-     */
-    public String getName()
-    {
-        return this.name;
-    }
+  /**
+   * @param name
+   *          the unique name for the reference/location.
+   */
+  public IdBlock(String name) {
+    this.name = name;
+  }
 
-    /**
-     * {@inheritDoc}
-     * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
-     */
-    public void traverse(Listener listener)
-    {
-        listener.onId(getName());
-    }
+  /**
+   * @return the reference/location name
+   */
+  public String getName() {
+    return this.name;
+  }
+
+  /**
+   * {@inheritDoc}
+   * 
+   * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
+   */
+  public void traverse(Listener listener) {
+    listener.onId(getName());
+  }
 }

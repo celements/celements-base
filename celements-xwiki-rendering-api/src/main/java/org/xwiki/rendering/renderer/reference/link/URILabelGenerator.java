@@ -23,19 +23,21 @@ import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 
 /**
- * Generate Resource Reference labels for URIs. For example an implementation for MAILTO URIs would remove the scheme
+ * Generate Resource Reference labels for URIs. For example an implementation for MAILTO URIs would
+ * remove the scheme
  * part and the query string part.
  *
  * @version $Id$
  * @since 2.2RC1
  */
 @ComponentRole
-public interface URILabelGenerator
-{
-    /**
-     * @param reference the reference pointing to a URI for which we want to generate a label
-     * @return the URI label to display when rendering resource references
-     * @since 2.5RC1
-     */
-    String generateLabel(ResourceReference reference);
+public interface URILabelGenerator {
+
+  /**
+   * @param reference
+   *          the reference pointing to a URI for which we want to generate a label
+   * @return the URI label to display when rendering resource references
+   * @since 2.5RC1
+   */
+  String generateLabel(ResourceReference reference);
 }
