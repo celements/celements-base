@@ -261,15 +261,6 @@ public class XWikiDocument implements DocumentModelBridge {
   private String comment;
 
   /**
-   * Wiki syntax supported by this document. This is used to support different syntaxes inside the
-   * same wiki. For example a page can use the Confluence 2.0 syntax while another one uses the
-   * XWiki 1.0 syntax. In practice our first need is to support the new rendering component. To use
-   * the old rendering implementation specify a "xwiki/1.0" syntaxId and use a "xwiki/2.0" syntaxId
-   * for using the new rendering component.
-   */
-  private Syntax syntax;
-
-  /**
    * Is latest modification a minor edit.
    */
   private boolean isMinorEdit = false;
