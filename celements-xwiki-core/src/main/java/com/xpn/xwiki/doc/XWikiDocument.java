@@ -19,6 +19,7 @@
  */
 package com.xpn.xwiki.doc;
 
+import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Strings.*;
 
 import java.io.ByteArrayOutputStream;
@@ -103,12 +104,12 @@ import org.xwiki.rendering.transformation.TransformationException;
 import org.xwiki.rendering.transformation.TransformationManager;
 import org.xwiki.rendering.util.ParserUtils;
 import org.xwiki.velocity.VelocityManager;
+import org.xwiki.velocity.XWikiVelocityException;
 
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.id.DocumentIdComputer;
 import com.celements.store.id.IdVersion;
 import com.google.common.base.Suppliers;
-import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
@@ -258,6 +259,15 @@ public class XWikiDocument implements DocumentModelBridge {
    * Comment on the latest modification.
    */
   private String comment;
+
+  /**
+   * Wiki syntax supported by this document. This is used to support different syntaxes inside the
+   * same wiki. For example a page can use the Confluence 2.0 syntax while another one uses the
+   * XWiki 1.0 syntax. In practice our first need is to support the new rendering component. To use
+   * the old rendering implementation specify a "xwiki/1.0" syntaxId and use a "xwiki/2.0" syntaxId
+   * for using the new rendering component.
+   */
+  private Syntax syntax;
 
   /**
    * Is latest modification a minor edit.
@@ -858,12 +868,30 @@ public class XWikiDocument implements DocumentModelBridge {
       XWikiContext context) {
     String result = renderingCache.get().getRenderedContent(getDocumentReference(), text, context);
 
+    String documentName = defaultEntityReferenceSerializer.get().serialize(getDocumentReference());
+
     if (result == null) {
       Map<String, Object> backup = new HashMap<>();
       Object isInRenderingEngine = context.get("isInRenderingEngine");
       try {
         backupContext(backup, context);
         setAsContextDoc(context);
+
+        // Mark that we're starting to use the current document as a macro namespace
+        if ((isInRenderingEngine == null) || (isInRenderingEngine == Boolean.FALSE)) {
+          try {
+            Utils.getComponent(VelocityManager.class).getVelocityEngine()
+                .startedUsingMacroNamespace(documentName);
+            LOG.debug("Started using velocity macro namespace [{}]", documentName);
+          } catch (XWikiVelocityException e) {
+            // Failed to get the Velocity Engine and this to clear Velocity Macro cache. Log this as
+            // a
+            // warning
+            // but continue since it's not absolutely critical.
+            LOG.warn("Failed to notify Velocity Macro cache for the [{}] namespace. Reason = [{}]",
+                documentName, e.getMessage(), e);
+          }
+        }
 
         // This tells display() methods that we are inside the rendering engine and thus
         // that they can return wiki syntax and not HTML syntax (which is needed when
@@ -888,6 +916,33 @@ public class XWikiDocument implements DocumentModelBridge {
           context.remove("isInRenderingEngine");
         }
 
+        // Since we configure Velocity to have local macros (i.e. macros visible only to the local
+        // context),
+        // since Velocity caches the velocity macros in a local cache (we use key which is the
+        // absolute
+        // document reference) and since documents can include other documents or panels, we need to
+        // make sure
+        // we empty the local Velocity macro cache at the end of the rendering for the document as
+        // otherwise the
+        // local Velocity macro caches will keep growing as users create new pages.
+        //
+        // Note that we check if we are in the rendering engine as this cleanup must be done only
+        // once after the
+        // document has been rendered but this method can be called recursively. We know it's the
+        // initial entry
+        // point when isInRenderingEngine is false...
+        if ((isInRenderingEngine == null) || (isInRenderingEngine == Boolean.FALSE)) {
+          try {
+            Utils.getComponent(VelocityManager.class).getVelocityEngine()
+                .stoppedUsingMacroNamespace(documentName);
+            LOG.debug("Stopped using velocity macro namespace [{}]", documentName);
+          } catch (XWikiVelocityException e) {
+            // Failed to get the Velocity Engine and this to clear Velocity Macro cache. Log this as
+            // a warning but continue since it's not absolutely critical.
+            LOG.warn("Failed to notify Velocity Macro cache for the [{}] namespace. Reason = [{}]",
+                documentName, e.getMessage(), e);
+          }
+        }
       }
     }
 
@@ -1195,18 +1250,16 @@ public class XWikiDocument implements DocumentModelBridge {
       }
     } catch (Exception e) {
       LOG.warn(
-          "Failed to interpret title of document ["
-              + defaultEntityReferenceSerializer.get().serialize(getDocumentReference()) + "]",
-          e);
+          "Failed to interpret title of document [{}]",
+          defer(() -> defaultEntityReferenceSerializer.get().serialize(getDocumentReference())), e);
     }
 
     try {
       // 2) If not, then try to extract the title from the first document section title
       title = getRenderedContentTitle(outputSyntax, context);
     } catch (Exception e) {
-      LOG.warn("Failed to extract title from content of document ["
-          + defaultEntityReferenceSerializer.get().serialize(getDocumentReference()) + "]",
-          e);
+      LOG.warn("Failed to extract title from content of document [{}]",
+          defer(() -> defaultEntityReferenceSerializer.get().serialize(getDocumentReference())), e);
     }
 
     // 3) No title has been found, return the page name as the title
@@ -2415,8 +2468,8 @@ public class XWikiDocument implements DocumentModelBridge {
 
       result = display(fieldname, object, context);
     } catch (Exception e) {
-      LOG.error("Failed to display field [" + fieldname + "] of document ["
-          + defaultEntityReferenceSerializer.get().serialize(getDocumentReference()) + "]", e);
+      LOG.error("Failed to display field [{}] of document [{}]", fieldname,
+          defer(() -> defaultEntityReferenceSerializer.get().serialize(getDocumentReference())), e);
     }
 
     return result;
@@ -2624,8 +2677,9 @@ public class XWikiDocument implements DocumentModelBridge {
       // TODO: It would better to check if the field exists rather than catching an exception
       // raised by a NPE as this is currently the case here...
       LOG.warn(
-          "Failed to display field [" + fieldname + "] in [" + type + "] mode for Object of Class ["
-              + defaultEntityReferenceSerializer.get().serialize(obj.getDocumentReference()) + "]",
+          "Failed to display field [{}] in [{}] mode for Object of Class [{}]",
+          fieldname, type,
+          defer(() -> defaultEntityReferenceSerializer.get().serialize(obj.getDocumentReference())),
           ex);
       return "";
     } finally {
@@ -3741,8 +3795,10 @@ public class XWikiDocument implements DocumentModelBridge {
         el.addText(getDocumentArchive(context).getArchive(context));
         wr.write(el);
       } catch (XWikiException e) {
-        LOG.error("Document [" + defaultEntityReferenceSerializer.get()
-            .serialize(getDocumentReference()) + "] has malformed history");
+        LOG.error("Document [{}] has malformed history",
+            defer(() -> defaultEntityReferenceSerializer.get()
+                .serialize(getDocumentReference())),
+            e);
       }
     }
   }
@@ -4421,8 +4477,7 @@ public class XWikiDocument implements DocumentModelBridge {
 
       return list;
     } catch (Exception e) {
-      LOG.error("Failed to extract include target from provided content [" + content + "]", e);
-
+      LOG.error("Failed to extract include target from provided content [{}]", content, e);
       return null;
     }
   }
@@ -4432,8 +4487,7 @@ public class XWikiDocument implements DocumentModelBridge {
   }
 
   public String displayRendered(PropertyClass pclass, String prefix, BaseCollection object,
-      XWikiContext context)
-      throws XWikiException {
+      XWikiContext context) throws XWikiException {
     String result = pclass.displayView(pclass.getName(), prefix, object, context);
     return getRenderedContent(result, XWIKI10_SYNTAXID, context);
   }
@@ -4947,7 +5001,7 @@ public class XWikiDocument implements DocumentModelBridge {
       return getDeltas(Diff.diff(ToString.stringToArray(prevDoc.getContent()),
           ToString.stringToArray(getContent())));
     } catch (Exception ex) {
-      LOG.debug("Exception getting differences from previous version: " + ex.getMessage());
+      LOG.debug("Exception getting differences from previous version: {}", ex.getMessage());
     }
 
     return new ArrayList<>();
@@ -7016,18 +7070,7 @@ public class XWikiDocument implements DocumentModelBridge {
   }
 
   private Syntax getDefaultDocumentSyntax() {
-    // If there's no parser available for the specified syntax default to XWiki 2.0 syntax
-    Syntax syntax = Utils.getComponent(CoreConfiguration.class).getDefaultDocumentSyntax();
-
-    try {
-      Utils.getComponent(Parser.class, syntax.toIdString());
-    } catch (Exception e) {
-      LOG.warn("Failed to find parser for the default syntax [" + syntax.toIdString()
-          + "]. Defaulting to xwiki/2.0 syntax.");
-      syntax = Syntax.XWIKI_2_0;
-    }
-
-    return syntax;
+    return Syntax.XWIKI_1_0;
   }
 
   private String serializeReference(DocumentReference reference,

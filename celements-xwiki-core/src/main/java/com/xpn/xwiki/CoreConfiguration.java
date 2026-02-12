@@ -32,13 +32,17 @@ import org.xwiki.rendering.syntax.Syntax;
  *
  * @version $Id$
  * @since 1.8RC2
+ * @Deprecated reducing to only supporting xwiki/1.0 syntax
  */
 @ComponentRole
+@Deprecated(since = "7.0", forRemoval = true)
 public interface CoreConfiguration {
 
   /**
    * @return the default syntax to use for new documents
    * @since 2.3M1
+   * @Deprecated reducing to only supporting xwiki/1.0 syntax
    */
+  @Deprecated(since = "7.0", forRemoval = true)
   Syntax getDefaultDocumentSyntax();
 }
