@@ -103,7 +103,6 @@ import org.xwiki.rendering.transformation.TransformationException;
 import org.xwiki.rendering.transformation.TransformationManager;
 import org.xwiki.rendering.util.ParserUtils;
 import org.xwiki.velocity.VelocityManager;
-import org.xwiki.velocity.XWikiVelocityException;
 
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.id.DocumentIdComputer;
@@ -798,46 +797,21 @@ public class XWikiDocument implements DocumentModelBridge {
     // this
     // document's context. For example this is true for the Admin page, see
     // http://jira.xwiki.org/jira/browse/XWIKI-4274 for more details.
-
     String source = getTranslatedContent(context);
-
     String renderedContent = renderingCache.get().getRenderedContent(getDocumentReference(), source,
         context);
-
     String documentName = defaultEntityReferenceSerializer.get().serialize(
         isolateVelocityMacros ? getDocumentReference() : context.getDoc().getDocumentReference());
-
     if (renderedContent == null) {
       Object isInRenderingEngine = context.get("isInRenderingEngine");
-
-      // Mark that we're starting to use the current document as a macro namespace
-      if (isolateVelocityMacros
-          && ((isInRenderingEngine == null) || (isInRenderingEngine == Boolean.FALSE))) {
-        try {
-          Utils.getComponent(VelocityManager.class).getVelocityEngine()
-              .startedUsingMacroNamespace(documentName);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Started using velocity macro namespace [" + documentName + "]");
-          }
-        } catch (XWikiVelocityException e) {
-          // Failed to get the Velocity Engine and this to clear Velocity Macro cache. Log this as a
-          // warning
-          // but continue since it's not absolutely critical.
-          LOG.warn("Failed to notify Velocity Macro cache for the [" + documentName
-              + "] namespace. Reason = [" + e.getMessage() + "]");
-        }
-      }
-
       try {
         // This tells display() methods that we are inside the rendering engine and thus
         // that they can return wiki syntax and not HTML syntax (which is needed when
         // outside the rendering engine, i.e. when we're inside templates using only
         // Velocity for example).
         context.put("isInRenderingEngine", true);
-
         // only Syntax id "xwiki/1.0" supported. Use the old rendering subsystem.
         renderedContent = context.getWiki().getRenderingEngine().renderDocument(this, context);
-
         renderingCache.get().setRenderedContent(getDocumentReference(), source, renderedContent,
             context);
       } finally {
@@ -845,39 +819,6 @@ public class XWikiDocument implements DocumentModelBridge {
           context.put("isInRenderingEngine", isInRenderingEngine);
         } else {
           context.remove("isInRenderingEngine");
-        }
-
-        // Since we configure Velocity to have local macros (i.e. macros visible only to the local
-        // context),
-        // since Velocity caches the velocity macros in a local cache (we use key which is the
-        // absolute
-        // document reference) and since documents can include other documents or panels, we need to
-        // make sure
-        // we empty the local Velocity macro cache at the end of the rendering for the document as
-        // otherwise the
-        // local Velocity macro caches will keep growing as users create new pages.
-        //
-        // Note that we check if we are in the rendering engine as this cleanup must be done only
-        // once after the
-        // document has been rendered but this method can be called recursively. We know it's the
-        // initial entry
-        // point when isInRenderingEngine is false...
-        if (isolateVelocityMacros
-            && ((isInRenderingEngine == null) || (isInRenderingEngine == Boolean.FALSE))) {
-          try {
-            Utils.getComponent(VelocityManager.class).getVelocityEngine()
-                .stoppedUsingMacroNamespace(documentName);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Stopped using velocity macro namespace [" + documentName + "]");
-            }
-          } catch (XWikiVelocityException e) {
-            // Failed to get the Velocity Engine and this to clear Velocity Macro cache. Log this as
-            // a
-            // warning
-            // but continue since it's not absolutely critical.
-            LOG.warn("Failed to notify Velocity Macro cache for the [" + documentName
-                + "] namespace. Reason = [" + e.getMessage() + "]");
-          }
         }
       }
     }
