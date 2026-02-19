@@ -160,13 +160,9 @@ public class XWikiAttachmentContent implements Cloneable {
    */
   @Deprecated
   public void setContent(byte[] content) {
-    try {
-      byte[] internalContent = {};
-      if (content != null) {
-        internalContent = content;
-      }
-
-      this.setContent(new ByteArrayInputStream(internalContent));
+    content = (content != null) ? content : new byte[0];
+    try (InputStream in = new ByteArrayInputStream(content)) {
+      this.setContent(in);
     } catch (IOException e) {
       throw new RuntimeException("Failed to copy data to storage.", e);
     }
@@ -221,23 +217,6 @@ public class XWikiAttachmentContent implements Cloneable {
   }
 
   /**
-   * Set the content of the attachment from a portion of an InputStream.
-   *
-   * @param is
-   *          the input stream that will be read
-   * @param len
-   *          the number of bytes to read from the beginning of the stream
-   * @throws IOException
-   *           when an error occurs during streaming operation
-   * @since 2.3M2
-   */
-  public void setContent(InputStream is, int len) throws IOException {
-    // TODO Fix so this sends a EOS when the limit is reached.
-    // this.setContent(new LimitedInputStream(is, ((long) len)));
-    this.setContent(is);
-  }
-
-  /**
    * Set the content of the attachment from an InputStream.
    *
    * @param is
@@ -250,7 +229,6 @@ public class XWikiAttachmentContent implements Cloneable {
     this.newFileItem();
     IOUtils.copy(is, this.file.getOutputStream());
     this.setContentDirty(true);
-
     this.attachment.setFilesize(this.getSize());
   }
 
@@ -259,6 +237,11 @@ public class XWikiAttachmentContent implements Cloneable {
    * @since 2.3M2
    */
   public int getSize() {
-    return (int) this.file.getSize();
+    long size = file.getSize();
+    if (size <= Integer.MAX_VALUE) {
+      return (int) size;
+    } else {
+      throw new IllegalStateException("Attachment size " + size + " exceeds max value");
+    }
   }
 }

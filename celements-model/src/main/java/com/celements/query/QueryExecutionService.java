@@ -45,14 +45,19 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
 
   @Override
   public List<List<String>> executeReadSql(String sql) throws XWikiException {
-    return executeReadSql(String.class, sql);
+    return executeReadSql(context.getWikiRef(), String.class, sql);
   }
 
   @Override
   public <T> List<List<T>> executeReadSql(Class<T> type, String sql) throws XWikiException {
+    return executeReadSql(context.getWikiRef(), type, sql);
+  }
+
+  public <T> List<List<T>> executeReadSql(WikiReference wikiRef, Class<T> type, String sql)
+      throws XWikiException {
     Session session = null;
     try {
-      session = getNewHibSession();
+      session = getNewHibSession(wikiRef);
       List<?> result = session.createSQLQuery(sql).list();
       return harmoniseResult(type, result);
     } catch (HibernateException | ClassCastException exc) {
@@ -95,9 +100,14 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
 
   @Override
   public List<Integer> executeWriteSQLs(List<String> sqls) throws XWikiException {
+    return executeWriteSQLs(context.getWikiRef(), sqls);
+  }
+
+  public List<Integer> executeWriteSQLs(WikiReference wikiRef, List<String> sqls)
+      throws XWikiException {
     Session session = null;
     try {
-      session = getNewHibSession();
+      session = getNewHibSession(wikiRef);
       return executeWriteSqlInTransaction(session, sqls);
     } catch (HibernateException hibExc) {
       throw new XWikiException(0, 0, "error while executing sql", hibExc);
@@ -130,10 +140,11 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
     return results;
   }
 
-  private Session getNewHibSession() throws XWikiException, HibernateException {
+  private Session getNewHibSession(WikiReference wikiRef)
+      throws XWikiException, HibernateException {
     Session session = getHibStore().getSessionFactory().openSession();
     try {
-      getHibStore().setDatabase(session, context.getWikiRef());
+      getHibStore().setDatabase(session, wikiRef);
     } catch (WikiMissingException wme) {
       throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SWITCH_DATABASE,
@@ -157,12 +168,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
 
   @Override
   public DocumentReference executeAndGetDocRef(Query query) throws QueryException {
-    DocumentReference ret = null;
-    List<DocumentReference> list = executeAndGetDocRefs(query);
-    if (list.size() > 0) {
-      ret = list.get(0);
-    }
-    return ret;
+    return executeAndGetDocRefs(query).stream().findFirst().orElse(null);
   }
 
   @Override
@@ -172,11 +178,11 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
     if (!Strings.isNullOrEmpty(query.getWiki())) {
       wikiRef = modelUtils.resolveRef(query.getWiki(), WikiReference.class);
     }
-    for (Object fullName : query.execute()) {
-      if ((fullName instanceof String) && !Strings.isNullOrEmpty((String) fullName)) {
-        ret.add(modelUtils.resolveRef((String) fullName, DocumentReference.class, wikiRef));
+    for (Object fullNameObj : query.execute()) {
+      if ((fullNameObj instanceof String fullName) && !Strings.isNullOrEmpty(fullName)) {
+        ret.add(modelUtils.resolveRef(fullName, DocumentReference.class, wikiRef));
       } else {
-        LOGGER.debug("executeAndGetDocRefs: received invalid fullName '{}'", fullName);
+        LOGGER.debug("executeAndGetDocRefs: received invalid fullName '{}'", fullNameObj);
       }
     }
     LOGGER.info("executeAndGetDocRefs: {} results for query '{}' and wiki '{}'", ret.size(),
@@ -194,7 +200,7 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
       throws XWikiException {
     String sql = getIndexExistSql(modelUtils.getDatabaseName(wikiRef), checkNotNull(emptyToNull(
         table)), checkNotNull(emptyToNull(name)));
-    return executeReadSql(String.class, sql).size() > 0;
+    return !executeReadSql(wikiRef, String.class, sql).isEmpty();
   }
 
   private String getIndexExistSql(String database, String table, String name) {

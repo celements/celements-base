@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.util.ToString;
 
 import com.xpn.xwiki.XWikiContext;
@@ -41,7 +41,7 @@ import com.xpn.xwiki.doc.XWikiDocument;
 public class XWikiPatch {
 
   /** Logger. */
-  private static final Log LOG = LogFactory.getLog(XWikiPatch.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiPatch.class);
 
   /** string serialization for patch. */
   private String content;

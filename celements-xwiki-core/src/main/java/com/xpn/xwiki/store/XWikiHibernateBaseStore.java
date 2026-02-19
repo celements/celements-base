@@ -1,5 +1,6 @@
 package com.xpn.xwiki.store;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -24,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.phase.Initializable;
 import org.xwiki.component.phase.InitializationException;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.WikiReference;
@@ -54,6 +56,9 @@ public class XWikiHibernateBaseStore implements Initializable {
 
   @Requirement
   protected XWikiConfigSource xwikiCfg;
+
+  @Requirement("allproperties")
+  protected ConfigurationSource cfgSrc;
 
   private String hibpath = DEFAULT_CFG_PATH;
 
@@ -1004,6 +1009,10 @@ public class XWikiHibernateBaseStore implements Initializable {
 
   protected final ExecutionContext getEContext() {
     return execution.getContext();
+  }
+
+  protected XWikiContext getXContext() {
+    return getEContext().get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
 
   protected WikiReference getWikiRef(XWikiContext context) {

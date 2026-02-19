@@ -21,6 +21,10 @@
 
 package com.xpn.xwiki.doc;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.spring.context.SpringContextProvider.*;
+
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +32,10 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -40,17 +43,26 @@ import org.dom4j.dom.DOMDocument;
 import org.dom4j.dom.DOMElement;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.rcs.Archive;
 import org.suigeneris.jrcs.rcs.Version;
+import org.xwiki.context.Execution;
+import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.WikiReference;
 
+import com.celements.init.XWikiProvider;
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.internal.xml.DOMXMLWriter;
 import com.xpn.xwiki.internal.xml.XMLWriter;
+import com.xpn.xwiki.store.XWikiAttachmentStoreInterface;
 
 public class XWikiAttachment implements Cloneable {
 
-  private static final Log LOG = LogFactory.getLog(XWikiAttachment.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiAttachment.class);
 
   private XWikiDocument doc;
 
@@ -169,7 +181,6 @@ public class XWikiAttachment implements Cloneable {
     if (this.attachment_content == null) {
       this.doc.loadAttachmentContent(this, context);
     }
-
     return this.attachment_content.getSize();
   }
 
@@ -245,6 +256,25 @@ public class XWikiAttachment implements Cloneable {
     this.doc = doc;
   }
 
+  public AttachmentReference getAttachmentReference() {
+    if ((doc != null) && !Strings.isNullOrEmpty(filename)) {
+      return new AttachmentReference(filename, doc.getDocumentReference());
+    }
+    return null;
+  }
+
+  public DocumentReference getDocumentReference() {
+    return Optional.ofNullable(getAttachmentReference())
+        .map(AttachmentReference::getDocumentReference)
+        .orElse(null);
+  }
+
+  public WikiReference getWikiReference() {
+    return Optional.ofNullable(getDocumentReference())
+        .map(DocumentReference::getWikiReference)
+        .orElse(null);
+  }
+
   public Date getDate() {
     return this.date;
   }
@@ -282,6 +312,12 @@ public class XWikiAttachment implements Cloneable {
     this.isMetaDataDirty = metaDataDirty;
   }
 
+  @Deprecated
+  public String toStringXML(boolean bWithAttachmentContent, boolean bWithVersions,
+      XWikiContext context) throws XWikiException {
+    return toStringXML(bWithAttachmentContent, bWithVersions);
+  }
+
   /**
    * Retrieve an attachment as an XML string. You should prefer
    * {@link #toXML(com.xpn.xwiki.internal.xml.XMLWriter, boolean, boolean, com.xpn.xwiki.XWikiContext)
@@ -297,8 +333,7 @@ public class XWikiAttachment implements Cloneable {
    * @throws XWikiException
    *           when an error occurs during wiki operations
    */
-  public String toStringXML(boolean bWithAttachmentContent, boolean bWithVersions,
-      XWikiContext context)
+  public String toStringXML(boolean bWithAttachmentContent, boolean bWithVersions)
       throws XWikiException {
     // This is very bad. baos holds the entire attachment on the heap, then it makes a copy when
     // toByteArray
@@ -307,14 +342,14 @@ public class XWikiAttachment implements Cloneable {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try {
       XMLWriter wr = new XMLWriter(baos,
-          new OutputFormat("", true, context.getWiki().getEncoding()));
+          new OutputFormat("", true, getXContext().getWiki().getEncoding()));
       Document doc = new DOMDocument();
       wr.writeDocumentStart(doc);
-      toXML(wr, bWithAttachmentContent, bWithVersions, context);
+      toXML(wr, bWithAttachmentContent, bWithVersions, getXContext());
       wr.writeDocumentEnd(doc);
       byte[] array = baos.toByteArray();
       baos = null;
-      return new String(array, context.getWiki().getEncoding());
+      return new String(array, getXContext().getWiki().getEncoding());
     } catch (IOException e) {
       e.printStackTrace();
       return "";
@@ -388,10 +423,9 @@ public class XWikiAttachment implements Cloneable {
     if (bWithAttachmentContent) {
       el = new DOMElement("content");
       // We need to make sure content is loaded
-      loadContent(context);
-      XWikiAttachmentContent acontent = getAttachment_content();
+      XWikiAttachmentContent acontent = loadContent();
       if (acontent != null) {
-        wr.writeBase64(el, getAttachment_content().getContentInputStream());
+        wr.writeBase64(el, acontent.getContentInputStream());
       } else {
         el.addText("");
         wr.write(el);
@@ -400,7 +434,7 @@ public class XWikiAttachment implements Cloneable {
 
     if (bWithVersions) {
       // We need to make sure content is loaded
-      XWikiAttachmentArchive aarchive = loadArchive(context);
+      XWikiAttachmentArchive aarchive = loadArchive();
       if (aarchive != null) {
         el = new DOMElement("versions");
         try {
@@ -464,17 +498,14 @@ public class XWikiAttachment implements Cloneable {
     setAuthor(docel.element("author").getText());
     setVersion(docel.element("version").getText());
     setComment(docel.element("comment").getText());
-
     String sdate = docel.element("date").getText();
     Date date = new Date(Long.parseLong(sdate));
     setDate(date);
-
-    Element contentel = docel.element("content");
-    if (contentel != null) {
-      String base64content = contentel.getText();
-      byte[] content = Base64.decodeBase64(base64content.getBytes());
-      setContent(content);
-    }
+    Optional.ofNullable(docel.element("content"))
+        .map(el -> el.getText().trim())
+        .filter(content -> !content.isEmpty())
+        .map(content -> Base64.decodeBase64(content.getBytes()))
+        .ifPresent(this::setContent);
     Element archiveel = docel.element("versions");
     if (archiveel != null) {
       String archive = archiveel.getText();
@@ -556,7 +587,6 @@ public class XWikiAttachment implements Cloneable {
       this.attachment_archive = new XWikiAttachmentArchive();
       this.attachment_archive.setAttachment(this);
     }
-
     this.attachment_archive.setRCSArchive(archive);
   }
 
@@ -565,8 +595,9 @@ public class XWikiAttachment implements Cloneable {
       this.attachment_archive = new XWikiAttachmentArchive();
       this.attachment_archive.setAttachment(this);
     }
-
-    this.attachment_archive.setArchive(data.getBytes());
+    if (data != null) {
+      this.attachment_archive.setArchive(data.getBytes());
+    }
   }
 
   public synchronized Version[] getVersions() {
@@ -603,16 +634,16 @@ public class XWikiAttachment implements Cloneable {
    *
    * @param data
    *          a byte array with the binary content of the attachment
-   * @deprecated use {@link #setContent(java.io.InputStream, int)} instead
+   * @deprecated use {@link #setContent(java.io.InputStream)} instead
    */
   @Deprecated
   public void setContent(byte[] data) {
-    if (this.attachment_content == null) {
-      this.attachment_content = new XWikiAttachmentContent();
-      this.attachment_content.setAttachment(this);
+    data = (data != null) ? data : new byte[0];
+    try (InputStream is = new ByteArrayInputStream(data)) {
+      setContent(is);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to set attachment content from byte array", e);
     }
-
-    this.attachment_content.setContent(data);
   }
 
   /**
@@ -624,15 +655,11 @@ public class XWikiAttachment implements Cloneable {
    *          the length in byte to read
    * @throws IOException
    *           when an error occurs during streaming operation
-   * @since 2.3M2
+   * @deprecated use {@link #setContent(java.io.InputStream)} instead
    */
+  @Deprecated
   public void setContent(InputStream is, int length) throws IOException {
-    if (this.attachment_content == null) {
-      this.attachment_content = new XWikiAttachmentContent();
-      this.attachment_content.setAttachment(this);
-    }
-
-    this.attachment_content.setContent(is, length);
+    setContent(is);
   }
 
   /**
@@ -645,55 +672,45 @@ public class XWikiAttachment implements Cloneable {
    * @since 2.6M1
    */
   public void setContent(InputStream is) throws IOException {
-    if (this.attachment_content == null) {
-      this.attachment_content = new XWikiAttachmentContent(this);
+    if (attachment_content == null) {
+      attachment_content = new XWikiAttachmentContent();
+      attachment_content.setAttachment(this);
     }
-
-    this.attachment_content.setContent(is);
-  }
-
-  public void loadContent(XWikiContext context) throws XWikiException {
-    if (this.attachment_content == null) {
-      try {
-        context.getWiki().getAttachmentStore().loadAttachmentContent(this, context, true);
-      } catch (Exception ex) {
-        LOG.warn(String.format("Failed to load content for attachment [%s@%s]. "
-            + "This attachment is broken, please consider re-uploading it. " + "Internal error: %s",
-            getFilename(), (this.doc != null) ? this.doc.getFullName() : "<unknown>",
-            ex.getMessage()));
-      }
+    if (is != null) {
+      attachment_content.setContent(is);
     }
   }
 
-  public XWikiAttachmentArchive loadArchive(XWikiContext context) throws XWikiException {
+  public XWikiAttachmentContent loadContent() throws XWikiException {
+    if (this.attachment_content == null) {
+      getAttachmentStore().loadAttachmentContent(this, getXContext(), true);
+    }
+    return this.attachment_content;
+  }
+
+  public XWikiAttachmentArchive loadArchive() throws XWikiException {
     if (this.attachment_archive == null) {
-      try {
-        this.attachment_archive = context.getWiki().getAttachmentVersioningStore().loadArchive(this,
-            context, true);
-      } catch (Exception ex) {
-        LOG.warn(String.format("Failed to load archive for attachment [%s@%s]. "
-            + "This attachment is broken, please consider re-uploading it. " + "Internal error: %s",
-            getFilename(), (this.doc != null) ? this.doc.getFullName() : "<unknown>",
-            ex.getMessage()));
-      }
+      this.attachment_archive = getAttachmentStore().getVersioningStore()
+          .loadArchive(this, true);
     }
-
     return this.attachment_archive;
   }
 
-  public void updateContentArchive(XWikiContext context) throws XWikiException {
+  public void updateContentArchive() throws XWikiException {
     if (this.attachment_content == null) {
       return;
     }
-
-    // XWikiAttachmentArchive no longer uses the byte array passed as it's first parameter making it
-    // redundant.
-    loadArchive(context).updateArchive(null, context);
+    loadArchive().updateArchive();
   }
 
+  public String getMimeType() {
+    return getMimeType(getXContext());
+  }
+
+  @Deprecated
   public String getMimeType(XWikiContext context) {
     // Choose the right content type
-    String mimetype = context.getEngineContext().getMimeType(getFilename().toLowerCase());
+    String mimetype = getXContext().getEngineContext().getMimeType(getFilename().toLowerCase());
     if (mimetype != null) {
       return mimetype;
     } else {
@@ -701,6 +718,11 @@ public class XWikiAttachment implements Cloneable {
     }
   }
 
+  public boolean isImage() {
+    return isImage(getXContext());
+  }
+
+  @Deprecated
   public boolean isImage(XWikiContext context) {
     String contenttype = getMimeType(context);
     if (contenttype.startsWith("image/")) {
@@ -712,11 +734,31 @@ public class XWikiAttachment implements Cloneable {
 
   public XWikiAttachment getAttachmentRevision(String rev, XWikiContext context)
       throws XWikiException {
-    if (StringUtils.equals(rev, this.getVersion())) {
+    if (Objects.equals(rev, this.getVersion())) {
       return this;
     }
+    return loadArchive().getRevision(rev);
+  }
 
-    return loadArchive(context).getRevision(this, rev, context);
+  @Override
+  public String toString() {
+    return "XWikiAttachment["
+        + "doc=" + (getDoc() != null ? getDoc().getFullName() : "") + ", "
+        + "filename=" + getFilename() + ", "
+        + "version=" + getVersion() + "]";
+  }
+
+  private XWikiAttachmentStoreInterface getAttachmentStore() {
+    return getBeanFactory().getBean(XWikiProvider.class)
+        .get().orElseThrow(IllegalStateException::new)
+        .getAttachmentStore();
+  }
+
+  private XWikiContext getXContext() {
+    return getBeanFactory().getBean(Execution.class)
+        .getContext()
+        .get(XWIKI_CONTEXT)
+        .orElseThrow(IllegalStateException::new);
   }
 
 }

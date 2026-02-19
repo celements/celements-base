@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -183,9 +184,6 @@ public class XWiki implements EventListener {
 
   /** The attachment storage (excluding attachment history). */
   private XWikiAttachmentStoreInterface attachmentStore;
-
-  /** Store for attachment archives. */
-  private AttachmentVersioningStore attachmentVersioningStore;
 
   /** Document versioning storage. */
   private XWikiVersioningStoreInterface versioningStore;
@@ -377,17 +375,13 @@ public class XWiki implements EventListener {
         "com.xpn.xwiki.criteria.impl.XWikiCriteriaServiceImpl", context));
 
     LOGGER.trace("initialising AttachmentStore...");
-    setAttachmentStore(Utils.getComponent(XWikiAttachmentStoreInterface.class, Param(
-        "xwiki.store.attachment.hint")));
+    setAttachmentStore(StoreFactory.getAttachmentStore());
+    getAttachmentStore().getContentStore(); // force init
+    getAttachmentStore().getVersioningStore(); // force init
 
     LOGGER.trace("initialising VersioningStore...");
     setVersioningStore(Utils.getComponent(XWikiVersioningStoreInterface.class, Param(
         "xwiki.store.versioning.hint")));
-
-    LOGGER.trace("initialising AttachmentVersioningStore...");
-    setAttachmentVersioningStore(Utils.getComponent(AttachmentVersioningStore.class,
-        hasAttachmentVersioning(context) ? Param("xwiki.store.attachment.versioning.hint")
-            : "void"));
 
     LOGGER.trace("initialising RecycleBinStore...");
     StoreFactory.getRecycleBinStore().ifPresent(this::setRecycleBinStore);
@@ -412,6 +406,23 @@ public class XWiki implements EventListener {
     Utils.getComponent(ObservationManager.class).addListener(this);
 
     LOGGER.debug("XWiki init done");
+  }
+
+  public String printConfig() {
+    return "XWiki "
+        + "[ mainStore=" + getStore().getClass().getName()
+        + ", notCacheStore=" + getNotCacheStore().getClass().getName()
+        + ", versioningStore=" + getVersioningStore().getClass().getName()
+        + ", recycleBinStore=" + Optional.ofNullable(getRecycleBinStore())
+            .map(s -> s.getClass().getName()).orElse("none")
+        + ", attachmentStore=" + getAttachmentStore().getClass().getName()
+        + ", attachmentContentStore=" + getAttachmentStore().getContentStore().getClass().getName()
+        + ", attachmentVersioningStore=" + getAttachmentStore().getVersioningStore()
+            .getClass().getName()
+        + ", attachmentRecycleBinStore=" + Optional.ofNullable(getAttachmentRecycleBinStore())
+            .map(s -> s.getClass().getName()).orElse("none")
+        + ", renderingEngine=" + getRenderingEngine().getClass().getName()
+        + "]";
   }
 
   /**
@@ -782,7 +793,7 @@ public class XWiki implements EventListener {
   }
 
   public AttachmentVersioningStore getAttachmentVersioningStore() {
-    return this.attachmentVersioningStore;
+    return getAttachmentStore().getVersioningStore();
   }
 
   public XWikiVersioningStoreInterface getVersioningStore() {
@@ -2214,10 +2225,6 @@ public class XWiki implements EventListener {
 
   public void setAttachmentStore(XWikiAttachmentStoreInterface attachmentStore) {
     this.attachmentStore = attachmentStore;
-  }
-
-  public void setAttachmentVersioningStore(AttachmentVersioningStore avStore) {
-    this.attachmentVersioningStore = avStore;
   }
 
   public void setVersioningStore(XWikiVersioningStoreInterface versioningStore) {
@@ -5150,7 +5157,7 @@ public class XWiki implements EventListener {
 
   @Deprecated
   public boolean hasAttachmentVersioning(XWikiContext context) {
-    return ("1".equals(Param("xwiki.store.attachment.versioning", "1")));
+    return getAttachmentStore().getVersioningStore().hasVersioning();
   }
 
   public String getExternalAttachmentURL(String fullName, String filename, XWikiContext context) {

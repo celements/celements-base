@@ -24,11 +24,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.suigeneris.jrcs.rcs.Version;
 import org.xwiki.component.annotation.Component;
 
@@ -50,7 +50,7 @@ public class XWikiHibernateVersioningStore extends XWikiHibernateBaseStore
     implements XWikiVersioningStoreInterface {
 
   /** Logger. */
-  private static final Log LOG = LogFactory.getLog(XWikiHibernateVersioningStore.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiHibernateVersioningStore.class);
 
   /** Colon symbol. */
   private static final String COLON = ":";

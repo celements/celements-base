@@ -2,6 +2,7 @@ package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.logging.LogUtils.*;
 import static com.celements.spring.context.SpringContextProvider.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -98,7 +99,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
       XWiki xwiki = bootstrapXWiki();
       // make XWiki available to all requests via servlet context, see {@link XWikiProvider}
       xwikiFuture.complete(xwiki);
-      LOGGER.info("XWiki initialised");
+      LOGGER.info("XWiki initialised: {}", defer(xwiki::printConfig));
     } catch (Exception exc) {
       xwikiFuture.completeExceptionally(exc);
       LOGGER.error("Celements bootstrap failed");

@@ -33,11 +33,8 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentArchive;
 
 /**
- * Void store for attachment versioning when it is disabled. ("xwiki.store.attachment.versioning=0"
- * parameter is set in
- * xwiki.cfg) It says what there is only one version of attachment - latest. It doesn't store
- * anything. It is safe to
- * use with any stores.
+ * Void store for attachment versioning when it is disabled. It says what there is only one version
+ * of attachment - latest. It doesn't store anything. It is safe to use with any stores.
  *
  * @version $Id$
  * @since 1.4M2
@@ -60,30 +57,25 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
    */
   public VoidAttachmentVersioningStore() {}
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public void deleteArchive(XWikiAttachment attachment, XWikiContext context, boolean transaction)
+  public boolean hasVersioning() {
+    return false;
+  }
+
+  @Override
+  public void deleteArchive(XWikiAttachment attachment, boolean transaction)
       throws XWikiException {
     // Don't do anything since it's a void implementation.
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public void saveArchive(XWikiAttachmentArchive archive, XWikiContext context, boolean transaction)
+  public void saveArchive(XWikiAttachmentArchive archive, boolean transaction)
       throws XWikiException {
     // Don't do anything since it's a void implementation.
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public XWikiAttachmentArchive loadArchive(XWikiAttachment attachment, XWikiContext context,
-      boolean transaction)
+  public XWikiAttachmentArchive loadArchive(XWikiAttachment attachment, boolean transaction)
       throws XWikiException {
     XWikiAttachmentArchive archive = attachment.getAttachment_archive();
     if (!(archive instanceof VoidAttachmentArchive)) {
@@ -119,7 +111,7 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
      * {@inheritDoc}
      */
     @Override
-    public void updateArchive(byte[] data, XWikiContext context) throws XWikiException {
+    public void updateArchive() throws XWikiException {
       getAttachment().incrementVersion();
       getAttachment().setDate(new Date());
     }
@@ -136,8 +128,8 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
      * {@inheritDoc}
      */
     @Override
-    public byte[] getArchive(XWikiContext context) throws XWikiException {
-      String sdata = getAttachment().toStringXML(true, false, context);
+    public byte[] getArchive() throws XWikiException {
+      String sdata = getAttachment().toStringXML(true, false);
       Object[] lines = ToString.stringToArray(sdata);
       Archive archive = new Archive(lines, getAttachment().getFilename(),
           getAttachment().getVersion());
@@ -164,9 +156,9 @@ public class VoidAttachmentVersioningStore implements AttachmentVersioningStore 
      * {@inheritDoc}
      */
     @Override
-    public XWikiAttachment getRevision(XWikiAttachment attachment, String rev, XWikiContext context)
+    public XWikiAttachment getRevision(Version v)
         throws XWikiException {
-      return (attachment.getVersion().equals(rev)) ? attachment : null;
+      return (getAttachment().getVersion().equals(v.toString())) ? getAttachment() : null;
     }
 
     /**

@@ -19,12 +19,11 @@
  */
 package com.xpn.xwiki.store.hibernate;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentArchive;
@@ -42,23 +41,27 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
     implements AttachmentVersioningStore {
 
   /** logger. */
-  private static final Log LOG = LogFactory.getLog(HibernateAttachmentVersioningStore.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(HibernateAttachmentVersioningStore.class);
 
   /**
    * Empty constructor needed for component manager.
    */
   public HibernateAttachmentVersioningStore() {}
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public XWikiAttachmentArchive loadArchive(final XWikiAttachment attachment, XWikiContext context,
-      boolean bTransaction) throws XWikiException {
+  public boolean hasVersioning() {
+    return true;
+  }
+
+  @Override
+  public XWikiAttachmentArchive loadArchive(final XWikiAttachment attachment, boolean bTransaction)
+      throws XWikiException {
     try {
       final XWikiAttachmentArchive archive = new XWikiAttachmentArchive();
       archive.setAttachment(attachment);
-      executeRead(context, bTransaction, session -> {
+      var wiki = attachment.getWikiReference();
+      executeRead(wiki, bTransaction, session -> {
         try {
           session.load(archive, archive.getId());
         } catch (ObjectNotFoundException e) {
@@ -76,28 +79,22 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public void saveArchive(final XWikiAttachmentArchive archive, XWikiContext context,
-      boolean bTransaction)
+  public void saveArchive(final XWikiAttachmentArchive archive, boolean bTransaction)
       throws XWikiException {
-    executeWrite(context, bTransaction, session -> {
+    var wiki = archive.getAttachment().getWikiReference();
+    executeWrite(wiki, bTransaction, session -> {
       session.saveOrUpdate(archive);
       return null;
     });
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public void deleteArchive(final XWikiAttachment attachment, final XWikiContext context,
-      boolean bTransaction)
+  public void deleteArchive(final XWikiAttachment attachment, boolean bTransaction)
       throws XWikiException {
     try {
-      executeWrite(context, bTransaction, session -> {
+      var wiki = attachment.getWikiReference();
+      executeWrite(wiki, bTransaction, session -> {
         XWikiAttachmentArchive archive = new XWikiAttachmentArchive();
         archive.setAttachment(attachment);
         session.delete(archive);

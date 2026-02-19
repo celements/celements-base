@@ -73,20 +73,20 @@ public class DeletedAttachment extends AbstractSimpleClass {
    *          User which deleted the attachment.
    * @param deleteDate
    *          Date of delete action.
-   * @param context
-   *          The current context. Used for determining the encoding.
+   * @param bWithAttachmentContent
+   *          True to include the attachment content in the recycle bin
    * @throws XWikiException
    *           If the attachment cannot be exported to XML.
    */
   public DeletedAttachment(XWikiAttachment attachment, String deleter, Date deleteDate,
-      XWikiContext context)
+      boolean bWithAttachmentContent)
       throws XWikiException {
     this.docId = attachment.getDocId();
     this.docName = attachment.getDoc().getFullName();
     this.filename = attachment.getFilename();
     this.deleter = deleter;
     this.date = deleteDate;
-    setAttachment(attachment, context);
+    setAttachment(attachment, bWithAttachmentContent);
   }
 
   /**
@@ -233,9 +233,9 @@ public class DeletedAttachment extends AbstractSimpleClass {
    * @throws XWikiException
    *           if an exception occurs during the XML export
    */
-  protected void setAttachment(XWikiAttachment attachment, XWikiContext context)
+  protected void setAttachment(XWikiAttachment attachment, boolean bWithAttachmentContent)
       throws XWikiException {
-    setXml(attachment.toStringXML(true, true, context));
+    setXml(attachment.toStringXML(bWithAttachmentContent, true));
   }
 
   /**

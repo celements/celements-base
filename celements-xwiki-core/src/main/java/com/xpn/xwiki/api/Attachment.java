@@ -141,7 +141,7 @@ public class Attachment extends Api {
   }
 
   public Version[] getVersions() throws XWikiException {
-    attachment.loadArchive(getXWikiContext());
+    attachment.loadArchive();
     return attachment.getVersions();
   }
 
@@ -150,7 +150,7 @@ public class Attachment extends Api {
    * @throws XWikiException
    */
   public List<Version> getVersionList() throws XWikiException {
-    attachment.loadArchive(getXWikiContext());
+    attachment.loadArchive();
     return attachment.getVersionList();
   }
 

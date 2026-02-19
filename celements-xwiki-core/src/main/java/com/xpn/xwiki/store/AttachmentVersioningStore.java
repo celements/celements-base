@@ -21,7 +21,6 @@ package com.xpn.xwiki.store;
 
 import org.xwiki.component.annotation.ComponentRole;
 
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentArchive;
@@ -35,21 +34,20 @@ import com.xpn.xwiki.doc.XWikiAttachmentArchive;
 @ComponentRole
 public interface AttachmentVersioningStore {
 
+  boolean hasVersioning();
+
   /**
    * Load attachment archive from store.
    *
    * @return attachment archive. not null. return empty archive if it is not exist in store.
    * @param attachment
    *          The attachment of archive.
-   * @param context
-   *          The current context.
    * @param bTransaction
    *          Should use old transaction (false) or create new (true).
    * @throws XWikiException
    *           If an error occurs.
    */
-  XWikiAttachmentArchive loadArchive(XWikiAttachment attachment, XWikiContext context,
-      boolean bTransaction)
+  XWikiAttachmentArchive loadArchive(XWikiAttachment attachment, boolean bTransaction)
       throws XWikiException;
 
   /**
@@ -57,14 +55,12 @@ public interface AttachmentVersioningStore {
    *
    * @param archive
    *          The attachment archive to save.
-   * @param context
-   *          The current context.
    * @param bTransaction
    *          Should use old transaction (false) or create new (true).
    * @throws XWikiException
    *           If an error occurs.
    */
-  void saveArchive(XWikiAttachmentArchive archive, XWikiContext context, boolean bTransaction)
+  void saveArchive(XWikiAttachmentArchive archive, boolean bTransaction)
       throws XWikiException;
 
   /**
@@ -72,13 +68,11 @@ public interface AttachmentVersioningStore {
    *
    * @param attachment
    *          The attachment to delete.
-   * @param context
-   *          The current context.
    * @param bTransaction
    *          Should use old transaction (false) or create new (true).
    * @throws XWikiException
    *           If an error occurs.
    */
-  void deleteArchive(XWikiAttachment attachment, XWikiContext context, boolean bTransaction)
+  void deleteArchive(XWikiAttachment attachment, boolean bTransaction)
       throws XWikiException;
 }
