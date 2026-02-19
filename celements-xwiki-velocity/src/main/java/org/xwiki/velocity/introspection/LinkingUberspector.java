@@ -58,13 +58,14 @@ import org.apache.velocity.util.introspection.VelPropertySet;
  * property is not defined or contains only wrong classnames, then by default a <code>SecureUberspector</code> is used
  * as the only entry in the array.
  * </p>
- * 
+ *
  * @since 1.5RC1
+ *
  * @see ChainingUberspector
+ *
  * @version $Id$
  */
-public class LinkingUberspector extends UberspectImpl implements Uberspect, RuntimeServicesAware, UberspectLoggable
-{
+public class LinkingUberspector extends UberspectImpl implements Uberspect, RuntimeServicesAware, UberspectLoggable {
     /** The key of the parameter that allows defining the array of uberspectors. */
     public static final String UBERSPECT_ARRAY_CLASSNAMES = "runtime.introspector.uberspect.arrayClasses";
 
@@ -76,11 +77,10 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.apache.velocity.util.RuntimeServicesAware#setRuntimeServices(org.apache.velocity.runtime.RuntimeServices)
      */
-    public void setRuntimeServices(RuntimeServices rs)
-    {
+    public void setRuntimeServices(RuntimeServices rs) {
         this.runtime = rs;
     }
 
@@ -89,12 +89,11 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
      * <p>
      * This implementation initializes the array of uberspectors.
      * </p>
-     * 
+     *
      * @see org.apache.velocity.util.introspection.Uberspect#init()
      */
     @Override
-    public void init()
-    {
+    public void init() {
         this.log.debug("Initializing the linking uberspector.");
         // Create the array
         String[] arrayClassnames = this.runtime.getConfiguration().getStringArray(UBERSPECT_ARRAY_CLASSNAMES);
@@ -105,8 +104,8 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
         // If the chain is empty, use a SecureUberspector
         if (this.uberspectors.isEmpty()) {
             this.log.error("No uberspectors defined! "
-                + "This uberspector is just a placeholder that relies on at least one real uberspector "
-                + "to actually allow method calls. Using SecureUberspector instead as a fallback.");
+                    + "This uberspector is just a placeholder that relies on at least one real uberspector "
+                    + "to actually allow method calls. Using SecureUberspector instead as a fallback.");
             initializeUberspector(SecureUberspector.class.getCanonicalName());
         }
     }
@@ -114,11 +113,11 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
     /**
      * Instantiates and initializes an uberspector class and adds it to the array. Also set the log and runtime
      * services, if the class implements the proper interfaces.
-     * 
-     * @param classname The name of the uberspector class to add to the chain.
+     *
+     * @param classname
+     *            The name of the uberspector class to add to the chain.
      */
-    protected void initializeUberspector(String classname)
-    {
+    protected void initializeUberspector(String classname) {
         // Avoids direct recursive calls
         if (!StringUtils.isEmpty(classname) && !classname.equals(this.getClass().getCanonicalName())) {
             Uberspect u = instantiateUberspector(classname);
@@ -148,33 +147,34 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
 
     /**
      * Tries to create an uberspector instance using reflection.
-     * 
-     * @param classname The name of the uberspector class to instantiate.
+     *
+     * @param classname
+     *            The name of the uberspector class to instantiate.
+     *
      * @return An instance of the specified Uberspector. If the class cannot be instantiated using the default
      *         constructor, or does not implement {@link Uberspect}, <code>null</code> is returned.
      */
-    protected Uberspect instantiateUberspector(String classname)
-    {
+    protected Uberspect instantiateUberspector(String classname) {
         Object o = null;
         try {
             o = ClassUtils.getNewInstance(classname);
         } catch (ClassNotFoundException e) {
             this.log.warn(String.format("The specified uberspector [%s]"
-                + " does not exist or is not accessible to the current classloader.", classname));
+                    + " does not exist or is not accessible to the current classloader.", classname));
         } catch (IllegalAccessException e) {
             this.log.warn(String.format("The specified uberspector [%s] does not have a public default constructor.",
-                classname));
+                    classname));
         } catch (InstantiationException e) {
             this.log.warn(String.format("The specified uberspector [%s] cannot be instantiated.", classname));
         } catch (ExceptionInInitializerError e) {
-            this.log.warn(String.format("Exception while instantiating the Uberspector [%s]: %s", classname, e
-                .getMessage()));
+            this.log.warn(
+                    String.format("Exception while instantiating the Uberspector [%s]: %s", classname, e.getMessage()));
         }
 
         if (!(o instanceof Uberspect)) {
             if (o != null) {
                 this.log.warn("The specified class for Uberspect [" + classname + "] does not implement "
-                    + Uberspect.class.getName());
+                        + Uberspect.class.getName());
             }
             return null;
         }
@@ -183,14 +183,13 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.apache.velocity.util.introspection.Uberspect#getIterator(java.lang.Object,
      *      org.apache.velocity.util.introspection.Info)
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Iterator getIterator(Object obj, Info i) throws Exception
-    {
+    public Iterator getIterator(Object obj, Info i) throws Exception {
         Iterator it;
         for (Uberspect u : this.uberspectors) {
             it = u.getIterator(obj, i);
@@ -203,13 +202,12 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.apache.velocity.util.introspection.Uberspect#getMethod(java.lang.Object, java.lang.String,
      *      java.lang.Object[], org.apache.velocity.util.introspection.Info)
      */
     @Override
-    public VelMethod getMethod(Object obj, String methodName, Object[] args, Info i) throws Exception
-    {
+    public VelMethod getMethod(Object obj, String methodName, Object[] args, Info i) throws Exception {
         VelMethod method;
         for (Uberspect u : this.uberspectors) {
             method = u.getMethod(obj, methodName, args, i);
@@ -222,13 +220,12 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.apache.velocity.util.introspection.Uberspect#getPropertyGet(java.lang.Object, java.lang.String,
      *      org.apache.velocity.util.introspection.Info)
      */
     @Override
-    public VelPropertyGet getPropertyGet(Object obj, String identifier, Info i) throws Exception
-    {
+    public VelPropertyGet getPropertyGet(Object obj, String identifier, Info i) throws Exception {
         VelPropertyGet getter;
         for (Uberspect u : this.uberspectors) {
             getter = u.getPropertyGet(obj, identifier, i);
@@ -241,13 +238,12 @@ public class LinkingUberspector extends UberspectImpl implements Uberspect, Runt
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.apache.velocity.util.introspection.Uberspect#getPropertySet(java.lang.Object, java.lang.String,
      *      java.lang.Object, org.apache.velocity.util.introspection.Info)
      */
     @Override
-    public VelPropertySet getPropertySet(Object obj, String identifier, Object arg, Info i) throws Exception
-    {
+    public VelPropertySet getPropertySet(Object obj, String identifier, Object arg, Info i) throws Exception {
         VelPropertySet setter;
         for (Uberspect u : this.uberspectors) {
             setter = u.getPropertySet(obj, identifier, arg, i);

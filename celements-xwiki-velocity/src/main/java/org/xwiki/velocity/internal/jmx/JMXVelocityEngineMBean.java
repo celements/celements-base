@@ -24,14 +24,14 @@ import javax.management.openmbean.TabularData;
 /**
  * MBean API related to Velocity Engines. Supports the following features:
  * <ul>
- *   <li>Retrieve list of template namespaces along with the name of macros registered in each template namespace</li>
+ * <li>Retrieve list of template namespaces along with the name of macros registered in each template namespace</li>
  * </ul>
  *
  * @version $Id$
+ *
  * @since 2.4M2
  */
-public interface JMXVelocityEngineMBean
-{
+public interface JMXVelocityEngineMBean {
     /**
      * @return the list of template namespaces along with the name of macros registered in each template namespace
      */

@@ -32,14 +32,15 @@ import org.xwiki.velocity.XWikiVelocityException;
 /**
  * Allow registering the Velocity Context in the Execution Context object since it's shared during the whole execution
  * of the current request.
- * 
+ *
  * @see org.xwiki.context.ExecutionContextInitializer
+ *
  * @since 1.5M1
+ *
  * @version $Id$
  */
 @Component("velocity")
-public class VelocityExecutionContextInitializer implements ExecutionContextInitializer
-{
+public class VelocityExecutionContextInitializer implements ExecutionContextInitializer {
     /**
      * The id under which the Velocity Context is stored in the Execution Context.
      */
@@ -54,11 +55,10 @@ public class VelocityExecutionContextInitializer implements ExecutionContextInit
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.xwiki.context.ExecutionContextInitializer#initialize(org.xwiki.context.ExecutionContext)
      */
-    public void initialize(ExecutionContext executionContext) throws ExecutionContextException
-    {
+    public void initialize(ExecutionContext executionContext) throws ExecutionContextException {
         try {
             VelocityContext context = this.velocityContextFactory.createContext();
             executionContext.setProperty(VelocityExecutionContextInitializer.VELOCITY_CONTEXT_ID, context);

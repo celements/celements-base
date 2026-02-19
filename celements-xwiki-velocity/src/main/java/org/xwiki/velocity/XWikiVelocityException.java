@@ -22,11 +22,10 @@ package org.xwiki.velocity;
 
 /**
  * Any exception raised in the XWiki Velocity component must raise an exception of this type.
- * 
+ *
  * @version $Id$
  */
-public class XWikiVelocityException extends Exception
-{
+public class XWikiVelocityException extends Exception {
     /**
      * Provides an id for serialization.
      */
@@ -34,24 +33,27 @@ public class XWikiVelocityException extends Exception
 
     /**
      * Constructs a new exception with the specified detail message.
-     * 
-     * @param message the exception message
+     *
+     * @param message
+     *            the exception message
+     *
      * @see Exception#Exception(String)
      */
-    public XWikiVelocityException(String message)
-    {
+    public XWikiVelocityException(String message) {
         super(message);
     }
 
     /**
      * Constructs a new exception with the specified detail message and cause.
-     * 
-     * @param message the exception message
-     * @param throwable the original exception to wrap
+     *
+     * @param message
+     *            the exception message
+     * @param throwable
+     *            the original exception to wrap
+     *
      * @see Exception#Exception(String, Throwable)
      */
-    public XWikiVelocityException(String message, Throwable throwable)
-    {
+    public XWikiVelocityException(String message, Throwable throwable) {
         super(message, throwable);
     }
 }

@@ -25,15 +25,14 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link EscapeTool}.
- * 
+ *
  * @version $Id$
+ *
  * @since 2.7RC1
  */
-public class EscapeToolTest
-{
+public class EscapeToolTest {
     @Test
-    public void testEscapeSimpleXML()
-    {
+    public void testEscapeSimpleXML() {
         EscapeTool tool = new EscapeTool();
         String escapedText = tool.xml("a < a' && a' < a\" => a < a\"");
 
@@ -45,24 +44,21 @@ public class EscapeToolTest
     }
 
     @Test
-    public void testEscapeXMLApos()
-    {
+    public void testEscapeXMLApos() {
         EscapeTool tool = new EscapeTool();
 
         Assert.assertFalse("' wrongly escaped to non-HTML &apos;", tool.xml("'").equals("&apos;"));
     }
 
     @Test
-    public void testEscapeXMLWithNull()
-    {
+    public void testEscapeXMLWithNull() {
         EscapeTool tool = new EscapeTool();
 
         Assert.assertNull("null should be null", tool.xml(null));
     }
 
     @Test
-    public void testEscapeXMLNonAscii()
-    {
+    public void testEscapeXMLNonAscii() {
         EscapeTool tool = new EscapeTool();
 
         Assert.assertTrue("Non-ASCII characters shouldn't be escaped", tool.xml("\u0123").equals("\u0123"));

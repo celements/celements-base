@@ -27,11 +27,10 @@ import org.xwiki.component.logging.Logger;
 
 /**
  * Provide helpers to parse velocity scripts.
- * 
+ *
  * @version $Id$
  */
-public class VelocityParser extends AbstractLogEnabled
-{
+public class VelocityParser extends AbstractLogEnabled {
     /**
      * The directives which start a new level which will have to be close by a #end.
      */
@@ -82,26 +81,32 @@ public class VelocityParser extends AbstractLogEnabled
     }
 
     /**
-     * @param logger the logger to use
+     * @param logger
+     *            the logger to use
      */
-    public VelocityParser(Logger logger)
-    {
+    public VelocityParser(Logger logger) {
         enableLogging(logger);
     }
 
     /**
      * Get any valid Velocity block starting with a sharp character (#if, #somemaccro(), ##comment etc.).
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
-     * @throws InvalidVelocityException not a valid velocity block
+     *
+     * @throws InvalidVelocityException
+     *             not a valid velocity block
      */
     public int getKeyWord(char[] array, int currentIndex, StringBuffer velocityBlock, VelocityParserContext context)
-        throws InvalidVelocityException
-    {
+            throws InvalidVelocityException {
         int i = currentIndex;
 
         if (i + 1 >= array.length) {
@@ -126,17 +131,23 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get any valid Velocity block starting with a sharp character except comments.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
-     * @throws InvalidVelocityException not a valid velocity block
+     *
+     * @throws InvalidVelocityException
+     *             not a valid velocity block
      */
     public int getDirective(char[] array, int currentIndex, StringBuffer velocityBlock, VelocityParserContext context)
-        throws InvalidVelocityException
-    {
+            throws InvalidVelocityException {
         int i = currentIndex + 1;
 
         // Get macro name
@@ -183,17 +194,23 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get a valid Velocity identifier used for variable of macro.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
-     * @throws InvalidVelocityException not a valid velocity block
+     *
+     * @throws InvalidVelocityException
+     *             not a valid velocity block
      */
     public int getVelocityIdentifier(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context) throws InvalidVelocityException
-    {
+            VelocityParserContext context) throws InvalidVelocityException {
         // The first character of an identifier must be a [a-zA-Z]
         if (!Character.isLetter(array[currentIndex])) {
             throw new InvalidVelocityException();
@@ -214,12 +231,13 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Indicate if the provided character is valid in a velocity identifier.
-     * 
-     * @param c the character
+     *
+     * @param c
+     *            the character
+     *
      * @return true if the character is valid
      */
-    public boolean isValidVelocityIdentifierChar(char c)
-    {
+    public boolean isValidVelocityIdentifierChar(char c) {
         return Character.isLetterOrDigit(c) || c == '_' || c == '-';
     }
 
@@ -227,18 +245,25 @@ public class VelocityParser extends AbstractLogEnabled
      * Get a Velocity directive name block. It's different from
      * {@link #getVelocityIdentifier(char[], int, StringBuffer, VelocityParserContext)} because is include the optional
      * <code>{</code> and <code>}</code>.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param directiveName the buffer where to append the name of the directive
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param directiveName
+     *            the buffer where to append the name of the directive
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
-     * @throws InvalidVelocityException not a valid velocity block
+     *
+     * @throws InvalidVelocityException
+     *             not a valid velocity block
      */
     public int getDirectiveName(char[] array, int currentIndex, StringBuffer directiveName, StringBuffer velocityBlock,
-        VelocityParserContext context) throws InvalidVelocityException
-    {
+            VelocityParserContext context) throws InvalidVelocityException {
         int i = currentIndex;
 
         if (i == array.length) {
@@ -264,16 +289,20 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get the newline consumed by Velocity directive other than macros.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getDirectiveEndOfLine(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         int i = currentIndex;
 
         for (; i < array.length; ++i) {
@@ -294,16 +323,20 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get comment single line comment (starting with <code>##</code>).
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getSimpleComment(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         int i = currentIndex + 2;
 
         while (i < array.length && array[i - 1] != '\n') {
@@ -321,16 +354,20 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get multilines comment (between <code>#*</code> and <code>*#</code>).
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getMultilinesComment(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         int i = currentIndex + 2;
 
         while (i < array.length && (array[i - 1] != '#' || array[i - 2] != '*')) {
@@ -348,34 +385,47 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get any valid Velocity starting with a <code>$</code>.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
-     * @throws InvalidVelocityException not a valid velocity block
+     *
+     * @throws InvalidVelocityException
+     *             not a valid velocity block
      */
     public int getVar(char[] array, int currentIndex, StringBuffer velocityBlock, VelocityParserContext context)
-        throws InvalidVelocityException
-    {
+            throws InvalidVelocityException {
         return getVar(array, currentIndex, null, velocityBlock, context);
     }
 
     /**
      * Get any valid Velocity starting with a <code>$</code>.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param varName the buffer where to append the name of the variable
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param varName
+     *            the buffer where to append the name of the variable
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
-     * @throws InvalidVelocityException not a valid velocity block
+     *
+     * @throws InvalidVelocityException
+     *             not a valid velocity block
      */
     public int getVar(char[] array, int currentIndex, StringBuffer varName, StringBuffer velocityBlock,
-        VelocityParserContext context) throws InvalidVelocityException
-    {
+            VelocityParserContext context) throws InvalidVelocityException {
         if (isVarEscaped(array, currentIndex)) {
             throw new InvalidVelocityException();
         }
@@ -421,13 +471,15 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Look in previous characters of the array to find if the current var is escaped (like \$var).
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     *
      * @return the parser context to put some informations
      */
-    private boolean isVarEscaped(char[] array, int currentIndex)
-    {
+    private boolean isVarEscaped(char[] array, int currentIndex) {
         int i = currentIndex - 1;
 
         while (i >= 0 && array[i] == '\\') {
@@ -439,15 +491,19 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get the right part of a Velocity variable (the methods and properties starting from the dot).
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param fullSyntax indicate if it's between <code>{</code> and <code>}</code>
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param fullSyntax
+     *            indicate if it's between <code>{</code> and <code>}</code>
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
-    private int followVar(char[] array, int currentIndex, boolean fullSyntax, VelocityParserContext context)
-    {
+    private int followVar(char[] array, int currentIndex, boolean fullSyntax, VelocityParserContext context) {
         int i = currentIndex;
 
         while (i < array.length) {
@@ -474,17 +530,23 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get a velocity method call or a property starting with a <code>.</code>.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
-     * @throws InvalidVelocityException not a valid velocity block
+     *
+     * @throws InvalidVelocityException
+     *             not a valid velocity block
      */
     public int getMethodOrProperty(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context) throws InvalidVelocityException
-    {
+            VelocityParserContext context) throws InvalidVelocityException {
         int i = currentIndex + 1;
 
         // A Velocity method starts with [a-zA-Z]
@@ -510,31 +572,39 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Get a Velocity table.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getTableElement(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         return getParameters(array, currentIndex, velocityBlock, ']', context);
     }
 
     /**
      * Get the Velocity method parameters (including <code>(</code> and <code>)</code>).
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getMethodParameters(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         return getParameters(array, currentIndex, velocityBlock, ')', context);
     }
 
@@ -542,17 +612,22 @@ public class VelocityParser extends AbstractLogEnabled
      * Get a group of parameters between two characters. Generic version of
      * {@link #getTableElement(char[], int, StringBuffer, VelocityParserContext)} and
      * {@link #getMethodParameters(char[], int, StringBuffer, VelocityParserContext)}.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param endingChar the char to end to
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param endingChar
+     *            the char to end to
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getParameters(char[] array, int currentIndex, StringBuffer velocityBlock, char endingChar,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         char beginChar = array[currentIndex];
 
         int i = currentIndex + 1;
@@ -584,14 +659,18 @@ public class VelocityParser extends AbstractLogEnabled
     }
 
     /**
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
-    public int getEscape(char[] array, int currentIndex, StringBuffer velocityBlock, VelocityParserContext context)
-    {
+    public int getEscape(char[] array, int currentIndex, StringBuffer velocityBlock, VelocityParserContext context) {
         char escapeChar = array[currentIndex];
 
         int i = currentIndex + 1;
@@ -629,15 +708,20 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Match a group of {@link Character#isWhitespace(char)}.
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
-    public int getWhiteSpaces(char[] array, int currentIndex, StringBuffer velocityBlock, VelocityParserContext context)
-    {
+    public int getWhiteSpaces(char[] array, int currentIndex, StringBuffer velocityBlock,
+            VelocityParserContext context) {
         int i = currentIndex;
 
         while (i < array.length && Character.isWhitespace(array[i])) {
@@ -653,16 +737,19 @@ public class VelocityParser extends AbstractLogEnabled
 
     /**
      * Match a group of space characters (ASCII 32).
-     * 
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     *
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
-    public int getSpaces(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+    public int getSpaces(char[] array, int currentIndex, StringBuffer velocityBlock, VelocityParserContext context) {
         int i = currentIndex;
 
         while (i < array.length && Character.isWhitespace(array[i])) {
@@ -677,15 +764,19 @@ public class VelocityParser extends AbstractLogEnabled
     }
 
     /**
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getMacroParametersSeparator(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         int i = currentIndex;
 
         i = getWhiteSpaces(array, i, null, context);
@@ -702,15 +793,19 @@ public class VelocityParser extends AbstractLogEnabled
     }
 
     /**
-     * @param array the source to parse
-     * @param currentIndex the current index in the <code>array</code>
-     * @param velocityBlock the buffer where to append matched velocity block
-     * @param context the parser context to put some informations
+     * @param array
+     *            the source to parse
+     * @param currentIndex
+     *            the current index in the <code>array</code>
+     * @param velocityBlock
+     *            the buffer where to append matched velocity block
+     * @param context
+     *            the parser context to put some informations
+     *
      * @return the index in the <code>array</code> after the matched block
      */
     public int getMacroParameter(char[] array, int currentIndex, StringBuffer velocityBlock,
-        VelocityParserContext context)
-    {
+            VelocityParserContext context) {
         int i = currentIndex;
 
         for (; i < array.length; ++i) {

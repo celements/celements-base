@@ -38,42 +38,42 @@ import org.xwiki.velocity.VelocityContextInitializer;
  *
  * @version $Id$
  */
-public class DefaultVelocityContextFactoryTest extends AbstractMockingComponentTestCase
-{
+public class DefaultVelocityContextFactoryTest extends AbstractMockingComponentTestCase {
     @MockingRequirement
     private DefaultVelocityContextFactory factory;
 
     /**
      * @see org.xwiki.test.AbstractMockingComponentTestCase#configure()
      */
-    public void configure() throws Exception
-    {
+    public void configure() throws Exception {
         final VelocityConfiguration configuration = getComponentManager().lookup(VelocityConfiguration.class);
         final Properties properties = new Properties();
         properties.put("listtool", ListTool.class.getName());
-        getMockery().checking(new Expectations() {{
-            allowing(configuration).getTools();
-            will(returnValue(properties));
-        }});
+        getMockery().checking(new Expectations() {
+            {
+                allowing(configuration).getTools();
+                will(returnValue(properties));
+            }
+        });
     }
 
     /**
-     * Verify that we get different contexts when we call the createContext method but that
-     * they contain the same references to the Velocity tools. Also tests that objects we
-     * put in one context are not shared with other contexts. Also verifies that Velocity Context Initializers are
-     * called.
+     * Verify that we get different contexts when we call the createContext method but that they contain the same
+     * references to the Velocity tools. Also tests that objects we put in one context are not shared with other
+     * contexts. Also verifies that Velocity Context Initializers are called.
      */
     @Test
-    public void testCreateDifferentContext() throws Exception
-    {
+    public void testCreateDifferentContext() throws Exception {
         // We also verify that the VelocityContextInitializers are called.
         final VelocityContextInitializer mockInitializer = getMockery().mock(VelocityContextInitializer.class);
         final ComponentManager mockComponentManager = getComponentManager().lookup(ComponentManager.class);
-        getMockery().checking(new Expectations() {{
-            exactly(2).of(mockInitializer).initialize(with(any(VelocityContext.class)));
-            exactly(2). of(mockComponentManager).lookupList(VelocityContextInitializer.class);
-            will(returnValue(Arrays.asList(mockInitializer)));
-        }});
+        getMockery().checking(new Expectations() {
+            {
+                exactly(2).of(mockInitializer).initialize(with(any(VelocityContext.class)));
+                exactly(2).of(mockComponentManager).lookupList(VelocityContextInitializer.class);
+                will(returnValue(Arrays.asList(mockInitializer)));
+            }
+        });
 
         VelocityContext context1 = this.factory.createContext();
         context1.put("param", "value");

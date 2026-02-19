@@ -35,15 +35,14 @@ import java.util.Properties;
 
 /**
  * Unit tests for {@link JMXVelocityEngine}.
- * 
+ *
  * @version $Id$
+ *
  * @since 2.4M2
  */
-public class JMXVelocityEngineTest extends AbstractComponentTestCase
-{
+public class JMXVelocityEngineTest extends AbstractComponentTestCase {
     @Test
-    public void testGetTemplates() throws Exception
-    {
+    public void testGetTemplates() throws Exception {
         VelocityEngine engine = getComponentManager().lookup(VelocityEngine.class);
         engine.initialize(new Properties());
         JMXVelocityEngine jmxBean = new JMXVelocityEngine(engine);
@@ -53,7 +52,7 @@ public class JMXVelocityEngineTest extends AbstractComponentTestCase
         Assert.assertEquals(1, data.values().size());
         CompositeData cd = ((CompositeData) data.values().iterator().next());
         Assert.assertEquals("<global>", cd.get("templateName"));
-        Assert.assertEquals(0, ((String[])cd.get("macroNames")).length);
+        Assert.assertEquals(0, ((String[]) cd.get("macroNames")).length);
 
         StringWriter out = new StringWriter();
         engine.evaluate(new VelocityContext(), out, "testmacronamespace", "#macro(testmacro)#end");

@@ -29,18 +29,17 @@ import org.xwiki.velocity.tools.RegexTool.RegexResult;
 
 /**
  * Unit tests for {@link RegexTool}.
- * 
+ *
  * @version $Id$
+ *
  * @since 2.0RC1
  */
-public class RegexToolTest
-{
+public class RegexToolTest {
     @Test
-    public void testFind()
-    {
+    public void testFind() {
         RegexTool tool = new RegexTool();
-        List<RegexResult> result =
-            tool.find("<h1><span>header</span></h1> whatever", "<[hH][12].*?><span>(.*?)</span></[hH][12]>");
+        List<RegexResult> result = tool.find("<h1><span>header</span></h1> whatever",
+                "<[hH][12].*?><span>(.*?)</span></[hH][12]>");
 
         Assert.assertEquals(2, result.size());
         Assert.assertEquals("<h1><span>header</span></h1>", result.get(0).getGroup());
@@ -51,8 +50,7 @@ public class RegexToolTest
      * Compiling a valid regular expression should work.
      */
     @Test
-    public void testCompileValidRegex()
-    {
+    public void testCompileValidRegex() {
         RegexTool tool = new RegexTool();
         Pattern p = tool.compile("ab?");
         Assert.assertNotNull(p);
@@ -71,8 +69,7 @@ public class RegexToolTest
      * Compiling a valid regular expression with internal flags should work.
      */
     @Test
-    public void testCompileRegexWithFlags()
-    {
+    public void testCompileRegexWithFlags() {
         RegexTool tool = new RegexTool();
         Pattern p = tool.compile("(?im)^ab?$");
         Assert.assertNotNull(p);
@@ -91,19 +88,17 @@ public class RegexToolTest
      * Compiling an invalid regular expression should return null, and not throw an exception.
      */
     @Test
-    public void testCompileInvalidRegex()
-    {
+    public void testCompileInvalidRegex() {
         RegexTool tool = new RegexTool();
         Pattern p = tool.compile("*");
         Assert.assertNull(p);
     }
-    
+
     /**
      * Escaping a string containing regex syntax characters.
      */
     @Test
-    public void testQuote()
-    {
+    public void testQuote() {
         RegexTool tool = new RegexTool();
         Assert.assertEquals(Pattern.quote("^(\\)[]"), tool.quote("^(\\)[]"));
     }

@@ -41,13 +41,13 @@ import org.xwiki.velocity.tools.RegexTool;
 
 /**
  * All configuration options for the Velocity subsystem.
- * 
+ *
  * @version $Id$
+ *
  * @since 2.0M1
  */
 @Component
-public class DefaultVelocityConfiguration implements Initializable, VelocityConfiguration
-{
+public class DefaultVelocityConfiguration implements Initializable, VelocityConfiguration {
     /**
      * Prefix for configuration keys for the Velocity module.
      */
@@ -71,11 +71,10 @@ public class DefaultVelocityConfiguration implements Initializable, VelocityConf
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.xwiki.component.phase.Initializable#initialize()
      */
-    public void initialize() throws InitializationException
-    {
+    public void initialize() throws InitializationException {
         // Default Velocity tools.
         this.defaultTools.setProperty("listtool", ListTool.class.getName());
         this.defaultTools.setProperty("numbertool", NumberTool.class.getName());
@@ -95,16 +94,15 @@ public class DefaultVelocityConfiguration implements Initializable, VelocityConf
         // Prevents users from writing dangerous Velocity code like using Class.forName or Java threading APIs.
         this.defaultProperties.setProperty("runtime.introspector.uberspect", ChainingUberspector.class.getName());
         this.defaultProperties.setProperty("runtime.introspector.uberspect.chainClasses",
-            SecureUberspector.class.getName() + "," + DeprecatedCheckUberspector.class.getName());
+                SecureUberspector.class.getName() + "," + DeprecatedCheckUberspector.class.getName());
     }
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see VelocityConfiguration#getProperties()
      */
-    public Properties getProperties()
-    {
+    public Properties getProperties() {
         // Merge default properties and properties defined in the configuration
         Properties props = new Properties();
         props.putAll(this.defaultProperties);
@@ -114,11 +112,10 @@ public class DefaultVelocityConfiguration implements Initializable, VelocityConf
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see VelocityConfiguration#getTools()
      */
-    public Properties getTools()
-    {
+    public Properties getTools() {
         // Merge default tools and tools defined in the configuration
         Properties props = new Properties();
         props.putAll(this.defaultTools);

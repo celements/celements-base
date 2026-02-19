@@ -39,12 +39,11 @@ import org.xwiki.velocity.XWikiVelocityException;
 
 /**
  * Default implementation for {@link VelocityContextFactory}.
- * 
+ *
  * @version $Id$
  */
 @Component
-public class DefaultVelocityContextFactory extends AbstractLogEnabled implements VelocityContextFactory, Initializable
-{
+public class DefaultVelocityContextFactory extends AbstractLogEnabled implements VelocityContextFactory, Initializable {
     /**
      * The component manager we used to find all components implementing the
      * {@link org.xwiki.velocity.VelocityContextInitializer} role.
@@ -66,17 +65,16 @@ public class DefaultVelocityContextFactory extends AbstractLogEnabled implements
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see Initializable#initialize()
      */
-    public void initialize() throws InitializationException
-    {
+    public void initialize() throws InitializationException {
         this.toolsContext = new VelocityContext();
 
         // Instantiate Velocity tools
         Properties properties = this.velocityConfiguration.getTools();
         if (properties != null) {
-            for (Enumeration< ? > props = properties.propertyNames(); props.hasMoreElements();) {
+            for (Enumeration<?> props = properties.propertyNames(); props.hasMoreElements();) {
                 String key = props.nextElement().toString();
                 String value = properties.getProperty(key);
                 Object toolInstance;
@@ -93,11 +91,10 @@ public class DefaultVelocityContextFactory extends AbstractLogEnabled implements
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see VelocityContextFactory#createContext()
      */
-    public VelocityContext createContext() throws XWikiVelocityException
-    {
+    public VelocityContext createContext() throws XWikiVelocityException {
         // Note: This constructor uses the passed context as an internal read-only context.
         VelocityContext context = new VelocityContext(this.toolsContext);
 

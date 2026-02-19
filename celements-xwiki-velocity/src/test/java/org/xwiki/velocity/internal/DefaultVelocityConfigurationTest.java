@@ -37,49 +37,48 @@ import org.xwiki.velocity.introspection.DeprecatedCheckUberspector;
  * Unit tests for {@link DefaultVelocityConfiguration}.
  *
  * @version $Id$
+ *
  * @since 2.4RC1
  */
-public class DefaultVelocityConfigurationTest extends AbstractMockingComponentTestCase
-{
+public class DefaultVelocityConfigurationTest extends AbstractMockingComponentTestCase {
     @MockingRequirement
     private DefaultVelocityConfiguration configuration;
 
     /**
      * @see org.xwiki.test.AbstractMockingComponentTestCase#configure()
      */
-    public void configure() throws Exception
-    {
+    public void configure() throws Exception {
         final ConfigurationSource source = getComponentManager().lookup(ConfigurationSource.class);
-        getMockery().checking(new Expectations() {{
-            allowing(source).getProperty("velocity.tools", Properties.class);
-            will(returnValue(Collections.emptyMap()));
-            allowing(source).getProperty("velocity.properties", Properties.class);
-            will(returnValue(Collections.emptyMap()));
-        }});
+        getMockery().checking(new Expectations() {
+            {
+                allowing(source).getProperty("velocity.tools", Properties.class);
+                will(returnValue(Collections.emptyMap()));
+                allowing(source).getProperty("velocity.properties", Properties.class);
+                will(returnValue(Collections.emptyMap()));
+            }
+        });
     }
 
     @Test
-    public void testDefaultToolsPresent() throws Exception
-    {
+    public void testDefaultToolsPresent() throws Exception {
         // Verify for example that the List tool is present.
         Assert.assertEquals(ListTool.class.getName(), this.configuration.getTools().get("listtool"));
     }
 
     @Test
-    public void testDefaultPropertiesPresent() throws Exception
-    {
+    public void testDefaultPropertiesPresent() throws Exception {
         // Verify that the secure uberspector is set by default
         Assert.assertEquals(ChainingUberspector.class.getName(),
-            this.configuration.getProperties().getProperty("runtime.introspector.uberspect"));
-        Assert.assertEquals(SecureUberspector.class.getName() + ","  + DeprecatedCheckUberspector.class.getName(),
-            this.configuration.getProperties().getProperty("runtime.introspector.uberspect.chainClasses"));
+                this.configuration.getProperties().getProperty("runtime.introspector.uberspect"));
+        Assert.assertEquals(SecureUberspector.class.getName() + "," + DeprecatedCheckUberspector.class.getName(),
+                this.configuration.getProperties().getProperty("runtime.introspector.uberspect.chainClasses"));
 
         // Verify that null values are allowed by default
         Assert.assertEquals(Boolean.TRUE.toString(),
-            this.configuration.getProperties().getProperty("directive.set.null.allowed"));
+                this.configuration.getProperties().getProperty("directive.set.null.allowed"));
 
         // Verify that Macros are isolated by default
         Assert.assertEquals(Boolean.TRUE.toString(),
-            this.configuration.getProperties().getProperty("velocimacro.permissions.allow.inline.local.scope"));
+                this.configuration.getProperties().getProperty("velocimacro.permissions.allow.inline.local.scope"));
     }
 }

@@ -38,13 +38,13 @@ import org.xwiki.velocity.internal.jmx.JMXVelocityEngineMBean;
 
 /**
  * Default implementation for {@link VelocityFactory}.
- * 
+ *
  * @see VelocityFactory
+ *
  * @version $Id$
  */
 @Component
-public class DefaultVelocityFactory extends AbstractLogEnabled implements VelocityFactory
-{
+public class DefaultVelocityFactory extends AbstractLogEnabled implements VelocityFactory {
     /**
      * The Component manager we use to lookup (and thus create since it's a singleton) the VelocityEngine component.
      */
@@ -65,32 +65,29 @@ public class DefaultVelocityFactory extends AbstractLogEnabled implements Veloci
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see VelocityFactory#hasVelocityEngine(String)
      */
-    public synchronized boolean hasVelocityEngine(String key)
-    {
+    public synchronized boolean hasVelocityEngine(String key) {
         return this.velocityEngines.containsKey(key);
     }
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see VelocityFactory#getVelocityEngine(String)
      */
-    public synchronized VelocityEngine getVelocityEngine(String key)
-    {
+    public synchronized VelocityEngine getVelocityEngine(String key) {
         return this.velocityEngines.get(key);
     }
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see VelocityFactory#createVelocityEngine(String, Properties)
      */
     public synchronized VelocityEngine createVelocityEngine(String key, Properties properties)
-        throws XWikiVelocityException
-    {
+            throws XWikiVelocityException {
         VelocityEngine engine;
         try {
             engine = this.componentManager.lookup(VelocityEngine.class);

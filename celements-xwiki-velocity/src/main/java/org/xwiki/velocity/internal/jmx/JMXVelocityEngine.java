@@ -40,29 +40,29 @@ import java.util.Map;
  * namespaces and the macros within them.
  *
  * @version $Id$
+ *
  * @since 2.4M2
  */
-public class JMXVelocityEngine implements JMXVelocityEngineMBean
-{
+public class JMXVelocityEngine implements JMXVelocityEngineMBean {
     /**
      * The Velocity Engine for which to return management data.
      */
     private VelocityEngine engine;
 
     /**
-     * @param engine the Velocity Engine for which to return management data
+     * @param engine
+     *            the Velocity Engine for which to return management data
      */
-    public JMXVelocityEngine(VelocityEngine engine)
-    {
+    public JMXVelocityEngine(VelocityEngine engine) {
         this.engine = engine;
     }
 
     /**
      * {@inheritDoc}
+     *
      * @see JMXVelocityEngineMBean#getTemplates()
      */
-    public TabularData getTemplates()
-    {
+    public TabularData getTemplates() {
         TabularData data;
 
         try {
@@ -75,14 +75,14 @@ public class JMXVelocityEngine implements JMXVelocityEngineMBean
             ArrayType macroNameType = new ArrayType(1, SimpleType.STRING);
 
             // Represents one row (template name, macro names) in the returned table data
-            String[] columnNames = new String[] {"templateName", "macroNames"};
-            String[] descriptions = new String[] {"The Template Name (namespace)", "The names of registered Macros"};
+            String[] columnNames = new String[] { "templateName", "macroNames" };
+            String[] descriptions = new String[] { "The Template Name (namespace)", "The names of registered Macros" };
             CompositeType rowType = new CompositeType("template",
-                "Template management data (namespaces, macros) for a row", columnNames, descriptions,
-                new OpenType[]{SimpleType.STRING, macroNameType});
+                    "Template management data (namespaces, macros) for a row", columnNames, descriptions,
+                    new OpenType[] { SimpleType.STRING, macroNameType });
 
             TabularType type = new TabularType("templates", "Template management data (namespaces, macros)", rowType,
-                columnNames);
+                    columnNames);
             data = new TabularDataSupport(type);
 
             for (Map.Entry<String, String[]> entry : result.entrySet()) {
@@ -90,8 +90,8 @@ public class JMXVelocityEngine implements JMXVelocityEngineMBean
                 String templateName = entry.getKey();
                 String[] macroNames = entry.getValue();
 
-                CompositeData rowData = new CompositeDataSupport(rowType, columnNames, new Object[]{
-                    templateName, macroNames});
+                CompositeData rowData = new CompositeDataSupport(rowType, columnNames,
+                        new Object[] { templateName, macroNames });
                 data.put(rowData);
             }
 
@@ -105,12 +105,15 @@ public class JMXVelocityEngine implements JMXVelocityEngineMBean
     /**
      * @return the data using standard Java classes, {@link #getTemplates()} wraps it in generic Open types to make the
      *         returned data portable and accessible remotely from a JMX management console
-     * @throws NoSuchFieldException in case of an exception in getting the data
-     * @throws IllegalAccessException in case of an exception in getting the data
+     *
+     * @throws NoSuchFieldException
+     *             in case of an exception in getting the data
+     * @throws IllegalAccessException
+     *             in case of an exception in getting the data
+     *
      * @see #getTemplates()
      */
-    private Map<String, String[]> getInternalTemplates() throws NoSuchFieldException, IllegalAccessException
-    {
+    private Map<String, String[]> getInternalTemplates() throws NoSuchFieldException, IllegalAccessException {
         // Get the internal Velocity Engine (not the XWiki wrapping one)
         Object velocityEngine = getField(this.engine, "engine");
 
@@ -118,8 +121,7 @@ public class JMXVelocityEngine implements JMXVelocityEngineMBean
         Object vmFactory = getField(runtimeInstance, "vmFactory");
         Object vmManager = getField(vmFactory, "vmManager");
 
-        Map<String, Map<String, ?>> namespaceHash =
-            (Map<String, Map<String, ?>>) getField(vmManager, "namespaceHash");
+        Map<String, Map<String, ?>> namespaceHash = (Map<String, Map<String, ?>>) getField(vmManager, "namespaceHash");
 
         Map<String, ?> globalNamespace = (Map<String, ?>) getField(vmManager, "globalNamespace");
 
@@ -146,14 +148,19 @@ public class JMXVelocityEngine implements JMXVelocityEngineMBean
     /**
      * Helper method to access a private field.
      *
-     * @param instance the instance containing the field to access 
-     * @param fieldName the name of the field to access
+     * @param instance
+     *            the instance containing the field to access
+     * @param fieldName
+     *            the name of the field to access
+     *
      * @return the field object
-     * @throws NoSuchFieldException in case of an error when accessing the private field
-     * @throws IllegalAccessException in case of an error when accessing the private field
+     *
+     * @throws NoSuchFieldException
+     *             in case of an error when accessing the private field
+     * @throws IllegalAccessException
+     *             in case of an error when accessing the private field
      */
-    private Object getField(Object instance, String fieldName) throws NoSuchFieldException, IllegalAccessException
-    {
+    private Object getField(Object instance, String fieldName) throws NoSuchFieldException, IllegalAccessException {
         Field field = instance.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(instance);
