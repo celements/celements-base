@@ -72,6 +72,12 @@
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
+      <artifactId>celements-xwiki-velocity</artifactId>
+      <version>7.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
       <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
@@ -157,8 +163,7 @@
     </dependency>
 
     <!--
-      Make sure we provide a default implementation of slf4j for any test
-      indirectly use it
+      Make sure we provide a default implementation of slf4j for any test indirectly use it
     -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -190,10 +195,6 @@
     </dependency>
 
     <!-- Other XWiki modules -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-velocity</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-script</artifactId>
@@ -249,8 +250,6 @@
       <!-- Only needed at runtime since it's a component implementation -->
       <scope>runtime</scope>
     </dependency>
-
-    <!-- copy crap from xwiki-core pom.xml -->
 
     <!-- The JRCS JARS are are in our repo till we get them published on the central repository.
          JRCS home page: http://www.suigeneris.org/kb/display/jrcs/JRCS+Home -->
@@ -330,9 +329,8 @@
       <artifactId>xercesImpl</artifactId>
     </dependency>
     <!-- JTidy hasn't been released for ages (since 2001). A snapshot version exists at
-         http://jtidy.sourceforge.net/snapshots/ but Maven requires non-snapshots in order to
-         allow a release (this is for reproducibility). Thus we've had to upload JTidy into
-         our custom repository -->
+    http://jtidy.sourceforge.net/snapshots/ but Maven requires non-snapshots in order to allow a
+    release (this is for reproducibility). Thus we've had to upload JTidy into our custom repository -->
     <dependency>
       <groupId>jtidy</groupId>
       <artifactId>jtidy</artifactId>
@@ -429,6 +427,10 @@
       <artifactId>jmock-junit4</artifactId>
       <version>2.5.1</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib</artifactId>
     </dependency>
 
   </dependencies>
