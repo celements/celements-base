@@ -762,7 +762,6 @@ public class Document extends Api {
    * @param queryString
    *          parameters to pass in the request eg: "paramA=value1&paramB=value2"
    * @return the URL of this document with the given action and queryString as parameters.
-   *
    * @see #getURL() for a relative URL which can only be used inside of the site.
    */
   public String getExternalURL(String action, String queryString) {
@@ -2362,27 +2361,11 @@ public class Document extends Api {
   }
 
   /**
-   * Convert the current document content from its current syntax to the new syntax passed as
-   * parameter.
-   *
-   * @param targetSyntaxId
-   *          the syntax to convert to (eg "xwiki/2.0", "xhtml/1.0", etc)
-   * @throws XWikiException
-   *           if an exception occurred during the conversion process
+   * @deprecated since 7.0
    */
+  @Deprecated(since = "7.0", forRemoval = true)
   public boolean convertSyntax(String targetSyntaxId) throws XWikiException {
-    try {
-      getDoc().convertSyntax(targetSyntaxId, this.context);
-    } catch (Exception ex) {
-      LOG.error(
-          "Failed to convert document [" + getPrefixedFullName() + "] to syntax [" + targetSyntaxId
-              + "]",
-          ex);
-
-      return false;
-    }
-
-    return true;
+    throw new UnsupportedOperationException("support for other syntaxes than xwiki1.0 dropped.");
   }
 
   // START ApiCompatibilityAspect
