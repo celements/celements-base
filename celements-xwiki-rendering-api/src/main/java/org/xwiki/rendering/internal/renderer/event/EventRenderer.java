@@ -32,7 +32,7 @@ import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
  * located in the test
  * source tree since it's currently used at runtime by the WYSIWYG editor for its runtime debug
  * mode.
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
@@ -42,7 +42,7 @@ public class EventRenderer extends AbstractChainingPrintRenderer implements Init
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Initializable#initialize()
    * @since 2.0M3
    */

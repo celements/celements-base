@@ -33,7 +33,7 @@ public class ListItemBlock extends AbstractFatherBlock {
 
   /**
    * Constructs a list item Block.
-   * 
+   *
    * @param childrenBlocks
    *          the blocks representing the list item content
    */
@@ -43,7 +43,7 @@ public class ListItemBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -52,7 +52,7 @@ public class ListItemBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

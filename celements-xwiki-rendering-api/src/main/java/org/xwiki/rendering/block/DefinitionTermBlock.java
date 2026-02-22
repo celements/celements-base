@@ -43,7 +43,7 @@ public class DefinitionTermBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -52,7 +52,7 @@ public class DefinitionTermBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

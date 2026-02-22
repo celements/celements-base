@@ -41,7 +41,7 @@ public class InterWikiResourceReferenceTypeParser extends AbstractURIResourceRef
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractURIResourceReferenceTypeParser#getType()
    */
   public ResourceType getType() {
@@ -64,8 +64,7 @@ public class InterWikiResourceReferenceTypeParser extends AbstractURIResourceRef
     if (pos > -1) {
       InterWikiResourceReference interWikiReference = new InterWikiResourceReference(
           reference.substring(pos + INTERWIKI_ALIAS_SEPARATOR.length()));
-      interWikiReference
-          .setInterWikiAlias(reference.substring(0, pos + INTERWIKI_ALIAS_SEPARATOR.length() - 1));
+      interWikiReference.setInterWikiAlias(reference.substring(0, pos + INTERWIKI_ALIAS_SEPARATOR.length() - 1));
       resultReference = interWikiReference;
     }
     return resultReference;

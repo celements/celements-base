@@ -27,8 +27,8 @@ import org.xwiki.rendering.parser.ResourceReferenceTypeParser;
 
 /**
  * Considers all passed images references to be untyped and tries to guess the type by first looking
- * for a URL
- * and then considering it's a reference to an attachment.
+ * for a URL and then
+ * considering it's a reference to an attachment.
  *
  * @version $Id$
  * @since 2.6M1
@@ -50,7 +50,7 @@ public class DefaultUntypedImageReferenceParser implements ResourceReferencePars
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see ResourceReferenceParser#parse(String)
    */
   public ResourceReference parse(String rawReference) {

@@ -34,12 +34,12 @@ import org.xwiki.rendering.wiki.WikiModel;
  * {@code (type):(reference)} where {@code type} represents the type (see
  * {@link org.xwiki.rendering.listener.reference.ResourceType} of the resource pointed to (e.g.
  * document, mailto,
- * attachment, image, document in another wiki, etc), and {@code reference} defines the target.
- * The syntax of {@code reference} depends on the Resource type and is documented in the javadoc of
- * the various
- * {@link org.xwiki.rendering.parser.ResourceReferenceTypeParser} implementations.
- * Note that the implementation is pluggable and it's allowed plug new resource reference types by
- * implementing
+ * attachment, image, document in another wiki, etc), and {@code reference} defines the target. The
+ * syntax of
+ * {@code reference} depends on the Resource type and is documented in the javadoc of the various
+ * {@link org.xwiki.rendering.parser.ResourceReferenceTypeParser} implementations. Note that the
+ * implementation is
+ * pluggable and it's allowed plug new resource reference types by implementing
  * {@link org.xwiki.rendering.parser.ResourceReferenceTypeParser}s and registering the
  * implementation as a component.
  *
@@ -55,8 +55,8 @@ public class DefaultResourceReferenceParser implements ResourceReferenceParser {
   public static final String TYPE_SEPARATOR = ":";
 
   /**
-   * Used to verify if we're in wiki mode or not by looking up an implementation of {@link
-   * org.xwiki.rendering.wiki.WikiModel}.
+   * Used to verify if we're in wiki mode or not by looking up an implementation of
+   * {@link org.xwiki.rendering.wiki.WikiModel}.
    */
   @Requirement
   private ComponentManager componentManager;
@@ -83,8 +83,8 @@ public class DefaultResourceReferenceParser implements ResourceReferenceParser {
       String typePrefix = rawReference.substring(0, pos);
       String reference = rawReference.substring(pos + 1);
       try {
-        ResourceReferenceTypeParser parser = this.componentManager
-            .lookup(ResourceReferenceTypeParser.class, typePrefix);
+        ResourceReferenceTypeParser parser = this.componentManager.lookup(ResourceReferenceTypeParser.class,
+            typePrefix);
         ResourceReference parsedResourceReference = parser.parse(reference);
         if (parsedResourceReference != null) {
           return parsedResourceReference;
@@ -100,8 +100,8 @@ public class DefaultResourceReferenceParser implements ResourceReferenceParser {
   }
 
   /**
-   * @return true if we're in wiki mode (ie there's no implementing class for {@link
-   *         org.xwiki.rendering.wiki.WikiModel})
+   * @return true if we're in wiki mode (ie there's no implementing class for
+   *         {@link org.xwiki.rendering.wiki.WikiModel})
    */
   private boolean isInWikiMode() {
     boolean result = true;

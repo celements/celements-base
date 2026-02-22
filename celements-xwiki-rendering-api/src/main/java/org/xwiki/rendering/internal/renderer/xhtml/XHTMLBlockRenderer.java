@@ -38,7 +38,7 @@ public class XHTMLBlockRenderer extends AbstractBlockRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
    */
   @Override

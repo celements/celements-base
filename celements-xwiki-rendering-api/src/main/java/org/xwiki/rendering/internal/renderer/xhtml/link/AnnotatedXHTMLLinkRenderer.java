@@ -32,7 +32,7 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
 /**
  * Render links as XHTML, using annotations (see
  * {@link org.xwiki.rendering.internal.renderer.xhtml.AnnotatedXHTMLRenderer} for more details).
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
@@ -54,7 +54,7 @@ public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see XHTMLLinkRenderer#setXHTMLWikiPrinter(org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter)
    */
   public void setXHTMLWikiPrinter(XHTMLWikiPrinter printer) {
@@ -63,7 +63,7 @@ public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see XHTMLLinkRenderer#setHasLabel(boolean)
    */
   public void setHasLabel(boolean hasLabel) {
@@ -72,13 +72,11 @@ public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.LinkListener#beginLink(org.xwiki.rendering.listener.reference.ResourceReference
-   *      ,
-   *      boolean, java.util.Map)
+   *      , boolean, java.util.Map)
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     // Add an XML comment as a placeholder so that the XHTML parser can find the document name.
     // Otherwise it would be too difficult to transform a URL into a document name especially since
     // a link can refer to an external URL.
@@ -91,13 +89,12 @@ public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.LinkListener#endLink(org.xwiki.rendering.listener.reference.ResourceReference
    *      ,
    *      boolean, java.util.Map)
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     this.defaultLinkRenderer.endLink(reference, isFreeStandingURI, parameters);
 
     // Add a XML comment to signify the end of the link.
@@ -106,7 +103,7 @@ public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see XHTMLLinkRenderer#getXHTMLWikiPrinter()
    */
   public XHTMLWikiPrinter getXHTMLWikiPrinter() {

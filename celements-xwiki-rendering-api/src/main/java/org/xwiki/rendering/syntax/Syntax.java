@@ -21,10 +21,11 @@ package org.xwiki.rendering.syntax;
 
 /**
  * Represents a wiki syntax that the user can use to enter wiki content. A syntax is made of two
- * parts: a type
- * (eg XWiki, Confluence, MediaWiki, etc) and a version (1.0, 2.0, etc).
- * For example the XWiki 1.0 syntax, the XWiki 2.0 syntax, the Confluence 1.0 syntax, etc.
- * 
+ * parts: a type (eg
+ * XWiki, Confluence, MediaWiki, etc) and a version (1.0, 2.0, etc). For example the XWiki 1.0
+ * syntax, the XWiki 2.0
+ * syntax, the Confluence 1.0 syntax, etc.
+ *
  * @version $Id$
  * @since 2.0RC1
  */
@@ -88,18 +89,17 @@ public class Syntax {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#toString()
    */
   @Override
   public String toString() {
-    return getType().toString() + " " + getVersion()
-        + (getQualifier() != null ? " (" + getQualifier() + ")" : "");
+    return getType().toString() + " " + getVersion() + (getQualifier() != null ? " (" + getQualifier() + ")" : "");
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#hashCode()
    */
   @Override
@@ -115,7 +115,7 @@ public class Syntax {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#equals(Object)
    */
   @Override
@@ -131,13 +131,11 @@ public class Syntax {
       } else {
         // object must be Syntax at this point
         Syntax syntax = (Syntax) object;
-        result = (getType() == syntax.getType()
-            || (getType() != null && getType().equals(syntax.getType())))
-            && (getVersion() == syntax.getVersion() || (getVersion() != null && getVersion().equals(
-                syntax.getVersion())))
+        result = (getType() == syntax.getType() || (getType() != null && getType().equals(syntax.getType())))
+            && (getVersion() == syntax.getVersion()
+                || (getVersion() != null && getVersion().equals(syntax.getVersion())))
             && (getQualifier() == syntax.getQualifier()
-                || (getQualifier() != null && getQualifier().equals(
-                    syntax.getQualifier())));
+                || (getQualifier() != null && getQualifier().equals(syntax.getQualifier())));
       }
     }
     return result;

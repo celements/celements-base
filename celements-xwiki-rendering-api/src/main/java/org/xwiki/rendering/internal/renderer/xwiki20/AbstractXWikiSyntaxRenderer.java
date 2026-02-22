@@ -31,18 +31,17 @@ import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
 
 /**
  * XWiki Syntax Renderer implementation common to XWiki Syntax versions greater than 2.0 (X>iki
- * Syntax 2.0,
- * XWiki Syntax 2.1, etc).
- * 
+ * Syntax 2.0, XWiki Syntax
+ * 2.1, etc).
+ *
  * @version $Id$
  * @since 2.5M2
  */
-public abstract class AbstractXWikiSyntaxRenderer extends AbstractChainingPrintRenderer
-    implements Initializable {
+public abstract class AbstractXWikiSyntaxRenderer extends AbstractChainingPrintRenderer implements Initializable {
 
   /**
    * Allows extending classes to choose which implementation to use.
-   * 
+   *
    * @param chain
    *          the rendering chain, see {@link org.xwiki.rendering.listener.chaining.ListenerChain}
    * @return the XWiki Syntax renderer containing the implementation to use for handling the

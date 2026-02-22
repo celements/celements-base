@@ -26,7 +26,7 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
 
 /**
  * Bridge so that {@link WikiPrinter} can be used in a tools supporting {@link Writer} api.
- * 
+ *
  * @version $Id$
  */
 public class WikiWriter extends Writer {
@@ -45,7 +45,7 @@ public class WikiWriter extends Writer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see java.io.Writer#close()
    */
   @Override
@@ -55,7 +55,7 @@ public class WikiWriter extends Writer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see java.io.Writer#flush()
    */
   @Override
@@ -65,7 +65,7 @@ public class WikiWriter extends Writer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see java.io.Writer#write(char[], int, int)
    */
   @Override
@@ -79,7 +79,7 @@ public class WikiWriter extends Writer {
    * Override it to improve speed a little. Otherwise the String is transformed in char table passed
    * to the over
    * methods which recreate a String.
-   * 
+   *
    * @see java.io.Writer#write(java.lang.String)
    */
   @Override

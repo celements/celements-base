@@ -19,15 +19,15 @@
  */
 package org.xwiki.rendering.block;
 
-import org.xwiki.rendering.listener.Listener;
-
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
+
+import org.xwiki.rendering.listener.Listener;
 
 /**
  * Default implementation for {@link FatherBlock}.
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
@@ -35,7 +35,7 @@ public abstract class AbstractFatherBlock extends AbstractBlock implements Fathe
 
   /**
    * Constructs a block with children blocks.
-   * 
+   *
    * @param childrenBlocks
    *          the list of children blocks of the block to construct
    */
@@ -45,7 +45,7 @@ public abstract class AbstractFatherBlock extends AbstractBlock implements Fathe
 
   /**
    * Construct a block with children blocks and parameters.
-   * 
+   *
    * @param childrenBlocks
    *          the list of children blocks of the block to construct
    * @param parameters
@@ -58,7 +58,7 @@ public abstract class AbstractFatherBlock extends AbstractBlock implements Fathe
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
    */
   public void traverse(Listener listener) {

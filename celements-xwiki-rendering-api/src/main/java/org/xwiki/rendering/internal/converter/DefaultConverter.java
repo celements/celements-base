@@ -19,7 +19,7 @@ import org.xwiki.rendering.transformation.TransformationManager;
 
 /**
  * Default implementation for {@link Converter}.
- * 
+ *
  * @version $Id$
  */
 @Component
@@ -39,10 +39,10 @@ public class DefaultConverter implements Converter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.converter.Converter#convert(java.io.Reader,
-   *      org.xwiki.rendering.syntax.Syntax, org.xwiki.rendering.syntax.Syntax,
-   *      org.xwiki.rendering.renderer.printer.WikiPrinter)
+   *      org.xwiki.rendering.syntax.Syntax,
+   *      org.xwiki.rendering.syntax.Syntax, org.xwiki.rendering.renderer.printer.WikiPrinter)
    */
   public void convert(Reader source, Syntax sourceSyntax, Syntax targetSyntax, WikiPrinter printer)
       throws ConversionException {
@@ -70,8 +70,7 @@ public class DefaultConverter implements Converter {
     try {
       renderer = this.componentManager.lookup(BlockRenderer.class, targetSyntax.toIdString());
     } catch (ComponentLookupException e) {
-      throw new ConversionException("Failed to locate Renderer for syntax [" + targetSyntax + "]",
-          e);
+      throw new ConversionException("Failed to locate Renderer for syntax [" + targetSyntax + "]", e);
     }
     renderer.render(xdom, printer);
   }

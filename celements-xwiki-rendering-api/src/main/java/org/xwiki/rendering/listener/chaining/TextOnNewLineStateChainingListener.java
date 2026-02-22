@@ -34,12 +34,11 @@ import org.xwiki.rendering.syntax.Syntax;
  * uses it to decide
  * whether to escape "*" characters starting new lines since otherwise they would be confused for
  * list items.
- * 
+ *
  * @version $Id$
  * @since 1.8RC1
  */
-public class TextOnNewLineStateChainingListener extends AbstractChainingListener
-    implements StackableChainingListener {
+public class TextOnNewLineStateChainingListener extends AbstractChainingListener implements StackableChainingListener {
 
   private boolean isTextOnNewLine;
 
@@ -49,7 +48,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see StackableChainingListener#createChainingListenerInstance()
    */
   public StackableChainingListener createChainingListenerInstance() {
@@ -62,7 +61,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionDescription()
    */
   @Override
@@ -73,7 +72,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionList(java.util.Map)
    * @since 2.0RC1
    */
@@ -85,7 +84,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionTerm()
    */
   @Override
@@ -96,7 +95,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDocument(java.util.Map)
    */
   @Override
@@ -107,7 +106,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
    */
   @Override
@@ -118,7 +117,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginFormat(org.xwiki.rendering.listener.Format,
    *      java.util.Map)
    */
@@ -135,21 +134,20 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     this.isTextOnNewLine = false;
     super.beginLink(reference, isFreeStandingURI, parameters);
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginList(org.xwiki.rendering.listener.ListType,
    *      java.util.Map)
    */
@@ -161,7 +159,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginListItem()
    */
   @Override
@@ -172,20 +170,19 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginMacroMarker(java.lang.String,
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     this.isTextOnNewLine = false;
     super.beginMacroMarker(name, parameters, content, isInline);
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginParagraph(java.util.Map)
    */
   @Override
@@ -196,7 +193,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotation(java.util.Map)
    */
   @Override
@@ -207,7 +204,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotationLine()
    */
   @Override
@@ -218,7 +215,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginHeader(org.xwiki.rendering.listener.HeaderLevel,
    *      java.lang.String, java.util.Map)
    */
@@ -230,7 +227,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTable(java.util.Map)
    */
   @Override
@@ -241,7 +238,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableCell(java.util.Map)
    */
   @Override
@@ -252,7 +249,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableHeadCell(java.util.Map)
    */
   @Override
@@ -263,7 +260,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableRow(java.util.Map)
    */
   @Override
@@ -274,7 +271,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onRawText(String,
    *      org.xwiki.rendering.syntax.Syntax)
    */
@@ -286,21 +283,20 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     super.endLink(reference, isFreeStandingURI, parameters);
     this.isTextOnNewLine = false;
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endParagraph(java.util.Map)
    */
   @Override
@@ -311,7 +307,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endHeader(org.xwiki.rendering.listener.HeaderLevel,
    *      java.lang.String, java.util.Map)
    */
@@ -323,7 +319,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endTable(java.util.Map)
    */
   @Override
@@ -334,7 +330,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onHorizontalLine(java.util.Map)
    */
   @Override
@@ -345,7 +341,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onId(java.lang.String)
    */
   @Override
@@ -356,21 +352,20 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onImage(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     this.isTextOnNewLine = false;
     super.onImage(reference, isFreeStandingURI, parameters);
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onNewLine()
    */
   @Override
@@ -381,7 +376,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onMacro(java.lang.String,
    *      java.util.Map,
    *      java.lang.String, boolean)
@@ -394,7 +389,7 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onVerbatim(String, boolean,
    *      Map)
    */

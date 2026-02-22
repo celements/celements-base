@@ -25,7 +25,7 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * Represents a Horizontal line.
- * 
+ *
  * @version $Id$
  * @since 1.6M1
  */
@@ -52,7 +52,7 @@ public class HorizontalLineBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
    */
   public void traverse(Listener listener) {

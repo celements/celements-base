@@ -28,7 +28,7 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * Represents a text formatting block (bold, italic, etc).
- * 
+ *
  * @version $Id$
  * @since 1.6M1
  */
@@ -71,7 +71,7 @@ public class FormatBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -80,7 +80,7 @@ public class FormatBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

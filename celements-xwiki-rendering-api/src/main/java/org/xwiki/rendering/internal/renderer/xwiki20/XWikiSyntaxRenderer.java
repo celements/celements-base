@@ -29,11 +29,11 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer;
 
 /**
  * Generates XWiki Syntax 2.0 from {@link org.xwiki.rendering.block.XDOM}. This is useful for
- * example to convert other wiki
- * syntaxes to the XWiki syntax. It's also useful in our tests to verify that round-tripping from
- * XWiki Syntax to the
- * DOM and back to XWiki Syntax generates the same content as the initial syntax.
- * 
+ * example to convert other
+ * wiki syntaxes to the XWiki syntax. It's also useful in our tests to verify that round-tripping
+ * from XWiki Syntax to
+ * the DOM and back to XWiki Syntax generates the same content as the initial syntax.
+ *
  * @version $Id$
  * @since 2.0M3
  */
@@ -55,12 +55,11 @@ public class XWikiSyntaxRenderer extends AbstractXWikiSyntaxRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractXWikiSyntaxRenderer#createXWikiSyntaxChainingRenderer(ListenerChain)
    */
   @Override
   protected ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain) {
-    return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer,
-        this.imageReferenceSerializer);
+    return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer, this.imageReferenceSerializer);
   }
 }

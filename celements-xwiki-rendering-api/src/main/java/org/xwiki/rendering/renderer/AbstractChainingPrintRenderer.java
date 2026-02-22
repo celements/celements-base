@@ -29,8 +29,7 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
  * @version $Id$
  * @since 1.8RC1
  */
-public abstract class AbstractChainingPrintRenderer extends AbstractChainingListener
-    implements PrintRenderer {
+public abstract class AbstractChainingPrintRenderer extends AbstractChainingListener implements PrintRenderer {
 
   /**
    * The printer stack. Can be used to print in a specific printer and then easily return to the
@@ -47,7 +46,7 @@ public abstract class AbstractChainingPrintRenderer extends AbstractChainingList
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.PrintRenderer#getPrinter()
    */
   public WikiPrinter getPrinter() {
@@ -56,7 +55,7 @@ public abstract class AbstractChainingPrintRenderer extends AbstractChainingList
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see PrintRenderer#setPrinter(org.xwiki.rendering.renderer.printer.WikiPrinter)
    * @since 2.0M3
    */
@@ -66,7 +65,7 @@ public abstract class AbstractChainingPrintRenderer extends AbstractChainingList
 
   /**
    * Change the current {@link WikiPrinter} with the provided one.
-   * 
+   *
    * @param wikiPrinter
    *          the new {@link WikiPrinter} to use
    */

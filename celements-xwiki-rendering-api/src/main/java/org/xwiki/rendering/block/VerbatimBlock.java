@@ -25,7 +25,7 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * A Verbatim block.
- * 
+ *
  * @version $Id$
  * @since 1.8M2
  */
@@ -83,7 +83,7 @@ public class VerbatimBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
    */
   public void traverse(Listener listener) {
@@ -92,7 +92,7 @@ public class VerbatimBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see java.lang.Object#toString()
    * @since 1.8RC2
    */

@@ -50,7 +50,7 @@ public class XHTMLMarkerResourceReferenceSerializer implements ResourceReference
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.reference.ResourceReferenceSerializer#serialize(ResourceReference)
    */
   public String serialize(ResourceReference reference) {

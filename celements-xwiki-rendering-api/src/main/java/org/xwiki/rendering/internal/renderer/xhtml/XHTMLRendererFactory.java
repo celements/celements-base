@@ -34,7 +34,7 @@ public class XHTMLRendererFactory extends AbstractPrintRendererFactory {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractPrintRendererFactory#getSyntax()
    */
   public Syntax getSyntax() {

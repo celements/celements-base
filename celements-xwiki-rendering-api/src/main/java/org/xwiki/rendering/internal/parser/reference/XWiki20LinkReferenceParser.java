@@ -36,8 +36,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Parses the content of XWiki 2.0 resource references.
- * The supported generic format is as follows: <code>(link)(@interWikiAlias)?</code>, where:
+ * Parses the content of XWiki 2.0 resource references. The supported generic format is as follows:
+ * <code>(link)(@interWikiAlias)?</code>, where:
  * <ul>
  * <li><code>link</code>: The full link reference using the following syntax:
  * <code>(reference)(#anchor)?(?queryString)?</code>, where:
@@ -45,10 +45,10 @@ import java.util.List;
  * <li><code>reference</code>: The link reference. This can be either a URI in the form
  * <code>protocol:path</code>
  * (example: "http://xwiki.org", "mailto:john@smith.com) or a wiki page name (example:
- * "wiki:Space.WebHome").
- * Note that in the case of a wiki page name the character "\" is used as the escape character (for
- * example if you
- * wish to have "#" or "?" in your page name you'll need to write "\#" and "\?").</li>
+ * "wiki:Space.WebHome"). Note that
+ * in the case of a wiki page name the character "\" is used as the escape character (for example if
+ * you wish to have
+ * "#" or "?" in your page name you'll need to write "\#" and "\?").</li>
  * <li><code>anchor</code>: An optional anchor name pointing to an anchor defined in the referenced
  * link. Note that in
  * XWiki anchors are automatically created for titles. Example: "TableOfContentAnchor".</li>
@@ -70,8 +70,8 @@ import java.util.List;
  * <li>mywiki:HelloWorld</li>
  * <li>Hello World?param1=1&param2=2</li>
  * </ul>
- * Note that allowed URIs are URLs of the form {@code http://}, {@code mailto:},
- * {@code image:} and {@code attach:}.
+ * Note that allowed URIs are URLs of the form {@code http://}, {@code mailto:}, {@code image:} and
+ * {@code attach:}.
  *
  * @version $Id$
  * @since 2.5RC1
@@ -102,56 +102,42 @@ public class XWiki20LinkReferenceParser implements ResourceReferenceParser {
   /**
    * Escapes to remove from the document reference part when parsing the raw reference (i.e.
    * excluding query string,
-   * anchor and interwiki parts).
-   * Note that we don't remove the escaped escape char since this is how an escape char is
-   * represented in an Entity
-   * Reference.
+   * anchor and interwiki parts). Note that we don't remove the escaped escape char since this is
+   * how an escape char
+   * is represented in an Entity Reference.
    */
-  private static final String[] ESCAPES_REFERENCE = new String[] {
-      ESCAPE_CHAR + SEPARATOR_QUERYSTRING,
-      ESCAPE_CHAR + SEPARATOR_INTERWIKI,
-      ESCAPE_CHAR + SEPARATOR_ANCHOR };
+  private static final String[] ESCAPES_REFERENCE = new String[] { ESCAPE_CHAR + SEPARATOR_QUERYSTRING,
+      ESCAPE_CHAR + SEPARATOR_INTERWIKI, ESCAPE_CHAR + SEPARATOR_ANCHOR };
 
   /**
    * Escapes to remove from the query string, anchor and interwiki parts when parsing the raw
    * reference.
    */
-  private static final String[] ESCAPES_EXTRA = new String[] {
-      ESCAPE_CHAR + SEPARATOR_QUERYSTRING,
-      ESCAPE_CHAR + SEPARATOR_INTERWIKI,
-      ESCAPE_CHAR + SEPARATOR_ANCHOR,
-      "" + ESCAPE_CHAR + ESCAPE_CHAR };
+  private static final String[] ESCAPES_EXTRA = new String[] { ESCAPE_CHAR + SEPARATOR_QUERYSTRING,
+      ESCAPE_CHAR + SEPARATOR_INTERWIKI, ESCAPE_CHAR + SEPARATOR_ANCHOR, "" + ESCAPE_CHAR + ESCAPE_CHAR };
 
   /**
    * Escapes to remove the interwiki content.
    */
-  private static final String[] ESCAPE_INTERWIKI = new String[] {
-      "" + ESCAPE_CHAR + ESCAPE_CHAR,
-      "" + ESCAPE_CHAR };
+  private static final String[] ESCAPE_INTERWIKI = new String[] { "" + ESCAPE_CHAR + ESCAPE_CHAR, "" + ESCAPE_CHAR };
 
   /**
    * Replacement chars for the escapes to be removed from the reference part.
    */
-  private static final String[] ESCAPE_REPLACEMENTS_REFERENCE = new String[] {
-      SEPARATOR_QUERYSTRING,
-      SEPARATOR_INTERWIKI,
-      SEPARATOR_ANCHOR };
+  private static final String[] ESCAPE_REPLACEMENTS_REFERENCE = new String[] { SEPARATOR_QUERYSTRING,
+      SEPARATOR_INTERWIKI, SEPARATOR_ANCHOR };
 
   /**
    * Replacement chars for the escapes to be removed from the query string, anchor and interwiki
    * parts.
    */
-  private static final String[] ESCAPE_REPLACEMENTS_EXTRA = new String[] {
-      SEPARATOR_QUERYSTRING,
-      SEPARATOR_INTERWIKI,
-      SEPARATOR_ANCHOR,
-      "" + ESCAPE_CHAR };
+  private static final String[] ESCAPE_REPLACEMENTS_EXTRA = new String[] { SEPARATOR_QUERYSTRING, SEPARATOR_INTERWIKI,
+      SEPARATOR_ANCHOR, "" + ESCAPE_CHAR };
 
   /**
    * Replacements chars for the escapes to be removed from the interwiki content.
    */
-  private static final String[] ESCAPE_REPLACEMENTS_INTERWIKI = new String[] {
-      "" + ESCAPE_CHAR, "" };
+  private static final String[] ESCAPE_REPLACEMENTS_INTERWIKI = new String[] { "" + ESCAPE_CHAR, "" };
 
   /**
    * The list of recognized URL prefixes.
@@ -165,8 +151,8 @@ public class XWiki20LinkReferenceParser implements ResourceReferenceParser {
   private ResourceReferenceTypeParser urlResourceReferenceTypeParser;
 
   /**
-   * Used to verify if we're in wiki mode or not by looking up an implementation of {@link
-   * org.xwiki.rendering.wiki.WikiModel}.
+   * Used to verify if we're in wiki mode or not by looking up an implementation of
+   * {@link org.xwiki.rendering.wiki.WikiModel}.
    */
   @Requirement
   private ComponentManager componentManager;
@@ -287,8 +273,7 @@ public class XWiki20LinkReferenceParser implements ResourceReferenceParser {
     ResourceReference result = null;
     String interWikiAlias = parseElementAfterString(content, SEPARATOR_INTERWIKI);
     if (interWikiAlias != null) {
-      InterWikiResourceReference link = new InterWikiResourceReference(
-          removeEscapes(content.toString()));
+      InterWikiResourceReference link = new InterWikiResourceReference(removeEscapes(content.toString()));
       link.setInterWikiAlias(removeEscapes(interWikiAlias));
       result = link;
     }
@@ -329,8 +314,8 @@ public class XWiki20LinkReferenceParser implements ResourceReferenceParser {
   }
 
   /**
-   * @return true if we're in wiki mode (ie there's no implementing class for {@link
-   *         org.xwiki.rendering.wiki.WikiModel})
+   * @return true if we're in wiki mode (ie there's no implementing class for
+   *         {@link org.xwiki.rendering.wiki.WikiModel})
    */
   private boolean isInWikiMode() {
     boolean result = true;

@@ -34,7 +34,7 @@ import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
 
 /**
  * Generates XHTML from a {@link org.xwiki.rendering.block.XDOM} object being traversed.
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
@@ -44,27 +44,27 @@ public class XHTMLRenderer extends AbstractChainingPrintRenderer implements Init
 
   /**
    * To render link events into XHTML. This is done so that it's pluggable because link rendering
-   * depends on how
-   * the underlying system wants to handle it. For example for XWiki we check if the document
-   * exists, we get the
-   * document URL, etc.
+   * depends on how the
+   * underlying system wants to handle it. For example for XWiki we check if the document exists, we
+   * get the document
+   * URL, etc.
    */
   @Requirement
   private XHTMLLinkRenderer linkRenderer;
 
   /**
    * To render image events into XHTML. This is done so that it's pluggable because image rendering
-   * depends
-   * on how the underlying system wants to handle it. For example for XWiki we check if the image
-   * exists as a
-   * document attachments, we get its URL, etc.
+   * depends on how the
+   * underlying system wants to handle it. For example for XWiki we check if the image exists as a
+   * document
+   * attachments, we get its URL, etc.
    */
   @Requirement
   private XHTMLImageRenderer imageRenderer;
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Initializable#initialize()
    * @since 2.0M3
    */

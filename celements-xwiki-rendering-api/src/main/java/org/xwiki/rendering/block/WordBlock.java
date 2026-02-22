@@ -23,7 +23,7 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * Represents a word.
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
@@ -46,7 +46,7 @@ public class WordBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractBlock#traverse(Listener)
    */
   public void traverse(Listener listener) {
@@ -62,7 +62,7 @@ public class WordBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see java.lang.Object#toString()
    * @since 1.8RC2
    */

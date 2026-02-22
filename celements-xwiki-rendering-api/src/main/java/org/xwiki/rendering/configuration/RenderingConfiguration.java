@@ -29,9 +29,8 @@ import java.util.Properties;
  * Configuration properties for the Rendering module.
  * <p>
  * You can override the default values for each of the configuration properties below by defining
- * them in XWiki's
- * global configuration file using a prefix of "rendering" followed by the property name. For
- * example:
+ * them in XWiki's global
+ * configuration file using a prefix of "rendering" followed by the property name. For example:
  * <code>rendering.linkLabelFormat = %s.%p</code>
  *
  * @version $Id$
@@ -41,21 +40,21 @@ import java.util.Properties;
 public interface RenderingConfiguration {
 
   /**
-   * A link label format is the format used to decide how to display links that have no label.
-   * By default the page name is displayed. However it's possible to customize it using the
-   * following tokens:
+   * A link label format is the format used to decide how to display links that have no label. By
+   * default the page
+   * name is displayed. However it's possible to customize it using the following tokens:
    * <ul>
    * <li><strong>%w</strong>: wiki name</li>
    * <li><strong>%s</strong>: space name</li>
    * <li><strong>%p</strong>: page name</li>
-   * <li><strong>%P</strong>: page name with spaces between camel case words, i.e. "My Page"
-   * if the page name is "MyPage"</li>
+   * <li><strong>%P</strong>: page name with spaces between camel case words, i.e. "My Page" if the
+   * page name is
+   * "MyPage"</li>
    * <li><strong>%t</strong>: page title</li>
    * </ul>
    * Note that if the page title is empty or not defined then it defaults to %p. This is also the
-   * case
-   * if the title cannot be retrieved for the document.
-   * The default is "%p". Some examples: "%s.%p", "%w:%s.%p".
+   * case if the title
+   * cannot be retrieved for the document. The default is "%p". Some examples: "%s.%p", "%w:%s.%p".
    *
    * @return the format to use to display link labels when the user hasn't specified a label
    */

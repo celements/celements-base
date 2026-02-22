@@ -33,7 +33,7 @@ import org.xwiki.rendering.renderer.reference.link.LinkLabelGenerator;
 
 /**
  * Used to filter plain text blocks.
- * 
+ *
  * @version $Id$
  * @since 1.9M1
  */
@@ -77,7 +77,7 @@ public class PlainTextBlockFilter implements BlockFilter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.BlockFilter#filter(org.xwiki.rendering.block.Block)
    */
   public List<Block> filter(Block block) {
@@ -95,8 +95,7 @@ public class PlainTextBlockFilter implements BlockFilter {
           label = reference.getReference();
         }
 
-        return this.plainTextParser.parse(new StringReader(label)).getChildren().get(0)
-            .getChildren();
+        return this.plainTextParser.parse(new StringReader(label)).getChildren().get(0).getChildren();
       } catch (ParseException e) {
         // This shouldn't happen since the parser cannot throw an exception since the source is a
         // memory

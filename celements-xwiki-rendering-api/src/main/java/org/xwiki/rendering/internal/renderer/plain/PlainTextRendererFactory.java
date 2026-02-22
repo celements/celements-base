@@ -34,7 +34,7 @@ public class PlainTextRendererFactory extends AbstractPrintRendererFactory {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractPrintRendererFactory#getSyntax()
    */
   public Syntax getSyntax() {

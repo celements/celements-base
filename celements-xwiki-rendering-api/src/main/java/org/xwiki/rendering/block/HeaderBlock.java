@@ -91,8 +91,7 @@ public class HeaderBlock extends AbstractFatherBlock {
    * @param id
    *          the id of the header.
    */
-  public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters,
-      String id) {
+  public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters, String id) {
     this(childBlocks, level, parameters);
 
     this.id = id;
@@ -121,7 +120,7 @@ public class HeaderBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -130,7 +129,7 @@ public class HeaderBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

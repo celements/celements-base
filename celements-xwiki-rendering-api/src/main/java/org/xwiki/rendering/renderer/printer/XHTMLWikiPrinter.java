@@ -31,7 +31,7 @@ import org.xml.sax.Attributes;
  * there are more than 1
  * contiguous spaces, except for CDATA sections and inside PRE elements. It also knows how to handle
  * XHTML comments).
- * 
+ *
  * @version $Id$
  * @since 1.7M1
  */
@@ -57,7 +57,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXML(java.lang.String)
    */
   @Override
@@ -69,7 +69,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLElement(java.lang.String)
    */
   @Override
@@ -80,7 +80,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLElement(java.lang.String,
    *      java.lang.String[][])
    */
@@ -92,7 +92,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLElement(java.lang.String,
    *      java.util.Map)
    */
@@ -104,7 +104,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLStartElement(java.lang.String)
    */
   @Override
@@ -115,7 +115,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLStartElement(java.lang.String,
    *      java.lang.String[][])
    */
@@ -127,7 +127,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLStartElement(java.lang.String,
    *      java.util.Map)
    */
@@ -139,7 +139,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLStartElement(java.lang.String,
    *      org.xml.sax.Attributes)
    */
@@ -151,7 +151,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLEndElement(java.lang.String)
    */
   @Override
@@ -163,7 +163,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLComment(java.lang.String)
    */
   @Override
@@ -173,7 +173,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLComment(java.lang.String,
    *      boolean)
    */
@@ -186,7 +186,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLStartCData()
    */
   @Override
@@ -197,7 +197,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printXMLEndCData()
    */
   @Override
@@ -215,7 +215,7 @@ public class XHTMLWikiPrinter extends XMLWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.XMLWikiPrinter#printRaw(java.lang.String)
    */
   @Override

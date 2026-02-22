@@ -26,7 +26,7 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * Represents a table.
- * 
+ *
  * @version $Id$
  * @since 1.6M2
  */
@@ -45,7 +45,7 @@ public class TableBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -54,7 +54,7 @@ public class TableBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

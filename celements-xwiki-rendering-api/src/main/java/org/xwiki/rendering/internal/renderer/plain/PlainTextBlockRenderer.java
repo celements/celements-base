@@ -30,7 +30,7 @@ import org.xwiki.rendering.renderer.PrintRendererFactory;
  * editor can't support like the style, link, image, etc. This renderer is mainly used to generate a
  * simple as possible
  * label like in a TOC.
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
@@ -45,7 +45,7 @@ public class PlainTextBlockRenderer extends AbstractBlockRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.internal.renderer.AbstractBlockRenderer#getPrintRendererFactory()
    */
   @Override

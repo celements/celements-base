@@ -35,13 +35,12 @@ import org.xwiki.rendering.transformation.TransformationManager;
  * Calls all existing transformations (executed by priority) on an existing XDOM object to generate
  * a new transformed
  * XDOM.
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
 @Component
-public class DefaultTransformationManager extends AbstractLogEnabled
-    implements TransformationManager {
+public class DefaultTransformationManager extends AbstractLogEnabled implements TransformationManager {
 
   /**
    * Used to get the ordered list of transformations to execute.
@@ -51,7 +50,7 @@ public class DefaultTransformationManager extends AbstractLogEnabled
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.transformation.TransformationManager#performTransformations(org.xwiki.rendering.block.XDOM,
    *      org.xwiki.rendering.syntax.Syntax)
    */
@@ -61,12 +60,11 @@ public class DefaultTransformationManager extends AbstractLogEnabled
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.transformation.TransformationManager#performTransformations(org.xwiki.rendering.block.Block,
    *      org.xwiki.rendering.transformation.TransformationContext)
    */
-  public void performTransformations(Block block, TransformationContext context)
-      throws TransformationException {
+  public void performTransformations(Block block, TransformationContext context) throws TransformationException {
     boolean error = false;
     for (Transformation transformation : this.configuration.getTransformations()) {
       try {
@@ -79,8 +77,7 @@ public class DefaultTransformationManager extends AbstractLogEnabled
     }
     if (error) {
       throw new TransformationException(
-          "One or several transformations failed to execute properly. "
-              + "See the logs for details.");
+          "One or several transformations failed to execute properly. " + "See the logs for details.");
     }
   }
 }

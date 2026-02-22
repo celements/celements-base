@@ -34,11 +34,12 @@ import org.xwiki.component.phase.Initializable;
 
 /**
  * Generates Annotated XHTML (ie XHTML containing metadata information, for example macro definition
- * or
- * link definition) from a {@link org.xwiki.rendering.block.XDOM} object being traversed.
- * The annotations allow initial source content to be fully reconstructed from the generated XHTML.
- * This is required
- * for example for doing round tripping between wiki syntax and XHTML syntax in the WYSIWYG editor.
+ * or link definition)
+ * from a {@link org.xwiki.rendering.block.XDOM} object being traversed. The annotations allow
+ * initial source content to
+ * be fully reconstructed from the generated XHTML. This is required for example for doing round
+ * tripping between wiki
+ * syntax and XHTML syntax in the WYSIWYG editor.
  *
  * @version $Id$
  * @since 2.0M3
@@ -49,10 +50,10 @@ public class AnnotatedXHTMLRenderer extends AbstractChainingPrintRenderer implem
 
   /**
    * To render link events into annotated XHTML. This is done so that it's pluggable because link
-   * rendering depends
-   * on how the underlying system wants to handle it. For example for XWiki we check if the document
-   * exists, we get
-   * the document URL, etc.
+   * rendering depends on
+   * how the underlying system wants to handle it. For example for XWiki we check if the document
+   * exists, we get the
+   * document URL, etc.
    */
   @Requirement("annotated")
   private XHTMLLinkRenderer linkRenderer;
@@ -61,15 +62,15 @@ public class AnnotatedXHTMLRenderer extends AbstractChainingPrintRenderer implem
    * To render image events into annotated XHTML. This is done so that it's pluggable because image
    * rendering depends
    * on how the underlying system wants to handle it. For example for XWiki we check if the image
-   * exists as a
-   * document attachments, we get its URL, etc.
+   * exists as a document
+   * attachments, we get its URL, etc.
    */
   @Requirement("annotated")
   private XHTMLImageRenderer imageRenderer;
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.component.phase.Initializable#initialize()
    * @since 2.0M3
    */
@@ -83,7 +84,6 @@ public class AnnotatedXHTMLRenderer extends AbstractChainingPrintRenderer implem
     chain.addListener(this);
     chain.addListener(new BlockStateChainingListener(chain));
     chain.addListener(new EmptyBlockChainingListener(chain));
-    chain.addListener(
-        new AnnotatedXHTMLChainingRenderer(this.linkRenderer, this.imageRenderer, chain));
+    chain.addListener(new AnnotatedXHTMLChainingRenderer(this.linkRenderer, this.imageRenderer, chain));
   }
 }

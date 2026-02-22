@@ -27,9 +27,9 @@ import java.util.Map;
  * {@link org.xwiki.rendering.listener.chaining.BlockStateChainingListener} class because we don't
  * want this listener to
  * be stackable (since we need to create new instance of stackable listeners to reset states when we
- * encounter
- * a begin group event but we also need to know we're inside a group).
- * 
+ * encounter a begin
+ * group event but we also need to know we're inside a group).
+ *
  * @version $Id$
  * @since 1.8.3
  */
@@ -53,7 +53,7 @@ public class GroupStateChainingListener extends AbstractChainingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
    */
   @Override
@@ -65,7 +65,7 @@ public class GroupStateChainingListener extends AbstractChainingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endGroup(Map)
    */
   @Override

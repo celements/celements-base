@@ -21,8 +21,8 @@ package org.xwiki.rendering.listener.reference;
 
 /**
  * Represents a reference to an external wiki(<a href="http://en.wikipedia.org/wiki/InterWiki">Inter
- * Wiki</a>).
- * An InterWiki reference is a shorthand notation to reference a set of external URL, all having a
+ * Wiki</a>). An
+ * InterWiki reference is a shorthand notation to reference a set of external URL, all having a
  * common prefix (eg
  * http://server/some/common/prefix/a1, http://server/some/common/prefix/a2). An InterWiki reference
  * is made of an

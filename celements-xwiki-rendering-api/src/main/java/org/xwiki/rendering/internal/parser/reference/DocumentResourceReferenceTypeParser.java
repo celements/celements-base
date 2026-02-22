@@ -35,7 +35,7 @@ public class DocumentResourceReferenceTypeParser extends AbstractURIResourceRefe
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractURIResourceReferenceTypeParser#getType()
    */
   public ResourceType getType() {

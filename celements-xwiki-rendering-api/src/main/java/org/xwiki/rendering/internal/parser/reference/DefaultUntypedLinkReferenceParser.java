@@ -27,8 +27,8 @@ import org.xwiki.rendering.parser.ResourceReferenceTypeParser;
 
 /**
  * Considers all passed link references to be untyped and tries to guess the type by first looking
- * for a URL
- * and then considering it's a reference to a document.
+ * for a URL and then
+ * considering it's a reference to a document.
  *
  * @version $Id$
  * @since 2.6M1
@@ -50,7 +50,7 @@ public class DefaultUntypedLinkReferenceParser implements ResourceReferenceParse
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see ResourceReferenceParser#parse(String)
    */
   public ResourceReference parse(String rawReference) {

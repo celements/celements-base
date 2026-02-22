@@ -30,10 +30,9 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
- * Implementation for Block operations. All blocks should extend this class.
- * Supports the notion of generic parameters which can be added to a block (see
- * {@link #getParameter(String)} for more
- * details.
+ * Implementation for Block operations. All blocks should extend this class. Supports the notion of
+ * generic parameters
+ * which can be added to a block (see {@link #getParameter(String)} for more details.
  *
  * @version $Id$
  * @since 1.5M2

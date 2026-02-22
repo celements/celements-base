@@ -30,7 +30,7 @@ import org.xwiki.rendering.listener.Listener;
  * syntax even after Macros have been executed. For example this is important in a WYSWIYG editor
  * where you want to show
  * the Macro's rendered result and also let users modify the macro content.
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
@@ -61,8 +61,7 @@ public class MacroMarkerBlock extends AbstractFatherBlock {
    * @param isInline
    *          indicate if the macro is located in a inline content (like paragraph, etc.)
    */
-  public MacroMarkerBlock(String id, Map<String, String> parameters, List<Block> childBlocks,
-      boolean isInline) {
+  public MacroMarkerBlock(String id, Map<String, String> parameters, List<Block> childBlocks, boolean isInline) {
     this(id, parameters, null, childBlocks, isInline);
   }
 
@@ -78,8 +77,7 @@ public class MacroMarkerBlock extends AbstractFatherBlock {
    * @param isInline
    *          indicate if the macro is located in a inline content (like paragraph, etc.)
    */
-  public MacroMarkerBlock(String id, Map<String, String> parameters, String content,
-      List<Block> childBlocks,
+  public MacroMarkerBlock(String id, Map<String, String> parameters, String content, List<Block> childBlocks,
       boolean isInline) {
     super(childBlocks, parameters);
 
@@ -121,7 +119,7 @@ public class MacroMarkerBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -130,7 +128,7 @@ public class MacroMarkerBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

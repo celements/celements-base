@@ -24,12 +24,11 @@ import org.xwiki.rendering.syntax.Syntax;
 
 /**
  * Represents some raw content that shouldn't be parsed or modified and that should be injected as
- * is
- * in any output. The content depends on a syntax and listeners decide if they can handle that
- * syntax
- * or not. For example if it's in "xhtml/1.0" syntax then the XHTML Renderer can insert it directly
- * in the XHTML output.
- * 
+ * is in any output. The
+ * content depends on a syntax and listeners decide if they can handle that syntax or not. For
+ * example if it's in
+ * "xhtml/1.0" syntax then the XHTML Renderer can insert it directly in the XHTML output.
+ *
  * @version $Id$
  * @since 1.8.3
  */
@@ -58,7 +57,7 @@ public class RawBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractBlock#traverse(Listener)
    */
   public void traverse(Listener listener) {

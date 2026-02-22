@@ -27,7 +27,7 @@ import org.dom4j.io.XMLWriter;
 
 /**
  * XHTMLWriter is an helper to configure XMLWriter to format a DOM4J tree as XHTML.
- * 
+ *
  * @version $Id$
  */
 public class XHTMLWriter extends XMLWriter {
@@ -50,7 +50,7 @@ public class XHTMLWriter extends XMLWriter {
    * Escapes a string to be used as an attribute value. Unlike the original method in
    * {@link XMLWriter}, apostrophes
    * are replaced by a numerical entity &amp;#38;, since &amp;apos; is not valid in HTML documents.
-   * 
+   *
    * @param text
    *          the attribute value to escape
    * @return the text with all occurrences of special XML characters replaced by entity references.

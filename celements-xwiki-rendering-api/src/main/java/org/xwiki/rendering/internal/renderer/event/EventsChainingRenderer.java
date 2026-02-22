@@ -33,7 +33,7 @@ import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
 
 /**
  * Prints listener event names in a format useful for testing and debugging.
- * 
+ *
  * @version $Id$
  * @since 1.8RC1
  */
@@ -47,7 +47,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDocument(java.util.Map)
    */
   @Override
@@ -57,7 +57,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDocument(java.util.Map)
    */
   @Override
@@ -67,7 +67,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
    */
   @Override
@@ -77,7 +77,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endGroup(Map)
    */
   @Override
@@ -87,7 +87,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginFormat(org.xwiki.rendering.listener.Format,
    *      java.util.Map)
    */
@@ -98,7 +98,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endFormat(org.xwiki.rendering.listener.Format,
    *      java.util.Map)
    */
@@ -109,7 +109,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginParagraph(java.util.Map)
    */
   @Override
@@ -119,7 +119,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endParagraph(java.util.Map)
    */
   @Override
@@ -129,7 +129,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onNewLine()
    */
   @Override
@@ -139,33 +139,31 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
-    getPrinter().println("beginLink [" + reference + "] [" + isFreeStandingURI + "]"
-        + serializeParameters(parameters));
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+    getPrinter()
+        .println("beginLink [" + reference + "] [" + isFreeStandingURI + "]" + serializeParameters(parameters));
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
-    getPrinter().println("endLink [" + reference + "] [" + isFreeStandingURI + "]"
-        + serializeParameters(parameters));
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+    getPrinter()
+        .println("endLink [" + reference + "] [" + isFreeStandingURI + "]" + serializeParameters(parameters));
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onMacro(java.lang.String,
    *      java.util.Map,
    *      java.lang.String, boolean)
@@ -177,7 +175,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginSection(java.util.Map)
    */
   @Override
@@ -187,19 +185,18 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginHeader(org.xwiki.rendering.listener.HeaderLevel,
    *      String, java.util.Map)
    */
   @Override
   public void beginHeader(HeaderLevel level, String id, Map<String, String> parameters) {
-    getPrinter()
-        .println("beginHeader [" + level + ", " + id + "]" + serializeParameters(parameters));
+    getPrinter().println("beginHeader [" + level + ", " + id + "]" + serializeParameters(parameters));
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endSection(java.util.Map)
    */
   @Override
@@ -209,7 +206,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endHeader(
    *      org.xwiki.rendering.listener.HeaderLevel, String, java.util.Map)
    */
@@ -220,7 +217,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onWord(java.lang.String)
    */
   @Override
@@ -230,7 +227,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginList(org.xwiki.rendering.listener.ListType,
    *      java.util.Map)
    */
@@ -241,7 +238,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginListItem()
    */
   @Override
@@ -251,7 +248,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endList(org.xwiki.rendering.listener.ListType,
    *      java.util.Map)
    */
@@ -262,7 +259,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endListItem()
    */
   @Override
@@ -272,7 +269,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onSpace()
    */
   @Override
@@ -282,7 +279,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onSpecialSymbol(char)
    */
   @Override
@@ -292,7 +289,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onRawText(String, Syntax)
    */
   @Override
@@ -302,31 +299,31 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginMacroMarker(java.lang.String,
-   *      java.util.Map, java.lang.String, boolean)
+   *      java.util.Map,
+   *      java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     printMacroData("beginMacroMarker", name, parameters, content, isInline);
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endMacroMarker(java.lang.String,
-   *      java.util.Map, java.lang.String, boolean)
+   *      java.util.Map,
+   *      java.lang.String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     printMacroData("endMacroMarker", name, parameters, content, isInline);
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onId(java.lang.String)
    */
   @Override
@@ -336,7 +333,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onHorizontalLine(java.util.Map)
    */
   @Override
@@ -346,7 +343,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onEmptyLines(int)
    */
   @Override
@@ -356,20 +353,19 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onVerbatim(String, boolean,
    *      Map)
    */
   @Override
   public void onVerbatim(String protectedString, boolean isInline, Map<String, String> parameters) {
-    getPrinter().println(
-        "onVerbatim [" + protectedString + "] [" + isInline + "]"
-            + serializeParameters(parameters));
+    getPrinter()
+        .println("onVerbatim [" + protectedString + "] [" + isInline + "]" + serializeParameters(parameters));
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginDefinitionList(java.util.Map)
    * @since 2.0RC1
    */
@@ -380,7 +376,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endDefinitionList(java.util.Map)
    * @since 2.0RC1
    */
@@ -391,7 +387,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginDefinitionTerm()
    */
   @Override
@@ -401,7 +397,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginDefinitionDescription()
    */
   @Override
@@ -411,7 +407,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endDefinitionTerm()
    */
   @Override
@@ -421,7 +417,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endDefinitionDescription()
    */
   @Override
@@ -431,7 +427,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginQuotation(java.util.Map)
    */
   @Override
@@ -441,7 +437,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endQuotation(java.util.Map)
    */
   @Override
@@ -451,7 +447,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginQuotationLine()
    */
   @Override
@@ -461,7 +457,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endQuotationLine()
    */
   @Override
@@ -471,7 +467,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginTable(java.util.Map)
    */
   @Override
@@ -481,7 +477,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginTableCell(java.util.Map)
    */
   @Override
@@ -491,7 +487,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginTableHeadCell(java.util.Map)
    */
   @Override
@@ -501,7 +497,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginTableRow(java.util.Map)
    */
   @Override
@@ -511,7 +507,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endTable(java.util.Map)
    */
   @Override
@@ -521,7 +517,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endTableCell(java.util.Map)
    */
   @Override
@@ -531,7 +527,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endTableHeadCell(java.util.Map)
    */
   @Override
@@ -541,7 +537,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endTableRow(java.util.Map)
    */
   @Override
@@ -551,16 +547,15 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onImage(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
-    getPrinter().println("onImage [" + reference + "] [" + isFreeStandingURI + "]"
-        + serializeParameters(parameters));
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+    getPrinter()
+        .println("onImage [" + reference + "] [" + isFreeStandingURI + "]" + serializeParameters(parameters));
   }
 
   public String getEscaped(String str) {
@@ -586,8 +581,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
     return printableStr;
   }
 
-  private void printMacroData(String eventName, String name, Map<String, String> parameters,
-      String content,
+  private void printMacroData(String eventName, String name, Map<String, String> parameters, String content,
       boolean isInline) {
     StringBuffer parametersBuffer = new StringBuffer();
     for (Iterator<String> paramsIt = parameters.keySet().iterator(); paramsIt.hasNext();) {
@@ -627,8 +621,7 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
       String key = entry.getKey();
 
       if (key != null && value != null) {
-        parametersStr.append('[').append(getEscaped(entry.getKey())).append(']').append('=')
-            .append('[')
+        parametersStr.append('[').append(getEscaped(entry.getKey())).append(']').append('=').append('[')
             .append(getEscaped(entry.getValue())).append(']');
       }
     }

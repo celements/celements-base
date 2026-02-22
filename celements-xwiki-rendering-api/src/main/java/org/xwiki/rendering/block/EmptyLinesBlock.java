@@ -23,8 +23,8 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * Represents an empty line between 2 standalone Blocks. A standalone block is block that is not
- * included in
- * another block. Standalone blocks are Paragraph, Standalone Macro, Lists, Table, etc.
+ * included in another
+ * block. Standalone blocks are Paragraph, Standalone Macro, Lists, Table, etc.
  *
  * @version $Id$
  * @since 1.6M2
@@ -61,7 +61,7 @@ public class EmptyLinesBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractBlock#traverse(Listener)
    */
   public void traverse(Listener listener) {

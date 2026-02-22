@@ -27,8 +27,8 @@ import org.xwiki.rendering.listener.chaining.ListenerChain;
 
 /**
  * Convert listener events to annotated XHTML. See {@link AnnotatedXHTMLChainingRenderer} for more
- * details on
- * what Annotated XHTML is.
+ * details on what
+ * Annotated XHTML is.
  *
  * @version $Id$
  * @since 2.0M2
@@ -46,15 +46,15 @@ public class AnnotatedXHTMLChainingRenderer extends XHTMLChainingRenderer {
    *          the document exists, we get the document URL, etc.
    * @param imageRenderer
    *          the object to render image events into XHTML. This is done so that it's pluggable
-   *          because
-   *          image rendering depends on how the underlying system wants to handle it. For example
-   *          for XWiki we
-   *          check if the image exists as a document attachments, we get its URL, etc.
+   *          because image
+   *          rendering depends on how the underlying system wants to handle it. For example for
+   *          XWiki we check if
+   *          the image exists as a document attachments, we get its URL, etc.
    * @param listenerChain
    *          the chain of listener filters used to compute various states
    */
-  public AnnotatedXHTMLChainingRenderer(XHTMLLinkRenderer linkRenderer,
-      XHTMLImageRenderer imageRenderer, ListenerChain listenerChain) {
+  public AnnotatedXHTMLChainingRenderer(XHTMLLinkRenderer linkRenderer, XHTMLImageRenderer imageRenderer,
+      ListenerChain listenerChain) {
     super(linkRenderer, imageRenderer, listenerChain);
 
     this.macroRenderer = new XHTMLMacroRenderer();
@@ -79,8 +79,7 @@ public class AnnotatedXHTMLChainingRenderer extends XHTMLChainingRenderer {
    *      boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     if (getBlockState().getMacroDepth() == 1) {
       // Do not do any rendering but we still need to save the macro definition in some hidden XHTML
       // so that the macro can be reconstructed when moving back from XHTML to XDOM.
@@ -95,8 +94,7 @@ public class AnnotatedXHTMLChainingRenderer extends XHTMLChainingRenderer {
    *      boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     if (getBlockState().getMacroDepth() == 1) {
       // Do not do any rendering but we still need to save the macro definition in some hidden XHTML
       // so that the macro can be reconstructed when moving back from XHTML to XDOM.

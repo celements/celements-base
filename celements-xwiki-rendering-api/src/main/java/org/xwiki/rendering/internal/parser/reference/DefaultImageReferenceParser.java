@@ -27,10 +27,10 @@ import org.xwiki.rendering.parser.ResourceReferenceParser;
 
 /**
  * Similar to {@link org.xwiki.rendering.internal.parser.reference.DefaultResourceReferenceParser}
- * but handles the
- * case where the resource type wasn't specified. In this case it tries to guess the type by first
- * looking for a URL
- * and then considering it's a reference to an attachment.
+ * but handles the case
+ * where the resource type wasn't specified. In this case it tries to guess the type by first
+ * looking for a URL and then
+ * considering it's a reference to an attachment.
  *
  * @version $Id$
  * @since 2.6M1
@@ -52,7 +52,7 @@ public class DefaultImageReferenceParser implements ResourceReferenceParser {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see ResourceReferenceParser#parse(String)
    */
   public ResourceReference parse(String rawReference) {

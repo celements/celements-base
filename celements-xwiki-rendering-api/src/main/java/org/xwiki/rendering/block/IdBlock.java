@@ -23,7 +23,8 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * A reference/location in a page. In HTML for example this is called an Anchor. It allows pointing
- * to that location, for example in links.
+ * to that location,
+ * for example in links.
  *
  * @version $Id$
  * @since 1.6M1
@@ -53,7 +54,7 @@ public class IdBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
    */
   public void traverse(Listener listener) {

@@ -31,7 +31,7 @@ import org.xwiki.rendering.listener.Listener;
  * custom parameters API since macro by definition already have parameters and don't need also block
  * parameters. So in
  * this case MacroBlock parameters and Block parameters are the same thing.
- * 
+ *
  * @version $Id$
  * @since 1.8M2
  */
@@ -106,7 +106,7 @@ public class MacroBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#traverse(org.xwiki.rendering.listener.Listener)
    */
   public void traverse(Listener listener) {

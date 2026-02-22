@@ -28,8 +28,9 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
- * Represents a reference to a Resource (document, image, attachment, mail, etc).
- * Note that this representation is independent of any wiki syntax.
+ * Represents a reference to a Resource (document, image, attachment, mail, etc). Note that this
+ * representation is
+ * independent of any wiki syntax.
  *
  * @version $Id$
  * @since 2.5RC1
@@ -42,11 +43,11 @@ public class ResourceReference implements Cloneable {
   private boolean isTyped = true;
 
   /**
-   * @see #getReference()
-   *      Note that the reason we store the reference as a String and not as an Entity Reference is
-   *      because we want
-   *      the Rendering module independent of the XWiki Model so that it can be used independently
-   *      of XWiki.
+   * @see #getReference() Note that the reason we store the reference as a String and not as an
+   *      Entity Reference is
+   *      because we want the Rendering module independent of the XWiki Model so that it can be used
+   *      independently of
+   *      XWiki.
    */
   private String reference;
 
@@ -99,9 +100,11 @@ public class ResourceReference implements Cloneable {
   /**
    * @return the reference pointed to by this resource. For example a reference can be a document's
    *         name (which
-   *         depends on the wiki, for example for XWiki the format is "wiki:space.page"), a URI
-   *         (for example: mailto:john@doe.com), a URL, an
-   *         <a href="http://en.wikipedia.org/wiki/InterWiki">Inter Wiki</a> reference, etc
+   *         depends on the wiki, for example for XWiki the format is "wiki:space.page"), a URI (for
+   *         example:
+   *         mailto:john@doe.com), a URL, an <a href="http://en.wikipedia.org/wiki/InterWiki">Inter
+   *         Wiki</a>
+   *         reference, etc
    * @see #getType()
    */
   public String getReference() {
@@ -159,9 +162,9 @@ public class ResourceReference implements Cloneable {
    * information, and in InterWiki Resource References to store the InterWiki Alias. Note that
    * supported parameters
    * depend on the Renderer that will be used (i.e. it depends on the target Syntax). For example
-   * the XWiki Syntax
-   * 2.1 only supports "queryString" and "anchor".
-   * 
+   * the XWiki Syntax 2.1
+   * only supports "queryString" and "anchor".
+   *
    * @param name
    *          the name of the parameter to get
    * @return the parameter value or null if no such parameter exist
@@ -183,7 +186,7 @@ public class ResourceReference implements Cloneable {
    * The output is syntax independent since this class is used for all syntaxes. Specific syntaxes
    * should extend this
    * class and override this method to perform syntax-dependent formatting.
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
@@ -216,7 +219,7 @@ public class ResourceReference implements Cloneable {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#clone()
    */
   @Override
@@ -233,22 +236,18 @@ public class ResourceReference implements Cloneable {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#hashCode()
    */
   @Override
   public int hashCode() {
-    return new HashCodeBuilder(1, 9)
-        .append(getType())
-        .append(isTyped())
-        .append(getReference())
-        .append(getParameters())
-        .toHashCode();
+    return new HashCodeBuilder(1, 9).append(getType()).append(isTyped()).append(getReference())
+        .append(getParameters()).toHashCode();
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#equals(Object)
    */
   @Override
@@ -263,11 +262,7 @@ public class ResourceReference implements Cloneable {
       return false;
     }
     ResourceReference rhs = (ResourceReference) object;
-    return new EqualsBuilder()
-        .append(getType(), rhs.getType())
-        .append(isTyped(), rhs.isTyped())
-        .append(getReference(), rhs.getReference())
-        .append(getParameters(), rhs.getParameters())
-        .isEquals();
+    return new EqualsBuilder().append(getType(), rhs.getType()).append(isTyped(), rhs.isTyped())
+        .append(getReference(), rhs.getReference()).append(getParameters(), rhs.getParameters()).isEquals();
   }
 }

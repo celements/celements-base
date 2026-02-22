@@ -29,11 +29,10 @@ import org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer;
 
 /**
  * Generate a string representation of a Link reference, in XWiki Syntax 2.0. This implementation is
- * pluggable by
- * using internally implementations of
- * {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer},
- * each in charge of serializing a given
- * {@link org.xwiki.rendering.listener.reference.ResourceType}.
+ * pluggable by using
+ * internally implementations of
+ * {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer}, each in
+ * charge of serializing a given {@link org.xwiki.rendering.listener.reference.ResourceType}.
  * <p>
  * Note that {@link org.xwiki.rendering.renderer.reference.ResourceReferenceTypeSerializer}
  * component implementations
@@ -77,8 +76,9 @@ public class XWikiSyntaxLinkReferenceSerializer implements ResourceReferenceSeri
     String result;
 
     try {
-      result = this.componentManager.lookup(ResourceReferenceTypeSerializer.class,
-          getLinkTypeSerializerComponentPrefix() + "/" + reference.getType().getScheme())
+      result = this.componentManager
+          .lookup(ResourceReferenceTypeSerializer.class,
+              getLinkTypeSerializerComponentPrefix() + "/" + reference.getType().getScheme())
           .serialize(reference);
     } catch (ComponentLookupException e) {
       // Failed to find serializer for the passed link type. Use the default serializer.

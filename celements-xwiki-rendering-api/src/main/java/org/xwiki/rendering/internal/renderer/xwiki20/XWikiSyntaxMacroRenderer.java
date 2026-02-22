@@ -25,7 +25,7 @@ import org.xwiki.rendering.internal.renderer.ParametersPrinter;
 
 /**
  * Generates XWiki Syntax for a Macro Block.
- * 
+ *
  * @version $Id$
  * @since 2.0.1
  */
@@ -33,8 +33,7 @@ public class XWikiSyntaxMacroRenderer {
 
   private ParametersPrinter parametersPrinter = new ParametersPrinter();
 
-  public String renderMacro(String id, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public String renderMacro(String id, Map<String, String> parameters, String content, boolean isInline) {
     StringBuffer buffer = new StringBuffer();
 
     // Print begin macro

@@ -45,8 +45,8 @@ public interface Parser {
    * @return the tree representation of the content as {@link org.xwiki.rendering.block.Block}s
    * @throws ParseException
    *           if the source cannot be read or an unexpected error happens during the parsing.
-   *           Parsers
-   *           should be written to not generate any error as much as possible.
+   *           Parsers should be
+   *           written to not generate any error as much as possible.
    */
   XDOM parse(Reader source) throws ParseException;
 }

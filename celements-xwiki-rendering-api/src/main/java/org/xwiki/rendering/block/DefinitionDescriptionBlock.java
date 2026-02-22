@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Represents a definition description. For exampe in HTML this is the equivalent of &lt;dd&gt;.
- * 
+ *
  * @version $Id$
  * @since 1.6M2
  */
@@ -43,7 +43,7 @@ public class DefinitionDescriptionBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -52,7 +52,7 @@ public class DefinitionDescriptionBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

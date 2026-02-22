@@ -25,7 +25,7 @@ import org.xwiki.rendering.syntax.Syntax;
 /**
  * The context of the transformation process. Contains information such as the current XWiki DOM for
  * the parsed content.
- * 
+ *
  * @version $Id$
  * @since 2.4M1
  */
@@ -72,8 +72,8 @@ public class TransformationContext {
    * @return an id representing the transformation being evaluated. It's a free form name that
    *         Transformations can
    *         use, for example if they need to perform some caching based on a key. For example the
-   *         Velocity Macro
-   *         is using this id to pass it to the underlying Velocity Engine so that it caches macros
+   *         Velocity Macro is
+   *         using this id to pass it to the underlying Velocity Engine so that it caches macros
    *         using this key.
    * @since 2.4M2
    */

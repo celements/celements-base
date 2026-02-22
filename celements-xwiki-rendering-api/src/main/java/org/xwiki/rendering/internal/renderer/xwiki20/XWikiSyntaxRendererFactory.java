@@ -34,7 +34,7 @@ public class XWikiSyntaxRendererFactory extends AbstractPrintRendererFactory {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractPrintRendererFactory#getSyntax()
    */
   public Syntax getSyntax() {

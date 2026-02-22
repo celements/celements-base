@@ -34,7 +34,7 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
  * syntax. For example if we have "**" as special symbols (and not as a Bold Format block) we need
  * to escape them to
  * "~*~*" as otherwise they'd be considered bold after being rendered.
- * 
+ *
  * @version $Id$
  * @since 1.7
  */
@@ -66,7 +66,7 @@ public class XWikiSyntaxEscapeWikiPrinter extends LookaheadWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.LookaheadWikiPrinter#printInternal(java.lang.String)
    */
   @Override
@@ -84,7 +84,7 @@ public class XWikiSyntaxEscapeWikiPrinter extends LookaheadWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.LookaheadWikiPrinter#println(java.lang.String)
    */
   @Override
@@ -98,14 +98,13 @@ public class XWikiSyntaxEscapeWikiPrinter extends LookaheadWikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.LookaheadWikiPrinter#flush()
    */
   @Override
   public void flush() {
     if (getBuffer().length() > 0) {
-      this.escapeHandler.escape(getBuffer(), this.listenerChain, this.escapeLastChar,
-          this.escapeFirstIfMatching);
+      this.escapeHandler.escape(getBuffer(), this.listenerChain, this.escapeLastChar, this.escapeFirstIfMatching);
       super.flush();
     }
     this.escapeLastChar = false;
@@ -141,8 +140,7 @@ public class XWikiSyntaxEscapeWikiPrinter extends LookaheadWikiPrinter {
   }
 
   public boolean isAfterWhiteSpace() {
-    return isOnNewLine()
-        || Character.isWhitespace(getLastPrinted().charAt(getLastPrinted().length() - 1));
+    return isOnNewLine() || Character.isWhitespace(getLastPrinted().charAt(getLastPrinted().length() - 1));
   }
 
   public String getLastPrinted() {

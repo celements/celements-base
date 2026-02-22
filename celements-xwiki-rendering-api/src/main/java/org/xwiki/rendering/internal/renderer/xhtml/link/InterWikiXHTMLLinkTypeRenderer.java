@@ -50,20 +50,18 @@ public class InterWikiXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRendere
    * {@inheritDoc}
    *
    * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(org.xwiki.rendering.listener.reference.ResourceReference
-   *      ,
-   *      java.util.Map, java.util.Map)
+   *      , java.util.Map, java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference,
-      Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
     // Look for an InterWiki definition for the passed Link. If not found then simply use the
     // InterWiki Path.
     String interWikiAlias = reference.getParameter(InterWikiResourceReference.INTERWIKI_ALIAS);
     Properties definitions = this.renderingConfiguration.getInterWikiDefinitions();
     if (definitions.containsKey(interWikiAlias)) {
-      anchorAttributes.put(XHTMLLinkRenderer.HREF, definitions.getProperty(interWikiAlias)
-          + reference.getReference());
+      anchorAttributes.put(XHTMLLinkRenderer.HREF,
+          definitions.getProperty(interWikiAlias) + reference.getReference());
     } else {
       anchorAttributes.put(XHTMLLinkRenderer.HREF, reference.getReference());
     }

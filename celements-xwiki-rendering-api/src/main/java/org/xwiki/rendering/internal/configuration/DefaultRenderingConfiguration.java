@@ -33,7 +33,7 @@ import java.util.Properties;
 
 /**
  * Basic default implementation to be used when using the XWiki Rendering system standalone.
- * 
+ *
  * @version $Id$
  * @since 2.0M1
  */
@@ -68,7 +68,7 @@ public class DefaultRenderingConfiguration implements RenderingConfiguration, In
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.configuration.RenderingConfiguration#getLinkLabelFormat()
    */
   public String getLinkLabelFormat() {

@@ -39,8 +39,7 @@ public class SyntaxType {
 
   public static final SyntaxType XHTML = new SyntaxType("xhtml", "XHTML");
 
-  public static final SyntaxType ANNOTATED_XHTML = new SyntaxType("annotatedxhtml",
-      "Annotated XHTML");
+  public static final SyntaxType ANNOTATED_XHTML = new SyntaxType("annotatedxhtml", "Annotated XHTML");
 
   public static final SyntaxType HTML = new SyntaxType("html", "HTML");
 
@@ -92,7 +91,7 @@ public class SyntaxType {
    * {@inheritDoc}
    * <p>
    * Display a human readable name of the Syntax type.
-   * 
+   *
    * @see java.lang.Object#toString()
    */
   @Override
@@ -110,7 +109,7 @@ public class SyntaxType {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#hashCode()
    */
   @Override
@@ -126,7 +125,7 @@ public class SyntaxType {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Object#equals(Object)
    */
   @Override
@@ -145,8 +144,7 @@ public class SyntaxType {
         // Note that the name isn't part of the hashCode computation since it's not part of the
         // Syntax type's
         // identity.
-        result = (getId() == syntaxType.getId()
-            || (getId() != null && getId().equals(syntaxType.getId())));
+        result = (getId() == syntaxType.getId() || (getId() != null && getId().equals(syntaxType.getId())));
       }
     }
 

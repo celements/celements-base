@@ -30,8 +30,8 @@ import com.celements.common.test.AbstractComponentTest;
 
 /**
  * Common tests for Image implementations of
- * {@link org.xwiki.rendering.parser.ResourceReferenceParser} for
- * XWiki Syntax 2.0 and 2.1.
+ * {@link org.xwiki.rendering.parser.ResourceReferenceParser} for XWiki Syntax
+ * 2.0 and 2.1.
  *
  * @version $Id$
  * @since 2.5RC1

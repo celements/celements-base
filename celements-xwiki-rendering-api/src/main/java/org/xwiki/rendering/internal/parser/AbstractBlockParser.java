@@ -32,7 +32,7 @@ import org.xwiki.rendering.parser.StreamParser;
 /**
  * Common code for {@link Parser} implementation that produce a {@link XDOM} from
  * {@link StreamParser}.
- * 
+ *
  * @version $Id$
  * @since 2.1M1
  */
@@ -60,7 +60,7 @@ public abstract class AbstractBlockParser implements Parser {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.parser.Parser#parse(java.io.Reader)
    */
   public XDOM parse(Reader source) throws ParseException {

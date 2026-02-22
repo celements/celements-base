@@ -26,7 +26,7 @@ import org.xwiki.rendering.renderer.reference.link.URILabelGenerator;
 
 /**
  * Generate link labels for MAILTO URIs.
- * 
+ *
  * @version $Id$
  * @since 2.2RC1
  */
@@ -35,7 +35,7 @@ public class MailtoURILabelGenerator implements URILabelGenerator {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.reference.link.URILabelGenerator#generateLabel(
    *      org.xwiki.rendering.listener.reference.ResourceReference)
    */

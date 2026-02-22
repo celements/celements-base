@@ -35,7 +35,7 @@ public final class SpaceBlock extends AbstractBlock {
    * APIs to manipulate a tree of blocks (for example to find the position of a space block in a
    * list using
    * {@link java.util.List#indexOf(Object)} wich would always return the first space block).
-   * 
+   *
    * @since 2.6RC1
    */
   public SpaceBlock() {
@@ -44,7 +44,7 @@ public final class SpaceBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.Block#traverse(org.xwiki.rendering.listener.Listener)
    */
   public void traverse(Listener listener) {
@@ -53,7 +53,7 @@ public final class SpaceBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#clone()
    */
   @Override

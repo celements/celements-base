@@ -64,7 +64,7 @@ public enum HeaderLevel {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see java.lang.Enum#toString()
    */
   @Override
@@ -74,7 +74,7 @@ public enum HeaderLevel {
 
   /**
    * Convert provided integer into the corresponding header level enum entry.
-   * 
+   *
    * @param value
    *          the header level as integer
    * @return the header level as enum entry
@@ -101,8 +101,7 @@ public enum HeaderLevel {
         result = HeaderLevel.LEVEL6;
         break;
       default:
-        throw new IllegalArgumentException(
-            "Invalid level [" + value + "]. Only levels 1 to 6 are allowed.");
+        throw new IllegalArgumentException("Invalid level [" + value + "]. Only levels 1 to 6 are allowed.");
     }
 
     return result;

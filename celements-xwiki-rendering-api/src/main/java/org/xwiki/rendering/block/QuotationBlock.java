@@ -27,7 +27,7 @@ import org.xwiki.rendering.listener.Listener;
 
 /**
  * Represents a quotation. There are one or several quotation lines inside a quotation block.
- * 
+ *
  * @version $Id$
  * @since 1.6M2
  */
@@ -53,7 +53,7 @@ public class QuotationBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -62,7 +62,7 @@ public class QuotationBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

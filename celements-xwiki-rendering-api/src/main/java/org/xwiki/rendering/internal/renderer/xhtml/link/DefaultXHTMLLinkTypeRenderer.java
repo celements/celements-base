@@ -29,7 +29,7 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
 /**
  * Handle XHTML rendering for links for which we haven't found a specific
  * {@link org.xwiki.rendering.internal.renderer.xhtml.link.XHTMLLinkTypeRenderer} implementation.
- * 
+ *
  * @version $Id$
  * @since 2.5M2
  */
@@ -39,13 +39,12 @@ public class DefaultXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer 
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractXHTMLLinkTypeRenderer#beginLinkExtraAttributes(org.xwiki.rendering.listener.reference.ResourceReference
    *      , java.util.Map, java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference,
-      Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
     anchorAttributes.put(XHTMLLinkRenderer.HREF, reference.getReference());
   }

@@ -38,16 +38,16 @@ import org.xwiki.rendering.syntax.Syntax;
  * <p>
  * Here's an example of usage:
  * </p>
- * 
+ *
  * <pre>
  * &lt;code&gt;
  *   XDOM dom = parser.parse(source);
  *   MyListener listener = new MyListener(...);
  *   dom.traverse(listener);
- *   // At this stage all events have been sent to MyListener. 
+ *   // At this stage all events have been sent to MyListener.
  * &lt;/code&gt;
  * </pre>
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
@@ -60,7 +60,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of the document.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    */
@@ -68,7 +68,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of the document.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    */
@@ -78,7 +78,7 @@ public interface Listener extends LinkListener, ImageListener {
    * Start a group of elements. Groups are used to allow using standalone elements in list items,
    * table cells, etc.
    * They can also be used to set parameters on a group of standalone elements.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    * @since 1.8.3
@@ -87,7 +87,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of the group.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    * @since 1.8.3
@@ -96,7 +96,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a text formatting block.
-   * 
+   *
    * @param format
    *          the formatting type (bold, italic, etc)
    * @param parameters
@@ -107,7 +107,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a text formatting block.
-   * 
+   *
    * @param format
    *          the formatting type (bold, italic, etc)
    * @param parameters
@@ -118,7 +118,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a paragraph.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    */
@@ -126,7 +126,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a paragraph.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    */
@@ -134,7 +134,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a list.
-   * 
+   *
    * @param listType
    *          the type of list (bulleted, numbered, etc)
    * @param parameters
@@ -145,7 +145,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a definition list. For example in HTML this is the equivalent of &lt;dl&gt;.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the list. Example: "style"/"background-color: blue"
    * @since 2.0RC1
@@ -154,7 +154,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a list.
-   * 
+   *
    * @param listType
    *          the type of list (bulleted, numbered, etc)
    * @param parameters
@@ -165,7 +165,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a definition list. For example in HTML this is the equivalent of &lt;/dl&gt;.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the list. Example: "style"/"background-color: blue"
    * @since 2.0RC1
@@ -179,7 +179,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a definition list term. For example in HTML this is the equivalent of &lt;dt&gt;.
-   * 
+   *
    * @since 1.6M2
    */
   void beginDefinitionTerm();
@@ -187,7 +187,7 @@ public interface Listener extends LinkListener, ImageListener {
   /**
    * Start of a definition list description. For example in HTML this is the equivalent of
    * &lt;dd&gt;.
-   * 
+   *
    * @since 1.6M2
    */
   void beginDefinitionDescription();
@@ -199,7 +199,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a definition list term. For example in HTML this is the equivalent of &lt;/dt&gt;.
-   * 
+   *
    * @since 1.6M2
    */
   void endDefinitionTerm();
@@ -207,14 +207,14 @@ public interface Listener extends LinkListener, ImageListener {
   /**
    * End of a definition list description. For example in HTML this is the equivalent of
    * &lt;/dd&gt;.
-   * 
+   *
    * @since 1.6M2
    */
   void endDefinitionDescription();
 
   /**
    * Start of a table.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table.
    * @since 1.6M2
@@ -223,7 +223,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a table row.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table row.
    * @since 1.6M2
@@ -232,7 +232,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a table cell.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table cell.
    * @since 1.6M2
@@ -241,7 +241,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a table head cell.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table head cell.
    * @since 1.6M2
@@ -250,7 +250,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a table.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table.
    * @since 1.6M2
@@ -259,7 +259,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a table row.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table row.
    * @since 1.6M2
@@ -268,7 +268,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a table cell.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table cell.
    * @since 1.6M2
@@ -277,7 +277,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a table head cell.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the table head cell.
    * @since 1.6M2
@@ -286,7 +286,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a section.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    * @see org.xwiki.rendering.listener.HeaderLevel
@@ -295,7 +295,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a section.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    * @see org.xwiki.rendering.listener.HeaderLevel
@@ -304,7 +304,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Start of a header.
-   * 
+   *
    * @param level
    *          the header level (1, 2, 3, etc)
    * @param id
@@ -318,7 +318,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a header.
-   * 
+   *
    * @param level
    *          the header level (1, 2, 3, etc)
    * @param id
@@ -338,7 +338,7 @@ public interface Listener extends LinkListener, ImageListener {
    * for exemple by the WYSIWYG editor to let use see the result of executing a macro and still let
    * them modify the
    * macro definition.
-   * 
+   *
    * @param name
    *          the macro name
    * @param macroParameters
@@ -349,12 +349,11 @@ public interface Listener extends LinkListener, ImageListener {
    *          if true the macro is located in a inline content (like paragraph, etc.)
    * @see #onMacro(String, java.util.Map, String, boolean)
    */
-  void beginMacroMarker(String name, Map<String, String> macroParameters, String content,
-      boolean isInline);
+  void beginMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline);
 
   /**
    * End of marker containing a macro definition.
-   * 
+   *
    * @param name
    *          the macro name
    * @param macroParameters
@@ -365,12 +364,11 @@ public interface Listener extends LinkListener, ImageListener {
    *          if true the macro is located in a inline content (like paragraph, etc.)
    * @see #beginMacroMarker(String, java.util.Map, String, boolean)
    */
-  void endMacroMarker(String name, Map<String, String> macroParameters, String content,
-      boolean isInline);
+  void endMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline);
 
   /**
    * Start of a quotation. There are one or several quotation lines inside a quotation block.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the quotation. Example: "style"/"background-color:
    *          blue"
@@ -379,7 +377,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * End of a quotation.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters for the quotation. Example: "style"/"background-color:
    *          blue"
@@ -405,7 +403,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * A {@link org.xwiki.rendering.macro.Macro} by itself on a line (ie not inside another Block).
-   * 
+   *
    * @param id
    *          the macro id (eg "toc" for the TOC macro)
    * @param macroParameters
@@ -422,7 +420,7 @@ public interface Listener extends LinkListener, ImageListener {
    * A word. Note that sentences ar broken into different events: word events, special symbols
    * events, space events,
    * etc. This allows fine-grained actions for listeners.
-   * 
+   *
    * @param word
    *          the word encountered
    */
@@ -436,7 +434,7 @@ public interface Listener extends LinkListener, ImageListener {
   /**
    * A special symbol ("*", "<", ">", "=", quote, etc). Any non alpha numeric character is a special
    * symbol.
-   * 
+   *
    * @param symbol
    *          the symbol encountered
    */
@@ -448,7 +446,7 @@ public interface Listener extends LinkListener, ImageListener {
    * location, for example in links. Note that there is no wiki syntax for this in general and it's
    * often generated by
    * Macros (such as the TOC Macro).
-   * 
+   *
    * @param name
    *          the location name.
    * @since 1.6M1
@@ -457,7 +455,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * Represents an horizontal line.
-   * 
+   *
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    * @since 1.6M1
@@ -468,7 +466,7 @@ public interface Listener extends LinkListener, ImageListener {
    * Represents an empty line between 2 standalone Blocks. A standalone block is block that is not
    * included in another
    * block. Standalone blocks are Paragraph, Standalone Macro, Lists, Table, etc.
-   * 
+   *
    * @param count
    *          the number of empty lines between 2 standalone Blocks
    */
@@ -476,7 +474,7 @@ public interface Listener extends LinkListener, ImageListener {
 
   /**
    * A portion of text.
-   * 
+   *
    * @param protectedString
    *          the string to protected from rendering
    * @param isInline
@@ -494,7 +492,7 @@ public interface Listener extends LinkListener, ImageListener {
    * event in most cases since it can lead to invalid content being generated and in addition most
    * listener
    * implementations will not understand the injected text and will just ignore it.
-   * 
+   *
    * @param rawContent
    *          the text to inject
    * @param syntax

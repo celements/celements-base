@@ -30,7 +30,7 @@ package org.xwiki.rendering.listener.reference;
  * <li>attachment ("attach")</li>
  * <li>UNC path ("unc")</li>
  * </ul>
- * 
+ *
  * @version $Id$
  * @since 2.5RC1
  */
@@ -78,7 +78,7 @@ public class ResourceType {
 
   /**
    * Represents a UNC (Universal Naming Convention) (eg "\\myserver\myshare\mydoc.txt").
-   * 
+   *
    * @since 2.7M1
    */
   public static final ResourceType UNC = new ResourceType("unc");
@@ -143,8 +143,8 @@ public class ResourceType {
       } else {
         // object must be ResourceType at this point
         ResourceType type = (ResourceType) object;
-        result = (getScheme() == type.getScheme() || (getScheme() != null
-            && getScheme().equals(type.getScheme())));
+        result = (getScheme() == type.getScheme()
+            || (getScheme() != null && getScheme().equals(type.getScheme())));
       }
     }
     return result;

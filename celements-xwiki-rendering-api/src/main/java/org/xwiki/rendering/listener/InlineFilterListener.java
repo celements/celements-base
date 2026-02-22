@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * Wrap a listener and skip begin/endDocument events.
- * 
+ *
  * @version $Id$
  * @since 2.7.1
  */
@@ -31,7 +31,7 @@ public class InlineFilterListener extends WrappingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.WrappingListener#beginDocument(java.util.Map)
    */
   @Override
@@ -41,7 +41,7 @@ public class InlineFilterListener extends WrappingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.WrappingListener#endDocument(java.util.Map)
    */
   @Override
@@ -51,7 +51,7 @@ public class InlineFilterListener extends WrappingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.WrappingListener#beginSection(java.util.Map)
    */
   @Override
@@ -61,7 +61,7 @@ public class InlineFilterListener extends WrappingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.WrappingListener#endSection(java.util.Map)
    */
   @Override
@@ -71,7 +71,7 @@ public class InlineFilterListener extends WrappingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.WrappingListener#beginParagraph(java.util.Map)
    */
   @Override
@@ -81,7 +81,7 @@ public class InlineFilterListener extends WrappingListener {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.WrappingListener#endParagraph(java.util.Map)
    */
   @Override

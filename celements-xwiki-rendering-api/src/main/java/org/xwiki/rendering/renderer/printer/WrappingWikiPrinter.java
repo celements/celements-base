@@ -21,7 +21,7 @@ package org.xwiki.rendering.renderer.printer;
 
 /**
  * Wraps a wiki printer.
- * 
+ *
  * @version $Id$
  * @since 1.7
  */

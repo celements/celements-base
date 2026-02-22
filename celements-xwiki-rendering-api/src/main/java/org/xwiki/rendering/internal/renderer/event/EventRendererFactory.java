@@ -34,7 +34,7 @@ public class EventRendererFactory extends AbstractPrintRendererFactory {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractPrintRendererFactory#getSyntax()
    */
   public Syntax getSyntax() {

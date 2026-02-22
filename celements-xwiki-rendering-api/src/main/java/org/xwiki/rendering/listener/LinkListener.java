@@ -25,9 +25,9 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
 
 /**
  * Contains callback events for Links, called when a document has been parsed and when it needs to
- * be modified
- * or rendered.
- * 
+ * be modified or
+ * rendered.
+ *
  * @version $Id$
  * @since 1.8RC3
  * @see Listener
@@ -36,7 +36,7 @@ public interface LinkListener {
 
   /**
    * Start of a link.
-   * 
+   *
    * @param reference
    *          the link reference
    * @param isFreeStandingURI
@@ -46,12 +46,11 @@ public interface LinkListener {
    * @see ResourceReference
    * @since 2.5RC1
    */
-  void beginLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters);
+  void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters);
 
   /**
    * End of a link.
-   * 
+   *
    * @param reference
    *          the link reference
    * @param isFreeStandingURI
@@ -61,6 +60,5 @@ public interface LinkListener {
    * @see ResourceReference
    * @since 2.5RC1
    */
-  void endLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters);
+  void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters);
 }

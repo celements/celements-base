@@ -43,7 +43,7 @@ public class DefaultSyntaxFactory extends AbstractLogEnabled implements SyntaxFa
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.syntax.SyntaxFactory#createSyntaxFromIdString(java.lang.String)
    */
   public Syntax createSyntaxFromIdString(String syntaxIdAsString) throws ParseException {

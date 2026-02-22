@@ -27,7 +27,7 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
 
 /**
  * Represents an image.
- * 
+ *
  * @version $Id$
  * @since 1.7M2
  */
@@ -35,7 +35,8 @@ public class ImageBlock extends AbstractBlock {
 
   /**
    * A reference to the image target. See
-   * {@link org.xwiki.rendering.listener.reference.ResourceReference} for more details.
+   * {@link org.xwiki.rendering.listener.reference.ResourceReference} for more
+   * details.
    */
   private ResourceReference reference;
 
@@ -66,8 +67,7 @@ public class ImageBlock extends AbstractBlock {
    *          the custom parameters
    * @since 2.5RC1
    */
-  public ImageBlock(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public ImageBlock(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     super(parameters);
 
     this.reference = reference;
@@ -93,7 +93,7 @@ public class ImageBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.Block#traverse(org.xwiki.rendering.listener.Listener)
    */
   public void traverse(Listener listener) {
@@ -102,7 +102,7 @@ public class ImageBlock extends AbstractBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#clone(org.xwiki.rendering.block.BlockFilter)
    * @since 1.8RC2
    */

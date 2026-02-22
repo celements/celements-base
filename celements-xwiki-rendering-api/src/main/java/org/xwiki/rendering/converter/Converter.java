@@ -35,9 +35,8 @@ public interface Converter {
 
   /**
    * Converts content from a Syntax to another and execute all registered Macro Transformations on
-   * the parsed
-   * content.
-   * 
+   * the parsed content.
+   *
    * @param source
    *          the content to be converted
    * @param sourceSyntax

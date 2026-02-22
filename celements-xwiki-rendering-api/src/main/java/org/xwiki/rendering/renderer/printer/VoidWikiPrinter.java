@@ -21,7 +21,7 @@ package org.xwiki.rendering.renderer.printer;
 
 /**
  * A WikiPrinter implementation which does not do anything.
- * 
+ *
  * @version $Id$
  */
 public class VoidWikiPrinter implements WikiPrinter {
@@ -38,7 +38,7 @@ public class VoidWikiPrinter implements WikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.WikiPrinter#print(java.lang.String)
    */
   public void print(String text) {
@@ -47,7 +47,7 @@ public class VoidWikiPrinter implements WikiPrinter {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.printer.WikiPrinter#println(java.lang.String)
    */
   public void println(String text) {

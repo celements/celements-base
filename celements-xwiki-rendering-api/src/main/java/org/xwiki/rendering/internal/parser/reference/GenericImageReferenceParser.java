@@ -25,7 +25,7 @@ import org.xwiki.component.annotation.Component;
  * Each syntax should have its own resource reference parser. However while we wait for syntax
  * specific parser to be
  * implemented this generic parser should provide a good approximation.
- * 
+ *
  * @version $Id$
  * @since 2.5RC1
  */

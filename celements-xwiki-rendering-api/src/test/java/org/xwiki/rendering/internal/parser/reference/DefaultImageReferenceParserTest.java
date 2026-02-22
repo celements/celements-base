@@ -55,8 +55,7 @@ public class DefaultImageReferenceParserTest extends AbstractImageReferenceParse
     Assert.assertEquals(ResourceType.PATH, reference.getType());
     Assert.assertEquals("/some/image", reference.getReference());
     Assert.assertTrue(reference.isTyped());
-    Assert.assertEquals("Typed = [true] Type = [path] Reference = [/some/image]",
-        reference.toString());
+    Assert.assertEquals("Typed = [true] Type = [path] Reference = [/some/image]", reference.toString());
 
     // Verify icon: support
     reference = parser.parse("icon:name");

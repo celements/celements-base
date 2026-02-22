@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * Contains the full tree of {@link Block} that represent a XWiki Document's content.
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
@@ -104,7 +104,7 @@ public class XDOM extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -113,7 +113,7 @@ public class XDOM extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {
@@ -122,7 +122,7 @@ public class XDOM extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#clone()
    */
   @Override

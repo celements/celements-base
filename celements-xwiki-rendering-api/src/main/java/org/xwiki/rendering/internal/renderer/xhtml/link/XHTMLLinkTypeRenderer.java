@@ -25,19 +25,18 @@ import org.xwiki.rendering.renderer.printer.XHTMLWikiPrinter;
 
 /**
  * Renders a type of link (mailto link, document link, URL, etc) in XHTML. Components implementing
- * this
- * interface implement the rendering logic only for a single link type and must have a role hint
- * value
- * equal to the {@link org.xwiki.rendering.listener.reference.ResourceType} name (eg "doc" for
- * document link, "attach"
- * for attachment link, etc).
- * Implementations must handle both cases when rendering a link:
+ * this interface
+ * implement the rendering logic only for a single link type and must have a role hint value equal
+ * to the
+ * {@link org.xwiki.rendering.listener.reference.ResourceType} name (eg "doc" for document link,
+ * "attach" for attachment
+ * link, etc). Implementations must handle both cases when rendering a link:
  * <ul>
  * <li>when inside a wiki (ie when an implementation of {@link org.xwiki.rendering.wiki.WikiModel}
  * is provided.</li>
  * <li>when outside of a wiki. In this case links to attachmets or documents are ignored and
- * rendered as is as
- * direct HREF values. In other words only external links are meaningful.</li>
+ * rendered as is as direct
+ * HREF values. In other words only external links are meaningful.</li>
  * </ul>
  *
  * @version $Id$

@@ -26,7 +26,7 @@ import org.xwiki.rendering.syntax.Syntax;
 /**
  * Code common to all Transformation and base implementation of priorities (see
  * {@link Transformation#getPriority()}).
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
@@ -41,7 +41,7 @@ public abstract class AbstractTransformation extends AbstractLogEnabled implemen
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Transformation#getPriority()
    */
   public int getPriority() {
@@ -50,7 +50,7 @@ public abstract class AbstractTransformation extends AbstractLogEnabled implemen
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Transformation#compareTo(Object)
    */
   public int compareTo(Transformation transformation) {

@@ -37,7 +37,7 @@ import org.xwiki.xml.XMLUtils;
 
 /**
  * Base toolkit class for all XML-based printers.
- * 
+ *
  * @version $Id$
  * @since 1.9M1
  */
@@ -174,7 +174,7 @@ public class XMLWikiPrinter {
    * characters (or <code>-</code> if it's the last character). If you're not sure what the comment
    * content will be
    * use {@link #printXMLComment(String, boolean)} instead, passing true for the second parameter.
-   * 
+   *
    * @param content
    *          the comment content
    */
@@ -184,7 +184,7 @@ public class XMLWikiPrinter {
 
   /**
    * Print a XML comment.
-   * 
+   *
    * @param content
    *          the comment content
    * @param escape
@@ -194,8 +194,7 @@ public class XMLWikiPrinter {
    */
   public void printXMLComment(String content, boolean escape) {
     try {
-      this.xmlWriter
-          .write(new DefaultComment(escape ? XMLUtils.escapeXMLComment(content) : content));
+      this.xmlWriter.write(new DefaultComment(escape ? XMLUtils.escapeXMLComment(content) : content));
     } catch (IOException e) {
       // TODO: add error log here
     }
@@ -238,7 +237,7 @@ public class XMLWikiPrinter {
    * Print some text without escaping anything, it's supposed to be XML or at least contains only
    * valid characters in
    * XML text node.
-   * 
+   *
    * @param row
    *          the content
    */

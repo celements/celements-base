@@ -37,7 +37,7 @@ import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
  * editor can't support like the style, link, image, etc. This renderer is mainly used to generate a
  * simple as possible
  * label like in a TOC.
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
@@ -50,7 +50,7 @@ public class PlainTextRenderer extends AbstractChainingPrintRenderer implements 
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see Initializable#initialize()
    * @since 2.0M3
    */

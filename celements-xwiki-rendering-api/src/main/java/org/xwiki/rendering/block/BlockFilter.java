@@ -33,7 +33,7 @@ import java.util.List;
  * it</li>
  * <li>or even a list of new block to replace the provided block</li>
  * </ul>
- * 
+ *
  * @version $Id$
  * @since 1.8RC2
  */
@@ -41,7 +41,7 @@ public interface BlockFilter {
 
   /**
    * Filter provided block into zero or more block.
-   * 
+   *
    * @param block
    *          the block to filter.
    * @return should never be null. The filtered blocks or empty list.

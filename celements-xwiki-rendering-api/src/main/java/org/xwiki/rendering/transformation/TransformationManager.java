@@ -55,6 +55,5 @@ public interface TransformationManager {
    *           error when applying transformations
    * @since 2.4M1
    */
-  void performTransformations(Block block, TransformationContext context)
-      throws TransformationException;
+  void performTransformations(Block block, TransformationContext context) throws TransformationException;
 }

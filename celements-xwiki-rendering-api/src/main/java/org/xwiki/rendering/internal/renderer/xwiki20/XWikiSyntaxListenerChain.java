@@ -27,9 +27,8 @@ import org.xwiki.rendering.listener.chaining.LookaheadChainingListener;
 import org.xwiki.rendering.listener.chaining.TextOnNewLineStateChainingListener;
 
 /**
- * Provides convenient access to listeners in the chain used for
- * {@link XWikiSyntaxListenerChain}.
- * 
+ * Provides convenient access to listeners in the chain used for {@link XWikiSyntaxListenerChain}.
+ *
  * @version $Id$
  * @since 1.8RC1
  */
@@ -54,16 +53,14 @@ public class XWikiSyntaxListenerChain extends ListenerChain {
    *         session.
    */
   public ConsecutiveNewLineStateChainingListener getConsecutiveNewLineStateChainingListener() {
-    return (ConsecutiveNewLineStateChainingListener) getListener(
-        ConsecutiveNewLineStateChainingListener.class);
+    return (ConsecutiveNewLineStateChainingListener) getListener(ConsecutiveNewLineStateChainingListener.class);
   }
 
   /**
    * @return the stateful {@link TextOnNewLineStateChainingListener} for this rendering session.
    */
   public TextOnNewLineStateChainingListener getTextOnNewLineStateChainingListener() {
-    return (TextOnNewLineStateChainingListener) getListener(
-        TextOnNewLineStateChainingListener.class);
+    return (TextOnNewLineStateChainingListener) getListener(TextOnNewLineStateChainingListener.class);
   }
 
   /**

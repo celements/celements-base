@@ -33,7 +33,7 @@ public class MailtoResourceReferenceTypeParser extends AbstractURIResourceRefere
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractURIResourceReferenceTypeParser#getType()
    */
   public ResourceType getType() {

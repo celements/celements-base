@@ -39,12 +39,11 @@ import org.xwiki.rendering.renderer.printer.WikiPrinter;
 
 /**
  * Convert listener events to XWiki Syntax 2.0 output.
- * 
+ *
  * @version $Id$
  * @since 1.8RC1
  */
-public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
-    implements StackableChainingListener {
+public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer implements StackableChainingListener {
 
   private XWikiSyntaxResourceRenderer linkResourceRenderer;
 
@@ -67,17 +66,14 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
   /**
    * @since 2.5RC1
    */
-  public XWikiSyntaxChainingRenderer(ListenerChain listenerChain,
-      ResourceReferenceSerializer linkReferenceSerializer,
+  public XWikiSyntaxChainingRenderer(ListenerChain listenerChain, ResourceReferenceSerializer linkReferenceSerializer,
       ResourceReferenceSerializer imageReferenceSerializer) {
     setListenerChain(listenerChain);
 
     this.linkReferenceSerializer = linkReferenceSerializer;
     this.imageReferenceSerializer = imageReferenceSerializer;
-    this.linkResourceRenderer = createXWikiSyntaxLinkRenderer(getListenerChain(),
-        linkReferenceSerializer);
-    this.imageResourceRenderer = createXWikiSyntaxImageRenderer(getListenerChain(),
-        imageReferenceSerializer);
+    this.linkResourceRenderer = createXWikiSyntaxLinkRenderer(getListenerChain(), linkReferenceSerializer);
+    this.imageResourceRenderer = createXWikiSyntaxImageRenderer(getListenerChain(), imageReferenceSerializer);
     this.macroPrinter = new XWikiSyntaxMacroRenderer();
   }
 
@@ -86,8 +82,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
    */
   protected XWikiSyntaxResourceRenderer createXWikiSyntaxLinkRenderer(ListenerChain listenerChain,
       ResourceReferenceSerializer linkReferenceSerializer) {
-    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain,
-        linkReferenceSerializer);
+    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain, linkReferenceSerializer);
   }
 
   /**
@@ -95,8 +90,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
    */
   protected XWikiSyntaxResourceRenderer createXWikiSyntaxImageRenderer(ListenerChain listenerChain,
       ResourceReferenceSerializer imageReferenceSerializer) {
-    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain,
-        imageReferenceSerializer);
+    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain, imageReferenceSerializer);
   }
 
   // State
@@ -107,7 +101,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see StackableChainingListener#createChainingListenerInstance()
    */
   public StackableChainingListener createChainingListenerInstance() {
@@ -135,7 +129,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginGroup(Map)
    */
   @Override
@@ -157,7 +151,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDocument(java.util.Map)
    */
   @Override
@@ -168,7 +162,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endGroup(Map)
    */
   @Override
@@ -182,13 +176,12 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     // Flush test content before the link.
     // TODO: improve the block state renderer to be able to make the difference between what is
     // bufferized
@@ -197,8 +190,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
     // escape open link syntax when before a link
     if (getLinkRenderer().forceFullSyntax(getXWikiPrinter(), isFreeStandingURI, parameters)
         && getXWikiPrinter().getBuffer().length() > 0
-        && getXWikiPrinter().getBuffer()
-            .charAt(getXWikiPrinter().getBuffer().length() - 1) == '[') {
+        && getXWikiPrinter().getBuffer().charAt(getXWikiPrinter().getBuffer().length() - 1) == '[') {
       getXWikiPrinter().setEscapeLastChar(true);
     }
     getXWikiPrinter().flush();
@@ -210,11 +202,10 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
     // we
     // shouldn't output the nested link as a link unless it's a free standing link.
     if (linkDepth < 2) {
-      getLinkRenderer().beginRenderLink(getXWikiPrinter(), reference, isFreeStandingURI,
-          parameters);
+      getLinkRenderer().beginRenderLink(getXWikiPrinter(), reference, isFreeStandingURI, parameters);
 
-      XWikiSyntaxEscapeWikiPrinter linkLabelPrinter = new XWikiSyntaxEscapeWikiPrinter(
-          new DefaultWikiPrinter(), getXWikiSyntaxListenerChain());
+      XWikiSyntaxEscapeWikiPrinter linkLabelPrinter = new XWikiSyntaxEscapeWikiPrinter(new DefaultWikiPrinter(),
+          getXWikiSyntaxListenerChain());
 
       // Make sure the escape handler knows there is already characters before
       linkLabelPrinter.setOnNewLine(getXWikiPrinter().isOnNewLine());
@@ -228,13 +219,12 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     // The links in a top level link label are not rendered as link (only the label is printed)
     if (getBlockState().getLinkDepth() == 1) {
       XWikiSyntaxEscapeWikiPrinter linkBlocksPrinter = getXWikiPrinter();
@@ -249,7 +239,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginFormat(org.xwiki.rendering.listener.Format,
    *      java.util.Map)
    */
@@ -310,7 +300,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractChainingPrintRenderer#endFormat(org.xwiki.rendering.listener.Format,
    *      java.util.Map)
    */
@@ -346,7 +336,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.PrintRenderer#beginParagraph(java.util.Map)
    */
   @Override
@@ -357,7 +347,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.PrintRenderer#endParagraph(java.util.Map)
    */
   @Override
@@ -371,7 +361,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.PrintRenderer#onNewLine()
    */
   @Override
@@ -389,12 +379,10 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
     // parser.
 
     if (getBlockState().isInLine()) {
-      if (getXWikiSyntaxListenerChain().getConsecutiveNewLineStateChainingListener()
-          .getNewLineCount() > 1) {
+      if (getXWikiSyntaxListenerChain().getConsecutiveNewLineStateChainingListener().getNewLineCount() > 1) {
         print("\\\\");
-      } else if (getXWikiSyntaxListenerChain().getLookaheadChainingListener()
-          .getNextEvent().eventType
-              .isInlineEnd()) {
+      } else if (getXWikiSyntaxListenerChain().getLookaheadChainingListener().getNextEvent().eventType
+          .isInlineEnd()) {
         print("\\\\");
       } else {
         print("\n");
@@ -406,7 +394,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractChainingPrintRenderer#onMacro(String, java.util.Map, String, boolean)
    */
   @Override
@@ -415,14 +403,13 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
       printEmptyLine();
       print(getMacroPrinter().renderMacro(id, parameters, content, isInline));
     } else {
-      getXWikiPrinter()
-          .printInlineMacro(getMacroPrinter().renderMacro(id, parameters, content, isInline));
+      getXWikiPrinter().printInlineMacro(getMacroPrinter().renderMacro(id, parameters, content, isInline));
     }
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginHeader(org.xwiki.rendering.listener.HeaderLevel,
    *      String, java.util.Map)
    */
@@ -435,7 +422,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#endHeader(org.xwiki.rendering.listener.HeaderLevel,
    *      String, java.util.Map)
    */
@@ -446,7 +433,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractChainingPrintRenderer#onWord(String)
    */
   @Override
@@ -456,7 +443,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.PrintRenderer#onSpace()
    */
   @Override
@@ -466,7 +453,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractChainingPrintRenderer#onSpecialSymbol(char)
    */
   @Override
@@ -476,7 +463,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginList(org.xwiki.rendering.listener.ListType,
    *      java.util.Map)
    */
@@ -498,7 +485,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.PrintRenderer#beginListItem()
    */
   @Override
@@ -516,7 +503,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractChainingPrintRenderer#endList(org.xwiki.rendering.listener.ListType,
    *      java.util.Map)
    */
@@ -531,7 +518,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endListItem()
    */
   @Override
@@ -541,14 +528,13 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#beginMacroMarker(String,
    *      java.util.Map, String,
    *      boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     if (!isInline) {
       printEmptyLine();
     }
@@ -556,18 +542,16 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
     // When we encounter a macro marker we ignore all other blocks inside since we're going to use
     // the macro
     // definition wrapped by the macro marker to construct the xwiki syntax.
-    pushPrinter(new XWikiSyntaxEscapeWikiPrinter(VoidWikiPrinter.VOIDWIKIPRINTER,
-        getXWikiSyntaxListenerChain()));
+    pushPrinter(new XWikiSyntaxEscapeWikiPrinter(VoidWikiPrinter.VOIDWIKIPRINTER, getXWikiSyntaxListenerChain()));
   }
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see AbstractChainingPrintRenderer#endMacroMarker(String, java.util.Map, String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     this.previousFormatParameters = null;
 
     popPrinter();
@@ -577,7 +561,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#onId(String)
    */
   @Override
@@ -587,7 +571,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.Renderer#onHorizontalLine(Map)
    */
   @Override
@@ -599,7 +583,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.Renderer#onVerbatim(String, boolean, Map)
    */
   @Override
@@ -616,7 +600,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.Renderer#onEmptyLines(int)
    */
   @Override
@@ -626,7 +610,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginDefinitionList(java.util.Map)
    * @since 2.0RC1
    */
@@ -642,7 +626,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginDefinitionTerm()
    * @since 1.6M2
    */
@@ -664,7 +648,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginDefinitionDescription()
    * @since 1.6M2
    */
@@ -686,7 +670,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDefinitionDescription()
    */
   @Override
@@ -698,7 +682,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDefinitionTerm()
    */
   @Override
@@ -710,7 +694,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginQuotation(java.util.Map)
    * @since 1.6M2
    */
@@ -727,7 +711,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginQuotationLine()
    * @since 1.6M2
    */
@@ -742,7 +726,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endQuotationLine()
    */
   @Override
@@ -754,7 +738,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginTable(java.util.Map)
    */
   @Override
@@ -767,7 +751,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginTableCell(java.util.Map)
    */
   @Override
@@ -778,7 +762,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginTableHeadCell(java.util.Map)
    */
   @Override
@@ -789,7 +773,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#beginTableRow(java.util.Map)
    */
   @Override
@@ -803,7 +787,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#endTableCell(java.util.Map)
    */
   @Override
@@ -817,7 +801,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#endTableHeadCell(java.util.Map)
    */
   @Override
@@ -827,15 +811,14 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.Listener#onImage(org.xwiki.rendering.listener.reference.ResourceReference
-   *      , boolean,
-   *      java.util.Map)
+   *      ,
+   *      boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     getImageRenderer().beginRenderLink(getXWikiPrinter(), reference, isFreeStandingURI, parameters);
     getImageRenderer().endRenderLink(getXWikiPrinter(), reference, isFreeStandingURI, parameters);
   }
@@ -904,7 +887,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.renderer.AbstractChainingPrintRenderer#setPrinter(org.xwiki.rendering.renderer.printer.WikiPrinter)
    * @since 2.0M3
    */
@@ -917,8 +900,7 @@ public class XWikiSyntaxChainingRenderer extends AbstractChainingPrintRenderer
     if (printer instanceof XWikiSyntaxEscapeWikiPrinter) {
       super.setPrinter(printer);
     } else {
-      super.setPrinter(
-          new XWikiSyntaxEscapeWikiPrinter(printer, (XWikiSyntaxListenerChain) getListenerChain()));
+      super.setPrinter(new XWikiSyntaxEscapeWikiPrinter(printer, (XWikiSyntaxListenerChain) getListenerChain()));
     }
   }
 

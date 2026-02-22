@@ -50,7 +50,7 @@ public class SectionBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -59,7 +59,7 @@ public class SectionBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.FatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {

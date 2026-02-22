@@ -43,8 +43,7 @@ public class UNCXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer {
    *      java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference,
-      Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
     // Transform the UNC reference into a file URL of the format:
     // file://///myserver/myshare/mydoc.txt

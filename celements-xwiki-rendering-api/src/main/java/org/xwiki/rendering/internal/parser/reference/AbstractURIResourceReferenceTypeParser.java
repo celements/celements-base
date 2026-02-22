@@ -24,14 +24,13 @@ import org.xwiki.rendering.parser.ResourceReferenceTypeParser;
 
 /**
  * Default resource reference type parser for URIs: just take the full reference as the Resource
- * reference.
- * Note that this parser doesn't extract the scheme from the URI for the resource reference.
+ * reference. Note that
+ * this parser doesn't extract the scheme from the URI for the resource reference.
  *
  * @version $Id$
  * @since 2.5RC1
  */
-public abstract class AbstractURIResourceReferenceTypeParser
-    implements ResourceReferenceTypeParser {
+public abstract class AbstractURIResourceReferenceTypeParser implements ResourceReferenceTypeParser {
 
   /**
    * {@inheritDoc}

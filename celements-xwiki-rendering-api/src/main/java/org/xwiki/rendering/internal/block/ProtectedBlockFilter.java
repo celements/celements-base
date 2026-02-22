@@ -91,8 +91,7 @@ public class ProtectedBlockFilter implements BlockFilter {
    *          the class of the Blocks to return
    * @return the filtered blocks matching the passed Block class
    */
-  public <T extends Block> List<T> getChildrenByType(Block block, Class<T> blockClass,
-      boolean recurse) {
+  public <T extends Block> List<T> getChildrenByType(Block block, Class<T> blockClass, boolean recurse) {
     List<T> typedBlocks = new ArrayList<T>();
     for (Block child : filter(block.getChildren())) {
       if (blockClass.isAssignableFrom(child.getClass())) {
@@ -112,7 +111,6 @@ public class ProtectedBlockFilter implements BlockFilter {
    * @return true if the passed block is a protected block or false otherwise
    */
   private boolean isProtectedBlock(Block block) {
-    return (block instanceof MacroMarkerBlock)
-        && ((MacroMarkerBlock) block).getId().equals("code");
+    return (block instanceof MacroMarkerBlock) && ((MacroMarkerBlock) block).getId().equals("code");
   }
 }

@@ -29,7 +29,7 @@ import org.xwiki.rendering.renderer.PrintRenderer;
 
 /**
  * Common code for BlockRender implementation that uses Print Renderer Factory.
- * 
+ *
  * @version $Id$
  * @since 2.0M3
  */
@@ -42,7 +42,7 @@ public abstract class AbstractBlockRenderer implements BlockRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see BlockRenderer#render(org.xwiki.rendering.block.Block,
    *      org.xwiki.rendering.renderer.printer.WikiPrinter)
    */
@@ -52,7 +52,7 @@ public abstract class AbstractBlockRenderer implements BlockRenderer {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see BlockRenderer#render(java.util.Collection,
    *      org.xwiki.rendering.renderer.printer.WikiPrinter)
    */

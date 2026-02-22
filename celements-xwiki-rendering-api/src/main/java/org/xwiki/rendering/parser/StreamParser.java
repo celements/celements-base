@@ -27,7 +27,7 @@ import org.xwiki.rendering.syntax.Syntax;
 
 /**
  * Streaming based parser. Instead of returning a resulting XDOM it send events during the parsing.
- * 
+ *
  * @version $Id$
  * @since 2.1M1
  */
@@ -46,8 +46,8 @@ public interface StreamParser {
    *          receive event for each element
    * @throws ParseException
    *           if the source cannot be read or an unexpected error happens during the parsing.
-   *           Parsers
-   *           should be written to not generate any error as much as possible.
+   *           Parsers should be
+   *           written to not generate any error as much as possible.
    */
   void parse(Reader source, Listener listener) throws ParseException;
 }

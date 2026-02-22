@@ -63,7 +63,7 @@ public class XWikiSyntaxResourceRenderer
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxResourceRenderer#printParameters(
    *      XWikiSyntaxEscapeWikiPrinter, org.xwiki.rendering.listener.reference.ResourceReference ,
    *      java.util.Map)

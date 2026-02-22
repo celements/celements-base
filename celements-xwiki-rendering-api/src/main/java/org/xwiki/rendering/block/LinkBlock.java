@@ -28,7 +28,7 @@ import org.xwiki.rendering.listener.reference.ResourceReference;
 
 /**
  * Represents a Link element in a page.
- * 
+ *
  * @version $Id$
  * @since 1.5M2
  */
@@ -36,7 +36,8 @@ public class LinkBlock extends AbstractFatherBlock {
 
   /**
    * A reference to the link target. See
-   * {@link org.xwiki.rendering.listener.reference.ResourceReference} for more details.
+   * {@link org.xwiki.rendering.listener.reference.ResourceReference} for more
+   * details.
    */
   private ResourceReference reference;
 
@@ -54,8 +55,7 @@ public class LinkBlock extends AbstractFatherBlock {
    *          if true then the link is a free standing URI directly in the text
    * @since 2.5RC1
    */
-  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference,
-      boolean isFreeStandingURI) {
+  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference, boolean isFreeStandingURI) {
     this(childrenBlocks, reference, isFreeStandingURI, Collections.<String, String>emptyMap());
   }
 
@@ -70,8 +70,7 @@ public class LinkBlock extends AbstractFatherBlock {
    *          the parameters to set
    * @since 2.5RC1
    */
-  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference,
-      boolean isFreeStandingURI,
+  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference, boolean isFreeStandingURI,
       Map<String, String> parameters) {
     super(childrenBlocks, parameters);
     this.reference = reference;
@@ -96,7 +95,7 @@ public class LinkBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#before(org.xwiki.rendering.listener.Listener)
    */
   public void before(Listener listener) {
@@ -105,7 +104,7 @@ public class LinkBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractFatherBlock#after(org.xwiki.rendering.listener.Listener)
    */
   public void after(Listener listener) {
@@ -114,7 +113,7 @@ public class LinkBlock extends AbstractFatherBlock {
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.block.AbstractBlock#clone(org.xwiki.rendering.block.BlockFilter)
    * @since 1.8RC2
    */

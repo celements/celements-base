@@ -35,7 +35,7 @@ import java.util.Stack;
  * example this is used in the XWiki Syntax Renderer when group event is found to start the
  * rendering for that group
  * using reset state information.
- * 
+ *
  * @version $Id$
  * @since 1.8RC1
  */
@@ -58,8 +58,8 @@ public class ListenerChain {
   /**
    * @param listener
    *          the chaining listener to add to the chain. If an instance of that listener is already
-   *          present
-   *          then we stack the new instance instead.
+   *          present then we
+   *          stack the new instance instead.
    */
   public void addListener(ChainingListener listener) {
     // If there's already an entry for that listener then push it on the existing stack
@@ -121,8 +121,8 @@ public class ListenerChain {
   /**
    * Create a new instance of the passed chaining listener if it's stackable (ie it implements the
    * {@link org.xwiki.rendering.listener.chaining.StackableChainingListener} interface. This allows
-   * creating a
-   * clean state when some sub rendering has to be done with some new state.
+   * creating a clean
+   * state when some sub rendering has to be done with some new state.
    *
    * @param listenerClass
    *          the listener class for which to create a new instance (if stackable)
@@ -137,8 +137,8 @@ public class ListenerChain {
   /**
    * Create new instances of all chaining listeners that are stackable (ie that implement the
    * {@link org.xwiki.rendering.listener.chaining.StackableChainingListener} interface. This allows
-   * creating a
-   * clean state when some sub rendering has to be done with some new state.
+   * creating a clean
+   * state when some sub rendering has to be done with some new state.
    */
   public void pushAllStackableListeners() {
     for (Class<? extends ChainingListener> listenerClass : this.listeners.keySet()) {
@@ -147,8 +147,8 @@ public class ListenerChain {
   }
 
   /**
-   * Remove all pushed stackable listeners to go back to the previous state
-   * (see {@link #pushAllStackableListeners()}.
+   * Remove all pushed stackable listeners to go back to the previous state (see
+   * {@link #pushAllStackableListeners()}.
    */
   public void popAllStackableListeners() {
     for (Class<? extends ChainingListener> listenerClass : this.listeners.keySet()) {
@@ -158,8 +158,8 @@ public class ListenerChain {
 
   /**
    * Remove the last instance corresponding to the passed listener class if it's stackable, in order
-   * to go
-   * back to the previous state.
+   * to go back to the
+   * previous state.
    *
    * @param listenerClass
    *          the class of the chaining listener to pop

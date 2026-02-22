@@ -30,12 +30,11 @@ import org.xwiki.rendering.syntax.Syntax;
 
 /**
  * Indicates block element for which we are inside and previous blocks.
- * 
+ *
  * @version $Id$
  * @since 1.8RC1
  */
-public class BlockStateChainingListener extends AbstractChainingListener
-    implements StackableChainingListener {
+public class BlockStateChainingListener extends AbstractChainingListener implements StackableChainingListener {
 
   public enum Event {
     NONE, DEFINITION_DESCRIPTION, DEFINITION_TERM, DEFINITION_LIST, DOCUMENT, FORMAT, HEADER, LINK, LIST, LIST_ITEM, MACRO_MARKER, PARAGRAPH, QUOTATION, QUOTATION_LINE, SECTION, TABLE, TABLE_CELL, TABLE_HEAD_CELL, TABLE_ROW, RAW_TEXT, EMPTY_LINES, HORIZONTAL_LINE, ID, IMAGE, NEW_LINE, SPACE, SPECIAL_SYMBOL, MACRO, VERBATIM_INLINE, VERBATIM_STANDALONE, WORD
@@ -77,7 +76,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see StackableChainingListener#createChainingListenerInstance()
    */
   public StackableChainingListener createChainingListenerInstance() {
@@ -192,7 +191,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionDescription()
    */
   @Override
@@ -205,7 +204,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionList(java.util.Map)
    * @since 2.0RC1
    */
@@ -218,7 +217,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginDefinitionTerm()
    */
   @Override
@@ -231,14 +230,13 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     ++this.linkDepth;
 
     super.beginLink(reference, isFreeStandingURI, parameters);
@@ -246,7 +244,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginList(org.xwiki.rendering.listener.ListType,
    *      java.util.Map)
    */
@@ -259,7 +257,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginListItem()
    */
   @Override
@@ -272,13 +270,12 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginMacroMarker(java.lang.String,
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     ++this.macroDepth;
 
     super.beginMacroMarker(name, parameters, content, isInline);
@@ -286,7 +283,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginParagraph(java.util.Map)
    */
   @Override
@@ -299,7 +296,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotation(java.util.Map)
    */
   @Override
@@ -311,7 +308,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginQuotationLine()
    */
   @Override
@@ -325,7 +322,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginHeader(org.xwiki.rendering.listener.HeaderLevel,
    *      java.lang.String, java.util.Map)
    */
@@ -339,7 +336,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTable(java.util.Map)
    */
   @Override
@@ -351,7 +348,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableRow(java.util.Map)
    */
   @Override
@@ -363,7 +360,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableCell(java.util.Map)
    */
   @Override
@@ -377,7 +374,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#beginTableHeadCell(java.util.Map)
    */
   @Override
@@ -391,7 +388,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDefinitionDescription()
    */
   @Override
@@ -404,7 +401,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDefinitionList(java.util.Map)
    * @since 2.0RC1
    */
@@ -419,7 +416,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDefinitionTerm()
    */
   @Override
@@ -432,7 +429,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endDocument(java.util.Map)
    */
   @Override
@@ -444,7 +441,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endFormat(org.xwiki.rendering.listener.Format,
    *      java.util.Map)
    */
@@ -457,14 +454,13 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endLink(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     super.endLink(reference, isFreeStandingURI, parameters);
 
     --this.linkDepth;
@@ -473,7 +469,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endList(org.xwiki.rendering.listener.ListType,
    *      java.util.Map)
    */
@@ -488,7 +484,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endListItem()
    */
   @Override
@@ -501,13 +497,12 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endMacroMarker(java.lang.String,
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content,
-      boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
     super.endMacroMarker(name, parameters, content, isInline);
 
     this.previousEvent = Event.MACRO_MARKER;
@@ -516,7 +511,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endParagraph(java.util.Map)
    */
   @Override
@@ -530,7 +525,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endQuotation(java.util.Map)
    */
   @Override
@@ -546,7 +541,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endQuotationLine()
    */
   @Override
@@ -560,7 +555,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endSection(java.util.Map)
    */
   @Override
@@ -572,7 +567,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endHeader(org.xwiki.rendering.listener.HeaderLevel,
    *      java.lang.String, java.util.Map)
    */
@@ -587,7 +582,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endTable(java.util.Map)
    */
   @Override
@@ -601,7 +596,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endTableCell(java.util.Map)
    */
   @Override
@@ -615,7 +610,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endTableHeadCell(java.util.Map)
    */
   @Override
@@ -629,7 +624,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#endTableRow(java.util.Map)
    */
   @Override
@@ -642,7 +637,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onRawText(String, Syntax)
    */
   @Override
@@ -654,7 +649,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onEmptyLines(int)
    */
   @Override
@@ -666,7 +661,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onHorizontalLine(java.util.Map)
    */
   @Override
@@ -678,7 +673,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onId(java.lang.String)
    */
   @Override
@@ -690,14 +685,13 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onImage(
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
-      Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
     this.previousEvent = Event.IMAGE;
 
     super.onImage(reference, isFreeStandingURI, parameters);
@@ -705,7 +699,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onNewLine()
    */
   @Override
@@ -717,7 +711,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onSpace()
    */
   @Override
@@ -729,7 +723,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onSpecialSymbol(char)
    */
   @Override
@@ -741,7 +735,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onVerbatim(String, boolean,
    *      Map)
    */
@@ -754,7 +748,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onWord(java.lang.String)
    */
   @Override
@@ -766,7 +760,7 @@ public class BlockStateChainingListener extends AbstractChainingListener
 
   /**
    * {@inheritDoc}
-   * 
+   *
    * @see org.xwiki.rendering.listener.chaining.AbstractChainingListener#onMacro(java.lang.String,
    *      java.util.Map,
    *      java.lang.String, boolean)

@@ -25,7 +25,7 @@ package org.xwiki.rendering.listener.chaining;
  * wants to reset all stackable listeners to a new state (for example when handling groups in the
  * XWiki Syntax
  * Renderer).
- * 
+ *
  * @version $Id$
  * @since 1.8RC1
  */
