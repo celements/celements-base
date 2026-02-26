@@ -76,7 +76,8 @@ public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
    * @see org.xwiki.rendering.listener.LinkListener#beginLink(org.xwiki.rendering.listener.reference.ResourceReference
    *      , boolean, java.util.Map)
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     // Add an XML comment as a placeholder so that the XHTML parser can find the document name.
     // Otherwise it would be too difficult to transform a URL into a document name especially since
     // a link can refer to an external URL.
@@ -94,7 +95,8 @@ public class AnnotatedXHTMLLinkRenderer implements XHTMLLinkRenderer {
    *      ,
    *      boolean, java.util.Map)
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.defaultLinkRenderer.endLink(reference, isFreeStandingURI, parameters);
 
     // Add a XML comment to signify the end of the link.

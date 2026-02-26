@@ -30,7 +30,8 @@ import org.xwiki.rendering.parser.ResourceReferenceTypeParser;
  * @version $Id$
  * @since 2.5RC1
  */
-public abstract class AbstractURIResourceReferenceTypeParser implements ResourceReferenceTypeParser {
+public abstract class AbstractURIResourceReferenceTypeParser
+    implements ResourceReferenceTypeParser {
 
   /**
    * {@inheritDoc}

@@ -48,7 +48,8 @@ public class XWiki20ImageReferenceParserTest extends AbstractImageReferenceParse
     Assert.assertEquals(ResourceType.ATTACHMENT, reference.getType());
     Assert.assertEquals("attach:wiki:space.page@filename", reference.getReference());
     Assert.assertFalse(reference.isTyped());
-    Assert.assertEquals("Typed = [false] Type = [attach] Reference = [attach:wiki:space.page@filename]",
+    Assert.assertEquals(
+        "Typed = [false] Type = [attach] Reference = [attach:wiki:space.page@filename]",
         reference.toString());
   }
 }

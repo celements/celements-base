@@ -67,7 +67,8 @@ public class ImageBlock extends AbstractBlock {
    *          the custom parameters
    * @since 2.5RC1
    */
-  public ImageBlock(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public ImageBlock(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     super(parameters);
 
     this.reference = reference;

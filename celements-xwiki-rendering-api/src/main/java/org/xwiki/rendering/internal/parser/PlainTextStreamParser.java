@@ -44,7 +44,8 @@ public class PlainTextStreamParser implements StreamParser {
    * {@link org.xwiki.rendering.block.SpecialSymbolBlock}
    * .
    */
-  public static final Pattern SPECIALSYMBOL_PATTERN = Pattern.compile("[!\"#$%&'()*+,-./:;<=>?@\\[\\]^_`{|}~]");
+  public static final Pattern SPECIALSYMBOL_PATTERN = Pattern
+      .compile("[!\"#$%&'()*+,-./:;<=>?@\\[\\]^_`{|}~]");
 
   /**
    * {@inheritDoc}

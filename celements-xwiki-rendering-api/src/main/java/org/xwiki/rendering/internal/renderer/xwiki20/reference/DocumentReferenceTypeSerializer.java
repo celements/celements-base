@@ -47,7 +47,8 @@ public class DocumentReferenceTypeSerializer implements ResourceReferenceTypeSer
   /**
    * Replacement chars for the escapes to add to the reference part.
    */
-  private static final String[] ESCAPES_REFERENCE = new String[] { XWiki20LinkReferenceParser.SEPARATOR_QUERYSTRING,
+  private static final String[] ESCAPES_REFERENCE = new String[] {
+      XWiki20LinkReferenceParser.SEPARATOR_QUERYSTRING,
       XWiki20LinkReferenceParser.SEPARATOR_INTERWIKI, XWiki20LinkReferenceParser.SEPARATOR_ANCHOR };
 
   /**
@@ -62,7 +63,8 @@ public class DocumentReferenceTypeSerializer implements ResourceReferenceTypeSer
   /**
    * Replacement chars for the escapes to add to the query string, anchor or interwiki part.
    */
-  private static final String[] ESCAPES_EXTRA = new String[] { XWiki20LinkReferenceParser.SEPARATOR_QUERYSTRING,
+  private static final String[] ESCAPES_EXTRA = new String[] {
+      XWiki20LinkReferenceParser.SEPARATOR_QUERYSTRING,
       XWiki20LinkReferenceParser.SEPARATOR_INTERWIKI, XWiki20LinkReferenceParser.SEPARATOR_ANCHOR,
       "" + XWiki20LinkReferenceParser.ESCAPE_CHAR };
 

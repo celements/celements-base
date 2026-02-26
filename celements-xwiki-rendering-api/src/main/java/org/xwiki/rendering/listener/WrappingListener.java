@@ -122,7 +122,8 @@ public class WrappingListener implements Listener {
    *      java.lang.String,
    *      boolean)
    */
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     this.listener.beginMacroMarker(name, parameters, content, isInline);
   }
 
@@ -189,7 +190,8 @@ public class WrappingListener implements Listener {
    *      java.lang.String,
    *      boolean)
    */
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     this.listener.endMacroMarker(name, parameters, content, isInline);
   }
 
@@ -229,7 +231,8 @@ public class WrappingListener implements Listener {
    *      java.util.Map)
    * @since 2.5RC1
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.listener.beginLink(reference, isFreeStandingURI, parameters);
   }
 
@@ -240,7 +243,8 @@ public class WrappingListener implements Listener {
    *      java.util.Map)
    * @since 2.5RC1
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.listener.endLink(reference, isFreeStandingURI, parameters);
   }
 
@@ -513,7 +517,8 @@ public class WrappingListener implements Listener {
    * @see org.xwiki.rendering.listener.Listener#onImage(ResourceReference, boolean, java.util.Map)
    * @since 2.5RC1
    */
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.listener.onImage(reference, isFreeStandingURI, parameters);
   }
 }

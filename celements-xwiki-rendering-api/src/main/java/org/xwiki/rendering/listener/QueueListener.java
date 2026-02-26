@@ -183,7 +183,8 @@ public class QueueListener extends LinkedList<QueueListener.Event> implements Li
    *      java.util.Map)
    * @since 2.5RC1
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     saveEvent(EventType.BEGIN_LINK, reference, isFreeStandingURI, parameters);
   }
 
@@ -213,7 +214,8 @@ public class QueueListener extends LinkedList<QueueListener.Event> implements Li
    *      java.lang.String,
    *      boolean)
    */
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     saveEvent(EventType.BEGIN_MACRO_MARKER, name, parameters, content, isInline);
   }
 
@@ -362,7 +364,8 @@ public class QueueListener extends LinkedList<QueueListener.Event> implements Li
    * @see org.xwiki.rendering.listener.Listener#endLink(ResourceReference , boolean, java.util.Map)
    * @since 2.5RC1
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     saveEvent(EventType.END_LINK, reference, isFreeStandingURI, parameters);
   }
 
@@ -392,7 +395,8 @@ public class QueueListener extends LinkedList<QueueListener.Event> implements Li
    *      java.lang.String,
    *      boolean)
    */
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     saveEvent(EventType.END_MACRO_MARKER, name, parameters, content, isInline);
   }
 
@@ -510,7 +514,8 @@ public class QueueListener extends LinkedList<QueueListener.Event> implements Li
    * @see org.xwiki.rendering.listener.Listener#onImage(ResourceReference, boolean, java.util.Map)
    * @since 2.5RC1
    */
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     saveEvent(EventType.ON_IMAGE, reference, isFreeStandingURI, parameters);
   }
 

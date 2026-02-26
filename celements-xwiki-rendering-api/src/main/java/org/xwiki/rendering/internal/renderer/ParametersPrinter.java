@@ -73,7 +73,8 @@ public class ParametersPrinter {
    */
   public String print(String parameterName, String parameterValue, char escapeChar) {
     // escape the escaping character
-    String value = parameterValue.replace(String.valueOf(escapeChar), String.valueOf(escapeChar) + escapeChar);
+    String value = parameterValue.replace(String.valueOf(escapeChar),
+        String.valueOf(escapeChar) + escapeChar);
     // escape quote
     value = value.replace(QUOTE, String.valueOf(escapeChar) + QUOTE);
 

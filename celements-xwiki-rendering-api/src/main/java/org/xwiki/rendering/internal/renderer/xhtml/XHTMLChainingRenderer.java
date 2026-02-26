@@ -79,11 +79,13 @@ public class XHTMLChainingRenderer extends AbstractChainingPrintRenderer {
   // State
 
   protected BlockStateChainingListener getBlockState() {
-    return (BlockStateChainingListener) getListenerChain().getListener(BlockStateChainingListener.class);
+    return (BlockStateChainingListener) getListenerChain()
+        .getListener(BlockStateChainingListener.class);
   }
 
   protected EmptyBlockChainingListener getEmptyBlockState() {
-    return (EmptyBlockChainingListener) getListenerChain().getListener(EmptyBlockChainingListener.class);
+    return (EmptyBlockChainingListener) getListenerChain()
+        .getListener(EmptyBlockChainingListener.class);
   }
 
   // Printer
@@ -249,7 +251,8 @@ public class XHTMLChainingRenderer extends AbstractChainingPrintRenderer {
    *      Map)
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     // Ensure the link renderer is using the latest printer since the original printer used could
     // have been
     // superseded by another one in the printer stack.
@@ -266,7 +269,8 @@ public class XHTMLChainingRenderer extends AbstractChainingPrintRenderer {
    *      Map)
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.linkRenderer.setHasLabel(!getEmptyBlockState().isCurrentContainerBlockEmpty());
     this.linkRenderer.endLink(reference, isFreeStandingURI, parameters);
   }
@@ -450,7 +454,8 @@ public class XHTMLChainingRenderer extends AbstractChainingPrintRenderer {
       // The class is what is expected by wikimodel to understand the tt as meaning a verbatim and
       // not a Monospace
       // element.
-      getXHTMLWikiPrinter().printXMLStartElement("tt", new String[][] { { "class", "wikimodel-verbatim" } });
+      getXHTMLWikiPrinter().printXMLStartElement("tt",
+          new String[][] { { "class", "wikimodel-verbatim" } });
       getXHTMLWikiPrinter().printXML(protectedString);
       getXHTMLWikiPrinter().printXMLEndElement("tt");
     } else {
@@ -474,7 +479,8 @@ public class XHTMLChainingRenderer extends AbstractChainingPrintRenderer {
     // syntax (FF3)
     // when the content type is set to HTML instead of XHTML.
     for (int i = 0; i < count; ++i) {
-      getXHTMLWikiPrinter().printXMLStartElement("div", new String[][] { { "class", "wikimodel-emptyline" } });
+      getXHTMLWikiPrinter().printXMLStartElement("div",
+          new String[][] { { "class", "wikimodel-emptyline" } });
       getXHTMLWikiPrinter().printXMLEndElement("div");
     }
   }
@@ -583,7 +589,8 @@ public class XHTMLChainingRenderer extends AbstractChainingPrintRenderer {
     // Send a new line if the previous event was endQuotationLine since we need to separate each
     // quotation line
     // or they'll printed next to each other and not on a new line each.
-    if (getBlockState().isInQuotation() && getBlockState().getPreviousEvent() == Event.QUOTATION_LINE) {
+    if (getBlockState().isInQuotation()
+        && getBlockState().getPreviousEvent() == Event.QUOTATION_LINE) {
       onNewLine();
     }
   }
@@ -692,7 +699,8 @@ public class XHTMLChainingRenderer extends AbstractChainingPrintRenderer {
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     // Ensure the image renderer is using the latest printer since the original printer used could
     // have been
     // superseded by another one in the printer stack.

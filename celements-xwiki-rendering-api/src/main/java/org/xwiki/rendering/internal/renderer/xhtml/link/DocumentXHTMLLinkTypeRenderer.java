@@ -43,7 +43,8 @@ import org.xwiki.rendering.wiki.WikiModel;
  */
 @Component("doc")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class DocumentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer implements Initializable {
+public class DocumentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
+    implements Initializable {
 
   /**
    * The class attribute 'wikilink'.
@@ -83,7 +84,8 @@ public class DocumentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
    * @see XHTMLLinkTypeRenderer#beginLink(org.xwiki.rendering.listener.reference.ResourceReference ,
    *      boolean, Map)
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     if (this.wikiModel == null) {
       super.beginLink(reference, isFreeStandingURI, parameters);
     } else {
@@ -108,7 +110,8 @@ public class DocumentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
    *      , java.util.Map, java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
     if (StringUtils.isEmpty(reference.getReference())) {
       renderAutoLink(reference, spanAttributes, anchorAttributes);

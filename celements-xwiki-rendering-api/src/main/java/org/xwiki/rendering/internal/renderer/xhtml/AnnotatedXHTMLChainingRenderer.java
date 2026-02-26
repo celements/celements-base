@@ -53,7 +53,8 @@ public class AnnotatedXHTMLChainingRenderer extends XHTMLChainingRenderer {
    * @param listenerChain
    *          the chain of listener filters used to compute various states
    */
-  public AnnotatedXHTMLChainingRenderer(XHTMLLinkRenderer linkRenderer, XHTMLImageRenderer imageRenderer,
+  public AnnotatedXHTMLChainingRenderer(XHTMLLinkRenderer linkRenderer,
+      XHTMLImageRenderer imageRenderer,
       ListenerChain listenerChain) {
     super(linkRenderer, imageRenderer, listenerChain);
 
@@ -79,7 +80,8 @@ public class AnnotatedXHTMLChainingRenderer extends XHTMLChainingRenderer {
    *      boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     if (getBlockState().getMacroDepth() == 1) {
       // Do not do any rendering but we still need to save the macro definition in some hidden XHTML
       // so that the macro can be reconstructed when moving back from XHTML to XDOM.
@@ -94,7 +96,8 @@ public class AnnotatedXHTMLChainingRenderer extends XHTMLChainingRenderer {
    *      boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     if (getBlockState().getMacroDepth() == 1) {
       // Do not do any rendering but we still need to save the macro definition in some hidden XHTML
       // so that the macro can be reconstructed when moving back from XHTML to XDOM.

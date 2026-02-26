@@ -198,7 +198,8 @@ public class XDOMGeneratorListener implements Listener {
    *      java.lang.String,
    *      boolean)
    */
-  public void beginMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> macroParameters, String content,
+      boolean isInline) {
     this.stack.push(this.marker);
   }
 
@@ -280,7 +281,8 @@ public class XDOMGeneratorListener implements Listener {
    * @see org.xwiki.rendering.listener.LinkListener#beginLink(org.xwiki.rendering.listener.reference.ResourceReference
    *      , boolean, java.util.Map)
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.stack.push(this.marker);
   }
 
@@ -380,8 +382,10 @@ public class XDOMGeneratorListener implements Listener {
    *      java.lang.String,
    *      boolean)
    */
-  public void endMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline) {
-    this.stack.push(new MacroMarkerBlock(name, macroParameters, content, generateListFromStack(), isInline));
+  public void endMacroMarker(String name, Map<String, String> macroParameters, String content,
+      boolean isInline) {
+    this.stack.push(
+        new MacroMarkerBlock(name, macroParameters, content, generateListFromStack(), isInline));
   }
 
   /**
@@ -463,8 +467,10 @@ public class XDOMGeneratorListener implements Listener {
    *      ,
    *      boolean, java.util.Map)
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
-    this.stack.push(new LinkBlock(generateListFromStack(), reference, isFreeStandingURI, parameters));
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
+    this.stack
+        .push(new LinkBlock(generateListFromStack(), reference, isFreeStandingURI, parameters));
   }
 
   /**
@@ -500,7 +506,8 @@ public class XDOMGeneratorListener implements Listener {
    * @see org.xwiki.rendering.listener.Listener#onMacro(java.lang.String, java.util.Map,
    *      java.lang.String, boolean)
    */
-  public void onMacro(String id, Map<String, String> macroParameters, String content, boolean isInline) {
+  public void onMacro(String id, Map<String, String> macroParameters, String content,
+      boolean isInline) {
     this.stack.push(new MacroBlock(id, macroParameters, content, isInline));
   }
 
@@ -565,7 +572,8 @@ public class XDOMGeneratorListener implements Listener {
    * @see org.xwiki.rendering.listener.ImageListener#onImage(org.xwiki.rendering.listener.reference.ResourceReference
    *      , boolean, java.util.Map)
    */
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.stack.push(new ImageBlock(reference, isFreeStandingURI, parameters));
   }
 }

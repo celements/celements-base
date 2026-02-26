@@ -55,7 +55,8 @@ public class LinkBlock extends AbstractFatherBlock {
    *          if true then the link is a free standing URI directly in the text
    * @since 2.5RC1
    */
-  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference, boolean isFreeStandingURI) {
+  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference,
+      boolean isFreeStandingURI) {
     this(childrenBlocks, reference, isFreeStandingURI, Collections.<String, String>emptyMap());
   }
 
@@ -70,7 +71,8 @@ public class LinkBlock extends AbstractFatherBlock {
    *          the parameters to set
    * @since 2.5RC1
    */
-  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference, boolean isFreeStandingURI,
+  public LinkBlock(List<Block> childrenBlocks, ResourceReference reference,
+      boolean isFreeStandingURI,
       Map<String, String> parameters) {
     super(childrenBlocks, parameters);
     this.reference = reference;

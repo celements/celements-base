@@ -53,14 +53,16 @@ public class XWikiSyntaxListenerChain extends ListenerChain {
    *         session.
    */
   public ConsecutiveNewLineStateChainingListener getConsecutiveNewLineStateChainingListener() {
-    return (ConsecutiveNewLineStateChainingListener) getListener(ConsecutiveNewLineStateChainingListener.class);
+    return (ConsecutiveNewLineStateChainingListener) getListener(
+        ConsecutiveNewLineStateChainingListener.class);
   }
 
   /**
    * @return the stateful {@link TextOnNewLineStateChainingListener} for this rendering session.
    */
   public TextOnNewLineStateChainingListener getTextOnNewLineStateChainingListener() {
-    return (TextOnNewLineStateChainingListener) getListener(TextOnNewLineStateChainingListener.class);
+    return (TextOnNewLineStateChainingListener) getListener(
+        TextOnNewLineStateChainingListener.class);
   }
 
   /**

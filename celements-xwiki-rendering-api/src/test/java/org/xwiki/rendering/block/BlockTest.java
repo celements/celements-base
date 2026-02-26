@@ -43,9 +43,11 @@ public class BlockTest {
   @Test
   public void testGetBlocksByType() {
     ParagraphBlock pb1 = new ParagraphBlock(Arrays
-        .<Block>asList(new HeaderBlock(Arrays.<Block>asList(new WordBlock("title1")), HeaderLevel.LEVEL1)));
+        .<Block>asList(
+            new HeaderBlock(Arrays.<Block>asList(new WordBlock("title1")), HeaderLevel.LEVEL1)));
     ParagraphBlock pb2 = new ParagraphBlock(Arrays
-        .<Block>asList(new HeaderBlock(Arrays.<Block>asList(new WordBlock("title2")), HeaderLevel.LEVEL2)));
+        .<Block>asList(
+            new HeaderBlock(Arrays.<Block>asList(new WordBlock("title2")), HeaderLevel.LEVEL2)));
     ParagraphBlock pb3 = new ParagraphBlock(Arrays.<Block>asList(pb1, pb2));
 
     List<HeaderBlock> results = pb1.getChildrenByType(HeaderBlock.class, true);
@@ -146,9 +148,11 @@ public class BlockTest {
   @Test
   public void testClone() {
     WordBlock wb = new WordBlock("block");
-    ImageBlock ib = new ImageBlock(new ResourceReference("document@attachment", ResourceType.ATTACHMENT), true);
+    ImageBlock ib = new ImageBlock(
+        new ResourceReference("document@attachment", ResourceType.ATTACHMENT), true);
     DocumentResourceReference linkReference = new DocumentResourceReference("reference");
-    LinkBlock lb = new LinkBlock(Arrays.asList((Block) new WordBlock("label")), linkReference, false);
+    LinkBlock lb = new LinkBlock(Arrays.asList((Block) new WordBlock("label")), linkReference,
+        false);
     Block rootBlock = new ParagraphBlock(Arrays.<Block>asList(wb, ib, lb));
 
     Block newRootBlock = rootBlock.clone();
@@ -159,8 +163,10 @@ public class BlockTest {
     Assert.assertNotSame(lb, newRootBlock.getChildren().get(2));
 
     Assert.assertEquals(wb.getWord(), ((WordBlock) newRootBlock.getChildren().get(0)).getWord());
-    Assert.assertNotSame(ib.getReference(), ((ImageBlock) newRootBlock.getChildren().get(1)).getReference());
-    Assert.assertNotSame(lb.getReference(), ((LinkBlock) newRootBlock.getChildren().get(2)).getReference());
+    Assert.assertNotSame(ib.getReference(),
+        ((ImageBlock) newRootBlock.getChildren().get(1)).getReference());
+    Assert.assertNotSame(lb.getReference(),
+        ((LinkBlock) newRootBlock.getChildren().get(2)).getReference());
   }
 
   @Test
@@ -171,7 +177,8 @@ public class BlockTest {
     DocumentResourceReference linkReference = new DocumentResourceReference("reference");
     LinkBlock pl = new LinkBlock(Arrays.<Block>asList(lw, ls), linkReference, false);
 
-    ImageBlock pi = new ImageBlock(new ResourceReference("document@attachment", ResourceType.ATTACHMENT), true);
+    ImageBlock pi = new ImageBlock(
+        new ResourceReference("document@attachment", ResourceType.ATTACHMENT), true);
 
     ParagraphBlock rootBlock = new ParagraphBlock(Arrays.<Block>asList(pi, pl));
 

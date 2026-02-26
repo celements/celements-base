@@ -34,7 +34,8 @@ import org.xwiki.rendering.syntax.Syntax;
  * @version $Id$
  * @since 1.8RC1
  */
-public class BlockStateChainingListener extends AbstractChainingListener implements StackableChainingListener {
+public class BlockStateChainingListener extends AbstractChainingListener
+    implements StackableChainingListener {
 
   public enum Event {
     NONE, DEFINITION_DESCRIPTION, DEFINITION_TERM, DEFINITION_LIST, DOCUMENT, FORMAT, HEADER, LINK, LIST, LIST_ITEM, MACRO_MARKER, PARAGRAPH, QUOTATION, QUOTATION_LINE, SECTION, TABLE, TABLE_CELL, TABLE_HEAD_CELL, TABLE_ROW, RAW_TEXT, EMPTY_LINES, HORIZONTAL_LINE, ID, IMAGE, NEW_LINE, SPACE, SPECIAL_SYMBOL, MACRO, VERBATIM_INLINE, VERBATIM_STANDALONE, WORD
@@ -236,7 +237,8 @@ public class BlockStateChainingListener extends AbstractChainingListener impleme
    * @since 2.5RC1
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     ++this.linkDepth;
 
     super.beginLink(reference, isFreeStandingURI, parameters);
@@ -275,7 +277,8 @@ public class BlockStateChainingListener extends AbstractChainingListener impleme
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     ++this.macroDepth;
 
     super.beginMacroMarker(name, parameters, content, isInline);
@@ -460,7 +463,8 @@ public class BlockStateChainingListener extends AbstractChainingListener impleme
    * @since 2.5RC1
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     super.endLink(reference, isFreeStandingURI, parameters);
 
     --this.linkDepth;
@@ -502,7 +506,8 @@ public class BlockStateChainingListener extends AbstractChainingListener impleme
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     super.endMacroMarker(name, parameters, content, isInline);
 
     this.previousEvent = Event.MACRO_MARKER;
@@ -691,7 +696,8 @@ public class BlockStateChainingListener extends AbstractChainingListener impleme
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.previousEvent = Event.IMAGE;
 
     super.onImage(reference, isFreeStandingURI, parameters);

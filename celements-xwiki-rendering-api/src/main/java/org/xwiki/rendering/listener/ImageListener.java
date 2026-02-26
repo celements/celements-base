@@ -44,5 +44,6 @@ public interface ImageListener {
    * @param parameters
    *          a generic list of parameters. Example: style="background-color: blue"
    */
-  void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters);
+  void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters);
 }

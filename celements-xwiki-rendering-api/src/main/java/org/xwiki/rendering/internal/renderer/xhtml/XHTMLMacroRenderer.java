@@ -40,12 +40,14 @@ public class XHTMLMacroRenderer {
 
   private ParametersPrinter parametersPrinter = new ParametersPrinter();
 
-  public void render(XHTMLWikiPrinter printer, String name, Map<String, String> parameters, String content) {
+  public void render(XHTMLWikiPrinter printer, String name, Map<String, String> parameters,
+      String content) {
     beginRender(printer, name, parameters, content);
     endRender(printer);
   }
 
-  public void beginRender(XHTMLWikiPrinter printer, String name, Map<String, String> parameters, String content) {
+  public void beginRender(XHTMLWikiPrinter printer, String name, Map<String, String> parameters,
+      String content) {
     StringBuilder buffer = new StringBuilder("startmacro:");
 
     // Print name

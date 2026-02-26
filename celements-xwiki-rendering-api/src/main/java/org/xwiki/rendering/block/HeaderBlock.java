@@ -91,7 +91,8 @@ public class HeaderBlock extends AbstractFatherBlock {
    * @param id
    *          the id of the header.
    */
-  public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters, String id) {
+  public HeaderBlock(List<Block> childBlocks, HeaderLevel level, Map<String, String> parameters,
+      String id) {
     this(childBlocks, level, parameters);
 
     this.id = id;

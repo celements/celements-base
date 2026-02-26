@@ -48,7 +48,8 @@ public class XWiki20LinkReferenceParserTest extends AbstractLinkReferenceParserT
     // Test Query Strings in links to document
     ResourceReference reference = parser.parse("Hello World?xredirect=../whatever");
     Assert.assertEquals("Hello World", reference.getReference());
-    Assert.assertEquals("xredirect=../whatever", ((DocumentResourceReference) reference).getQueryString());
+    Assert.assertEquals("xredirect=../whatever",
+        ((DocumentResourceReference) reference).getQueryString());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
     Assert.assertEquals("Typed = [false] Type = [doc] Reference = [Hello World] "
@@ -56,7 +57,8 @@ public class XWiki20LinkReferenceParserTest extends AbstractLinkReferenceParserT
 
     reference = parser.parse("HelloWorld?xredirect=http://xwiki.org");
     Assert.assertEquals("HelloWorld", reference.getReference());
-    Assert.assertEquals("xredirect=http://xwiki.org", ((DocumentResourceReference) reference).getQueryString());
+    Assert.assertEquals("xredirect=http://xwiki.org",
+        ((DocumentResourceReference) reference).getQueryString());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
     Assert.assertEquals("Typed = [false] Type = [doc] Reference = [HelloWorld] "
@@ -67,7 +69,8 @@ public class XWiki20LinkReferenceParserTest extends AbstractLinkReferenceParserT
     Assert.assertEquals("anchor", ((DocumentResourceReference) reference).getAnchor());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [] Parameters = [[anchor] = [anchor]]",
+    Assert.assertEquals(
+        "Typed = [false] Type = [doc] Reference = [] Parameters = [[anchor] = [anchor]]",
         reference.toString());
 
     reference = parser.parse("Hello#anchor");
@@ -75,7 +78,8 @@ public class XWiki20LinkReferenceParserTest extends AbstractLinkReferenceParserT
     Assert.assertEquals("anchor", ((DocumentResourceReference) reference).getAnchor());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [Hello] Parameters = [[anchor] = [anchor]]",
+    Assert.assertEquals(
+        "Typed = [false] Type = [doc] Reference = [Hello] Parameters = [[anchor] = [anchor]]",
         reference.toString());
 
     // Test InterWiki links
@@ -84,15 +88,18 @@ public class XWiki20LinkReferenceParserTest extends AbstractLinkReferenceParserT
     Assert.assertEquals("wikipedia", ((InterWikiResourceReference) reference).getInterWikiAlias());
     Assert.assertTrue(reference.isTyped());
     Assert.assertEquals(ResourceType.INTERWIKI, reference.getType());
-    Assert.assertEquals("Typed = [true] Type = [interwiki] Reference = [HelloWorld#anchor?param1=1&param2=2] "
-        + "Parameters = [[interWikiAlias] = [wikipedia]]", reference.toString());
+    Assert.assertEquals(
+        "Typed = [true] Type = [interwiki] Reference = [HelloWorld#anchor?param1=1&param2=2] "
+            + "Parameters = [[interWikiAlias] = [wikipedia]]",
+        reference.toString());
 
     // Verify in XWiki Syntax 2.0 the "doc" prefix is not meaningful
     reference = parser.parse("doc:whatever");
     Assert.assertEquals("doc:whatever", reference.getReference());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [doc:whatever]", reference.toString());
+    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [doc:whatever]",
+        reference.toString());
   }
 
   @Test
@@ -129,6 +136,7 @@ public class XWiki20LinkReferenceParserTest extends AbstractLinkReferenceParserT
     reference = parser.parse("something\\\\@inter\\@wikilink");
     Assert.assertEquals(ResourceType.INTERWIKI, reference.getType());
     Assert.assertEquals("something\\", reference.getReference());
-    Assert.assertEquals("inter@wikilink", ((InterWikiResourceReference) reference).getInterWikiAlias());
+    Assert.assertEquals("inter@wikilink",
+        ((InterWikiResourceReference) reference).getInterWikiAlias());
   }
 }

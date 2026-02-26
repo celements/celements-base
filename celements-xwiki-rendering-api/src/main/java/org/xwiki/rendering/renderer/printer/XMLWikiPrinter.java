@@ -194,7 +194,8 @@ public class XMLWikiPrinter {
    */
   public void printXMLComment(String content, boolean escape) {
     try {
-      this.xmlWriter.write(new DefaultComment(escape ? XMLUtils.escapeXMLComment(content) : content));
+      this.xmlWriter
+          .write(new DefaultComment(escape ? XMLUtils.escapeXMLComment(content) : content));
     } catch (IOException e) {
       // TODO: add error log here
     }

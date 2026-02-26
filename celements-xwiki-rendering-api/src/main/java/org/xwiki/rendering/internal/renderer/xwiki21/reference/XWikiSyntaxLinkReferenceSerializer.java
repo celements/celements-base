@@ -29,7 +29,8 @@ import org.xwiki.component.annotation.Component;
  */
 @Component("xwiki/2.1/link")
 public class XWikiSyntaxLinkReferenceSerializer
-    extends org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxLinkReferenceSerializer {
+    extends
+    org.xwiki.rendering.internal.renderer.xwiki20.reference.XWikiSyntaxLinkReferenceSerializer {
 
   /**
    * Prefix to use for

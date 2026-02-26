@@ -111,7 +111,8 @@ public abstract class AbstractXHTMLLinkTypeRenderer implements XHTMLLinkTypeRend
    * @param anchorAttributes
    *          the HTML attributes for the ANCHOR element
    */
-  protected abstract void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
+  protected abstract void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes);
 
   /**
@@ -146,7 +147,8 @@ public abstract class AbstractXHTMLLinkTypeRenderer implements XHTMLLinkTypeRend
    *
    * @see XHTMLLinkTypeRenderer#
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     Map<String, String> spanAttributes = new LinkedHashMap<String, String>();
     Map<String, String> anchorAttributes = new LinkedHashMap<String, String>();
 
@@ -170,10 +172,12 @@ public abstract class AbstractXHTMLLinkTypeRenderer implements XHTMLLinkTypeRend
    * @see XHTMLLinkRenderer#endLink(org.xwiki.rendering.listener.reference.ResourceReference ,
    *      boolean, Map)
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     // If there was no link content then generate it based on the passed reference
     if (!hasLabel()) {
-      getXHTMLWikiPrinter().printXMLStartElement(SPAN, new String[][] { { CLASS, "wikigeneratedlinkcontent" } });
+      getXHTMLWikiPrinter().printXMLStartElement(SPAN,
+          new String[][] { { CLASS, "wikigeneratedlinkcontent" } });
       getXHTMLWikiPrinter().printXML(computeLabel(reference));
       getXHTMLWikiPrinter().printXMLEndElement(SPAN);
     }

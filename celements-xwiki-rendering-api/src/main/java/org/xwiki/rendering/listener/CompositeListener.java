@@ -169,7 +169,8 @@ public class CompositeListener implements Listener {
    *      java.lang.String,
    *      boolean)
    */
-  public void beginMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> macroParameters, String content,
+      boolean isInline) {
     for (Listener listener : listeners) {
       listener.beginMacroMarker(name, macroParameters, content, isInline);
     }
@@ -373,7 +374,8 @@ public class CompositeListener implements Listener {
    *      java.lang.String,
    *      boolean)
    */
-  public void endMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> macroParameters, String content,
+      boolean isInline) {
     for (Listener listener : listeners) {
       listener.endMacroMarker(name, macroParameters, content, isInline);
     }
@@ -506,7 +508,8 @@ public class CompositeListener implements Listener {
    * @see org.xwiki.rendering.listener.Listener#onMacro(java.lang.String, java.util.Map,
    *      java.lang.String, boolean)
    */
-  public void onMacro(String id, Map<String, String> macroParameters, String content, boolean isInline) {
+  public void onMacro(String id, Map<String, String> macroParameters, String content,
+      boolean isInline) {
     for (Listener listener : listeners) {
       listener.onMacro(id, macroParameters, content, isInline);
     }
@@ -586,7 +589,8 @@ public class CompositeListener implements Listener {
    *      , boolean, java.util.Map)
    * @since 2.5RC1
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     for (Listener listener : listeners) {
       listener.beginLink(reference, isFreeStandingURI, parameters);
     }
@@ -599,7 +603,8 @@ public class CompositeListener implements Listener {
    *      java.util.Map)
    * @since 2.5RC1
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     for (Listener listener : listeners) {
       listener.endLink(reference, isFreeStandingURI, parameters);
     }
@@ -612,7 +617,8 @@ public class CompositeListener implements Listener {
    *      java.util.Map)
    * @since 2.5RC1
    */
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     for (Listener listener : listeners) {
       listener.onImage(reference, isFreeStandingURI, parameters);
     }

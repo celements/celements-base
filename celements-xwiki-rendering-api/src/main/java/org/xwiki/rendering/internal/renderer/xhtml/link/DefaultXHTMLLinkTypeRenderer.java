@@ -44,7 +44,8 @@ public class DefaultXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer 
    *      , java.util.Map, java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
     anchorAttributes.put(XHTMLLinkRenderer.HREF, reference.getReference());
   }

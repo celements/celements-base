@@ -144,9 +144,11 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     getPrinter()
-        .println("beginLink [" + reference + "] [" + isFreeStandingURI + "]" + serializeParameters(parameters));
+        .println("beginLink [" + reference + "] [" + isFreeStandingURI + "]"
+            + serializeParameters(parameters));
   }
 
   /**
@@ -156,9 +158,11 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     getPrinter()
-        .println("endLink [" + reference + "] [" + isFreeStandingURI + "]" + serializeParameters(parameters));
+        .println("endLink [" + reference + "] [" + isFreeStandingURI + "]"
+            + serializeParameters(parameters));
   }
 
   /**
@@ -191,7 +195,8 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
    */
   @Override
   public void beginHeader(HeaderLevel level, String id, Map<String, String> parameters) {
-    getPrinter().println("beginHeader [" + level + ", " + id + "]" + serializeParameters(parameters));
+    getPrinter()
+        .println("beginHeader [" + level + ", " + id + "]" + serializeParameters(parameters));
   }
 
   /**
@@ -305,7 +310,8 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
    *      java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     printMacroData("beginMacroMarker", name, parameters, content, isInline);
   }
 
@@ -317,7 +323,8 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
    *      java.lang.String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     printMacroData("endMacroMarker", name, parameters, content, isInline);
   }
 
@@ -360,7 +367,8 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
   @Override
   public void onVerbatim(String protectedString, boolean isInline, Map<String, String> parameters) {
     getPrinter()
-        .println("onVerbatim [" + protectedString + "] [" + isInline + "]" + serializeParameters(parameters));
+        .println("onVerbatim [" + protectedString + "] [" + isInline + "]"
+            + serializeParameters(parameters));
   }
 
   /**
@@ -553,9 +561,11 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     getPrinter()
-        .println("onImage [" + reference + "] [" + isFreeStandingURI + "]" + serializeParameters(parameters));
+        .println("onImage [" + reference + "] [" + isFreeStandingURI + "]"
+            + serializeParameters(parameters));
   }
 
   public String getEscaped(String str) {
@@ -581,7 +591,8 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
     return printableStr;
   }
 
-  private void printMacroData(String eventName, String name, Map<String, String> parameters, String content,
+  private void printMacroData(String eventName, String name, Map<String, String> parameters,
+      String content,
       boolean isInline) {
     StringBuffer parametersBuffer = new StringBuffer();
     for (Iterator<String> paramsIt = parameters.keySet().iterator(); paramsIt.hasNext();) {
@@ -621,7 +632,8 @@ public class EventsChainingRenderer extends AbstractChainingPrintRenderer {
       String key = entry.getKey();
 
       if (key != null && value != null) {
-        parametersStr.append('[').append(getEscaped(entry.getKey())).append(']').append('=').append('[')
+        parametersStr.append('[').append(getEscaped(entry.getKey())).append(']').append('=')
+            .append('[')
             .append(getEscaped(entry.getValue())).append(']');
       }
     }

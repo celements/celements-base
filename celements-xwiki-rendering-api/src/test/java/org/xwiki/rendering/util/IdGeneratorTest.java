@@ -75,7 +75,8 @@ public class IdGeneratorTest extends TestCase {
       this.idGenerator.generateUniqueId("a-b", "whatever");
       fail("Should have thrown an exception");
     } catch (IllegalArgumentException expected) {
-      assertEquals("The prefix [a-b] should only contain alphanumerical characters and not be empty.",
+      assertEquals(
+          "The prefix [a-b] should only contain alphanumerical characters and not be empty.",
           expected.getMessage());
     }
   }

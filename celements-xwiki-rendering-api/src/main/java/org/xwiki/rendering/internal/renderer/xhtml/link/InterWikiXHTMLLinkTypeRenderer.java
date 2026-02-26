@@ -53,7 +53,8 @@ public class InterWikiXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRendere
    *      , java.util.Map, java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
     // Look for an InterWiki definition for the passed Link. If not found then simply use the
     // InterWiki Path.

@@ -60,6 +60,7 @@ public class XWikiSyntaxRenderer extends AbstractXWikiSyntaxRenderer {
    */
   @Override
   protected ChainingListener createXWikiSyntaxChainingRenderer(ListenerChain chain) {
-    return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer, this.imageReferenceSerializer);
+    return new XWikiSyntaxChainingRenderer(chain, this.linkReferenceSerializer,
+        this.imageReferenceSerializer);
   }
 }

@@ -91,7 +91,8 @@ public class ProtectedBlockFilter implements BlockFilter {
    *          the class of the Blocks to return
    * @return the filtered blocks matching the passed Block class
    */
-  public <T extends Block> List<T> getChildrenByType(Block block, Class<T> blockClass, boolean recurse) {
+  public <T extends Block> List<T> getChildrenByType(Block block, Class<T> blockClass,
+      boolean recurse) {
     List<T> typedBlocks = new ArrayList<T>();
     for (Block child : filter(block.getChildren())) {
       if (blockClass.isAssignableFrom(child.getClass())) {

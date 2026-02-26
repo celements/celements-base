@@ -45,7 +45,8 @@ public class InterWikiReferenceTypeSerializer implements ResourceReferenceTypeSe
   /**
    * Replacement chars for the escapes to add to the reference part.
    */
-  private static final String[] ESCAPES_REFERENCE = new String[] { "" + XWiki20LinkReferenceParser.ESCAPE_CHAR };
+  private static final String[] ESCAPES_REFERENCE = new String[] {
+      "" + XWiki20LinkReferenceParser.ESCAPE_CHAR };
 
   /**
    * Escapes to add when rendering a link query string, anchor or interwiki part.
@@ -57,7 +58,8 @@ public class InterWikiReferenceTypeSerializer implements ResourceReferenceTypeSe
   /**
    * Replacement chars for the escapes to add to the query string, anchor or interwiki part.
    */
-  private static final String[] ESCAPES_EXTRA = new String[] { XWiki20LinkReferenceParser.SEPARATOR_INTERWIKI,
+  private static final String[] ESCAPES_EXTRA = new String[] {
+      XWiki20LinkReferenceParser.SEPARATOR_INTERWIKI,
       "" + XWiki20LinkReferenceParser.ESCAPE_CHAR };
 
   /**

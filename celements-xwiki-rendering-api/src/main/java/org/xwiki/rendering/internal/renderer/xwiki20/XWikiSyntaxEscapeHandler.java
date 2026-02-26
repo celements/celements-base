@@ -33,7 +33,8 @@ import org.xwiki.rendering.listener.chaining.BlockStateChainingListener;
  */
 public class XWikiSyntaxEscapeHandler {
 
-  public static final Pattern STARLISTEND_PATTERN = Pattern.compile("(\\**([:;]*|1+\\.)?\\p{Blank})");
+  public static final Pattern STARLISTEND_PATTERN = Pattern
+      .compile("(\\**([:;]*|1+\\.)?\\p{Blank})");
 
   private static final Pattern LIST_PATTERN = Pattern
       .compile("\\p{Blank}*((\\*+[:;]*)|([1*]+\\.[:;]*)|([:;]+))\\p{Blank}+");
@@ -44,7 +45,8 @@ public class XWikiSyntaxEscapeHandler {
 
   private static final Pattern TABLE_PATTERN = Pattern.compile("\\p{Blank}*(\\||!!)");
 
-  private static final Pattern DOUBLE_CHARS_PATTERN = Pattern.compile("\\/\\/|\\*\\*|__|--|\\^\\^|,,|##|\\\\\\\\");
+  private static final Pattern DOUBLE_CHARS_PATTERN = Pattern
+      .compile("\\/\\/|\\*\\*|__|--|\\^\\^|,,|##|\\\\\\\\");
 
   public static final String ESCAPE_CHAR = "~";
 
@@ -60,7 +62,8 @@ public class XWikiSyntaxEscapeHandler {
     return this.onNewLine;
   }
 
-  public void escape(StringBuffer accumulatedBuffer, XWikiSyntaxListenerChain listenerChain, boolean escapeLastChar,
+  public void escape(StringBuffer accumulatedBuffer, XWikiSyntaxListenerChain listenerChain,
+      boolean escapeLastChar,
       Pattern escapeFirstIfMatching) {
     BlockStateChainingListener blockStateListener = listenerChain.getBlockStateChainingListener();
 
@@ -198,7 +201,8 @@ public class XWikiSyntaxEscapeHandler {
     Matcher matcher = pattern.matcher(accumulatedBuffer);
     if (matcher.lookingAt()) {
       // Escape the first character
-      accumulatedBuffer.replace(matcher.start(1), matcher.start(1) + 1, ESCAPE_CHAR + matcher.group(1).charAt(0));
+      accumulatedBuffer.replace(matcher.start(1), matcher.start(1) + 1,
+          ESCAPE_CHAR + matcher.group(1).charAt(0));
     }
   }
 }

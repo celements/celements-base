@@ -42,7 +42,8 @@ public class XWikiSyntaxChainingRenderer
    *          the serializer to use to serialize image references
    * @since 2.5RC1
    */
-  public XWikiSyntaxChainingRenderer(ListenerChain listenerChain, ResourceReferenceSerializer linkReferenceSerializer,
+  public XWikiSyntaxChainingRenderer(ListenerChain listenerChain,
+      ResourceReferenceSerializer linkReferenceSerializer,
       ResourceReferenceSerializer imageReferenceSerializer) {
     super(listenerChain, linkReferenceSerializer, imageReferenceSerializer);
   }
@@ -57,7 +58,8 @@ public class XWikiSyntaxChainingRenderer
   @Override
   protected XWikiSyntaxResourceRenderer createXWikiSyntaxLinkRenderer(ListenerChain listenerChain,
       ResourceReferenceSerializer linkReferenceSerializer) {
-    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain, linkReferenceSerializer);
+    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain,
+        linkReferenceSerializer);
   }
 
   /**
@@ -70,6 +72,7 @@ public class XWikiSyntaxChainingRenderer
   @Override
   protected XWikiSyntaxResourceRenderer createXWikiSyntaxImageRenderer(ListenerChain listenerChain,
       ResourceReferenceSerializer imageReferenceSerializer) {
-    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain, imageReferenceSerializer);
+    return new XWikiSyntaxResourceRenderer((XWikiSyntaxListenerChain) listenerChain,
+        imageReferenceSerializer);
   }
 }

@@ -63,7 +63,8 @@ public class PlainTextChainingRenderer extends AbstractChainingPrintRenderer {
     this(null, listenerChain);
   }
 
-  public PlainTextChainingRenderer(LinkLabelGenerator linkLabelGenerator, ListenerChain listenerChain) {
+  public PlainTextChainingRenderer(LinkLabelGenerator linkLabelGenerator,
+      ListenerChain listenerChain) {
     setListenerChain(listenerChain);
 
     this.linkLabelGenerator = linkLabelGenerator;
@@ -72,11 +73,13 @@ public class PlainTextChainingRenderer extends AbstractChainingPrintRenderer {
   // State
 
   private BlockStateChainingListener getBlockState() {
-    return (BlockStateChainingListener) getListenerChain().getListener(BlockStateChainingListener.class);
+    return (BlockStateChainingListener) getListenerChain()
+        .getListener(BlockStateChainingListener.class);
   }
 
   protected EmptyBlockChainingListener getEmptyBlockState() {
-    return (EmptyBlockChainingListener) getListenerChain().getListener(EmptyBlockChainingListener.class);
+    return (EmptyBlockChainingListener) getListenerChain()
+        .getListener(EmptyBlockChainingListener.class);
   }
 
   // Events
@@ -108,7 +111,8 @@ public class PlainTextChainingRenderer extends AbstractChainingPrintRenderer {
    *      org.xwiki.rendering.listener.reference.ResourceReference , boolean, java.util.Map)
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     if (getEmptyBlockState().isCurrentContainerBlockEmpty()) {
       if (reference.getType().equals(ResourceType.DOCUMENT) && this.linkLabelGenerator != null) {
         getPrinter().print(this.linkLabelGenerator.generate(reference));
@@ -319,7 +323,8 @@ public class PlainTextChainingRenderer extends AbstractChainingPrintRenderer {
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     // TODO: maybe something could be done here
   }
 

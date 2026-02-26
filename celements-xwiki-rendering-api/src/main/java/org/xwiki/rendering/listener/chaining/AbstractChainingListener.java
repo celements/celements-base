@@ -150,7 +150,8 @@ public abstract class AbstractChainingListener implements ChainingListener {
    *      boolean, Map)
    * @since 2.5RC1
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     ChainingListener next = getListenerChain().getNextListener(getClass());
     if (next != null) {
       next.beginLink(reference, isFreeStandingURI, parameters);
@@ -186,7 +187,8 @@ public abstract class AbstractChainingListener implements ChainingListener {
    *
    * @see ChainingListener#beginMacroMarker(String, Map, String, boolean)
    */
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     ChainingListener next = getListenerChain().getNextListener(getClass());
     if (next != null) {
       next.beginMacroMarker(name, parameters, content, isInline);
@@ -381,7 +383,8 @@ public abstract class AbstractChainingListener implements ChainingListener {
    *      boolean, Map)
    * @since 2.5RC1
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     ChainingListener next = getListenerChain().getNextListener(getClass());
     if (next != null) {
       next.endLink(reference, isFreeStandingURI, parameters);
@@ -417,7 +420,8 @@ public abstract class AbstractChainingListener implements ChainingListener {
    *
    * @see ChainingListener#endMacroMarker(String, Map, String, boolean)
    */
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     ChainingListener next = getListenerChain().getNextListener(getClass());
     if (next != null) {
       next.endMacroMarker(name, parameters, content, isInline);
@@ -563,7 +567,8 @@ public abstract class AbstractChainingListener implements ChainingListener {
    *      boolean, java.util.Map)
    * @since 2.5RC1
    */
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     ChainingListener next = getListenerChain().getNextListener(getClass());
     if (next != null) {
       next.onImage(reference, isFreeStandingURI, parameters);

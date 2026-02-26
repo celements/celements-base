@@ -46,7 +46,8 @@ public class DefaultLinkReferenceParserTest extends AbstractLinkReferenceParserT
     ResourceReference reference = parser.parse("doc:wiki:space.page");
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
     Assert.assertEquals("wiki:space.page", reference.getReference());
-    Assert.assertEquals("Typed = [true] Type = [doc] Reference = [wiki:space.page]", reference.toString());
+    Assert.assertEquals("Typed = [true] Type = [doc] Reference = [wiki:space.page]",
+        reference.toString());
     Assert.assertTrue(reference.isTyped());
 
     // Verify InterWiki links work
@@ -63,7 +64,8 @@ public class DefaultLinkReferenceParserTest extends AbstractLinkReferenceParserT
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
     Assert.assertEquals("interwiki:invalid_since_doesnt_have_colon", reference.getReference());
     Assert.assertFalse(reference.isTyped());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [interwiki:invalid_since_doesnt_have_colon]",
+    Assert.assertEquals(
+        "Typed = [false] Type = [doc] Reference = [interwiki:invalid_since_doesnt_have_colon]",
         reference.toString());
 
     // Verify typed URLs
@@ -71,7 +73,8 @@ public class DefaultLinkReferenceParserTest extends AbstractLinkReferenceParserT
     Assert.assertEquals(ResourceType.URL, reference.getType());
     Assert.assertTrue(reference.isTyped());
     Assert.assertEquals("http://xwiki.org", reference.getReference());
-    Assert.assertEquals("Typed = [true] Type = [url] Reference = [http://xwiki.org]", reference.toString());
+    Assert.assertEquals("Typed = [true] Type = [url] Reference = [http://xwiki.org]",
+        reference.toString());
 
     // Verify query string and anchors have no meaning in link reference to documents.
     reference = parser.parse("Hello World?no=queryString#notAnAnchor");
@@ -80,7 +83,8 @@ public class DefaultLinkReferenceParserTest extends AbstractLinkReferenceParserT
     Assert.assertFalse(reference.isTyped());
     Assert.assertNull(((DocumentResourceReference) reference).getAnchor());
     Assert.assertNull(((DocumentResourceReference) reference).getQueryString());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [Hello World?no=queryString#notAnAnchor]",
+    Assert.assertEquals(
+        "Typed = [false] Type = [doc] Reference = [Hello World?no=queryString#notAnAnchor]",
         reference.toString());
 
     // Verify that the interwiki separator from XWiki Syntax 2.0 has not meaning in link references
@@ -89,21 +93,24 @@ public class DefaultLinkReferenceParserTest extends AbstractLinkReferenceParserT
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals("page@alias", reference.getReference());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [page@alias]", reference.toString());
+    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [page@alias]",
+        reference.toString());
 
     // Verify path link types
     reference = parser.parse("path:/some/path");
     Assert.assertEquals(ResourceType.PATH, reference.getType());
     Assert.assertTrue(reference.isTyped());
     Assert.assertEquals("/some/path", reference.getReference());
-    Assert.assertEquals("Typed = [true] Type = [path] Reference = [/some/path]", reference.toString());
+    Assert.assertEquals("Typed = [true] Type = [path] Reference = [/some/path]",
+        reference.toString());
 
     // Verify UNC link types
     reference = parser.parse("unc:\\\\myserver\\myshare\\mydoc.txt");
     Assert.assertEquals(ResourceType.UNC, reference.getType());
     Assert.assertTrue(reference.isTyped());
     Assert.assertEquals("\\\\myserver\\myshare\\mydoc.txt", reference.getReference());
-    Assert.assertEquals("Typed = [true] Type = [unc] Reference = [\\\\myserver\\myshare\\mydoc.txt]",
+    Assert.assertEquals(
+        "Typed = [true] Type = [unc] Reference = [\\\\myserver\\myshare\\mydoc.txt]",
         reference.toString());
   }
 

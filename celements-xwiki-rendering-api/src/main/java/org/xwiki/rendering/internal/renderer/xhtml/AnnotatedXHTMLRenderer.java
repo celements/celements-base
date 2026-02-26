@@ -84,6 +84,7 @@ public class AnnotatedXHTMLRenderer extends AbstractChainingPrintRenderer implem
     chain.addListener(this);
     chain.addListener(new BlockStateChainingListener(chain));
     chain.addListener(new EmptyBlockChainingListener(chain));
-    chain.addListener(new AnnotatedXHTMLChainingRenderer(this.linkRenderer, this.imageRenderer, chain));
+    chain.addListener(
+        new AnnotatedXHTMLChainingRenderer(this.linkRenderer, this.imageRenderer, chain));
   }
 }

@@ -38,7 +38,8 @@ import org.xwiki.rendering.syntax.Syntax;
  * @version $Id$
  * @since 1.8RC1
  */
-public class TextOnNewLineStateChainingListener extends AbstractChainingListener implements StackableChainingListener {
+public class TextOnNewLineStateChainingListener extends AbstractChainingListener
+    implements StackableChainingListener {
 
   private boolean isTextOnNewLine;
 
@@ -140,7 +141,8 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
    * @since 2.5RC1
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.isTextOnNewLine = false;
     super.beginLink(reference, isFreeStandingURI, parameters);
   }
@@ -175,7 +177,8 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     this.isTextOnNewLine = false;
     super.beginMacroMarker(name, parameters, content, isInline);
   }
@@ -289,7 +292,8 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
    * @since 2.5RC1
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     super.endLink(reference, isFreeStandingURI, parameters);
     this.isTextOnNewLine = false;
   }
@@ -358,7 +362,8 @@ public class TextOnNewLineStateChainingListener extends AbstractChainingListener
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.isTextOnNewLine = false;
     super.onImage(reference, isFreeStandingURI, parameters);
   }

@@ -144,7 +144,8 @@ public class LookaheadChainingListener extends AbstractChainingListener {
    * @since 2.5RC1
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.previousEvents.beginLink(reference, isFreeStandingURI, parameters);
     firePreviousEvent();
   }
@@ -179,7 +180,8 @@ public class LookaheadChainingListener extends AbstractChainingListener {
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     this.previousEvents.beginMacroMarker(name, parameters, content, isInline);
     firePreviousEvent();
   }
@@ -359,7 +361,8 @@ public class LookaheadChainingListener extends AbstractChainingListener {
    * @since 2.5RC1
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.previousEvents.endLink(reference, isFreeStandingURI, parameters);
     firePreviousEvent();
   }
@@ -394,7 +397,8 @@ public class LookaheadChainingListener extends AbstractChainingListener {
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     this.previousEvents.endMacroMarker(name, parameters, content, isInline);
     firePreviousEvent();
   }
@@ -539,7 +543,8 @@ public class LookaheadChainingListener extends AbstractChainingListener {
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.previousEvents.onImage(reference, isFreeStandingURI, parameters);
     firePreviousEvent();
   }
@@ -616,7 +621,8 @@ public class LookaheadChainingListener extends AbstractChainingListener {
   private void firePreviousEvent() {
     if (this.previousEvents.size() > this.lookaheadDepth) {
       Event event = this.previousEvents.remove();
-      event.eventType.fireEvent(getListenerChain().getNextListener(getClass()), event.eventParameters);
+      event.eventType.fireEvent(getListenerChain().getNextListener(getClass()),
+          event.eventParameters);
     }
   }
 
@@ -624,7 +630,8 @@ public class LookaheadChainingListener extends AbstractChainingListener {
     // Ensure that all remaining events are flushed
     while (!this.previousEvents.isEmpty()) {
       Event event = this.previousEvents.remove();
-      event.eventType.fireEvent(getListenerChain().getNextListener(getClass()), event.eventParameters);
+      event.eventType.fireEvent(getListenerChain().getNextListener(getClass()),
+          event.eventParameters);
     }
   }
 }

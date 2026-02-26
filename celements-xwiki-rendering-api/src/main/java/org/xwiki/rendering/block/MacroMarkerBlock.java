@@ -61,7 +61,8 @@ public class MacroMarkerBlock extends AbstractFatherBlock {
    * @param isInline
    *          indicate if the macro is located in a inline content (like paragraph, etc.)
    */
-  public MacroMarkerBlock(String id, Map<String, String> parameters, List<Block> childBlocks, boolean isInline) {
+  public MacroMarkerBlock(String id, Map<String, String> parameters, List<Block> childBlocks,
+      boolean isInline) {
     this(id, parameters, null, childBlocks, isInline);
   }
 
@@ -77,7 +78,8 @@ public class MacroMarkerBlock extends AbstractFatherBlock {
    * @param isInline
    *          indicate if the macro is located in a inline content (like paragraph, etc.)
    */
-  public MacroMarkerBlock(String id, Map<String, String> parameters, String content, List<Block> childBlocks,
+  public MacroMarkerBlock(String id, Map<String, String> parameters, String content,
+      List<Block> childBlocks,
       boolean isInline) {
     super(childBlocks, parameters);
 

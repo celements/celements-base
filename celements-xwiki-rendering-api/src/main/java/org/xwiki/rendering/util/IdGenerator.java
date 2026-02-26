@@ -62,7 +62,8 @@ public class IdGenerator {
   /**
    * A table of hex digits.
    */
-  private static final char[] HEXDIGIT = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E',
+  private static final char[] HEXDIGIT = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
+      'B', 'C', 'D', 'E',
       'F' };
 
   /**
@@ -104,7 +105,8 @@ public class IdGenerator {
     // valid HTML id.
     if (StringUtils.isEmpty(prefix) || !StringUtils.isAlpha(prefix)) {
       throw new IllegalArgumentException(
-          "The prefix [" + prefix + "] should only contain alphanumerical characters and not be empty.");
+          "The prefix [" + prefix
+              + "] should only contain alphanumerical characters and not be empty.");
     }
 
     String idPrefix = (prefix != null ? prefix : "") + normalizeId(text);

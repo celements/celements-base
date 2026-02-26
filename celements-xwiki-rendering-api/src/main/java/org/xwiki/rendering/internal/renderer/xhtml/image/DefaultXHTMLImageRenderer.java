@@ -107,12 +107,14 @@ public class DefaultXHTMLImageRenderer implements XHTMLImageRenderer, Initializa
    *      java.util.Map)
    * @since 2.5RC1
    */
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     Map<String, String> attributes = new LinkedHashMap<String, String>();
 
     // First we need to compute the image URL.
     String imageURL;
-    if (reference.getType().equals(ResourceType.ATTACHMENT) || reference.getType().equals(ResourceType.ICON)) {
+    if (reference.getType().equals(ResourceType.ATTACHMENT)
+        || reference.getType().equals(ResourceType.ICON)) {
       // Note if wikiModel is null then all Image reference objects will be of type URL. This must
       // be ensured by
       // the Image Reference parser used beforehand. However we're adding a protection here against
@@ -121,7 +123,8 @@ public class DefaultXHTMLImageRenderer implements XHTMLImageRenderer, Initializa
       if (this.wikiModel != null) {
         imageURL = this.wikiModel.getImageURL(reference, parameters);
       } else {
-        throw new RuntimeException("Invalid Image type. In non wiki mode, all image types must be URL images.");
+        throw new RuntimeException(
+            "Invalid Image type. In non wiki mode, all image types must be URL images.");
       }
     } else {
       imageURL = reference.getReference();

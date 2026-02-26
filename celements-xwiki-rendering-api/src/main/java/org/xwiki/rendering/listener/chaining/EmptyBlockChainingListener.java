@@ -128,7 +128,8 @@ public class EmptyBlockChainingListener extends AbstractChainingListener {
    * @since 2.5RC1
    */
   @Override
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     markNotEmpty();
     startContainerBlock();
     super.beginLink(reference, isFreeStandingURI, parameters);
@@ -166,7 +167,8 @@ public class EmptyBlockChainingListener extends AbstractChainingListener {
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void beginMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void beginMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     markNotEmpty();
     startContainerBlock();
     super.beginMacroMarker(name, parameters, content, isInline);
@@ -356,7 +358,8 @@ public class EmptyBlockChainingListener extends AbstractChainingListener {
    * @since 2.5RC1
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     super.endLink(reference, isFreeStandingURI, parameters);
     stopContainerBlock();
   }
@@ -391,7 +394,8 @@ public class EmptyBlockChainingListener extends AbstractChainingListener {
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     super.endMacroMarker(name, parameters, content, isInline);
     stopContainerBlock();
   }
@@ -549,7 +553,8 @@ public class EmptyBlockChainingListener extends AbstractChainingListener {
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     super.onImage(reference, isFreeStandingURI, parameters);
     markNotEmpty();
   }

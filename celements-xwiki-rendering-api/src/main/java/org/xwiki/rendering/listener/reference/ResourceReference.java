@@ -263,6 +263,7 @@ public class ResourceReference implements Cloneable {
     }
     ResourceReference rhs = (ResourceReference) object;
     return new EqualsBuilder().append(getType(), rhs.getType()).append(isTyped(), rhs.isTyped())
-        .append(getReference(), rhs.getReference()).append(getParameters(), rhs.getParameters()).isEquals();
+        .append(getReference(), rhs.getReference()).append(getParameters(), rhs.getParameters())
+        .isEquals();
   }
 }

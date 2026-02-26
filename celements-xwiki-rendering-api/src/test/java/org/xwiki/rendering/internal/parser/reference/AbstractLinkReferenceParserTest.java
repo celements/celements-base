@@ -59,13 +59,15 @@ public abstract class AbstractLinkReferenceParserTest extends AbstractComponentT
     Assert.assertEquals("Hello World", reference.getReference());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [Hello World]", reference.toString());
+    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [Hello World]",
+        reference.toString());
 
     reference = parser.parse("http://xwiki.org");
     Assert.assertEquals("http://xwiki.org", reference.getReference());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.URL, reference.getType());
-    Assert.assertEquals("Typed = [false] Type = [url] Reference = [http://xwiki.org]", reference.toString());
+    Assert.assertEquals("Typed = [false] Type = [url] Reference = [http://xwiki.org]",
+        reference.toString());
 
     // Verify mailto: URI is recognized
     reference = parser.parse("mailto:john@smith.com?subject=test");
@@ -80,7 +82,8 @@ public abstract class AbstractLinkReferenceParserTest extends AbstractComponentT
     Assert.assertEquals("some:content", reference.getReference());
     Assert.assertTrue(reference.isTyped());
     Assert.assertEquals(ResourceType.ATTACHMENT, reference.getType());
-    Assert.assertEquals("Typed = [true] Type = [attach] Reference = [some:content]", reference.toString());
+    Assert.assertEquals("Typed = [true] Type = [attach] Reference = [some:content]",
+        reference.toString());
 
     // Verify that unknown URIs are ignored
     // Note: In this example we point to a document and we consider that myxwiki is the wiki name
@@ -90,6 +93,7 @@ public abstract class AbstractLinkReferenceParserTest extends AbstractComponentT
     Assert.assertEquals("mywiki:http://xwiki.org", reference.getReference());
     Assert.assertFalse(reference.isTyped());
     Assert.assertEquals(ResourceType.DOCUMENT, reference.getType());
-    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [mywiki:http://xwiki.org]", reference.toString());
+    Assert.assertEquals("Typed = [false] Type = [doc] Reference = [mywiki:http://xwiki.org]",
+        reference.toString());
   }
 }

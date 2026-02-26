@@ -40,7 +40,8 @@ import java.util.Map;
  */
 @Component("attach")
 @InstantiationStrategy(ComponentInstantiationStrategy.PER_LOOKUP)
-public class AttachmentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer implements Initializable {
+public class AttachmentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer
+    implements Initializable {
 
   /**
    * Used to serialize the attachment link to XWiki Syntax 2.0 when we're not inside a wiki. We
@@ -79,7 +80,8 @@ public class AttachmentXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRender
    *      , java.util.Map, java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
     if (this.wikiModel != null) {
       anchorAttributes.put(XHTMLLinkRenderer.HREF, this.wikiModel.getLinkURL(reference));

@@ -95,7 +95,8 @@ public class PlainTextBlockFilter implements BlockFilter {
           label = reference.getReference();
         }
 
-        return this.plainTextParser.parse(new StringReader(label)).getChildren().get(0).getChildren();
+        return this.plainTextParser.parse(new StringReader(label)).getChildren().get(0)
+            .getChildren();
       } catch (ParseException e) {
         // This shouldn't happen since the parser cannot throw an exception since the source is a
         // memory

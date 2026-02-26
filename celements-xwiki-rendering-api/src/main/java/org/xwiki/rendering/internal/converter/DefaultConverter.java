@@ -70,7 +70,8 @@ public class DefaultConverter implements Converter {
     try {
       renderer = this.componentManager.lookup(BlockRenderer.class, targetSyntax.toIdString());
     } catch (ComponentLookupException e) {
-      throw new ConversionException("Failed to locate Renderer for syntax [" + targetSyntax + "]", e);
+      throw new ConversionException("Failed to locate Renderer for syntax [" + targetSyntax + "]",
+          e);
     }
     renderer.render(xdom, printer);
   }

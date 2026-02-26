@@ -94,7 +94,8 @@ public class DefaultXHTMLLinkRenderer implements XHTMLLinkRenderer {
    * @see XHTMLLinkRenderer#beginLink(org.xwiki.rendering.listener.reference.ResourceReference ,
    *      boolean, Map)
    */
-  public void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     getXHTMLLinkTypeRenderer(reference).beginLink(reference, isFreeStandingURI, parameters);
   }
 
@@ -104,7 +105,8 @@ public class DefaultXHTMLLinkRenderer implements XHTMLLinkRenderer {
    * @see XHTMLLinkRenderer#endLink(org.xwiki.rendering.listener.reference.ResourceReference ,
    *      boolean, Map)
    */
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     getXHTMLLinkTypeRenderer(reference).endLink(reference, isFreeStandingURI, parameters);
   }
 
@@ -113,7 +115,8 @@ public class DefaultXHTMLLinkRenderer implements XHTMLLinkRenderer {
 
     // TODO: This is probably not very performant since it's called at each begin/endLink.
     try {
-      renderer = this.componentManager.lookup(XHTMLLinkTypeRenderer.class, reference.getType().getScheme());
+      renderer = this.componentManager.lookup(XHTMLLinkTypeRenderer.class,
+          reference.getType().getScheme());
     } catch (ComponentLookupException e) {
       // There's no specific XHTML Link Type Renderer for the passed link type, use the default
       // renderer.

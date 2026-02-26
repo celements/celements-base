@@ -141,7 +141,8 @@ public class ConsecutiveNewLineStateChainingListener extends AbstractChainingLis
    * @since 2.5RC1
    */
   @Override
-  public void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.newLineCount = 0;
     super.endLink(reference, isFreeStandingURI, parameters);
   }
@@ -176,7 +177,8 @@ public class ConsecutiveNewLineStateChainingListener extends AbstractChainingLis
    *      java.util.Map, java.lang.String, boolean)
    */
   @Override
-  public void endMacroMarker(String name, Map<String, String> parameters, String content, boolean isInline) {
+  public void endMacroMarker(String name, Map<String, String> parameters, String content,
+      boolean isInline) {
     this.newLineCount = 0;
     super.endMacroMarker(name, parameters, content, isInline);
   }
@@ -322,7 +324,8 @@ public class ConsecutiveNewLineStateChainingListener extends AbstractChainingLis
    * @since 2.5RC1
    */
   @Override
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     this.newLineCount = 0;
     super.onImage(reference, isFreeStandingURI, parameters);
   }

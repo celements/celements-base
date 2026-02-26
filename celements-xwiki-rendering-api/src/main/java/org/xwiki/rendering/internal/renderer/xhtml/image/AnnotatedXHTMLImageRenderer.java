@@ -68,7 +68,8 @@ public class AnnotatedXHTMLImageRenderer implements XHTMLImageRenderer {
    *      java.util.Map)
    * @since 2.5RC1
    */
-  public void onImage(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters) {
+  public void onImage(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters) {
     // We need to save the image location in XML comment so that it can be reconstructed later on
     // when moving
     // from XHTML to wiki syntax.

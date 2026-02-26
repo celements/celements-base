@@ -37,7 +37,8 @@ import org.xwiki.rendering.renderer.AbstractChainingPrintRenderer;
  * @version $Id$
  * @since 2.5M2
  */
-public abstract class AbstractXWikiSyntaxRenderer extends AbstractChainingPrintRenderer implements Initializable {
+public abstract class AbstractXWikiSyntaxRenderer extends AbstractChainingPrintRenderer
+    implements Initializable {
 
   /**
    * Allows extending classes to choose which implementation to use.

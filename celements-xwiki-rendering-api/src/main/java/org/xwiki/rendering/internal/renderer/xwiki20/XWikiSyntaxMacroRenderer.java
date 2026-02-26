@@ -33,7 +33,8 @@ public class XWikiSyntaxMacroRenderer {
 
   private ParametersPrinter parametersPrinter = new ParametersPrinter();
 
-  public String renderMacro(String id, Map<String, String> parameters, String content, boolean isInline) {
+  public String renderMacro(String id, Map<String, String> parameters, String content,
+      boolean isInline) {
     StringBuffer buffer = new StringBuffer();
 
     // Print begin macro

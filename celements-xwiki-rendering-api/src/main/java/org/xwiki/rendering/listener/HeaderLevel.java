@@ -101,7 +101,8 @@ public enum HeaderLevel {
         result = HeaderLevel.LEVEL6;
         break;
       default:
-        throw new IllegalArgumentException("Invalid level [" + value + "]. Only levels 1 to 6 are allowed.");
+        throw new IllegalArgumentException(
+            "Invalid level [" + value + "]. Only levels 1 to 6 are allowed.");
     }
 
     return result;

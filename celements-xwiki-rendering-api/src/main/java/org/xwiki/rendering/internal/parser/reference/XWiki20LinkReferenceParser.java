@@ -106,7 +106,8 @@ public class XWiki20LinkReferenceParser implements ResourceReferenceParser {
    * how an escape char
    * is represented in an Entity Reference.
    */
-  private static final String[] ESCAPES_REFERENCE = new String[] { ESCAPE_CHAR + SEPARATOR_QUERYSTRING,
+  private static final String[] ESCAPES_REFERENCE = new String[] {
+      ESCAPE_CHAR + SEPARATOR_QUERYSTRING,
       ESCAPE_CHAR + SEPARATOR_INTERWIKI, ESCAPE_CHAR + SEPARATOR_ANCHOR };
 
   /**
@@ -114,30 +115,35 @@ public class XWiki20LinkReferenceParser implements ResourceReferenceParser {
    * reference.
    */
   private static final String[] ESCAPES_EXTRA = new String[] { ESCAPE_CHAR + SEPARATOR_QUERYSTRING,
-      ESCAPE_CHAR + SEPARATOR_INTERWIKI, ESCAPE_CHAR + SEPARATOR_ANCHOR, "" + ESCAPE_CHAR + ESCAPE_CHAR };
+      ESCAPE_CHAR + SEPARATOR_INTERWIKI, ESCAPE_CHAR + SEPARATOR_ANCHOR,
+      "" + ESCAPE_CHAR + ESCAPE_CHAR };
 
   /**
    * Escapes to remove the interwiki content.
    */
-  private static final String[] ESCAPE_INTERWIKI = new String[] { "" + ESCAPE_CHAR + ESCAPE_CHAR, "" + ESCAPE_CHAR };
+  private static final String[] ESCAPE_INTERWIKI = new String[] { "" + ESCAPE_CHAR + ESCAPE_CHAR,
+      "" + ESCAPE_CHAR };
 
   /**
    * Replacement chars for the escapes to be removed from the reference part.
    */
-  private static final String[] ESCAPE_REPLACEMENTS_REFERENCE = new String[] { SEPARATOR_QUERYSTRING,
+  private static final String[] ESCAPE_REPLACEMENTS_REFERENCE = new String[] {
+      SEPARATOR_QUERYSTRING,
       SEPARATOR_INTERWIKI, SEPARATOR_ANCHOR };
 
   /**
    * Replacement chars for the escapes to be removed from the query string, anchor and interwiki
    * parts.
    */
-  private static final String[] ESCAPE_REPLACEMENTS_EXTRA = new String[] { SEPARATOR_QUERYSTRING, SEPARATOR_INTERWIKI,
+  private static final String[] ESCAPE_REPLACEMENTS_EXTRA = new String[] { SEPARATOR_QUERYSTRING,
+      SEPARATOR_INTERWIKI,
       SEPARATOR_ANCHOR, "" + ESCAPE_CHAR };
 
   /**
    * Replacements chars for the escapes to be removed from the interwiki content.
    */
-  private static final String[] ESCAPE_REPLACEMENTS_INTERWIKI = new String[] { "" + ESCAPE_CHAR, "" };
+  private static final String[] ESCAPE_REPLACEMENTS_INTERWIKI = new String[] { "" + ESCAPE_CHAR,
+      "" };
 
   /**
    * The list of recognized URL prefixes.
@@ -273,7 +279,8 @@ public class XWiki20LinkReferenceParser implements ResourceReferenceParser {
     ResourceReference result = null;
     String interWikiAlias = parseElementAfterString(content, SEPARATOR_INTERWIKI);
     if (interWikiAlias != null) {
-      InterWikiResourceReference link = new InterWikiResourceReference(removeEscapes(content.toString()));
+      InterWikiResourceReference link = new InterWikiResourceReference(
+          removeEscapes(content.toString()));
       link.setInterWikiAlias(removeEscapes(interWikiAlias));
       result = link;
     }

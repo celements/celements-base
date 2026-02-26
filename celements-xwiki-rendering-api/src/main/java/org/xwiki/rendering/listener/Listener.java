@@ -349,7 +349,8 @@ public interface Listener extends LinkListener, ImageListener {
    *          if true the macro is located in a inline content (like paragraph, etc.)
    * @see #onMacro(String, java.util.Map, String, boolean)
    */
-  void beginMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline);
+  void beginMacroMarker(String name, Map<String, String> macroParameters, String content,
+      boolean isInline);
 
   /**
    * End of marker containing a macro definition.
@@ -364,7 +365,8 @@ public interface Listener extends LinkListener, ImageListener {
    *          if true the macro is located in a inline content (like paragraph, etc.)
    * @see #beginMacroMarker(String, java.util.Map, String, boolean)
    */
-  void endMacroMarker(String name, Map<String, String> macroParameters, String content, boolean isInline);
+  void endMacroMarker(String name, Map<String, String> macroParameters, String content,
+      boolean isInline);
 
   /**
    * Start of a quotation. There are one or several quotation lines inside a quotation block.

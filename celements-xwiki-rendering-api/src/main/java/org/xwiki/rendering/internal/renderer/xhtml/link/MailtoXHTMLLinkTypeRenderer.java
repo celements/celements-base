@@ -43,8 +43,10 @@ public class MailtoXHTMLLinkTypeRenderer extends AbstractXHTMLLinkTypeRenderer {
    *      java.util.Map)
    */
   @Override
-  protected void beginLinkExtraAttributes(ResourceReference reference, Map<String, String> spanAttributes,
+  protected void beginLinkExtraAttributes(ResourceReference reference,
+      Map<String, String> spanAttributes,
       Map<String, String> anchorAttributes) {
-    anchorAttributes.put(XHTMLLinkRenderer.HREF, reference.getType().getScheme() + ':' + reference.getReference());
+    anchorAttributes.put(XHTMLLinkRenderer.HREF,
+        reference.getType().getScheme() + ':' + reference.getReference());
   }
 }

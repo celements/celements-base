@@ -94,7 +94,8 @@ public class Syntax {
    */
   @Override
   public String toString() {
-    return getType().toString() + " " + getVersion() + (getQualifier() != null ? " (" + getQualifier() + ")" : "");
+    return getType().toString() + " " + getVersion()
+        + (getQualifier() != null ? " (" + getQualifier() + ")" : "");
   }
 
   /**
@@ -131,7 +132,8 @@ public class Syntax {
       } else {
         // object must be Syntax at this point
         Syntax syntax = (Syntax) object;
-        result = (getType() == syntax.getType() || (getType() != null && getType().equals(syntax.getType())))
+        result = (getType() == syntax.getType()
+            || (getType() != null && getType().equals(syntax.getType())))
             && (getVersion() == syntax.getVersion()
                 || (getVersion() != null && getVersion().equals(syntax.getVersion())))
             && (getQualifier() == syntax.getQualifier()

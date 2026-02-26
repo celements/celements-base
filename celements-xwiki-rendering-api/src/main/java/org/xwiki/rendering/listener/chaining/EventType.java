@@ -214,7 +214,8 @@ public enum EventType {
   BEGIN_MACRO_MARKER {
 
     public void fireEvent(Listener listener, Object[] eventParameters) {
-      listener.beginMacroMarker((String) eventParameters[0], (Map<String, String>) eventParameters[1],
+      listener.beginMacroMarker((String) eventParameters[0],
+          (Map<String, String>) eventParameters[1],
           (String) eventParameters[2], (Boolean) eventParameters[3]);
     }
   },

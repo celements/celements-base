@@ -111,12 +111,15 @@ public class XWikiSyntaxResourceRenderer {
     // EventType test but it probably need some big refactoring of the printer and
     // XWikiSyntaxResourceRenderer)
     return !isFreeStandingURI || !parameters.isEmpty()
-        || (!isLastSyntax && !printer.isAfterWhiteSpace() && (!PlainTextStreamParser.SPECIALSYMBOL_PATTERN
-            .matcher(String.valueOf(printer.getLastPrinted().charAt(printer.getLastPrinted().length() - 1)))
-            .matches()))
+        || (!isLastSyntax && !printer.isAfterWhiteSpace()
+            && (!PlainTextStreamParser.SPECIALSYMBOL_PATTERN
+                .matcher(String.valueOf(
+                    printer.getLastPrinted().charAt(printer.getLastPrinted().length() - 1)))
+                .matches()))
         || (nextEvent != null && nextEvent.eventType != EventType.ON_SPACE
             && nextEvent.eventType != EventType.ON_NEW_LINE
-            && nextEvent.eventType != EventType.END_PARAGRAPH && nextEvent.eventType != EventType.END_LINK
+            && nextEvent.eventType != EventType.END_PARAGRAPH
+            && nextEvent.eventType != EventType.END_LINK
             && nextEvent.eventType != EventType.END_LIST_ITEM
             && nextEvent.eventType != EventType.END_DEFINITION_DESCRIPTION
             && nextEvent.eventType != EventType.END_DEFINITION_TERM
@@ -146,7 +149,8 @@ public class XWikiSyntaxResourceRenderer {
     this.forceFullSyntax.pop();
   }
 
-  protected void printParameters(XWikiSyntaxEscapeWikiPrinter printer, ResourceReference resourceReference,
+  protected void printParameters(XWikiSyntaxEscapeWikiPrinter printer,
+      ResourceReference resourceReference,
       Map<String, String> parameters) {
     // If there were parameters specified, output them separated by the "||" characters
     if (!parameters.isEmpty()) {

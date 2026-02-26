@@ -104,7 +104,8 @@ public class XWikiSyntaxEscapeWikiPrinter extends LookaheadWikiPrinter {
   @Override
   public void flush() {
     if (getBuffer().length() > 0) {
-      this.escapeHandler.escape(getBuffer(), this.listenerChain, this.escapeLastChar, this.escapeFirstIfMatching);
+      this.escapeHandler.escape(getBuffer(), this.listenerChain, this.escapeLastChar,
+          this.escapeFirstIfMatching);
       super.flush();
     }
     this.escapeLastChar = false;
@@ -140,7 +141,8 @@ public class XWikiSyntaxEscapeWikiPrinter extends LookaheadWikiPrinter {
   }
 
   public boolean isAfterWhiteSpace() {
-    return isOnNewLine() || Character.isWhitespace(getLastPrinted().charAt(getLastPrinted().length() - 1));
+    return isOnNewLine()
+        || Character.isWhitespace(getLastPrinted().charAt(getLastPrinted().length() - 1));
   }
 
   public String getLastPrinted() {

@@ -46,7 +46,8 @@ public interface LinkListener {
    * @see ResourceReference
    * @since 2.5RC1
    */
-  void beginLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters);
+  void beginLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters);
 
   /**
    * End of a link.
@@ -60,5 +61,6 @@ public interface LinkListener {
    * @see ResourceReference
    * @since 2.5RC1
    */
-  void endLink(ResourceReference reference, boolean isFreeStandingURI, Map<String, String> parameters);
+  void endLink(ResourceReference reference, boolean isFreeStandingURI,
+      Map<String, String> parameters);
 }
