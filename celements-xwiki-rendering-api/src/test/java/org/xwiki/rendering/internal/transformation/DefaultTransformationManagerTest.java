@@ -25,14 +25,14 @@ import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.transformation.TransformationContext;
 import org.xwiki.rendering.transformation.TransformationManager;
 
-import com.celements.common.test.AbstractComponentTest;
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link DefaultTransformationManager}.
  *
  * @version $Id$
  */
-public class DefaultTransformationManagerTest extends AbstractComponentTest {
+public class DefaultTransformationManagerTest extends AbstractBaseComponentTest {
 
   @Test
   public void testTransformations() throws Exception {
