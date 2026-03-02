@@ -203,6 +203,10 @@
     <!-- Other XWiki modules -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-xml</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-script</artifactId>
     </dependency>
     <dependency>
