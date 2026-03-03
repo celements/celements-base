@@ -29,63 +29,63 @@ import org.xwiki.velocity.internal.util.VelocityBlock.VelocityType;
  * @version $Id$
  */
 public class VelocityParserContext {
-    /**
-     * The type of found velocity block.
-     */
-    private VelocityType type;
 
-    /**
-     * The current blocks.
-     */
-    private Stack<VelocityBlock> blocks = new Stack<VelocityBlock>();
+  /**
+   * The type of found velocity block.
+   */
+  private VelocityType type;
 
-    /**
-     * @param type
-     *            the type of found velocity block.
-     */
-    public void setType(VelocityType type) {
-        this.type = type;
-    }
+  /**
+   * The current blocks.
+   */
+  private Stack<VelocityBlock> blocks = new Stack<VelocityBlock>();
 
-    /**
-     * @return The type of found velocity block.
-     */
-    public VelocityType getType() {
-        return this.type;
-    }
+  /**
+   * @param type
+   *          the type of found velocity block.
+   */
+  public void setType(VelocityType type) {
+    this.type = type;
+  }
 
-    /**
-     * @return the Velocity block in which the process is.
-     */
-    public VelocityBlock getCurrentElement() {
-        return this.blocks.peek();
-    }
+  /**
+   * @return The type of found velocity block.
+   */
+  public VelocityType getType() {
+    return this.type;
+  }
 
-    /**
-     * Enter a Velocity block.
-     *
-     * @param block
-     *            the Velocity block in which the process is.
-     *
-     * @return the Velocity block in which the process is.
-     */
-    public VelocityBlock pushVelocityElement(VelocityBlock block) {
-        return this.blocks.push(block);
-    }
+  /**
+   * @return the Velocity block in which the process is.
+   */
+  public VelocityBlock getCurrentElement() {
+    return this.blocks.peek();
+  }
 
-    /**
-     * Go out of a Velocity block.
-     *
-     * @return the previous Velocity block in which the process was.
-     */
-    public VelocityBlock popVelocityElement() {
-        return this.blocks.pop();
-    }
+  /**
+   * Enter a Velocity block.
+   *
+   * @param block
+   *          the Velocity block in which the process is.
+   * @return the Velocity block in which the process is.
+   */
+  public VelocityBlock pushVelocityElement(VelocityBlock block) {
+    return this.blocks.push(block);
+  }
 
-    /**
-     * @return indicate if the current process is inside a Velocity block.
-     */
-    public boolean isInVelocityBlock() {
-        return !this.blocks.isEmpty();
-    }
+  /**
+   * Go out of a Velocity block.
+   *
+   * @return the previous Velocity block in which the process was.
+   */
+  public VelocityBlock popVelocityElement() {
+    return this.blocks.pop();
+  }
+
+  /**
+   * @return indicate if the current process is inside a Velocity block.
+   */
+  public boolean isInVelocityBlock() {
+    return !this.blocks.isEmpty();
+  }
 }

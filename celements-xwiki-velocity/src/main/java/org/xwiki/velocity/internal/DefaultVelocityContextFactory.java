@@ -43,70 +43,74 @@ import org.xwiki.velocity.XWikiVelocityException;
  * @version $Id$
  */
 @Component
-public class DefaultVelocityContextFactory extends AbstractLogEnabled implements VelocityContextFactory, Initializable {
-    /**
-     * The component manager we used to find all components implementing the
-     * {@link org.xwiki.velocity.VelocityContextInitializer} role.
-     */
-    @Requirement
-    private ComponentManager componentManager;
+public class DefaultVelocityContextFactory extends AbstractLogEnabled
+    implements VelocityContextFactory, Initializable {
 
-    /**
-     * Velocity configuration to get the list of configured Velocity tools.
-     */
-    @Requirement
-    private VelocityConfiguration velocityConfiguration;
+  /**
+   * The component manager we used to find all components implementing the
+   * {@link org.xwiki.velocity.VelocityContextInitializer} role.
+   */
+  @Requirement
+  private ComponentManager componentManager;
 
-    /**
-     * An internal read-only Velocity Context containing the Tools defined in the component's configuration. We reuse
-     * them across Contexts for better performance.
-     */
-    private Context toolsContext;
+  /**
+   * Velocity configuration to get the list of configured Velocity tools.
+   */
+  @Requirement
+  private VelocityConfiguration velocityConfiguration;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see Initializable#initialize()
-     */
-    public void initialize() throws InitializationException {
-        this.toolsContext = new VelocityContext();
+  /**
+   * An internal read-only Velocity Context containing the Tools defined in the component's
+   * configuration. We reuse
+   * them across Contexts for better performance.
+   */
+  private Context toolsContext;
 
-        // Instantiate Velocity tools
-        Properties properties = this.velocityConfiguration.getTools();
-        if (properties != null) {
-            for (Enumeration<?> props = properties.propertyNames(); props.hasMoreElements();) {
-                String key = props.nextElement().toString();
-                String value = properties.getProperty(key);
-                Object toolInstance;
-                try {
-                    toolInstance = Class.forName(value).newInstance();
-                } catch (Exception e) {
-                    throw new InitializationException("Failed to initialize tool [" + value + "]", e);
-                }
-                this.toolsContext.put(key, toolInstance);
-                getLogger().debug("Setting tool [" + key + "] = [" + value + "]");
-            }
-        }
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see Initializable#initialize()
+   */
+  public void initialize() throws InitializationException {
+    this.toolsContext = new VelocityContext();
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see VelocityContextFactory#createContext()
-     */
-    public VelocityContext createContext() throws XWikiVelocityException {
-        // Note: This constructor uses the passed context as an internal read-only context.
-        VelocityContext context = new VelocityContext(this.toolsContext);
-
-        // Call all components implementing the VelocityContextInitializer's role.
+    // Instantiate Velocity tools
+    Properties properties = this.velocityConfiguration.getTools();
+    if (properties != null) {
+      for (Enumeration<?> props = properties.propertyNames(); props.hasMoreElements();) {
+        String key = props.nextElement().toString();
+        String value = properties.getProperty(key);
+        Object toolInstance;
         try {
-            for (Object interceptor : this.componentManager.lookupList(VelocityContextInitializer.class)) {
-                ((VelocityContextInitializer) interceptor).initialize(context);
-            }
-        } catch (ComponentLookupException e) {
-            throw new XWikiVelocityException("Failed to locate some Velocity Context initializers", e);
+          toolInstance = Class.forName(value).newInstance();
+        } catch (Exception e) {
+          throw new InitializationException("Failed to initialize tool [" + value + "]", e);
         }
-
-        return context;
+        this.toolsContext.put(key, toolInstance);
+        getLogger().debug("Setting tool [" + key + "] = [" + value + "]");
+      }
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see VelocityContextFactory#createContext()
+   */
+  public VelocityContext createContext() throws XWikiVelocityException {
+    // Note: This constructor uses the passed context as an internal read-only context.
+    VelocityContext context = new VelocityContext(this.toolsContext);
+
+    // Call all components implementing the VelocityContextInitializer's role.
+    try {
+      for (Object interceptor : this.componentManager
+          .lookupList(VelocityContextInitializer.class)) {
+        ((VelocityContextInitializer) interceptor).initialize(context);
+      }
+    } catch (ComponentLookupException e) {
+      throw new XWikiVelocityException("Failed to locate some Velocity Context initializers", e);
+    }
+
+    return context;
+  }
 }

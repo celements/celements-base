@@ -34,83 +34,81 @@ import org.xwiki.component.annotation.ComponentRole;
  */
 @ComponentRole
 public interface VelocityEngine {
-    /**
-     * Initializes the Velocity engine by setting its configuration both from the component's configuration and from the
-     * passed properties. This method must be called before any other method from this class can be executed.
-     *
-     * @param properties
-     *            the properties that will override the static properties defined in the component's configuration
-     *
-     * @throws XWikiVelocityException
-     *             in case of error
-     */
-    void initialize(Properties properties) throws XWikiVelocityException;
 
-    /**
-     * Renders the input string using the context into the output writer.
-     *
-     * @param context
-     *            the Velocity context to use in rendering the input string
-     * @param out
-     *            the writer in which to render the output
-     * @param templateName
-     *            the string to be used as the template name for log messages in case of error
-     * @param source
-     *            the input string containing the VTL to be rendered
-     *
-     * @return true if successful, false otherwise. If false, see the Velocity runtime log
-     *
-     * @throws XWikiVelocityException
-     *             in case of error
-     */
-    boolean evaluate(Context context, Writer out, String templateName, String source) throws XWikiVelocityException;
+  /**
+   * Initializes the Velocity engine by setting its configuration both from the component's
+   * configuration and from the
+   * passed properties. This method must be called before any other method from this class can be
+   * executed.
+   *
+   * @param properties
+   *          the properties that will override the static properties defined in the component's
+   *          configuration
+   * @throws XWikiVelocityException
+   *           in case of error
+   */
+  void initialize(Properties properties) throws XWikiVelocityException;
 
-    /**
-     * Renders the input string using the context into the output writer.
-     *
-     * @param context
-     *            the Velocity context to use in rendering the input string
-     * @param out
-     *            the writer in which to render the output
-     * @param templateName
-     *            the string to be used as the template name for log messages in case of error
-     * @param source
-     *            the input containing the VTL to be rendered, as a Reader
-     *
-     * @return true if successful, false otherwise. If false, see the Velocity runtime log
-     *
-     * @throws XWikiVelocityException
-     *             in case of error
-     */
-    boolean evaluate(Context context, Writer out, String templateName, Reader source) throws XWikiVelocityException;
+  /**
+   * Renders the input string using the context into the output writer.
+   *
+   * @param context
+   *          the Velocity context to use in rendering the input string
+   * @param out
+   *          the writer in which to render the output
+   * @param templateName
+   *          the string to be used as the template name for log messages in case of error
+   * @param source
+   *          the input string containing the VTL to be rendered
+   * @return true if successful, false otherwise. If false, see the Velocity runtime log
+   * @throws XWikiVelocityException
+   *           in case of error
+   */
+  boolean evaluate(Context context, Writer out, String templateName, String source)
+      throws XWikiVelocityException;
 
-    /**
-     * Clear the internal Velocity Macro cache for the passed namespace.
-     *
-     * @param templateName
-     *            the namespace for which to remove all cached Velocity macros
-     *
-     * @since 2.4M2
-     */
-    void clearMacroNamespace(String templateName);
+  /**
+   * Renders the input string using the context into the output writer.
+   *
+   * @param context
+   *          the Velocity context to use in rendering the input string
+   * @param out
+   *          the writer in which to render the output
+   * @param templateName
+   *          the string to be used as the template name for log messages in case of error
+   * @param source
+   *          the input containing the VTL to be rendered, as a Reader
+   * @return true if successful, false otherwise. If false, see the Velocity runtime log
+   * @throws XWikiVelocityException
+   *           in case of error
+   */
+  boolean evaluate(Context context, Writer out, String templateName, Reader source)
+      throws XWikiVelocityException;
 
-    /**
-     * Notify that a rendering action is starting in the given namespace.
-     *
-     * @param namespace
-     *            the namespace being used
-     *
-     * @since 2.4RC1
-     */
-    void startedUsingMacroNamespace(String namespace);
+  /**
+   * Clear the internal Velocity Macro cache for the passed namespace.
+   *
+   * @param templateName
+   *          the namespace for which to remove all cached Velocity macros
+   * @since 2.4M2
+   */
+  void clearMacroNamespace(String templateName);
 
-    /**
-     * Notify that a rendering action in the given namespace just finished.
-     *
-     * @param namespace
-     *            the namespace which was used
-     *
-     * @since 2.4RC1
-     */
-    void stoppedUsingMacroNamespace(String namespace);
+  /**
+   * Notify that a rendering action is starting in the given namespace.
+   *
+   * @param namespace
+   *          the namespace being used
+   * @since 2.4RC1
+   */
+  void startedUsingMacroNamespace(String namespace);
+
+  /**
+   * Notify that a rendering action in the given namespace just finished.
+   *
+   * @param namespace
+   *          the namespace which was used
+   * @since 2.4RC1
+   */
+  void stoppedUsingMacroNamespace(String namespace);
 }

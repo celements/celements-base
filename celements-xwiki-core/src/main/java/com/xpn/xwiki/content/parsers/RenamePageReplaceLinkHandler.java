@@ -30,7 +30,6 @@ public class RenamePageReplaceLinkHandler implements ReplaceLinkHandler {
 
   /**
    * {@inheritDoc}
-   *
    * <p>
    * Two links are equal if they point to the same document and within the same location
    * in that document.
@@ -74,7 +73,6 @@ public class RenamePageReplaceLinkHandler implements ReplaceLinkHandler {
 
   /**
    * {@inheritDoc}
-   *
    * <p>
    * Keep the query string, alias and target in the link to replace if they are not
    * specified in the new link.

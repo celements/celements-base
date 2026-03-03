@@ -27,40 +27,41 @@ import org.junit.Test;
  * Unit tests for {@link EscapeTool}.
  *
  * @version $Id$
- *
  * @since 2.7RC1
  */
 public class EscapeToolTest {
-    @Test
-    public void testEscapeSimpleXML() {
-        EscapeTool tool = new EscapeTool();
-        String escapedText = tool.xml("a < a' && a' < a\" => a < a\"");
 
-        Assert.assertFalse("Failed to escape <", escapedText.contains("<"));
-        Assert.assertFalse("Failed to escape >", escapedText.contains(">"));
-        Assert.assertFalse("Failed to escape '", escapedText.contains("'"));
-        Assert.assertFalse("Failed to escape \"", escapedText.contains("\""));
-        Assert.assertFalse("Failed to escape &", escapedText.contains("&&"));
-    }
+  @Test
+  public void testEscapeSimpleXML() {
+    EscapeTool tool = new EscapeTool();
+    String escapedText = tool.xml("a < a' && a' < a\" => a < a\"");
 
-    @Test
-    public void testEscapeXMLApos() {
-        EscapeTool tool = new EscapeTool();
+    Assert.assertFalse("Failed to escape <", escapedText.contains("<"));
+    Assert.assertFalse("Failed to escape >", escapedText.contains(">"));
+    Assert.assertFalse("Failed to escape '", escapedText.contains("'"));
+    Assert.assertFalse("Failed to escape \"", escapedText.contains("\""));
+    Assert.assertFalse("Failed to escape &", escapedText.contains("&&"));
+  }
 
-        Assert.assertFalse("' wrongly escaped to non-HTML &apos;", tool.xml("'").equals("&apos;"));
-    }
+  @Test
+  public void testEscapeXMLApos() {
+    EscapeTool tool = new EscapeTool();
 
-    @Test
-    public void testEscapeXMLWithNull() {
-        EscapeTool tool = new EscapeTool();
+    Assert.assertFalse("' wrongly escaped to non-HTML &apos;", tool.xml("'").equals("&apos;"));
+  }
 
-        Assert.assertNull("null should be null", tool.xml(null));
-    }
+  @Test
+  public void testEscapeXMLWithNull() {
+    EscapeTool tool = new EscapeTool();
 
-    @Test
-    public void testEscapeXMLNonAscii() {
-        EscapeTool tool = new EscapeTool();
+    Assert.assertNull("null should be null", tool.xml(null));
+  }
 
-        Assert.assertTrue("Non-ASCII characters shouldn't be escaped", tool.xml("\u0123").equals("\u0123"));
-    }
+  @Test
+  public void testEscapeXMLNonAscii() {
+    EscapeTool tool = new EscapeTool();
+
+    Assert.assertTrue("Non-ASCII characters shouldn't be escaped",
+        tool.xml("\u0123").equals("\u0123"));
+  }
 }

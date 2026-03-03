@@ -40,68 +40,71 @@ import org.xwiki.velocity.internal.jmx.JMXVelocityEngineMBean;
  * Default implementation for {@link VelocityFactory}.
  *
  * @see VelocityFactory
- *
  * @version $Id$
  */
 @Component
 public class DefaultVelocityFactory extends AbstractLogEnabled implements VelocityFactory {
-    /**
-     * The Component manager we use to lookup (and thus create since it's a singleton) the VelocityEngine component.
-     */
-    @Requirement
-    private ComponentManager componentManager;
 
-    /**
-     * In order to register the Velocity MBean for management.
-     */
-    @Requirement
-    private JMXBeanRegistration jmxRegistration;
+  /**
+   * The Component manager we use to lookup (and thus create since it's a singleton) the
+   * VelocityEngine component.
+   */
+  @Requirement
+  private ComponentManager componentManager;
 
-    /**
-     * A cache of Velocity Engines. See {@link org.xwiki.velocity.VelocityFactory} for more details as to why we need
-     * this cache.
-     */
-    private Map<String, VelocityEngine> velocityEngines = new HashMap<String, VelocityEngine>();
+  /**
+   * In order to register the Velocity MBean for management.
+   */
+  @Requirement
+  private JMXBeanRegistration jmxRegistration;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see VelocityFactory#hasVelocityEngine(String)
-     */
-    public synchronized boolean hasVelocityEngine(String key) {
-        return this.velocityEngines.containsKey(key);
+  /**
+   * A cache of Velocity Engines. See {@link org.xwiki.velocity.VelocityFactory} for more details as
+   * to why we need
+   * this cache.
+   */
+  private Map<String, VelocityEngine> velocityEngines = new HashMap<String, VelocityEngine>();
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see VelocityFactory#hasVelocityEngine(String)
+   */
+  public synchronized boolean hasVelocityEngine(String key) {
+    return this.velocityEngines.containsKey(key);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see VelocityFactory#getVelocityEngine(String)
+   */
+  public synchronized VelocityEngine getVelocityEngine(String key) {
+    return this.velocityEngines.get(key);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see VelocityFactory#createVelocityEngine(String, Properties)
+   */
+  public synchronized VelocityEngine createVelocityEngine(String key, Properties properties)
+      throws XWikiVelocityException {
+    VelocityEngine engine;
+    try {
+      engine = this.componentManager.lookup(VelocityEngine.class);
+    } catch (ComponentLookupException e) {
+      throw new XWikiVelocityException("Failed to create Velocity Engine", e);
     }
+    engine.initialize(properties);
+    this.velocityEngines.put(key, engine);
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see VelocityFactory#getVelocityEngine(String)
-     */
-    public synchronized VelocityEngine getVelocityEngine(String key) {
-        return this.velocityEngines.get(key);
-    }
+    // Register a JMX MBean for providing information about the created Velocity Engine (template
+    // namespaces,
+    // macros, etc).
+    JMXVelocityEngineMBean mbean = new JMXVelocityEngine(engine);
+    this.jmxRegistration.registerMBean(mbean, "type=Velocity,domain=Engines,name=" + key);
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see VelocityFactory#createVelocityEngine(String, Properties)
-     */
-    public synchronized VelocityEngine createVelocityEngine(String key, Properties properties)
-            throws XWikiVelocityException {
-        VelocityEngine engine;
-        try {
-            engine = this.componentManager.lookup(VelocityEngine.class);
-        } catch (ComponentLookupException e) {
-            throw new XWikiVelocityException("Failed to create Velocity Engine", e);
-        }
-        engine.initialize(properties);
-        this.velocityEngines.put(key, engine);
-
-        // Register a JMX MBean for providing information about the created Velocity Engine (template namespaces,
-        // macros, etc).
-        JMXVelocityEngineMBean mbean = new JMXVelocityEngine(engine);
-        this.jmxRegistration.registerMBean(mbean, "type=Velocity,domain=Engines,name=" + key);
-
-        return engine;
-    }
+    return engine;
+  }
 }

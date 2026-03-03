@@ -25,81 +25,82 @@ package org.xwiki.velocity.internal.util;
  * @version $Id$
  */
 public class VelocityBlock {
+
+  /**
+   * The type of found Velocity element.
+   *
+   * @version $Id$
+   */
+  public enum VelocityType {
     /**
-     * The type of found Velocity element.
-     *
-     * @version $Id$
+     * A simple or multilines comment.
      */
-    public enum VelocityType {
-        /**
-         * A simple or multilines comment.
-         */
-        COMMENT,
-
-        /**
-         * A Velocity directive (except macros).
-         */
-        DIRECTIVE,
-
-        /**
-         * A Velocity macro.
-         */
-        MACRO,
-
-        /**
-         * Anything starting with a $.
-         */
-        VAR
-    }
+    COMMENT,
 
     /**
-     * The name of the Velocity element (if, macro, ...).
+     * A Velocity directive (except macros).
      */
-    private String name;
+    DIRECTIVE,
 
     /**
-     * The of the Velocity element.
+     * A Velocity macro.
      */
-    private VelocityType type;
+    MACRO,
 
     /**
-     * @param name
-     *            the name of the Velocity element (if, macro, ...).
-     * @param type
-     *            the type of the Velocity element.
+     * Anything starting with a $.
      */
-    public VelocityBlock(String name, VelocityType type) {
-        this.name = name;
-        this.type = type;
-    }
+    VAR
+  }
 
-    /**
-     * @return the name of the Velocity element (if, macro, ...).
-     */
-    public String getName() {
-        return name;
-    }
+  /**
+   * The name of the Velocity element (if, macro, ...).
+   */
+  private String name;
 
-    /**
-     * @param name
-     *            the name of the Velocity element (if, macro, ...).
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+  /**
+   * The of the Velocity element.
+   */
+  private VelocityType type;
 
-    /**
-     * @return the type of the Velocity element.
-     */
-    public VelocityType getType() {
-        return type;
-    }
+  /**
+   * @param name
+   *          the name of the Velocity element (if, macro, ...).
+   * @param type
+   *          the type of the Velocity element.
+   */
+  public VelocityBlock(String name, VelocityType type) {
+    this.name = name;
+    this.type = type;
+  }
 
-    /**
-     * @param type
-     *            the type of the Velocity element.
-     */
-    public void setType(VelocityType type) {
-        this.type = type;
-    }
+  /**
+   * @return the name of the Velocity element (if, macro, ...).
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * @param name
+   *          the name of the Velocity element (if, macro, ...).
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  /**
+   * @return the type of the Velocity element.
+   */
+  public VelocityType getType() {
+    return type;
+  }
+
+  /**
+   * @param type
+   *          the type of the Velocity element.
+   */
+  public void setType(VelocityType type) {
+    this.type = type;
+  }
 }

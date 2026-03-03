@@ -26,25 +26,27 @@ import org.xwiki.component.annotation.ComponentRole;
 /**
  * Configuration properties for the Velocity module.
  * <p>
- * You can override the default values for each of the configuration properties below by defining them in XWiki's global
+ * You can override the default values for each of the configuration properties below by defining
+ * them in XWiki's global
  * configuration file using a prefix of "velocity" followed by the property name. For example:
  * <code>velocity.tools = listtool = org.apache.velocity.tools.generic.ListTool</code>
  *
  * @version $Id$
- *
  * @since 2.0M1
  */
 @ComponentRole
 public interface VelocityConfiguration {
-    /**
-     * @return the Velocity properties as defined at
-     *         http://velocity.apache.org/engine/devel/developer-guide.html#Velocity_Configuration_Keys_and_Values
-     */
-    Properties getProperties();
 
-    /**
-     * @return the list of configured Velocity Tools (the key is the name under which the tool will be available in the
-     *         Velocity Context and the value is the tool's class name)
-     */
-    Properties getTools();
+  /**
+   * @return the Velocity properties as defined at
+   *         http://velocity.apache.org/engine/devel/developer-guide.html#Velocity_Configuration_Keys_and_Values
+   */
+  Properties getProperties();
+
+  /**
+   * @return the list of configured Velocity Tools (the key is the name under which the tool will be
+   *         available in the
+   *         Velocity Context and the value is the tool's class name)
+   */
+  Properties getTools();
 }
