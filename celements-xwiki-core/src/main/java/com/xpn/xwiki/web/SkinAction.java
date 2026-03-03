@@ -134,7 +134,8 @@ public class SkinAction extends XWikiAction {
         // skin document.
         // Try in the resources directory.
         if (((!doc.getName().equals(defaultbaseskin) && !baseskin.equals(defaultbaseskin))
-            && renderFileFromFilesystem(getSkinFilePath(filename, defaultbaseskin), context)) || renderFileFromFilesystem(getResourceFilePath(filename), context)) {
+            && renderFileFromFilesystem(getSkinFilePath(filename, defaultbaseskin), context))
+            || renderFileFromFilesystem(getResourceFilePath(filename), context)) {
           found = true;
           break;
         }

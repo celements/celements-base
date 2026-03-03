@@ -27,16 +27,16 @@ import org.xwiki.component.annotation.ComponentRole;
  * Populates new Velocity contexts with custom entries.
  *
  * @version $Id$
- *
  * @since 1.5M1
  */
 @ComponentRole
 public interface VelocityContextInitializer {
-    /**
-     * Allow initializing the Velocity Context by putting objects into it.
-     *
-     * @param context
-     *            the Velocity context to initialize
-     */
-    void initialize(VelocityContext context);
+
+  /**
+   * Allow initializing the Velocity Context by putting objects into it.
+   *
+   * @param context
+   *          the Velocity context to initialize
+   */
+  void initialize(VelocityContext context);
 }

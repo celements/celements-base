@@ -26,34 +26,33 @@ package org.xwiki.velocity;
  * @version $Id$
  */
 public class XWikiVelocityException extends Exception {
-    /**
-     * Provides an id for serialization.
-     */
-    private static final long serialVersionUID = 2035182137507870523L;
 
-    /**
-     * Constructs a new exception with the specified detail message.
-     *
-     * @param message
-     *            the exception message
-     *
-     * @see Exception#Exception(String)
-     */
-    public XWikiVelocityException(String message) {
-        super(message);
-    }
+  /**
+   * Provides an id for serialization.
+   */
+  private static final long serialVersionUID = 2035182137507870523L;
 
-    /**
-     * Constructs a new exception with the specified detail message and cause.
-     *
-     * @param message
-     *            the exception message
-     * @param throwable
-     *            the original exception to wrap
-     *
-     * @see Exception#Exception(String, Throwable)
-     */
-    public XWikiVelocityException(String message, Throwable throwable) {
-        super(message, throwable);
-    }
+  /**
+   * Constructs a new exception with the specified detail message.
+   *
+   * @param message
+   *          the exception message
+   * @see Exception#Exception(String)
+   */
+  public XWikiVelocityException(String message) {
+    super(message);
+  }
+
+  /**
+   * Constructs a new exception with the specified detail message and cause.
+   *
+   * @param message
+   *          the exception message
+   * @param throwable
+   *          the original exception to wrap
+   * @see Exception#Exception(String, Throwable)
+   */
+  public XWikiVelocityException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }

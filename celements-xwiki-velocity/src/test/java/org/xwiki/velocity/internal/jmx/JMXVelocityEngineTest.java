@@ -37,34 +37,34 @@ import java.util.Properties;
  * Unit tests for {@link JMXVelocityEngine}.
  *
  * @version $Id$
- *
  * @since 2.4M2
  */
 public class JMXVelocityEngineTest extends AbstractComponentTestCase {
-    @Test
-    public void testGetTemplates() throws Exception {
-        VelocityEngine engine = getComponentManager().lookup(VelocityEngine.class);
-        engine.initialize(new Properties());
-        JMXVelocityEngine jmxBean = new JMXVelocityEngine(engine);
 
-        TabularData data = jmxBean.getTemplates();
+  @Test
+  public void testGetTemplates() throws Exception {
+    VelocityEngine engine = getComponentManager().lookup(VelocityEngine.class);
+    engine.initialize(new Properties());
+    JMXVelocityEngine jmxBean = new JMXVelocityEngine(engine);
 
-        Assert.assertEquals(1, data.values().size());
-        CompositeData cd = ((CompositeData) data.values().iterator().next());
-        Assert.assertEquals("<global>", cd.get("templateName"));
-        Assert.assertEquals(0, ((String[]) cd.get("macroNames")).length);
+    TabularData data = jmxBean.getTemplates();
 
-        StringWriter out = new StringWriter();
-        engine.evaluate(new VelocityContext(), out, "testmacronamespace", "#macro(testmacro)#end");
-        data = jmxBean.getTemplates();
+    Assert.assertEquals(1, data.values().size());
+    CompositeData cd = ((CompositeData) data.values().iterator().next());
+    Assert.assertEquals("<global>", cd.get("templateName"));
+    Assert.assertEquals(0, ((String[]) cd.get("macroNames")).length);
 
-        Assert.assertEquals(2, data.values().size());
-        Map<String, String[]> retrievedData = new HashMap<String, String[]>();
-        for (CompositeData cdata : (Collection<CompositeData>) data.values()) {
-            retrievedData.put((String) cdata.get("templateName"), (String[]) cdata.get("macroNames"));
-        }
-        Assert.assertEquals(0, retrievedData.get("<global>").length);
-        Assert.assertEquals(1, retrievedData.get("testmacronamespace").length);
-        Assert.assertEquals("testmacro", retrievedData.get("testmacronamespace")[0]);
+    StringWriter out = new StringWriter();
+    engine.evaluate(new VelocityContext(), out, "testmacronamespace", "#macro(testmacro)#end");
+    data = jmxBean.getTemplates();
+
+    Assert.assertEquals(2, data.values().size());
+    Map<String, String[]> retrievedData = new HashMap<String, String[]>();
+    for (CompositeData cdata : (Collection<CompositeData>) data.values()) {
+      retrievedData.put((String) cdata.get("templateName"), (String[]) cdata.get("macroNames"));
     }
+    Assert.assertEquals(0, retrievedData.get("<global>").length);
+    Assert.assertEquals(1, retrievedData.get("testmacronamespace").length);
+    Assert.assertEquals("testmacro", retrievedData.get("testmacronamespace")[0]);
+  }
 }

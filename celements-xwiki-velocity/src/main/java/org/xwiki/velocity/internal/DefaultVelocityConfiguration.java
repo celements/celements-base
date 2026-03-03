@@ -43,83 +43,87 @@ import org.xwiki.velocity.tools.RegexTool;
  * All configuration options for the Velocity subsystem.
  *
  * @version $Id$
- *
  * @since 2.0M1
  */
 @Component
 public class DefaultVelocityConfiguration implements Initializable, VelocityConfiguration {
-    /**
-     * Prefix for configuration keys for the Velocity module.
-     */
-    private static final String PREFIX = "velocity.";
 
-    /**
-     * Defines from where to read the rendering configuration data.
-     */
-    @Requirement
-    private ConfigurationSource configuration;
+  /**
+   * Prefix for configuration keys for the Velocity module.
+   */
+  private static final String PREFIX = "velocity.";
 
-    /**
-     * Default Tools.
-     */
-    private Properties defaultTools = new Properties();
+  /**
+   * Defines from where to read the rendering configuration data.
+   */
+  @Requirement
+  private ConfigurationSource configuration;
 
-    /**
-     * Default properties.
-     */
-    private Properties defaultProperties = new Properties();
+  /**
+   * Default Tools.
+   */
+  private Properties defaultTools = new Properties();
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.component.phase.Initializable#initialize()
-     */
-    public void initialize() throws InitializationException {
-        // Default Velocity tools.
-        this.defaultTools.setProperty("listtool", ListTool.class.getName());
-        this.defaultTools.setProperty("numbertool", NumberTool.class.getName());
-        this.defaultTools.setProperty("datetool", ComparisonDateTool.class.getName());
-        this.defaultTools.setProperty("mathtool", MathTool.class.getName());
-        this.defaultTools.setProperty("sorttool", SortTool.class.getName());
-        this.defaultTools.setProperty("escapetool", EscapeTool.class.getName());
-        this.defaultTools.setProperty("regextool", RegexTool.class.getName());
+  /**
+   * Default properties.
+   */
+  private Properties defaultProperties = new Properties();
 
-        // Default Velocity properties
-        this.defaultProperties.setProperty("resource.loader", "webapp");
-        this.defaultProperties.setProperty("directive.set.null.allowed", Boolean.TRUE.toString());
-        this.defaultProperties.setProperty("webapp.resource.loader.class", WebappLoader.class.getName());
-        this.defaultProperties.setProperty("velocimacro.messages.on", Boolean.FALSE.toString());
-        this.defaultProperties.setProperty("resource.manager.logwhenfound", Boolean.FALSE.toString());
-        this.defaultProperties.setProperty("velocimacro.permissions.allow.inline.local.scope", Boolean.TRUE.toString());
-        // Prevents users from writing dangerous Velocity code like using Class.forName or Java threading APIs.
-        this.defaultProperties.setProperty("runtime.introspector.uberspect", ChainingUberspector.class.getName());
-        this.defaultProperties.setProperty("runtime.introspector.uberspect.chainClasses",
-                SecureUberspector.class.getName() + "," + DeprecatedCheckUberspector.class.getName());
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.component.phase.Initializable#initialize()
+   */
+  public void initialize() throws InitializationException {
+    // Default Velocity tools.
+    this.defaultTools.setProperty("listtool", ListTool.class.getName());
+    this.defaultTools.setProperty("numbertool", NumberTool.class.getName());
+    this.defaultTools.setProperty("datetool", ComparisonDateTool.class.getName());
+    this.defaultTools.setProperty("mathtool", MathTool.class.getName());
+    this.defaultTools.setProperty("sorttool", SortTool.class.getName());
+    this.defaultTools.setProperty("escapetool", EscapeTool.class.getName());
+    this.defaultTools.setProperty("regextool", RegexTool.class.getName());
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see VelocityConfiguration#getProperties()
-     */
-    public Properties getProperties() {
-        // Merge default properties and properties defined in the configuration
-        Properties props = new Properties();
-        props.putAll(this.defaultProperties);
-        props.putAll(this.configuration.getProperty(PREFIX + "properties", Properties.class));
-        return props;
-    }
+    // Default Velocity properties
+    this.defaultProperties.setProperty("resource.loader", "webapp");
+    this.defaultProperties.setProperty("directive.set.null.allowed", Boolean.TRUE.toString());
+    this.defaultProperties.setProperty("webapp.resource.loader.class",
+        WebappLoader.class.getName());
+    this.defaultProperties.setProperty("velocimacro.messages.on", Boolean.FALSE.toString());
+    this.defaultProperties.setProperty("resource.manager.logwhenfound", Boolean.FALSE.toString());
+    this.defaultProperties.setProperty("velocimacro.permissions.allow.inline.local.scope",
+        Boolean.TRUE.toString());
+    // Prevents users from writing dangerous Velocity code like using Class.forName or Java
+    // threading APIs.
+    this.defaultProperties.setProperty("runtime.introspector.uberspect",
+        ChainingUberspector.class.getName());
+    this.defaultProperties.setProperty("runtime.introspector.uberspect.chainClasses",
+        SecureUberspector.class.getName() + "," + DeprecatedCheckUberspector.class.getName());
+  }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see VelocityConfiguration#getTools()
-     */
-    public Properties getTools() {
-        // Merge default tools and tools defined in the configuration
-        Properties props = new Properties();
-        props.putAll(this.defaultTools);
-        props.putAll(this.configuration.getProperty(PREFIX + "tools", Properties.class));
-        return props;
-    }
+  /**
+   * {@inheritDoc}
+   *
+   * @see VelocityConfiguration#getProperties()
+   */
+  public Properties getProperties() {
+    // Merge default properties and properties defined in the configuration
+    Properties props = new Properties();
+    props.putAll(this.defaultProperties);
+    props.putAll(this.configuration.getProperty(PREFIX + "properties", Properties.class));
+    return props;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see VelocityConfiguration#getTools()
+   */
+  public Properties getTools() {
+    // Merge default tools and tools defined in the configuration
+    Properties props = new Properties();
+    props.putAll(this.defaultTools);
+    props.putAll(this.configuration.getProperty(PREFIX + "tools", Properties.class));
+    return props;
+  }
 }

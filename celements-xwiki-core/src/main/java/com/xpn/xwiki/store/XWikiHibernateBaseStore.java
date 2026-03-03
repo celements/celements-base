@@ -101,7 +101,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @param context
    * @return
-   *
    * @deprecated since 6.0 instead use {@link #getSession()}
    */
   @Deprecated
@@ -126,7 +125,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @param session
    * @param context
-   *
    * @deprecated since 6.0 instead use {@link #setSession(Session)}
    */
   @Deprecated
@@ -152,7 +150,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @param context
    * @return
-   *
    * @deprecated since 6.0 instead use {@link #getTransaction()}
    */
   @Deprecated
@@ -172,7 +169,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @param transaction
    * @param context
-   *
    * @deprecated since 6.0 instead use {@link #setTransaction(Transaction)}
    */
   @Deprecated
@@ -196,7 +192,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @param context
    * @throws HibernateException
-   *
    * @deprecated since 6.0 instead use {@link #updateSchema(String)}
    */
   @Deprecated
@@ -220,7 +215,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param force
    *          defines wether or not to force the update despite the xwiki.cfg settings
    * @throws HibernateException
-   *
    * @deprecated since 6.0 instead use {@link #updateSchema(String, boolean)}
    */
   @Deprecated
@@ -268,7 +262,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    *          the XWiki context.
    * @return the database/schema name.
-   *
    * @deprecated since 6.0 instead use {@link #getSchemaFromWikiName(String)}
    */
   @Deprecated
@@ -312,7 +305,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *          the XWiki context.
    * @return the database/schema name.
    * @since XWiki Core 1.1.2, XWiki Core 1.2M2
-   *
    * @deprecated since 6.0 instead use {@link #getSchemaFromWikiName(String)}
    */
   @Deprecated
@@ -329,7 +321,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    * @return
    * @throws HibernateException
-   *
    * @deprecated since 6.0 instead use {@link #getSchemaUpdateScript(Configuration, String)}
    */
   @Deprecated
@@ -420,7 +411,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @param context
    * @throws HibernateException
-   *
    * @deprecated since 6.0 instead use {@link #checkHibernate(String)}
    */
   @Deprecated
@@ -432,7 +422,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * Initializes hibernate and calls updateSchema if necessary
    *
    * @throws HibernateException
-   *
    * @deprecated noop, bootstrap ensures hibernate is initialized
    */
   @Deprecated(since = "6.5")
@@ -447,7 +436,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    *          the XWiki context.
    * @return true if multi-wiki, false otherwise.
-   *
    * @deprecated since 6.0 instead use xwikiCfg.isVirtualMode()
    */
   @Deprecated
@@ -461,7 +449,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param session
    * @param context
    * @throws XWikiException
-   *
    * @deprecated since 6.0 instead use {@link #setDatabase(Session, String)}
    */
   @Deprecated
@@ -522,7 +509,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    *          the XWiki context to get database engine identifier
    * @return the escaped version
-   *
    * @deprecated since 6.0 instead use {@link #escapeSchema(String)}
    */
   @Deprecated
@@ -546,7 +532,6 @@ public class XWikiHibernateBaseStore implements Initializable {
 
   /**
    * Begins a transaction for the current database
-   *
    */
   public boolean beginTransaction() throws HibernateException, XWikiException {
     try {
@@ -564,7 +549,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    * @return
    * @throws XWikiException
-   *
    * @Deprecated since 6.0 instead use {@link #beginTransaction(String)}
    */
   @Deprecated
@@ -577,7 +561,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @throws HibernateException
    * @throws XWikiException
-   *
    */
   public boolean beginTransaction(@Nullable WikiReference wikiRef)
       throws HibernateException, WikiMissingException, XWikiException {
@@ -591,7 +574,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    * @return
    * @throws XWikiException
-   *
    * @Deprecated since 6.0 instead use {@link #beginTransaction(String)}
    */
   @Deprecated
@@ -608,7 +590,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    * @return
    * @throws XWikiException
-   *
    * @Deprecated since 6.0 instead use {@link #beginTransaction(SessionFactory, String)}
    */
   @Deprecated
@@ -625,7 +606,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @return
    * @throws HibernateException
    * @throws XWikiException
-   *
    * @Deprecated since 6.0 instead use {@link #beginTransaction(SessionFactory, String)}
    */
   @Deprecated
@@ -645,7 +625,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *
    * @throws HibernateException
    * @throws XWikiException
-   *
    */
   public boolean beginTransaction(
       @Nullable SessionFactory sfactory,
@@ -676,7 +655,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param context
    * @param commit
    *          should we commit or not
-   *
    * @Deprecated since 6.0 instead use {@link #endTransaction(boolean)}
    */
   @Deprecated
@@ -691,7 +669,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param commit
    *          should we commit or not
    * @throws HibernateException
-   *
    * @Deprecated since 6.0 instead use {@link #endTransaction(boolean)}
    */
   @Deprecated
@@ -852,7 +829,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *          - callback to execute
    * @throws XWikiException
    *           if any error
-   *
    * @Deprecated since 6.0 instead use {@link #execute(String, boolean, boolean, HibernateCallback)}
    */
   @Deprecated
@@ -919,7 +895,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *           if any error
    * @see #execute(XWikiContext, boolean, boolean,
    *      com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback)
-   *
    * @Deprecated since 6.0 instead use {@link #executeRead(String, boolean, HibernateCallback)}
    */
   @Deprecated
@@ -959,7 +934,6 @@ public class XWikiHibernateBaseStore implements Initializable {
    *           if any error
    * @see #execute(XWikiContext, boolean, boolean,
    *      com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback)
-   *
    * @Deprecated since 6.0 instead use {@link #executeWrite(String, boolean, HibernateCallback)}
    */
   @Deprecated

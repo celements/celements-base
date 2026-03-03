@@ -26,27 +26,29 @@ import org.xwiki.script.service.ScriptServiceManager;
 import org.xwiki.velocity.VelocityContextInitializer;
 
 /**
- * Registers the Script Service Manager in the Velocity Context so that it's available from Velocity.
+ * Registers the Script Service Manager in the Velocity Context so that it's available from
+ * Velocity.
  *
  * @version $Id$
- *
  * @since 2.3M1
  */
-// TODO: In the future Velocity will be implemented using the JSR 223 API and this class won't be required anymore.
+// TODO: In the future Velocity will be implemented using the JSR 223 API and this class won't be
+// required anymore.
 @Component("scriptservices")
 public class ServicesVelocityContextInitializer implements VelocityContextInitializer {
-    /**
-     * The Script Service Manager to bind in the Script Context.
-     */
-    @Requirement
-    private ScriptServiceManager scriptServiceManager;
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.xwiki.velocity.VelocityContextInitializer#initialize(org.apache.velocity.VelocityContext)
-     */
-    public void initialize(VelocityContext context) {
-        context.put("services", this.scriptServiceManager);
-    }
+  /**
+   * The Script Service Manager to bind in the Script Context.
+   */
+  @Requirement
+  private ScriptServiceManager scriptServiceManager;
+
+  /**
+   * {@inheritDoc}
+   *
+   * @see org.xwiki.velocity.VelocityContextInitializer#initialize(org.apache.velocity.VelocityContext)
+   */
+  public void initialize(VelocityContext context) {
+    context.put("services", this.scriptServiceManager);
+  }
 }

@@ -206,7 +206,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     this.document.setTitle("Title");
     expect(this.mockXWikiRenderingEngine.interpretText(EasyMock.eq("Title"),
         EasyMock.isA(XWikiDocument.class), EasyMock.isA(XWikiContext.class))).andReturn("Title")
-            .once();
+        .once();
     replayDefaults();
     assertEquals("Title", this.document.getDisplayTitle(getContext()));
     verifyDefaults();
@@ -216,7 +216,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     this.document.setContent("Some content\n1 Title");
     expect(this.mockXWikiRenderingEngine.interpretText(EasyMock.eq("Title"),
         EasyMock.isA(XWikiDocument.class), EasyMock.isA(XWikiContext.class))).andReturn("Title")
-            .once();
+        .once();
     replayDefaults();
     assertEquals("Title", this.document.getDisplayTitle(getContext()));
     verifyDefaults();
@@ -230,8 +230,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     this.document.setTitle("some content that generate a velocity error");
     expect(this.mockXWikiRenderingEngine.interpretText(EasyMock.isA(String.class),
         EasyMock.isA(XWikiDocument.class), EasyMock.isA(XWikiContext.class)))
-            .andReturn("... blah blah ... <div id=\"xwikierror105\" ... blah blah ...")
-            .once();
+        .andReturn("... blah blah ... <div id=\"xwikierror105\" ... blah blah ...")
+        .once();
     replayDefaults();
     assertEquals("Page", this.document.getDisplayTitle(getContext()));
     verifyDefaults();
@@ -662,7 +662,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     String inputText = "**bold**";
     expect(mockXWikiRenderingEngine.renderText(EasyMock.eq(inputText),
         EasyMock.isA(XWikiDocument.class), EasyMock.same(getContext()))).andReturn("**bold**")
-            .once();
+        .once();
     replayDefaults();
     assertEquals(inputText,
         this.document.getRenderedContent(inputText, "xwiki/2.0",

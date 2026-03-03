@@ -24,30 +24,32 @@ import org.xwiki.xml.internal.XMLScriptService;
 
 /**
  * <p>
- * Tool for working with escaping in Velocity templates. It provides methods to escape outputs for Velocity, Java,
+ * Tool for working with escaping in Velocity templates. It provides methods to escape outputs for
+ * Velocity, Java,
  * JavaScript, HTML, XML and SQL.
  * </p>
  * <p>
- * Extends the default EscapeTool from velocity-tools since the XML escape performed by it doesn't work inside HTML
- * content, since {@code apos} is not a valid HTML entity name, and it always escapes non-ASCII characters, which
+ * Extends the default EscapeTool from velocity-tools since the XML escape performed by it doesn't
+ * work inside HTML
+ * content, since {@code apos} is not a valid HTML entity name, and it always escapes non-ASCII
+ * characters, which
  * increases the HTML length considerably, while also making the source unreadable.
  * </p>
  *
  * @version $Id$
- *
  * @since 2.7RC1
  */
 public class EscapeTool extends org.apache.velocity.tools.generic.EscapeTool {
-    /**
-     * Escapes the XML special characters in a <code>String</code> using numerical XML entities.
-     *
-     * @param content
-     *            the text to escape, may be {@code null}
-     *
-     * @return a new escaped {@code String}, {@code null} if {@code null} input
-     */
-    @Override
-    public String xml(Object content) {
-        return XMLScriptService.escape(content);
-    }
+
+  /**
+   * Escapes the XML special characters in a <code>String</code> using numerical XML entities.
+   *
+   * @param content
+   *          the text to escape, may be {@code null}
+   * @return a new escaped {@code String}, {@code null} if {@code null} input
+   */
+  @Override
+  public String xml(Object content) {
+    return XMLScriptService.escape(content);
+  }
 }

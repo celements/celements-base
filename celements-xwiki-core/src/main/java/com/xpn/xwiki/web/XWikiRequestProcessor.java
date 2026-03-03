@@ -30,7 +30,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- *
  * @version $Id$
  */
 public class XWikiRequestProcessor extends org.apache.struts.action.RequestProcessor {

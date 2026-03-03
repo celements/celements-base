@@ -31,7 +31,6 @@ import com.xpn.xwiki.plugin.PluginApi;
 /**
  * Plugin that offers access to uploaded files. The uploaded files are automatically parsed and
  * preserved as a list of {@link org.apache.commons.fileupload.FileItem}s.
- *
  * This is the wrapper accessible from in-document scripts.
  *
  * @version $Id$

@@ -27,7 +27,6 @@ import org.apache.commons.collections.ComparatorUtils;
 
 /**
  * Compare and sort instances of ElementInterface by name.
- *
  */
 public class ElementComparator implements Comparator {
 
