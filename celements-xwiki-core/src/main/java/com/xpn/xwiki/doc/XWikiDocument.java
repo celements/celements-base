@@ -5702,7 +5702,9 @@ public class XWikiDocument implements DocumentModelBridge {
   /**
    * @return the syntax of the document
    * @since 2.3M1
+   * @deprecated since 7.0 only syntax10 support in the future
    */
+  @Deprecated(since = "7.0.", forRemoval = true)
   public Syntax getSyntax() {
     return Syntax.XWIKI_1_0;
   }
