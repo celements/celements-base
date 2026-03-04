@@ -262,11 +262,6 @@ public class XWiki implements EventListener {
   private static File tempDir = null;
 
   /**
-   * List of configured syntax ids.
-   */
-  private List<String> configuredSyntaxes;
-
-  /**
    * Used to convert a proper Document Reference to string (standard form).
    */
   @SuppressWarnings("unchecked")
@@ -404,10 +399,6 @@ public class XWiki implements EventListener {
     String ro = Param("xwiki.readonly", "no");
     this.isReadOnly = ("yes".equalsIgnoreCase(ro) || "true".equalsIgnoreCase(ro)
         || "1".equalsIgnoreCase(ro));
-
-    // Save the configured syntaxes
-    String syntaxes = Param("xwiki.rendering.syntaxes", "xwiki/1.0");
-    this.configuredSyntaxes = Arrays.asList(StringUtils.split(syntaxes, " ,"));
 
     Utils.getComponent(ObservationManager.class).addListener(this);
 
@@ -5472,17 +5463,20 @@ public class XWiki implements EventListener {
   /**
    * @return the ids of configured syntaxes for this wiki (eg "xwiki/1.0", "xwiki/2.0",
    *         "mediawiki/1.0", etc)
+   * @deprecated since 7.0 only syntax10 support in the future
    */
+  @Deprecated(since = "7.0.", forRemoval = true)
   public List<String> getConfiguredSyntaxes() {
-    return this.configuredSyntaxes;
+    return List.of(Syntax.XWIKI_1_0.toIdString());
   }
 
   /**
    * @return the syntax id of the syntax to use when creating new documents.
+   * @deprecated since 7.0 only syntax10 support in the future
    */
+  @Deprecated(since = "7.0.", forRemoval = true)
   public String getDefaultDocumentSyntax() {
-    // TODO: Fix this method to return a Syntax object instead of a String
-    return Utils.getComponent(CoreConfiguration.class).getDefaultDocumentSyntax().toIdString();
+    return Syntax.XWIKI_1_0.toIdString();
   }
 
   /**
