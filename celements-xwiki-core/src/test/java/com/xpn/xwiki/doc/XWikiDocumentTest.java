@@ -225,7 +225,7 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
   /**
    * Verify that if an error happens when evaluation the title, we fallback to the computed title.
    */
-  public void testGetDisplayTitleWhenVelocityError() {
+  public void testGetDisplayTitleWhenVelocityError() throws Exception {
     this.document.setContent("Some content");
     this.document.setTitle("some content that generate a velocity error");
     expect(this.mockXWikiRenderingEngine.interpretText(EasyMock.isA(String.class),

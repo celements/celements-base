@@ -45,7 +45,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.function.Supplier;
@@ -92,16 +91,9 @@ import org.xwiki.rendering.block.LinkBlock;
 import org.xwiki.rendering.block.XDOM;
 import org.xwiki.rendering.listener.reference.ResourceReference;
 import org.xwiki.rendering.listener.reference.ResourceType;
-import org.xwiki.rendering.parser.ParseException;
-import org.xwiki.rendering.parser.Parser;
 import org.xwiki.rendering.renderer.BlockRenderer;
-import org.xwiki.rendering.renderer.printer.DefaultWikiPrinter;
-import org.xwiki.rendering.renderer.printer.WikiPrinter;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.rendering.syntax.SyntaxFactory;
-import org.xwiki.rendering.transformation.TransformationContext;
-import org.xwiki.rendering.transformation.TransformationException;
-import org.xwiki.rendering.transformation.TransformationManager;
 import org.xwiki.rendering.util.ParserUtils;
 import org.xwiki.velocity.VelocityManager;
 import org.xwiki.velocity.XWikiVelocityException;
@@ -336,13 +328,6 @@ public class XWikiDocument implements DocumentModelBridge {
    * @see #getOriginalDocument()
    */
   private XWikiDocument originalDocument;
-
-  /**
-   * The document structure expressed as a tree of Block objects. We store it for performance
-   * reasons since parsing is a costly operation that we don't want to repeat whenever some code ask
-   * for the XDOM information.
-   */
-  private XDOM xdom;
 
   /**
    * Used to resolve a string into a proper Document Reference using the current document's
@@ -775,13 +760,10 @@ public class XWikiDocument implements DocumentModelBridge {
       setWikiNode(null);
     }
     this.content = content;
-
-    // invalidate parsed xdom
-    this.xdom = null;
   }
 
   public void setContent(XDOM content) throws XWikiException {
-    setContent(renderXDOM(content, getSyntax()));
+    setContent(content);
   }
 
   public String getRenderedContent(Syntax targetSyntax, XWikiContext context)
@@ -1149,53 +1131,6 @@ public class XWikiDocument implements DocumentModelBridge {
   }
 
   /**
-   * Get the rendered version of the first or second level first found header content in the
-   * document content.
-   * <ul>
-   * <li>xwiki/1.0: the first found first or second level header content is rendered with
-   * {@link com.xpn.xwiki.render.XWikiRenderingEngine#interpretText(String, XWikiDocument, XWikiContext)}</li>
-   * <li>xwiki/2.0: the first found first or second level content is executed and rendered with
-   * renderer for the provided syntax</li>
-   * </ul>
-   *
-   * @param outputSyntax
-   *          the syntax to render to. This is not taken into account for xwiki/1.0 syntax.
-   * @param context
-   *          the XWiki context
-   * @return the rendered version of the title. null or empty (when xwiki/1.0 syntax) string if none
-   *         can be found
-   * @throws XWikiException
-   *           failed to render content
-   */
-  private String getRenderedContentTitle(Syntax outputSyntax, XWikiContext context)
-      throws XWikiException {
-    String title = null;
-
-    // Protect against cycles. For example that cold happen with a call to getRenderedTitle on
-    // current document from
-    // a script in the first heading block title
-    Stack<DocumentReference> stackTrace = (Stack<DocumentReference>) context
-        .get("internal.getRenderedContentTitleStackTrace");
-    if (stackTrace == null) {
-      stackTrace = new Stack<>();
-      context.put("internal.getRenderedContentTitleStackTrace", stackTrace);
-    } else if (stackTrace.contains(getDocumentReference())) {
-      // TODO: generate an error message instead ?
-      return null;
-    }
-    stackTrace.push(getDocumentReference());
-
-    try {
-      // Extract and render the document title
-      title = getRenderedContentTitle10(context);
-    } finally {
-      stackTrace.pop();
-    }
-
-    return title;
-  }
-
-  /**
    * Get the rendered version of the title of the document.
    * <ul>
    * <li>if document <code>title</code> field is not empty: it's returned after a call to
@@ -1214,50 +1149,23 @@ public class XWikiDocument implements DocumentModelBridge {
   public String getRenderedTitle(Syntax outputSyntax, XWikiContext context) {
     // 1) Check if the user has provided a title
     String title = getTitle();
-
-    try {
-      if (!StringUtils.isEmpty(title)) {
-        title = context.getWiki().getRenderingEngine().interpretText(title, this, context);
-
-        // If there's been an error during the Velocity evaluation then consider that the title is
-        // empty as a
-        // fallback.
-        // TODO: Since interpretText() never throws an exception it's hard to know if there's been
-        // an error.
-        // Right now interpretText() returns some HTML when there's an error, so we need to check
-        // the returned
-        // result for some marker to decide if an error has occurred... Fix this by refactoring the
-        // whole
-        // system used for Velocity evaluation.
-        if (title.indexOf("<div id=\"xwikierror") == -1) {
-          if (!outputSyntax.equals(Syntax.HTML_4_01) && !outputSyntax.equals(Syntax.XHTML_1_0)) {
-            XDOM xdom = parseContent(Syntax.HTML_4_01.toIdString(), title);
-            parserUtils.get().removeTopLevelParagraph(xdom.getChildren());
-            title = renderXDOM(xdom, outputSyntax);
-          }
-
-          return title;
-        }
+    if (!StringUtils.isEmpty(title)) {
+      title = context.getWiki().getRenderingEngine().interpretText(title, this, context);
+      if (title.indexOf("<div id=\"xwikierror") == -1) {
+        return title;
       }
-    } catch (Exception e) {
-      LOG.warn(
-          "Failed to interpret title of document [{}]",
-          defer(() -> defaultEntityReferenceSerializer.get().serialize(getDocumentReference())), e);
     }
-
     try {
       // 2) If not, then try to extract the title from the first document section title
-      title = getRenderedContentTitle(outputSyntax, context);
+      title = getRenderedContentTitle10(context);
     } catch (Exception e) {
       LOG.warn("Failed to extract title from content of document [{}]",
           defer(() -> defaultEntityReferenceSerializer.get().serialize(getDocumentReference())), e);
     }
-
     // 3) No title has been found, return the page name as the title
     if (StringUtils.isEmpty(title)) {
       title = getDocumentReference().getName();
     }
-
     return title;
   }
 
@@ -6844,18 +6752,11 @@ public class XWikiDocument implements DocumentModelBridge {
   }
 
   /**
-   * @return the XDOM conrrexponding to the document's string content.
+   * @deprecated since 7.0
    */
+  @Deprecated(since = "7.0", forRemoval = true)
   public XDOM getXDOM() {
-    if (this.xdom == null) {
-      try {
-        this.xdom = parseContent(getContent());
-      } catch (XWikiException e) {
-        LOG.error("Failed to parse document content to XDOM", e);
-      }
-    }
-
-    return this.xdom.clone();
+    return null;
   }
 
   /**
@@ -6918,147 +6819,6 @@ public class XWikiDocument implements DocumentModelBridge {
     } catch (Throwable e) {
       XWikiValidationStatus.addExceptionToContext(getFullName(), "", e, context);
       return false;
-    }
-  }
-
-  /**
-   * Convert the passed content from the passed syntax to the passed new syntax.
-   *
-   * @param content
-   *          the content to convert
-   * @param targetSyntax
-   *          the new syntax after the conversion
-   * @param txContext
-   *          the context when Transformation are executed or null if transformation shouldn't be
-   *          executed
-   * @return the converted content in the new syntax
-   * @throws XWikiException
-   *           if an exception occurred during the conversion process
-   * @since 2.4M2
-   */
-  private static String performSyntaxConversion(String content, Syntax targetSyntax,
-      TransformationContext txContext)
-      throws XWikiException {
-    try {
-      XDOM dom = parseContent(txContext.getSyntax().toIdString(), content);
-
-      return performSyntaxConversion(dom, targetSyntax, txContext);
-    } catch (Exception e) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI_RENDERING,
-          XWikiException.ERROR_XWIKI_UNKNOWN,
-          "Failed to convert document to syntax [" + targetSyntax + "]", e);
-    }
-  }
-
-  /**
-   * Convert the passed content from the passed syntax to the passed new syntax.
-   *
-   * @param content
-   *          the content to convert
-   * @param currentSyntaxId
-   *          the syntax of the current content to convert
-   * @param targetSyntax
-   *          the new syntax after the conversion
-   * @return the converted content in the new syntax
-   * @throws XWikiException
-   *           if an exception occurred during the conversion process
-   * @since 2.4M2
-   */
-  private static String performSyntaxConversion(String content, String currentSyntaxId,
-      Syntax targetSyntax)
-      throws XWikiException {
-    try {
-      XDOM dom = parseContent(currentSyntaxId, content);
-
-      return performSyntaxConversion(dom, targetSyntax, null);
-    } catch (Exception e) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI_RENDERING,
-          XWikiException.ERROR_XWIKI_UNKNOWN,
-          "Failed to convert document to syntax [" + targetSyntax + "]", e);
-    }
-  }
-
-  /**
-   * Convert the passed content from the passed syntax to the passed new syntax.
-   *
-   * @param content
-   *          the XDOM content to convert, the XDOM can be modified during the transformation
-   * @param targetSyntax
-   *          the new syntax after the conversion
-   * @param txContext
-   *          the context when Transformation are executed or null if transformation shouldn't be
-   *          executed
-   * @return the converted content in the new syntax
-   * @throws XWikiException
-   *           if an exception occurred during the conversion process
-   * @since 2.4M2
-   */
-  private static String performSyntaxConversion(XDOM content, Syntax targetSyntax,
-      TransformationContext txContext)
-      throws XWikiException {
-    try {
-      if (txContext != null) {
-        // Transform XDOM
-        TransformationManager transformations = Utils.getComponent(TransformationManager.class);
-        if (txContext.getXDOM() == null) {
-          txContext.setXDOM(content);
-        }
-        try {
-          transformations.performTransformations(content, txContext);
-        } catch (TransformationException te) {
-          // An error happened during one of the transformations. Since the error has been logged
-          // continue
-          // TODO: We should have a visual clue for the user in the future to let him know something
-          // didn't work as expected.
-        }
-      }
-
-      // Render XDOM
-      return renderXDOM(content, targetSyntax);
-    } catch (Exception e) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI_RENDERING,
-          XWikiException.ERROR_XWIKI_UNKNOWN,
-          "Failed to convert document to syntax [" + targetSyntax + "]", e);
-    }
-  }
-
-  /**
-   * Render privided XDOM into content of the provided syntax identifier.
-   *
-   * @param content
-   *          the XDOM content to render
-   * @param targetSyntax
-   *          the syntax identifier of the rendered content
-   * @return the rendered content
-   * @throws XWikiException
-   *           if an exception occurred during the rendering process
-   */
-  private static String renderXDOM(XDOM content, Syntax targetSyntax) throws XWikiException {
-    try {
-      BlockRenderer renderer = Utils.getComponent(BlockRenderer.class, targetSyntax.toIdString());
-      WikiPrinter printer = new DefaultWikiPrinter();
-      renderer.render(content, printer);
-      return printer.toString();
-    } catch (Exception e) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI_RENDERING,
-          XWikiException.ERROR_XWIKI_UNKNOWN,
-          "Failed to render document to syntax [" + targetSyntax + "]", e);
-    }
-  }
-
-  private XDOM parseContent(String content) throws XWikiException {
-    return parseContent(getSyntaxId(), content);
-  }
-
-  private static XDOM parseContent(String syntaxId, String content) throws XWikiException {
-    try {
-      Parser parser = Utils.getComponent(Parser.class, syntaxId);
-
-      return parser.parse(new StringReader(content));
-    } catch (ParseException e) {
-      throw new XWikiException(XWikiException.MODULE_XWIKI_RENDERING,
-          XWikiException.ERROR_XWIKI_UNKNOWN,
-          "Failed to parse content of syntax [" + syntaxId + "]", e);
     }
   }
 

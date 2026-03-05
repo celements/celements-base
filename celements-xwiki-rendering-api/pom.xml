@@ -77,6 +77,12 @@
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
+      <artifactId>celements-xwiki-xml</artifactId>
+      <version>7.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
       <version>7.0-SNAPSHOT</version>
       <scope>provided</scope>
@@ -123,11 +129,6 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-bridge</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-xml</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
