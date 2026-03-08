@@ -16,28 +16,41 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
  */
-package org.xwiki.rendering.internal.renderer.plain;
+package org.xwiki.xml;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.rendering.syntax.Syntax;
-import org.xwiki.rendering.internal.renderer.AbstractPrintRendererFactory;
+import org.xwiki.test.AbstractXWikiComponentTestCase;
 
 /**
- * Create Plain Text Renderers.
+ * Unit tests for {@link org.xwiki.xml.XMLUtils}.
  *
  * @version $Id$
- * @since 2.0M3
+ * @since 1.6M1
  */
-@Component("plain/1.0")
-public class PlainTextRendererFactory extends AbstractPrintRendererFactory {
+public class XMLUtilsTest extends AbstractXWikiComponentTestCase {
 
   /**
    * {@inheritDoc}
    *
-   * @see AbstractPrintRendererFactory#getSyntax()
+   * @see org.xwiki.test.AbstractXWikiComponentTestCase#setUp()
    */
-  public Syntax getSyntax() {
-    return Syntax.PLAIN_1_0;
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+  }
+
+  public void testEscapeXMLComment() {
+    assertEquals("-\\- ", XMLUtils.escapeXMLComment("-- "));
+    assertEquals("-\\", XMLUtils.escapeXMLComment("-"));
+    assertEquals("-\\-\\-\\", XMLUtils.escapeXMLComment("---"));
+    assertEquals("- ", XMLUtils.escapeXMLComment("- "));
+  }
+
+  public void testUnescapeXMLComment() {
+    assertEquals("", XMLUtils.unescapeXMLComment("\\"));
+    assertEquals("\\", XMLUtils.unescapeXMLComment("\\\\"));
+    assertEquals("--", XMLUtils.unescapeXMLComment("\\-\\-"));
+    assertEquals("--", XMLUtils.unescapeXMLComment("\\-\\-\\"));
   }
 }
