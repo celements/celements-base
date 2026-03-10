@@ -61,8 +61,11 @@
 ##
 #############################################################################
 ##
-$xwiki.jsfx.use("js/xwiki/table/tablefilterNsort.js")##
-$xwiki.ssfx.use("js/xwiki/table/table.css")##
+#set($jsService = $services.javascript)
+#set($extJsParam = $jsService.createExtJSParam().setAction('file'))
+#set($extJsParam = $extJsParam.setLazyLoad(true))
+$!jsService.includeExtJsFile($extJsParam.setJsFile(':js/xwiki/table/tablefilterNsort.js'))##
+$services.css.includeCSSPage(':js/xwiki/table/table.css')##
 #set($WikiManager = $xwiki.wikimanager)
 #if(!$WikiManager)
   #error($msg.get("wikimanager.pluginnotenabled"))
