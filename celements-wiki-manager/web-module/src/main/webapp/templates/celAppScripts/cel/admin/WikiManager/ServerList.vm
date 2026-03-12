@@ -6,4 +6,5 @@
   #end
 #else
 ## empty response, script does not exist
+$response.setStatus(404)
 #end
