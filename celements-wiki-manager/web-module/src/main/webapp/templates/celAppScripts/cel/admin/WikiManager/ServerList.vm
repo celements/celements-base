@@ -1,6 +1,6 @@
 #if($services.celementsweb.isMainWiki())
   #if($isAdmin)
-      #parse("serverListing.vm")
+      #parse("wikiManagerMacros/serverListing.vm")
   #else
     <div class="warning">$adminMsg.get("wikimanager.noAccessRights")</div>
   #end
