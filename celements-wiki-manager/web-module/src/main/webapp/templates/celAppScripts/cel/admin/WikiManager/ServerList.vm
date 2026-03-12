@@ -1,4 +1,5 @@
-1 $adminMsg.get("wikimanager.wikimanager")
+$services.css.includeCSSPage(':skins/albatross/screenlayout.css')##
+<h1>$adminMsg.get("wikimanager.wikimanager")</h1>
 ##
 #############################################################################
 ##
