@@ -21,7 +21,6 @@ package com.celements.filebase.cmd;
 
 import javax.inject.Inject;
 
-import org.python.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -31,6 +30,7 @@ import com.celements.auth.user.UserService;
 import com.celements.filebase.IAttachmentServiceRole;
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.context.ModelContext;
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
