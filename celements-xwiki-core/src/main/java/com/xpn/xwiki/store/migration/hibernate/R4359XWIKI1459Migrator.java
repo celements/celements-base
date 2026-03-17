@@ -99,7 +99,7 @@ public class R4359XWIKI1459Migrator extends AbstractXWikiHibernateMigrator {
         }
         Transaction originalTransaction = ((XWikiHibernateVersioningStore) context.getWiki()
             .getVersioningStore())
-                .getTransaction(context);
+            .getTransaction(context);
         ((XWikiHibernateVersioningStore) context.getWiki().getVersioningStore())
             .setSession(null, context);
         ((XWikiHibernateVersioningStore) context.getWiki().getVersioningStore())

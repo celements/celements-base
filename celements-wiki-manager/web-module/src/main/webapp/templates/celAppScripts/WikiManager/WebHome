@@ -1,0 +1,1 @@
+$response.sendRedirect($services.appscript.getAppScriptURL('cel/admin/WikiManager/ServerList'))

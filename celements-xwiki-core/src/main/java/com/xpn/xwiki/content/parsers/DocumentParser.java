@@ -28,7 +28,6 @@ import com.xpn.xwiki.content.Link;
 
 /**
  * Parse document source content as typed by the user.
- *
  * <p>
  * Note: This is a very basic parser which currently only parses wiki links. It should probably
  * not be developed further. Instead we should migrate to a proper parser such as

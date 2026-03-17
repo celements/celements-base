@@ -217,12 +217,10 @@ public class PackageAPI extends Api {
    *
    * @param data
    *          the file to create the package from, as a byte array.
-   *
    * @return true if the package creation succeeded, false otherwise. If the package creation
    *         failed,
    *         the error message is placed in the velocity context under the <code>import_error</code>
    *         key,
-   *
    * @since 2.2M1
    */
   public boolean importPackageFromByteArray(byte data[]) {
@@ -288,7 +286,6 @@ public class PackageAPI extends Api {
 
   /**
    * @return a representation of this package under the JSON format
-   *
    * @since 2.2M1
    */
   public JSONObject toJSON() {

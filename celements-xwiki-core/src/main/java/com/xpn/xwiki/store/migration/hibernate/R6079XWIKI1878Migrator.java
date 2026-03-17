@@ -38,7 +38,6 @@ import com.xpn.xwiki.store.migration.XWikiDBVersion;
  * Migration for XWIKI1878: Fix xwikircs table isdiff data not matching RCS state of some revisions
  * (when the state
  * says "full" the isdiff column in the database should be false).
- *
  * Note: This migrator should only be executed if the R4359XWIKI1459 one has already been executed
  * (i.e. if the
  * database is in version < 4360). This is because this current migrator is because of a bug in

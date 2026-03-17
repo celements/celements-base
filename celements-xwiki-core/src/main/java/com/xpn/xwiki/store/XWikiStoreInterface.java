@@ -557,7 +557,6 @@ public interface XWikiStoreInterface {
    * @return a list of XWikiDocument.
    * @throws XWikiException
    *           in case of error while performing the query.
-   *
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -588,7 +587,6 @@ public interface XWikiStoreInterface {
    * @throws XWikiException
    *           in case of error while performing the query.
    * @since XWiki Core 1.1.2, XWiki Core 1.2M2
-   *
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -613,7 +611,6 @@ public interface XWikiStoreInterface {
    * @return a list of XWikiDocument.
    * @throws XWikiException
    *           in case of error while performing the query.
-   *
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -649,7 +646,6 @@ public interface XWikiStoreInterface {
    * @throws XWikiException
    *           in case of error while performing the query.
    * @since XWiki Core 1.1.2, XWiki Core 1.2M2
-   *
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -683,7 +679,6 @@ public interface XWikiStoreInterface {
    *          the ref to the wiki
    * @throws XWikiException
    *           error when creating new wiki.
-   *
    */
   void createWiki(@NotNull WikiReference wikiRef) throws XWikiException;
 
