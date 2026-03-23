@@ -34,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.matcher.AllAttachmentMatcher;
+import com.celements.model.context.ModelContext;
 import com.celements.spring.security.AuthenticatedBaseController;
 import com.xpn.xwiki.doc.XWikiAttachment;
 
@@ -47,17 +48,44 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   private static final String STORAGE = "local";
 
   private final IFileBaseServiceRole fileBaseService;
+  private final ModelContext context;
 
   @Inject
   public VueFinderFilesController(
-      IFileBaseServiceRole fileBaseService) {
+      IFileBaseServiceRole fileBaseService,
+      ModelContext context) {
     this.fileBaseService = fileBaseService;
+    this.context = context;
   }
 
   @GetMapping("/helloFinder")
   @PreAuthorize("permitAll()")
   public String helloFinder() {
     return "VueFinder Backend comming here!";
+  }
+
+  /**
+   * Preview a file (attachment).
+   * GET /api/files/preview?path=local://public/FileRepo/DALLE.png
+   */
+  @GetMapping(path = "/preview")
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<byte[]> preview(@RequestParam("path") String path) {
+    String fileName = normalizeFileName(path);
+    try {
+      XWikiAttachment att = fileBaseService.getFileNameEqual(fileName);
+      byte[] content;
+      try (InputStream in = att.getContentInputStream(context.getXWikiContext())) {
+        content = in.readAllBytes();
+      }
+      String mimeType = guessMimeType(fileName);
+      return ResponseEntity.ok()
+          .contentType(MediaType.parseMediaType(mimeType))
+          .body(content);
+    } catch (Exception exp) {
+      LOGGER.warn("Failed to load file for preview: {}", fileName, exp);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found.", exp);
+    }
   }
 
   /**
