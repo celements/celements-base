@@ -30,12 +30,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.xwiki.model.reference.AttachmentReference;
 
 import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.matcher.AllAttachmentMatcher;
-import com.celements.model.context.ModelContext;
+import com.celements.model.reference.RefBuilder;
 import com.celements.spring.security.AuthenticatedBaseController;
+import com.celements.url.UrlService;
 import com.xpn.xwiki.doc.XWikiAttachment;
 
 @RestController
@@ -46,46 +48,24 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   private static final Logger LOGGER = LoggerFactory.getLogger(VueFinderFilesController.class);
 
   private static final String STORAGE = "local";
+  private static final int MAX_WIDTH = 800;
+  private static final int MAX_HEIGHT = 800;
 
   private final IFileBaseServiceRole fileBaseService;
-  private final ModelContext context;
+  private final UrlService urlService;
 
   @Inject
   public VueFinderFilesController(
       IFileBaseServiceRole fileBaseService,
-      ModelContext context) {
+      UrlService urlService) {
     this.fileBaseService = fileBaseService;
-    this.context = context;
+    this.urlService = urlService;
   }
 
   @GetMapping("/helloFinder")
   @PreAuthorize("permitAll()")
   public String helloFinder() {
     return "VueFinder Backend comming here!";
-  }
-
-  /**
-   * Preview a file (attachment).
-   * GET /api/files/preview?path=local://public/FileRepo/DALLE.png
-   */
-  @GetMapping(path = "/preview")
-  @PreAuthorize("permitAll()")
-  public ResponseEntity<byte[]> preview(@RequestParam("path") String path) {
-    String fileName = normalizeFileName(path);
-    try {
-      XWikiAttachment att = fileBaseService.getFileNameEqual(fileName);
-      byte[] content;
-      try (InputStream in = att.getContentInputStream(context.getXWikiContext())) {
-        content = in.readAllBytes();
-      }
-      String mimeType = guessMimeType(fileName);
-      return ResponseEntity.ok()
-          .contentType(MediaType.parseMediaType(mimeType))
-          .body(content);
-    } catch (Exception exp) {
-      LOGGER.warn("Failed to load file for preview: {}", fileName, exp);
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found.", exp);
-    }
   }
 
   /**
@@ -206,6 +186,11 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
     item.last_modified = lm;
     item.mime_type = guessMimeType(name);
     item.visibility = "public";
+    AttachmentReference attachmentRef = RefBuilder.from(att.getDoc().getDocumentReference())
+        .att(name).build(AttachmentReference.class);
+    item.url = urlService.getURL(attachmentRef, "download");
+    String query = "celwidth=" + MAX_WIDTH + "&celheight=" + MAX_HEIGHT;
+    item.previewUrl = urlService.getURL(attachmentRef, "download", query);
     return item;
   }
 
@@ -253,6 +238,8 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
     public String basename;
     public String extension;
     public String path;
+    public String url;
+    public String previewUrl;
     public String storage;
     public String type; // "file" or "dir"
     public long file_size;
