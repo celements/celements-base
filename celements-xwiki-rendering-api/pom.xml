@@ -30,7 +30,7 @@
     <version>7.0</version>
   </parent>
   <artifactId>celements-xwiki-rendering-api</artifactId>
-  <version>7.0</version>
+  <version>7.1-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
@@ -179,7 +179,7 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-xwiki-rendering-api</url>
-    <tag>celements-xwiki-rendering-api-7.0</tag>
+    <tag>HEAD</tag>
   </scm>
   <build>
     <plugins>
