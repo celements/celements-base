@@ -176,6 +176,12 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <scm>
+    <connection>scm:git:git@github.com:celements/celements-base.git</connection>
+    <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
+    <url>https://github.com/celements/celements-base/celements-xwiki-rendering-api</url>
+    <tag>HEAD</tag>
+  </scm>
   <build>
     <plugins>
       <plugin>
