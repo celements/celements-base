@@ -22,8 +22,7 @@
  *
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.celements</groupId>
@@ -31,7 +30,7 @@
     <version>7.0</version>
   </parent>
   <artifactId>celements-xwiki-rendering-api</artifactId>
-  <version>7.0-SNAPSHOT</version>
+  <version>7.0</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
@@ -180,7 +179,7 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-xwiki-rendering-api</url>
-    <tag>HEAD</tag>
+    <tag>celements-xwiki-rendering-api-7.0</tag>
   </scm>
   <build>
     <plugins>
