@@ -29,7 +29,7 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>base-pom</artifactId>
-    <version>7.0-SNAPSHOT</version>
+    <version>7.0</version>
   </parent>
   <artifactId>celements-xwiki-velocity</artifactId>
   <version>7.0-SNAPSHOT</version>
@@ -37,37 +37,37 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>7.0-SNAPSHOT</version>
+      <version>7.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>7.0-SNAPSHOT</version>
+      <version>7.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>7.0-SNAPSHOT</version>
+      <version>7.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source</artifactId>
-      <version>7.0-SNAPSHOT</version>
+      <version>7.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>7.0-SNAPSHOT</version>
+      <version>7.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-xwiki-xml</artifactId>
-      <version>7.0-SNAPSHOT</version>
+      <version>7.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -153,7 +153,7 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
-      <version>7.0-SNAPSHOT</version>
+      <version>7.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
