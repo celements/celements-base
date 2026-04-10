@@ -14,21 +14,23 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 @ComponentRole
 public interface IFileBaseServiceRole {
 
-  public static final String FILEBASE_CONFIG_FIELD = "cel_centralfilebase";
+    public static final String FILEBASE_CONFIG_FIELD = "cel_centralfilebase";
 
-  public boolean existsFileNameEqual(String filename) throws FileBaseLoadException;
+    public boolean existsFileNameEqual(String filename) throws FileBaseLoadException;
 
-  public XWikiAttachment getFileNameEqual(String filename) throws FileNotExistsException,
-      FileBaseLoadException;
+    public XWikiAttachment getFileNameEqual(String filename) throws FileNotExistsException,
+            FileBaseLoadException;
 
-  public List<XWikiAttachment> getFilesNameMatch(IAttachmentMatcher attMatcher)
-      throws FileBaseLoadException;
+    public List<XWikiAttachment> getFilesNameMatch(IAttachmentMatcher attMatcher)
+            throws FileBaseLoadException;
 
-  public XWikiAttachment addFile(InputStream in, String filename, String username, String comment)
-      throws FileBaseAddFileException;
+    public XWikiAttachment addFile(InputStream in, String filename, String username, String comment)
+            throws FileBaseAddFileException;
 
-  public XWikiAttachment addFile(InputStream in, String filename, String comment)
-      throws FileBaseAddFileException;
+    public XWikiAttachment addFile(InputStream in, String filename, String comment)
+            throws FileBaseAddFileException;
 
-  public int deleteFileList(List<String> files);
+    public int deleteFileList(List<String> files);
+
+    public List<FileBaseTag> getFileTags();
 }
