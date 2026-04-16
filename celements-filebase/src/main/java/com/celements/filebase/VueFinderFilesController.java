@@ -41,9 +41,14 @@ import com.celements.auth.user.User;
 import com.celements.auth.user.UserInstantiationException;
 import com.celements.auth.user.UserService;
 import com.celements.filebase.exceptions.FileBaseAddFileException;
+import com.celements.filebase.exceptions.FileBaseTagCreateException;
+import com.celements.filebase.exceptions.FileBaseTagDeleteException;
+import com.celements.filebase.exceptions.FileBaseTagRenameException;
+import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.util.ModelUtils;
+import org.xwiki.model.reference.DocumentReference;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -298,6 +303,66 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
     return ResponseEntity.ok(Map.of());
   }
 
+  @GetMapping("/tags/can-manage")
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<?> canManageTags() {
+    return checkAuth()
+        .map(user -> ResponseEntity.ok(Map.of("canManage", rightsAccess.isAdmin(user))))
+        .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+  }
+
+  @PostMapping("/tags/create")
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<?> createTag(@RequestBody TagCreateRequest body) {
+    User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    if (!rightsAccess.isAdmin(user)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+    try {
+      DocumentReference ref = fileBaseService.createFileTag(body.label);
+      TagDto dto = new TagDto();
+      dto.id = modelUtils.serializeRefLocal(ref);
+      dto.prettyName = body.label;
+      dto.prettyNames = Map.of();
+      return ResponseEntity.ok(dto);
+    } catch (FileBaseTagCreateException exp) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create tag", exp);
+    }
+  }
+
+  @PostMapping("/tags/delete")
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<?> deleteTag(@RequestBody TagDeleteRequest body) {
+    User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    if (!rightsAccess.isAdmin(user)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+    try {
+      FileBaseTag tag = findTag(body.tagId);
+      fileBaseService.deleteFileTag(tag.getTagRef());
+      return ResponseEntity.ok(Map.of());
+    } catch (FileBaseTagDeleteException exp) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete tag", exp);
+    }
+  }
+
+  @PostMapping("/tags/rename")
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<?> renameTag(@RequestBody TagRenameRequest body) {
+    User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    if (!rightsAccess.isAdmin(user)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+    try {
+      FileBaseTag tag = findTag(body.tagId);
+      fileBaseService.renameFileTag(tag.getTagRef(), body.newLabel);
+      return ResponseEntity.ok(Map.of());
+    } catch (FileBaseTagRenameException exp) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to rename tag", exp);
+    }
+  }
+
+
   private FileBaseTag findTag(String tagId) {
     return fileBaseService.getFileTags().stream()
         .filter(t -> modelUtils.serializeRefLocal(t.getTagRef()).equals(tagId))
@@ -459,6 +524,19 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   public static class TagAssignRequest {
     public String tagId;
     public List<String> filePaths;
+  }
+
+  public static class TagCreateRequest {
+    public String label;
+  }
+
+  public static class TagDeleteRequest {
+    public String tagId;
+  }
+
+  public static class TagRenameRequest {
+    public String tagId;
+    public String newLabel;
   }
 
   @ExceptionHandler(ResponseStatusException.class)

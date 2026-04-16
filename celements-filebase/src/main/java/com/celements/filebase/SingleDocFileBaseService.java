@@ -14,24 +14,34 @@ import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.SpaceReference;
 
 import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
+import com.celements.filebase.exceptions.FileBaseTagCreateException;
+import com.celements.filebase.exceptions.FileBaseTagDeleteException;
+import com.celements.filebase.exceptions.FileBaseTagRenameException;
 import com.celements.filebase.exceptions.FileNotExistsException;
 import com.celements.filebase.matcher.IAttachmentMatcher;
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentLoadException;
 import com.celements.model.access.exception.DocumentSaveException;
+import com.celements.model.classes.fields.ClassField;
+import com.celements.model.classes.fields.StringField;
 import com.celements.model.context.ModelContext;
+import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.util.ModelUtils;
+import com.celements.navigation.INavigationClassConfig;
 import com.celements.navigation.cmd.MultilingualMenuNameCommand;
 import com.celements.navigation.service.ITreeNodeService;
+import com.celements.nextfreedoc.INextFreeDocRole;
 import com.celements.web.service.IWebUtilsService;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
 
 @Component(SingleDocFileBaseService.FILEBASE_SINGLE_DOC)
 public class SingleDocFileBaseService implements IFileBaseServiceRole {
@@ -47,11 +57,12 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
   private final ITreeNodeService treeNodeService;
   private final ModelContext modelContext;
   private final IWebUtilsService webUtilsService;
+  private final INextFreeDocRole nextFreeDoc;
   private final MultilingualMenuNameCommand menuNameCmd = new MultilingualMenuNameCommand();
 
   public SingleDocFileBaseService(IAttachmentServiceRole attService, IModelAccessFacade modelAccess,
       ITreeNodeService treeNodeService, ModelUtils modelUtils, ConfigurationSource configuration,
-      ModelContext modelContext, IWebUtilsService webUtilsService) {
+      ModelContext modelContext, IWebUtilsService webUtilsService, INextFreeDocRole nextFreeDoc) {
     this.attService = attService;
     this.modelAccess = modelAccess;
     this.modelUtils = modelUtils;
@@ -59,6 +70,7 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
     this.treeNodeService = treeNodeService;
     this.modelContext = modelContext;
     this.webUtilsService = webUtilsService;
+    this.nextFreeDoc = nextFreeDoc;
   }
 
   XWikiDocument getFileBaseDoc() throws FileBaseLoadException {
@@ -165,6 +177,68 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
                     modelUtils.serializeRefLocal(docRef), lang, ctx)),
             Map::putAll);
     return new FileBaseTag(docRef, names, modelAccess, modelUtils, modelContext);
+  }
+
+  @Override
+  public DocumentReference createFileTag(String label) throws FileBaseTagCreateException {
+    try {
+      DocumentReference fileBaseDocRef = getFileBaseDocRef()
+          .orElseThrow(() -> new FileBaseTagCreateException("Filebase document not configured"));
+      SpaceReference spaceRef = fileBaseDocRef.getLastSpaceReference();
+      DocumentReference tagDocRef = nextFreeDoc.getNextTitledPageDocRef(spaceRef, "tag");
+      XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tagDocRef);
+
+      BaseObject menuItemObj = XWikiObjectEditor.on(tagDoc)
+          .filter(INavigationClassConfig.MENU_ITEM_CLASS_REF)
+          .createFirstIfNotExists();
+      menuItemObj.setIntValue(INavigationClassConfig.MENU_POSITION_FIELD, getFileTags().size());
+      menuItemObj.setStringValue("menu_parent", "");
+      menuItemObj.setStringValue(INavigationClassConfig.PART_NAME_FIELD, "");
+
+      for (String lang : webUtilsService.getAllowedLanguages()) {
+        ClassField<String> langField = new StringField.Builder(INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD).build();
+        BaseObject menuNameObj = XWikiObjectEditor.on(tagDoc)
+            .filter(INavigationClassConfig.MENU_NAME_CLASS_REF)
+            .filter(langField, lang)
+            .createFirstIfNotExists();
+        menuNameObj.setStringValue(INavigationClassConfig.MENU_NAME_LANG_FIELD, lang);
+        menuNameObj.setStringValue(INavigationClassConfig.MENU_NAME_FIELD, label);
+      }
+
+      modelAccess.saveDocument(tagDoc, "Tag created via MediaLib");
+      return tagDocRef;
+    } catch (Exception e) {
+      throw new FileBaseTagCreateException("Failed to create tag: " + label, e);
+    }
+  }
+
+  @Override
+  public void deleteFileTag(DocumentReference tagRef) throws FileBaseTagDeleteException {
+    try {
+      modelAccess.deleteDocument(tagRef, true);
+    } catch (Exception e) {
+      throw new FileBaseTagDeleteException("Failed to delete tag", e);
+    }
+  }
+
+  @Override
+  public void renameFileTag(DocumentReference tagRef, String newLabel)
+      throws FileBaseTagRenameException {
+    try {
+      XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tagRef);
+      for (String lang : webUtilsService.getAllowedLanguages()) {
+        ClassField<String> langField = new StringField.Builder(INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD).build();
+        BaseObject menuNameObj = XWikiObjectEditor.on(tagDoc)
+            .filter(INavigationClassConfig.MENU_NAME_CLASS_REF)
+            .filter(langField, lang)
+            .createFirstIfNotExists();
+        menuNameObj.setStringValue(INavigationClassConfig.MENU_NAME_LANG_FIELD, lang);
+        menuNameObj.setStringValue(INavigationClassConfig.MENU_NAME_FIELD, newLabel);
+      }
+      modelAccess.saveDocument(tagDoc, "Tag renamed via MediaLib");
+    } catch (Exception e) {
+      throw new FileBaseTagRenameException("Failed to rename tag", e);
+    }
   }
 
 }

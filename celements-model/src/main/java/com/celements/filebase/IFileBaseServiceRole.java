@@ -7,9 +7,13 @@ import org.xwiki.component.annotation.ComponentRole;
 
 import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
+import com.celements.filebase.exceptions.FileBaseTagCreateException;
+import com.celements.filebase.exceptions.FileBaseTagDeleteException;
+import com.celements.filebase.exceptions.FileBaseTagRenameException;
 import com.celements.filebase.exceptions.FileNotExistsException;
 import com.celements.filebase.matcher.IAttachmentMatcher;
 import com.xpn.xwiki.doc.XWikiAttachment;
+import org.xwiki.model.reference.DocumentReference;
 
 @ComponentRole
 public interface IFileBaseServiceRole {
@@ -33,4 +37,11 @@ public interface IFileBaseServiceRole {
     public int deleteFileList(List<String> files);
 
     public List<FileBaseTag> getFileTags();
+
+    public DocumentReference createFileTag(String label) throws FileBaseTagCreateException;
+
+    public void deleteFileTag(DocumentReference tagRef) throws FileBaseTagDeleteException;
+
+    public void renameFileTag(DocumentReference tagRef, String newLabel)
+            throws FileBaseTagRenameException;
 }
