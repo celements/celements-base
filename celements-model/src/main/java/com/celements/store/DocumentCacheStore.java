@@ -219,7 +219,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
 
   String getKey(DocumentReference docRef) {
     return modelUtils.serializeRef(RefBuilder.from(docRef)
-        .with(modelUtils.normalizeWikiRef(modelContext.getWikiRef()))
+        .with(modelUtils.normalizeWikiRef(docRef.getWikiReference()))
         .build(DocumentReference.class));
   }
 
@@ -371,7 +371,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   public void deleteXWikiDoc(final XWikiDocument doc, final XWikiContext context)
       throws XWikiException {
     getBackingStore().deleteXWikiDoc(doc, context);
-    removeDocFromCache(doc, null);
+    removeDocFromCache(doc, false);
   }
 
   @Override
