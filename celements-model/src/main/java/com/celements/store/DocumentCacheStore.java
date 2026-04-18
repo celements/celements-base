@@ -371,7 +371,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   public void deleteXWikiDoc(final XWikiDocument doc, final XWikiContext context)
       throws XWikiException {
     getBackingStore().deleteXWikiDoc(doc, context);
-    removeDocFromCache(doc, false);
+    removeDocFromCache(doc, null);
   }
 
   @Override
