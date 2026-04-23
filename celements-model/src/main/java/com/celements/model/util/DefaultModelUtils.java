@@ -9,12 +9,12 @@ import static com.google.common.base.Strings.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.validation.constraints.NotNull;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -36,28 +36,31 @@ import com.xpn.xwiki.web.Utils;
 @Component
 public class DefaultModelUtils implements ModelUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelUtils.class);
-
-  @Requirement
-  private Execution exec;
-
-  @Requirement
-  private ModelContext context;
-
-  @Requirement("explicit")
-  private EntityReferenceResolver<String> resolver;
+  private final Execution exec;
+  private final ModelContext context;
+  private final EntityReferenceResolver<String> resolver;
+  private final ReferenceProvider refProvider;
+  private final XWikiConfigSource xwikiCfg;
+  private final Supplier<WikiReference> mainWikiRef;
 
   @Inject
-  private ReferenceProvider refProvider;
-
-  @Inject
-  private XWikiConfigSource xwikiCfg;
-
-  private final Supplier<WikiReference> mainWikiRef = Suppliers
-      .memoize(() -> RefBuilder.create()
-          .wiki(xwikiCfg.getProperty("xwiki.db"))
-          .buildOpt(WikiReference.class)
-          .orElse(XWikiConstant.MAIN_WIKI));
+  public DefaultModelUtils(
+      @Named("explicit") EntityReferenceResolver<String> resolver,
+      ReferenceProvider refProvider,
+      XWikiConfigSource xwikiCfg,
+      ModelContext context,
+      Execution exec) {
+    this.resolver = resolver;
+    this.refProvider = refProvider;
+    this.xwikiCfg = xwikiCfg;
+    this.context = context;
+    this.exec = exec;
+    this.mainWikiRef = Suppliers
+        .memoize(() -> RefBuilder.create()
+            .wiki(xwikiCfg.getMainWikiName())
+            .buildOpt(WikiReference.class)
+            .orElse(XWikiConstant.MAIN_WIKI));
+  }
 
   @Override
   @Deprecated
@@ -109,8 +112,9 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  public <T extends EntityReference> T resolveRef(String name, Class<T> token,
-      EntityReference baseRef) {
+  @NotNull
+  public <T extends EntityReference> T resolveRef(@NotNull String name, @NotNull Class<T> token,
+      @Nullable EntityReference baseRef) {
     RefBuilder builder = RefBuilder.create()
         .with(context.getWikiRef())
         .with(baseRef);
@@ -132,9 +136,18 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  public boolean isMainWiki(WikiReference wikiRef) {
+  public boolean isMainWiki(@Nullable WikiReference wikiRef) {
     return XWikiConstant.MAIN_WIKI.equals(wikiRef)
         || getMainWikiRef().equals(wikiRef);
+  }
+
+  @Override
+  @Nullable
+  public WikiReference normalizeWikiRef(@Nullable WikiReference wikiRef) {
+    if (isMainWiki(wikiRef)) {
+      return getMainWikiRef();
+    }
+    return wikiRef;
   }
 
   @Override
@@ -154,15 +167,10 @@ public class DefaultModelUtils implements ModelUtils {
 
   @Override
   public String getDatabaseName(WikiReference wikiRef) {
-    checkNotNull(wikiRef);
-    String database = "";
-    if (XWikiConstant.MAIN_WIKI.equals(wikiRef)) {
-      database = xwikiCfg.getProperty("xwiki.db", "").trim();
-    }
-    if (database.isEmpty()) {
-      database = wikiRef.getName().replace('-', '_');
-    }
-    return xwikiCfg.getProperty("xwiki.db.prefix", "") + database.replace('-', '_');
+    WikiReference normWikiRef = normalizeWikiRef(wikiRef);
+    checkNotNull(normWikiRef);
+    return xwikiCfg.getProperty("xwiki.db.prefix", "")
+        + normWikiRef.getName().replace('-', '_');
   }
 
   @Override

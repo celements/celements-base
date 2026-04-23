@@ -2,6 +2,7 @@ package com.celements.init;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.logging.LogUtils.*;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.container.servlet.ServletContainerInitializer;
@@ -25,6 +27,8 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.struts.StrutsActionUtils;
+import com.celements.url.UrlService;
 import com.celements.wiki.WikiMissingException;
 import com.celements.wiki.WikiService;
 import com.google.common.base.Stopwatch;
@@ -46,26 +50,42 @@ public class CelementsRequestFilter {
   private final WikiService wikiService;
   private final WikiUpdater wikiUpdater;
   private final XWikiProvider xwikiProvider;
+  private final StrutsActionUtils actionUtils;
 
   @Inject
   public CelementsRequestFilter(
       Execution execution,
       ExecutionContextManager execContextManager,
       ServletContainerInitializer containerInitializer,
-      WikiService wikiService,
+      @Lazy WikiService wikiService,
       WikiUpdater wikiUpdater,
-      XWikiProvider xwikiProvider) {
+      XWikiProvider xwikiProvider,
+      UrlService urlService,
+      StrutsActionUtils actionUtils) {
     this.execution = execution;
     this.execContextManager = execContextManager;
     this.containerInitializer = containerInitializer;
     this.wikiService = wikiService;
     this.wikiUpdater = wikiUpdater;
     this.xwikiProvider = xwikiProvider;
+    this.actionUtils = actionUtils;
+  }
+
+  public ExecutionContext preExecute(HttpServletRequest request,
+      HttpServletResponse response) throws WikiMissingException, ExecutionException,
+      ExecutionContextException, ServletContainerException {
+    LOGGER.trace("preExecute for servlet-request");
+    return preExecute(actionUtils.getActionForRequest(request), request, response);
   }
 
   public ExecutionContext preExecute(String action, HttpServletRequest request,
       HttpServletResponse response) throws WikiMissingException, ExecutionException,
       ExecutionContextException, ServletContainerException {
+    if (execution.getContext() != null) {
+      return execution.getContext();
+    }
+    LOGGER.debug("preExecute - action [{}], request [{}]",
+        action, defer(() -> request.getRequestURL().toString()));
     ExecutionContext eContext = createExecContextForRequest(action, request, response);
     containerInitializer.initializeRequest(request);
     containerInitializer.initializeResponse(response);
@@ -75,7 +95,7 @@ public class CelementsRequestFilter {
     XWikiContext xContext = eContext.get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
     XWiki xwiki = awaitWikiAvailability(wikiRef, Duration.ofHours(1));
     xwiki.prepareResources(xContext);
-    LOGGER.debug("request initialized");
+    LOGGER.debug("request initialized for action={}", action);
     return eContext;
   }
 
@@ -118,6 +138,9 @@ public class CelementsRequestFilter {
   }
 
   public void postExecute() {
+    if (execution.getContext() == null) {
+      return;
+    }
     LOGGER.debug("postExecute");
     containerInitializer.cleanup();
     execution.removeContext();

@@ -19,14 +19,15 @@ public class BooleanFieldTest extends AbstractComponentTest {
   private BooleanField field;
 
   String displayFormType = "select";
-  String displayType = "displayType";
+  String dictionaryKey = "truefalse";
   Integer defaultValue = 5;
 
   @Before
   public void prepareTest() throws Exception {
     assertNotNull(STATIC_DEFINITION);
-    field = new BooleanField.Builder(TestClassDefinition.CLASS_REF, "name").displayType(
-        displayType).defaultValue(defaultValue).displayFormType(displayFormType).build();
+    field = new BooleanField.Builder(TestClassDefinition.CLASS_REF, "name")
+        .dictionaryKey(dictionaryKey).defaultValue(defaultValue)
+        .displayFormType(displayFormType).build();
   }
 
   // @Test mutabilitydetector broken in Java11+
@@ -36,9 +37,18 @@ public class BooleanFieldTest extends AbstractComponentTest {
 
   @Test
   public void test_getters() throws Exception {
-    assertEquals(displayType, field.getDisplayType());
+    assertEquals(dictionaryKey, field.getDisplayType());
     assertEquals(defaultValue, field.getDefaultValue());
+    assertEquals(dictionaryKey, field.getDictionaryKey());
     assertEquals(displayFormType, field.getDisplayFormType());
+  }
+
+  @Test
+  public void test_defaultValueForDictionaryKey() {
+    BooleanField field1 = new BooleanField.Builder(TestClassDefinition.CLASS_REF, "name").build();
+    BooleanClass xField = (BooleanClass) field1.getXField();
+    assertEquals("yesno", field1.getDictionaryKey());
+    assertEquals("yesno", xField.getDisplayType());
   }
 
   @Test
@@ -46,7 +56,7 @@ public class BooleanFieldTest extends AbstractComponentTest {
     assertTrue(field.getXField() instanceof BooleanClass);
     BooleanClass xField = (BooleanClass) field.getXField();
     assertEquals(field.getName(), xField.getName());
-    assertEquals(displayType, xField.getDisplayType());
+    assertEquals(dictionaryKey, xField.getDisplayType());
     assertEquals(defaultValue, (Integer) xField.getDefaultValue());
     assertEquals(displayFormType, xField.getDisplayFormType());
   }

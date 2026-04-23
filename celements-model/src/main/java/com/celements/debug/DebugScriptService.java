@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.component.manager.ComponentManager;
+import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
@@ -42,17 +43,36 @@ public class DebugScriptService implements ScriptService {
   @Requirement(DocumentCacheStore.COMPONENT_NAME)
   private XWikiStoreInterface docCacheStore;
 
+  @Requirement
+  private ConfigurationSource configSource;
+
+  public Object getField(Object obj, String fieldName) {
+    return guard(() -> obj.getClass().getField(fieldName).get(obj));
+  }
+
   public Class<?> getClass(String className) {
     return guard(() -> Class.forName(className));
+  }
+
+  public Object getService(String roleClassName, String hint) {
+    return getService(getClass(roleClassName), hint);
   }
 
   public Object getService(Class<?> role, String hint) {
     return guard(() -> componentManager.lookup(role, hint));
   }
 
+  public Object newInstance(String className, Object... args) {
+    return newInstance(getClass(className), args);
+  }
+
   public Object newInstance(Class<?> type, Object... args) {
     return guard(() -> tryExecuteAny(Stream.of(type.getConstructors()),
         constructor -> constructor.newInstance(args)));
+  }
+
+  public Object callStaticMethod(String className, String methodName, Object... args) {
+    return callStaticMethod(getClass(className), methodName, args);
   }
 
   public Object callStaticMethod(Class<?> type, String methodName, Object... args) {
@@ -110,14 +130,21 @@ public class DebugScriptService implements ScriptService {
   }
 
   private <T, E extends Exception> T guard(ThrowingSupplier<T, E> toGuard) {
-    if (rightsAccess.isSuperAdmin()) {
-      try {
-        return toGuard.get();
-      } catch (Exception exc) {
-        throw new IllegalArgumentException(exc);
-      }
+    if (!rightsAccess.isSuperAdmin()) {
+      throw new SecurityException("DebugScriptService not allowed");
+    } else if (!isEnabled()) {
+      throw new IllegalStateException("DebugScriptService not enabled");
     }
-    return null;
+    try {
+      return toGuard.get();
+    } catch (Exception exc) {
+      throw new IllegalArgumentException(exc);
+    }
+  }
+
+  private boolean isEnabled() {
+    return Boolean.parseBoolean(String.valueOf(configSource
+        .getProperty("celements.debug.enabled", "false")));
   }
 
 }

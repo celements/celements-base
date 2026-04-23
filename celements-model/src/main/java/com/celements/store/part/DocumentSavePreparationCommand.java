@@ -98,7 +98,10 @@ class DocumentSavePreparationCommand {
   private void ensureDatabaseConsistency() {
     if (!doc.getDocumentReference().getWikiReference().getName().equals(getDatabase())) {
       LOGGER.warn("saveXWikiDoc - [{}] not matching database, adjusting from doc [{}]",
-          getDatabase(), docKey, new Throwable());
+          getDatabase(), docKey);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("saveXWikiDoc - [{}] [{}]", getDatabase(), docKey, new Throwable());
+      }
       boolean isMetaDataDirty = doc.isMetaDataDirty();
       doc.setDocumentReference(RefBuilder.from(doc.getDocumentReference()).wiki(getDatabase())
           .build(DocumentReference.class));
@@ -117,7 +120,10 @@ class DocumentSavePreparationCommand {
       if (doc.isNew() ^ !existingDocKeys.containsKey(docKey)) {
         doc.setNew(!doc.isNew());
         LOGGER.warn("saveXWikiDoc - [{}] corrected new flag to [{}] for document [{}]",
-            getDatabase(), doc.isNew(), docKey, new Throwable());
+            getDatabase(), doc.isNew(), docKey);
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("saveXWikiDoc - [{}] [{}]", getDatabase(), docKey, new Throwable());
+        }
       }
     }
   }

@@ -1,14 +1,13 @@
 package org.xwiki.observation.remote;
 
+import java.util.function.Consumer;
+
 import org.xwiki.component.annotation.ComponentRole;
 
 /**
  * Handle all the actual communication with the network.
  * <p>
  * It's the entry point of the chosen implementation for the actual event distribution.
- *
- * @version $Id$
- * @since 2.0RC1
  */
 @ComponentRole
 public interface NetworkAdapter {
@@ -22,31 +21,12 @@ public interface NetworkAdapter {
   void send(RemoteEventData remoteEvent);
 
   /**
-   * Stop a running channel.
-   *
-   * @param channelId
-   *          the identifier of the channel to stop
-   * @throws RemoteEventException
-   *           error when trying to stop a running channel
+   * Start the adapter
    */
-  void stopChannel(String channelId) throws RemoteEventException;
+  void start(Consumer<RemoteEventData> onRemoteEvent);
 
   /**
-   * Start a channel.
-   *
-   * @param channelId
-   *          the identifier of the channel to start
-   * @throws RemoteEventException
-   *           error when trying to start a channel
+   * Stop the adapter
    */
-  void startChannel(String channelId) throws RemoteEventException;
-
-  /**
-   * Stop all running channels.
-   *
-   * @throws RemoteEventException
-   *           error when trying to stop a running channel
-   * @since 2.3M1
-   */
-  void stopAllChannels() throws RemoteEventException;
+  void stop();
 }

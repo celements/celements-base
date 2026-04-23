@@ -45,8 +45,7 @@ public class XObjectFieldAccessor extends AbstractFieldAccessor<BaseObject> {
       return strFieldAccessor.get(obj, field.getName())
           .flatMap(val -> resolvePropertyValue(field, val));
     }
-    LOGGER.info("getValue: '{}' for '{}' from '{} - {} - {}'", value, field,
-        obj.getDocumentReference(), obj.getXClassReference(), obj.getNumber());
+    LOGGER.trace("get - obj [{}], field [{}], value [{}]", obj, field, value);
     return value;
   }
 
@@ -81,11 +80,10 @@ public class XObjectFieldAccessor extends AbstractFieldAccessor<BaseObject> {
   @Override
   public <V> boolean set(BaseObject obj, ClassField<V> field, V newValue) {
     checkClassRef(obj, field);
-    boolean dirty = strFieldAccessor.set(obj, field.getName(),
-        serializePropertyValue(field, newValue).orElse(null));
+    var serializeValue = serializePropertyValue(field, newValue).orElse(null);
+    boolean dirty = strFieldAccessor.set(obj, field.getName(), serializeValue);
     if (dirty) {
-      LOGGER.info("setValue: '{}' for '{}' from '{} - {} - {}'", newValue, field,
-          obj.getDocumentReference(), obj.getXClassReference(), obj.getNumber());
+      LOGGER.debug("set - obj [{}], field [{}], newValue [{}]", obj, field, newValue);
     }
     return dirty;
   }

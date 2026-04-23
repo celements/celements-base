@@ -107,7 +107,6 @@ public class ZipExplorerPluginAPI extends PluginApi<ZipExplorerPlugin> {
    *   { id = &quot;Directory/&quot;, value = &quot;Directory&quot;, parent = &quot;&quot;}
    *   { id = &quot;Directory/File.txt&quot;, value = &quot;File.txt&quot;, parent = &quot;Directory/&quot;}
    *   { id = &quot;File2.txt&quot;, value = &quot;File2.txt&quot;, parent = &quot;&quot;}
-   *
    * </pre>
    *
    * @param document

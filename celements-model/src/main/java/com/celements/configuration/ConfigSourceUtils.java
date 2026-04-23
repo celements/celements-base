@@ -19,26 +19,41 @@ import com.xpn.xwiki.web.Utils;
 
 public class ConfigSourceUtils {
 
-  private ConfigSourceUtils() {
-  }
+  private ConfigSourceUtils() {}
 
+  /**
+   * @deprecated instead use {@link ConfigurationSource#getStringProperty(String)}
+   */
   @NotNull
+  @Deprecated(since = "6.3", forRemoval = true)
   public static Optional<String> getStringProperty(@NotNull String key) {
     return getStringProperty(getDefaultCfgSrc(), key);
   }
 
+  /**
+   * @deprecated instead use {@link ConfigurationSource#getStringProperty(String)}
+   */
   @NotNull
+  @Deprecated(since = "6.3", forRemoval = true)
   public static Optional<String> getStringProperty(@NotNull ConfigurationSource configSrc,
       @NotNull String key) {
     return Optional.fromNullable(emptyToNull(configSrc.getProperty(key, "").trim()));
   }
 
+  /**
+   * @deprecated instead use {@link ConfigurationSource#getStringListProperty(String)}
+   */
   @NotNull
+  @Deprecated(since = "6.3", forRemoval = true)
   public static List<String> getStringListProperty(@NotNull String key) {
     return getStringListProperty(getDefaultCfgSrc(), key);
   }
 
+  /**
+   * @deprecated instead use {@link ConfigurationSource#getStringListProperty(String)}
+   */
   @NotNull
+  @Deprecated(since = "6.3", forRemoval = true)
   public static List<String> getStringListProperty(@NotNull ConfigurationSource configSrc,
       @NotNull String key) {
     FluentIterable<?> values;

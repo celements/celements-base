@@ -9,9 +9,11 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
+@Lazy(false) // always load eagerly due to the static methods requiring ApplicationContext injection
 public final class SpringContextProvider implements ApplicationContextAware {
 
   private static final AtomicReference<ApplicationContext> CONTEXT = new AtomicReference<>();

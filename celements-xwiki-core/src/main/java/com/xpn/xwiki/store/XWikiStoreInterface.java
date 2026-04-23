@@ -23,8 +23,11 @@ package com.xpn.xwiki.store;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryExecutor;
 import org.xwiki.query.QueryManager;
 
@@ -554,7 +557,6 @@ public interface XWikiStoreInterface {
    * @return a list of XWikiDocument.
    * @throws XWikiException
    *           in case of error while performing the query.
-   * 
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -585,7 +587,6 @@ public interface XWikiStoreInterface {
    * @throws XWikiException
    *           in case of error while performing the query.
    * @since XWiki Core 1.1.2, XWiki Core 1.2M2
-   *
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -610,7 +611,6 @@ public interface XWikiStoreInterface {
    * @return a list of XWikiDocument.
    * @throws XWikiException
    *           in case of error while performing the query.
-   *
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -646,7 +646,6 @@ public interface XWikiStoreInterface {
    * @throws XWikiException
    *           in case of error while performing the query.
    * @since XWiki Core 1.1.2, XWiki Core 1.2M2
-   *
    * @deprecated since 6.0, instead use {@link QueryExecutor}
    */
   @Deprecated
@@ -657,40 +656,52 @@ public interface XWikiStoreInterface {
   void cleanUp(XWikiContext context);
 
   /**
-   * Indicate if the provided wiki name could be used to create a new wiki.
+   * Checks if the wiki exists.
    *
-   * @param wikiName
-   *          the name of the wiki.
-   * @param context
-   *          the XWiki context.
-   * @return true if the name is already used, false otherwise.
+   * @param wikiRef
+   *          the ref to the wiki
+   * @return true if the wiki exists, false otherwise
    * @throws XWikiException
-   *           error when looking if wiki name already used.
+   *           error when checking wiki existence
    */
+  boolean existsWiki(@NotNull WikiReference wikiRef) throws XWikiException;
+
+  /**
+   * @deprecated instead use {@link #existsWiki(WikiReference)}
+   */
+  @Deprecated(since = "6.5", forRemoval = true)
   boolean isWikiNameAvailable(String wikiName, XWikiContext context) throws XWikiException;
 
   /**
-   * Allows to create a new wiki database and initialize the default tables.
+   * Allows to create a new wiki database.
    *
-   * @param wikiName
-   *          the name of the new wiki.
-   * @param context
-   *          the XWiki context.
+   * @param wikiRef
+   *          the ref to the wiki
    * @throws XWikiException
    *           error when creating new wiki.
    */
+  void createWiki(@NotNull WikiReference wikiRef) throws XWikiException;
+
+  /**
+   * @deprecated instead use {@link #createWiki(WikiReference)}
+   */
+  @Deprecated(since = "6.5", forRemoval = true)
   void createWiki(String wikiName, XWikiContext context) throws XWikiException;
 
   /**
    * Delete a wiki database.
    *
-   * @param wikiName
-   *          the name of the wiki.
-   * @param context
-   *          the XWiki context.
+   * @param wikiRef
+   *          the ref to the wiki
    * @throws XWikiException
    *           error when deleting wiki database.
    */
+  void deleteWiki(WikiReference wikiRef) throws XWikiException;
+
+  /**
+   * @deprecated instead use {@link #deleteWiki(WikiReference)}
+   */
+  @Deprecated(since = "6.5", forRemoval = true)
   void deleteWiki(String wikiName, XWikiContext context) throws XWikiException;
 
   boolean exists(XWikiDocument doc, XWikiContext context) throws XWikiException;

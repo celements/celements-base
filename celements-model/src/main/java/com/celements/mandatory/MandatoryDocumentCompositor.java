@@ -19,6 +19,9 @@
  */
 package com.celements.mandatory;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+import static java.util.stream.Collectors.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +32,9 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
+import org.xwiki.model.reference.WikiReference;
 
+import com.celements.init.WikiUpdater;
 import com.xpn.xwiki.XWikiContext;
 
 @Component
@@ -41,6 +46,9 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
   Map<String, IMandatoryDocumentRole> mandatoryDocumentsMap;
 
   @Requirement
+  private WikiUpdater wikiUpdater;
+
+  @Requirement
   Execution execution;
 
   protected XWikiContext getContext() {
@@ -49,6 +57,20 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
 
   @Override
   public void checkAllMandatoryDocuments() {
+    execution.getContext().get(WIKI)
+        .ifPresent(this::checkAllMandatoryDocuments);
+  }
+
+  @Override
+  public void checkAllMandatoryDocuments(WikiReference wikiRef) {
+    if (wikiUpdater.isShutdown()) {
+      checkAllMandatoryDocumentsForContext();
+    } else {
+      wikiUpdater.runUpdateAsync(wikiRef, this::checkAllMandatoryDocumentsForContext);
+    }
+  }
+
+  private void checkAllMandatoryDocumentsForContext() {
     LOGGER.info("checkAllMandatoryDocuments for wiki [{}] ", getContext().getDatabase());
     for (String mandatoryDocKey : getMandatoryDocumentsList()) {
       IMandatoryDocumentRole mandatoryDoc = mandatoryDocumentsMap.get(mandatoryDocKey);
@@ -64,15 +86,19 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
   }
 
   List<String> getMandatoryDocumentsList() {
-    Collection<String> mandatoryDocElemKeys = new ArrayList<>(mandatoryDocumentsMap.keySet());
+    Collection<String> mandatoryDocElemKeys = mandatoryDocumentsMap.keySet().stream()
+        .sorted((k1, k2) -> Integer.compare(
+            mandatoryDocumentsMap.get(k1).order(),
+            mandatoryDocumentsMap.get(k2).order()))
+        .collect(toList());
     List<String> mandatoryDocExecList = new ArrayList<>();
     do {
-      for (String mandatoryDocElemKey : mandatoryDocElemKeys) {
-        if (mandatoryDocExecList.containsAll(mandatoryDocumentsMap.get(
-            mandatoryDocElemKey).dependsOnMandatoryDocuments())) {
-          mandatoryDocExecList.add(mandatoryDocElemKey);
-        }
-      }
+      mandatoryDocElemKeys.stream()
+          .filter(key -> mandatoryDocumentsMap.get(key)
+              .dependsOnMandatoryDocuments().stream()
+              .filter(mandatoryDocumentsMap::containsKey)
+              .allMatch(mandatoryDocExecList::contains))
+          .forEach(mandatoryDocExecList::add);
     } while (mandatoryDocElemKeys.removeAll(mandatoryDocExecList)
         && !mandatoryDocElemKeys.isEmpty());
     for (String skippedDocElemKey : mandatoryDocElemKeys) {

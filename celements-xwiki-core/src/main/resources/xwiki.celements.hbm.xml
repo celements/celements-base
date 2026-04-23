@@ -89,9 +89,6 @@
     <property name="minorEdit1" type="boolean">
       <column name="XWD_MINOREDIT" not-null="true" />
     </property>
-    <property name="syntaxId" type="string">
-      <column name="XWD_SYNTAX_ID" length="50" />
-    </property>
     <property name="hidden" type="boolean">
       <column name="XWD_HIDDEN" not-null="true" />
     </property>

@@ -5,6 +5,8 @@ import static com.google.common.base.Strings.*;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.model.reference.ClassReference;
@@ -22,6 +24,8 @@ import com.xpn.xwiki.objects.BaseProperty;
 @Component(XObjectStringFieldAccessor.NAME)
 public class XObjectStringFieldAccessor implements StringFieldAccessor<BaseObject> {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(XObjectStringFieldAccessor.class);
+
   public static final String NAME = "xobject";
 
   @Requirement
@@ -35,8 +39,10 @@ public class XObjectStringFieldAccessor implements StringFieldAccessor<BaseObjec
   @Override
   public Optional<Object> get(BaseObject obj, String fieldName) {
     try {
-      return Optional.ofNullable(obj)
+      var value = Optional.ofNullable(obj)
           .flatMap(o -> getAndNormalizeValue(o, fieldName));
+      LOGGER.trace("get - obj [{}], field [{}], value [{}]", obj, fieldName, value);
+      return value;
     } catch (ClassCastException | IllegalArgumentException exc) {
       throw createException("failed to get value", obj, fieldName, exc);
     }
@@ -52,23 +58,26 @@ public class XObjectStringFieldAccessor implements StringFieldAccessor<BaseObjec
 
   @Override
   public boolean set(BaseObject obj, String fieldName, Object newValue) {
-    Object currentValue = get(obj, fieldName).orElse(null);
-    if (!Objects.equal(newValue, currentValue)) {
-      try {
-        normalizeAndSetValue(obj, fieldName, newValue);
-        return true;
-      } catch (ClassCastException | IllegalArgumentException exc) {
-        throw createException("failed to set value '" + newValue + "'", obj, fieldName, exc);
-      }
+    Object currentValue = get(obj, fieldName).map(this::normalizeValue).orElse(null);
+    newValue = normalizeValue(newValue);
+    if (Objects.equal(newValue, currentValue)) {
+      return false;
     }
-    return false;
+    try {
+      obj.set(fieldName, newValue, context.getXWikiContext());
+      LOGGER.debug("set - obj [{}], field [{}], newValue [{}], oldValue [{}]",
+          obj, fieldName, newValue, currentValue);
+      return true;
+    } catch (ClassCastException | IllegalArgumentException exc) {
+      throw createException("failed to set value '" + newValue + "'", obj, fieldName, exc);
+    }
   }
 
-  private void normalizeAndSetValue(BaseObject obj, String fieldName, Object value) {
+  private Object normalizeValue(Object value) {
     if (value instanceof Collection) {
-      value = Joiner.on('|').join((Collection<?>) value);
+      return Joiner.on('|').join((Collection<?>) value);
     }
-    obj.set(fieldName, value, context.getXWikiContext());
+    return value;
   }
 
   private FieldAccessException createException(String message, BaseObject obj, String fieldName,

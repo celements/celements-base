@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -86,9 +87,22 @@ public abstract class ObjectQueryBuilder<B extends ObjectQueryBuilder<B, O>, O> 
   }
 
   /**
+   * restricts to objects for the given {@link ClassField} and optional value
+   * <p>
+   * if value is absent, restricts to objects with no value for the given field
+   */
+  public final @NotNull <T> B filter(@NotNull ClassField<T> field,
+      @NotNull Optional<? extends T> value) {
+    return checkNotNull(value)
+        .map(v -> filter(field, v))
+        .orElseGet(() -> filterAbsent(field));
+  }
+
+  /**
    * restricts to objects for the given {@link ClassField} and possible values (logical OR)
    */
-  public final @NotNull <T> B filter(@NotNull ClassField<T> field, @NotNull Collection<T> values) {
+  public final @NotNull <T> B filter(@NotNull ClassField<T> field,
+      @NotNull Collection<? extends T> values) {
     return filter(new FieldRestriction<>(getBridge(), field, values));
   }
 

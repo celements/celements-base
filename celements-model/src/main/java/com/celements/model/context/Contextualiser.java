@@ -1,5 +1,6 @@
 package com.celements.model.context;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.HashMap;
@@ -111,11 +112,13 @@ public class Contextualiser {
   }
 
   public Contextualiser withWiki(WikiReference wiki) {
-    return withXWikiContext("wiki", (wiki != null) ? wiki.getName() : null);
+    return withXWikiContext("wiki", (wiki != null) ? wiki.getName() : null)
+        .withExecContext(WIKI, wiki);
   }
 
   public Contextualiser withDoc(XWikiDocument doc) {
-    return withXWikiContext("doc", doc);
+    return withXWikiContext("doc", doc)
+        .withExecContext(DOC, doc);
   }
 
   public void execute(Runnable runnable) {
@@ -123,6 +126,10 @@ public class Contextualiser {
       runnable.run();
       return null;
     });
+  }
+
+  public Runnable wrap(Runnable runnable) {
+    return () -> execute(runnable);
   }
 
   public <T> T execute(Supplier<T> supplier) {
@@ -139,8 +146,7 @@ public class Contextualiser {
   }
 
   private static Optional<XWikiContext> getXWikiCtx() {
-    return getExecCtx()
-        .map(ctx -> (XWikiContext) ctx.getProperty(XWikiContext.EXECUTIONCONTEXT_KEY));
+    return getExecCtx().flatMap(ctx -> ctx.get(XWIKI_CONTEXT));
   }
 
   private static Optional<ExecutionContext> getExecCtx() {

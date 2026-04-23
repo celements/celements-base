@@ -394,7 +394,6 @@ public class XWikiLDAPConnection {
 
   /**
    * Fully escape DN value (the part after the =).
-   *
    * <p>
    * For example, for the dn value "Acme, Inc", the escapeLDAPDNValue method
    * returns "Acme\, Inc".

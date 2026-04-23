@@ -1,0 +1,10 @@
+#if($services.celementsweb.isMainWiki())
+  #if($isAdmin)
+      #parse("wikiManagerMacros/serverListing.vm")
+  #else
+    <div class="warning">$adminMsg.get("wikimanager.noAccessRights")</div>
+  #end
+#else
+## empty response, script does not exist
+$response.setStatus(404)
+#end

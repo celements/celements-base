@@ -24,6 +24,7 @@ import org.xwiki.query.QueryException;
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
 import com.celements.store.DefaultHibernateStore;
+import com.celements.wiki.WikiMissingException;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;
@@ -131,7 +132,13 @@ public class QueryExecutionService implements IQueryExecutionServiceRole {
 
   private Session getNewHibSession() throws XWikiException, HibernateException {
     Session session = getHibStore().getSessionFactory().openSession();
-    getHibStore().setDatabase(session, context.getWikiRef());
+    try {
+      getHibStore().setDatabase(session, context.getWikiRef());
+    } catch (WikiMissingException wme) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SWITCH_DATABASE,
+          "Exception while switching to context database", wme);
+    }
     return session;
   }
 

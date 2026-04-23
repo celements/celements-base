@@ -110,7 +110,6 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
    *          the plugin classname (used in logs for example)
    * @param context
    *          the XWiki Context
-   *
    * @see XWikiDefaultPlugin#XWikiDefaultPlugin(String,String,com.xpn.xwiki.XWikiContext)
    */
   public FileUploadPlugin(String name, String className, XWikiContext context) {
