@@ -50,6 +50,7 @@ import com.celements.model.access.exception.ModelAccessRuntimeException;
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.ClassIdentity;
 import com.celements.model.classes.fields.ClassField;
+import com.celements.model.context.Contextualiser;
 import com.celements.model.context.ModelContext;
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.field.StringFieldAccessor;
@@ -846,7 +847,9 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
           .newInstance(doc.getDocumentReference());
       LOGGER.trace("notify event [{}] for doc [{}] with lang [{}]", eventType.getSimpleName(),
           serialize(doc.getDocumentReference()), doc.getLanguage());
-      getObservationManager().notify(event, doc, context.getXWikiContext());
+      new Contextualiser()
+          .withWiki(doc.getDocumentReference().getWikiReference())
+          .execute(() -> getObservationManager().notify(event, doc, context.getXWikiContext()));
     } catch (ReflectiveOperationException exc) {
       throw new IllegalArgumentException(exc);
     }
