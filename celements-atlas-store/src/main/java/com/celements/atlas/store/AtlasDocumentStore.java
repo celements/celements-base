@@ -55,7 +55,7 @@ public class AtlasDocumentStore extends DelegateStore {
             LOGGER.info("AtlasStore load for {}", doc.getDocRef());
             return getAtlasDoc(doc.getDocRef().getName())
                     .map(atlasDoc -> convertToXWikiDocument(atlasDoc, doc.getDocRef()))
-                    .orElse(null);
+                    .orElse(doc);
         } else {
             LOGGER.info("AtlasStore delegate load for {}", doc.getDocRef());
         }
