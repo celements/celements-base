@@ -24,35 +24,50 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>celements</artifactId>
-    <version>6.0</version>
+    <version>7.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-atlas-store</artifactId>
-  <version>6.0-SNAPSHOT</version>
+  <version>7.1-SNAPSHOT</version>
   <description>Celements Atlas Storage Client</description>
+ 
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-model</artifactId>
-      <version>6.0</version>
+      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-okhttp</artifactId>
-      <version>13.2.1</version>
+      <version>13.12</version>
+      <!--feign-okhttp pulls in different kotlin versions that lead to build errors in celements-web. 
+          That's why we exclude it here and add it as a direct dependency below.-->
+      <exclusions>
+        <exclusion>
+          <groupId>org.jetbrains.kotlin</groupId>
+          <artifactId>kotlin-stdlib</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-gson</artifactId>
-      <version>13.2.1</version>
+      <version>13.12</version>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-slf4j</artifactId>
-      <version>13.2.1</version>
+      <version>13.12</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>2.2.21</version>
     </dependency>
   </dependencies>
+
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>

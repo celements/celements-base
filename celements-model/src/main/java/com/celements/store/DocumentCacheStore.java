@@ -144,11 +144,12 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
     lru.setMaxEntries(getExistCacheCapacity());
     config.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
+    LOGGER.info("newExistCache - capacity '{}'", lru.getMaxEntries());
     return cacheManager.getCacheFactory().newCache(config);
   }
 
   private int getExistCacheCapacity() {
-    int existCacheCapacity = cfgSrc.getProperty(PARAM_DOC_CACHE_CAPACITY, 10000);
+    int existCacheCapacity = cfgSrc.getProperty(PARAM_EXIST_CACHE_CAPACITY, 10000);
     int docCacheCapacity = getDocCacheCapacity();
     if (existCacheCapacity < docCacheCapacity) {
       LOGGER.warn("WARNING: document exists cache capacity is smaller configured than docCache "
@@ -165,6 +166,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
     lru.setMaxEntries(getDocCacheCapacity());
     config.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
+    LOGGER.info("newDocCache - capacity '{}'", lru.getMaxEntries());
     return cacheManager.getCacheFactory().newCache(config);
   }
 
@@ -217,7 +219,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
 
   String getKey(DocumentReference docRef) {
     return modelUtils.serializeRef(RefBuilder.from(docRef)
-        .with(modelUtils.normalizeWikiRef(modelContext.getWikiRef()))
+        .with(modelUtils.normalizeWikiRef(docRef.getWikiReference()))
         .build(DocumentReference.class));
   }
 
