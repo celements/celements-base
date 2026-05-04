@@ -23,12 +23,12 @@ package com.xpn.xwiki.plugin.mail;
 
 import java.util.Properties;
 
-import javax.mail.FetchProfile;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Store;
+import jakarta.mail.FetchProfile;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Store;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.api.Api;

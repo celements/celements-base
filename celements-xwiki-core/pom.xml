@@ -350,8 +350,8 @@
     </dependency>
     <!-- Mail sender -->
     <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>jakarta.mail</artifactId>
     </dependency>
     <!-- Used by another tool, it should be removed some time -->
     <dependency>
