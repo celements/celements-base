@@ -38,6 +38,8 @@ import org.xwiki.observation.EventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.AllEvent;
 import org.xwiki.observation.event.Event;
+import org.xwiki.observation.remote.LocalEventData;
+import org.xwiki.observation.remote.internal.OutgoingObservationManager;
 
 /**
  * Default implementation of the {@link ObservationManager}.
@@ -74,6 +76,9 @@ public class DefaultObservationManager implements ObservationManager, Initializa
    */
   @Requirement
   private ComponentManager componentManager;
+
+  @Requirement
+  private OutgoingObservationManager outgoingObservationManager;
 
   /**
    * Helper class to store the list of events of a given type associated with a given listener. We
@@ -215,12 +220,23 @@ public class DefaultObservationManager implements ObservationManager, Initializa
 
   @Override
   public void notify(Event event, Object source, Object data) {
+    var localEvent = new LocalEventData(event, source, data);
+    if (outgoingObservationManager.isEnabled()) {
+      outgoingObservationManager.notifyLocalThenRemote(localEvent, this::notify);
+    } else {
+      notify(localEvent);
+    }
+  }
+
+  private void notify(LocalEventData localEvent) {
+    Event event = localEvent.getEvent();
+    Object source = localEvent.getSource();
+    Object data = localEvent.getData();
     // Find all listeners for this event
     Map<String, RegisteredListener> regListeners = this.listenersByEvent.get(event.getClass());
     if (regListeners != null) {
       notify(regListeners.values(), event, source, data);
     }
-
     // Find listener listening all events
     Map<String, RegisteredListener> allEventRegListeners = this.listenersByEvent
         .get(AllEvent.class);

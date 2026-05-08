@@ -97,18 +97,11 @@
 
     <!-- testing -->
     <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-base-tests</artifactId>
+      <version>7.1-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- xwiki legacy testing -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-shared-tests</artifactId>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
