@@ -114,8 +114,8 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
     getContext().setDatabase("wikitest");
     DocumentReference docRef = new DocumentReference("wiki", "space", "page");
     XWikiDocument testDoc = new XWikiDocument(docRef);
-    assertEquals("wikitest:space.page", docCacheStore.getKey(docRef));
-    assertEquals("wikitest:space.page", docCacheStore.getKeyWithLang(testDoc));
+    assertEquals("wiki:space.page", docCacheStore.getKey(docRef));
+    assertEquals("wiki:space.page", docCacheStore.getKeyWithLang(testDoc));
   }
 
   @Test
