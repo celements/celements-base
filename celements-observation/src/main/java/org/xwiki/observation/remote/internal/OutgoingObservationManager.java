@@ -1,3 +1,23 @@
+/*
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ */
 package org.xwiki.observation.remote.internal;
 
 import static com.google.common.base.Preconditions.*;
@@ -28,18 +48,15 @@ import org.xwiki.observation.remote.converter.EventConverterManager;
 import com.celements.common.observation.converter.Local;
 
 /**
- * Sends local observation events to the remote observation channel after local listener processing.
+ * Sends local observation events to the remote observation channel after local processing.
  * <p>
- * Local observation is reentrant: while one event is being notified, a listener may notify another
- * event. Sending each event remotely right after its own local listeners finish would let nested
- * events overtake their parent event on the remote nodes. This matters for causally related events,
- * for example when a document creation triggers another event that depends on the created document
- * already being visible remotely.
- * <p>
- * To preserve that local causal order, events are added to a per-thread queue and only the
- * outermost notification flushes the queue to the remote adapter. Nested notifications append to
- * the same queue, so the remote side receives events in the same order as they entered local
- * observation.
+ * Local observation is reentrant: listeners may trigger additional events while another event is
+ * still being processed. To preserve the local causal event order across cluster nodes, outgoing
+ * remote events are queued per thread and flushed only after the outermost notification completes.
+ * This prevents nested events, such as derived/indexing events, from being delivered remotely
+ * before the document event that caused them.
+ *
+ * @see CELDEV-1314
  */
 @Service
 public class OutgoingObservationManager {
@@ -50,8 +67,8 @@ public class OutgoingObservationManager {
   private final EventConverterManager eventConverterManager;
   private final RemoteObservationManagerContext remoteEventManagerContext;
   private final BeanFactory beanFactory;
-  private final ThreadLocal<LinkedList<LocalEventData>> queue = new ThreadLocal<>();
-  final Map<Class<? extends Event>, LogCounter> logCountMap = new ConcurrentHashMap<>();
+  private final ThreadLocal<LinkedList<LocalEventData>> eventQueue = new ThreadLocal<>();
+  final Map<Class<? extends Event>, LogCounter> logCounts = new ConcurrentHashMap<>();
 
   @Inject
   public OutgoingObservationManager(
@@ -65,6 +82,11 @@ public class OutgoingObservationManager {
     this.beanFactory = beanFactory;
   }
 
+  /**
+   * Outgoing observation is enabled if it's explicitly enabled in the configuration and the
+   * current event doesn't originate from {@link IncomingObservationManager} to avoid loops between
+   * nodes.
+   */
   public boolean isEnabled() {
     return configuration.isEnabled() && !remoteEventManagerContext.isRemoteState();
   }
@@ -77,23 +99,23 @@ public class OutgoingObservationManager {
       notifyLocal.accept(localEvent);
     } finally {
       if (first) {
-        processQueue();
+        flushQueue();
       }
     }
   }
 
   private boolean queue(LocalEventData localEvent) {
-    boolean first = (queue.get() == null);
+    boolean first = (eventQueue.get() == null);
     if (first) {
-      queue.set(new LinkedList<>());
+      eventQueue.set(new LinkedList<>());
     }
-    queue.get().add(localEvent);
+    eventQueue.get().add(localEvent);
     return first;
   }
 
-  private void processQueue() {
-    var events = queue.get();
-    queue.remove();
+  private void flushQueue() {
+    var events = eventQueue.get();
+    eventQueue.remove();
     events.stream()
         .filter(this::shouldNotifyRemote)
         .forEach(this::notify);
@@ -142,8 +164,8 @@ public class OutgoingObservationManager {
     var source = localEvent.getSource();
     var data = localEvent.getData();
     String msg = "not serializable remote event [{0}], source [{1}], data [{2}]";
-    if (!logCountMap.containsKey(type) || logCountMap.get(type).isOneHourAgo()) {
-      final LogCounter replacedLogCount = logCountMap.put(type, new LogCounter());
+    if (!logCounts.containsKey(type) || logCounts.get(type).isOneHourAgo()) {
+      final LogCounter replacedLogCount = logCounts.put(type, new LogCounter());
       if (replacedLogCount != null) {
         msg += ", occurred {3} times within last hour (since {4})";
         msg = format(msg, type.getSimpleName(), source, data,
@@ -155,7 +177,7 @@ public class OutgoingObservationManager {
     } else if (LOGGER.isDebugEnabled()) {
       LOGGER.debug(format(msg, type.getSimpleName(), source, data), exc);
     }
-    logCountMap.get(type).increment();
+    logCounts.get(type).increment();
   }
 
   static class LogCounter {
