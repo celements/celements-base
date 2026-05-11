@@ -32,70 +32,28 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.observation.ObservationManager;
-import org.xwiki.observation.event.ApplicationStoppedEvent;
 import org.xwiki.observation.remote.LocalEventData;
 import org.xwiki.observation.remote.NetworkAdapter;
 import org.xwiki.observation.remote.RemoteEventData;
-import org.xwiki.observation.remote.RemoteObservationManager;
 import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 import org.xwiki.observation.remote.RemoteObservationManagerContext;
 import org.xwiki.observation.remote.converter.EventConverterManager;
 
-/**
- * JGoups based {@link RemoteObservationManager}. It's also the default implementation for now.
- *
- * @version $Id$
- * @since 2.0M3
- */
 @Service
-public class DefaultRemoteObservationManager implements RemoteObservationManager {
+public class IncomingRemoteObservationManager {
 
-  private static final Logger LOGGER = LoggerFactory
-      .getLogger(DefaultRemoteObservationManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(IncomingRemoteObservationManager.class);
 
-  /**
-   * Access {@link RemoteObservationManager} configuration.
-   */
   private final RemoteObservationManagerConfiguration configuration;
-
-  /**
-   * Used to convert local event from and to remote event.
-   */
   private final EventConverterManager eventConverterManager;
-
-  /**
-   * Used to inject event coming from network.
-   */
   private final ObservationManager observationManager;
-
-  /**
-   * Used to set some extra informations about the current event injected to the local
-   * {@link ObservationManager}.
-   */
   private final RemoteObservationManagerContext remoteEventManagerContext;
-
-  /**
-   * Used to initialize ExecutionContext for the remote->local thread.
-   */
   private final Execution execution;
-
-  /**
-   * Used to initialize ExecutionContext for the remote->local thread.
-   */
   private final ExecutionContextManager executionContextManager;
-
-  /**
-   * Used to lookup the network adapter.
-   */
   private final BeanFactory beanFactory;
 
-  /**
-   * The network adapter to use to actually send and receive network messages.
-   */
-  private NetworkAdapter networkAdapter;
-
   @Inject
-  public DefaultRemoteObservationManager(
+  public IncomingRemoteObservationManager(
       RemoteObservationManagerConfiguration configuration,
       EventConverterManager eventConverterManager,
       ObservationManager observationManager,
@@ -114,7 +72,7 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
 
   @PostConstruct
   public void initialize() {
-    var adapter = configuration.getImplementation()
+    NetworkAdapter adapter = configuration.getImplementation()
         .map(name -> beanFactory.getBean(name, NetworkAdapter.class))
         .orElse(null);
     if (adapter == null) {
@@ -122,28 +80,8 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
       return;
     }
     adapter.start(this::notify);
-    networkAdapter = adapter;
   }
 
-  @Override
-  public void notify(LocalEventData localEvent) {
-    if (networkAdapter == null) {
-      throw new IllegalStateException("Remote observation manager is disabled");
-    }
-    if (this.remoteEventManagerContext.isRemoteState()) {
-      return; // the event is a remote event
-    }
-    RemoteEventData remoteEvent = this.eventConverterManager.createRemoteEventData(localEvent);
-    // if remote event data is not filled it mean the message should not be sent to the network
-    if (remoteEvent != null) {
-      networkAdapter.send(remoteEvent);
-    }
-    if (localEvent.getEvent() instanceof ApplicationStoppedEvent) {
-      networkAdapter.stop();
-    }
-  }
-
-  @Override
   public void notify(RemoteEventData remoteEvent) {
     LocalEventData localEvent = null;
     try {
@@ -169,5 +107,4 @@ public class DefaultRemoteObservationManager implements RemoteObservationManager
     execution.setContext(executionContext);
     executionContextManager.initialize(executionContext);
   }
-
 }

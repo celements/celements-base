@@ -1,7 +1,8 @@
 package org.xwiki.observation.remote.internal;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.observation.remote.RemoteObservationManagerContext;
@@ -25,8 +26,12 @@ public class DefaultRemoteObservationManagerContext implements RemoteObservation
   /**
    * Used to store remote observation manager context properties.
    */
-  @Requirement
-  private Execution execution;
+  private final Execution execution;
+
+  @Inject
+  public DefaultRemoteObservationManagerContext(Execution execution) {
+    this.execution = execution;
+  }
 
   /**
    * {@inheritDoc}
