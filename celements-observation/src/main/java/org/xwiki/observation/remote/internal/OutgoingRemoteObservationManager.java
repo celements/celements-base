@@ -99,8 +99,7 @@ public class OutgoingRemoteObservationManager {
   /**
    * Outgoing observation is enabled if it's explicitly enabled in the configuration and the
    * current event doesn't originate from {@link IncomingRemoteObservationManager} to avoid loops
-   * between
-   * nodes.
+   * between nodes.
    */
   public boolean isEnabled() {
     return configuration.isEnabled() && !remoteEventManagerContext.isRemoteState();

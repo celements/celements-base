@@ -26,14 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.component.phase.Initializable;
-import org.xwiki.component.phase.InitializationException;
+import org.springframework.stereotype.Component;
 import org.xwiki.observation.EventListener;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.AllEvent;
@@ -52,7 +50,7 @@ import org.xwiki.observation.remote.internal.OutgoingRemoteObservationManager;
  * @version $Id$
  */
 @Component
-public class DefaultObservationManager implements ObservationManager, Initializable {
+public class DefaultObservationManager implements ObservationManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultObservationManager.class);
 
@@ -71,14 +69,16 @@ public class DefaultObservationManager implements ObservationManager, Initializa
    */
   private Map<String, EventListener> listenersByName = new ConcurrentHashMap<>();
 
-  /**
-   * Used to find all components implementing {@link EventListener} to register them automatically.
-   */
-  @Requirement
-  private ComponentManager componentManager;
+  private final List<EventListener> allEventListeners;
+  private final OutgoingRemoteObservationManager outgoingObservationManager;
 
-  @Requirement
-  private OutgoingRemoteObservationManager outgoingObservationManager;
+  @Inject
+  public DefaultObservationManager(
+      List<EventListener> eventListeners,
+      OutgoingRemoteObservationManager outgoingObservationManager) {
+    this.allEventListeners = eventListeners;
+    this.outgoingObservationManager = outgoingObservationManager;
+  }
 
   /**
    * Helper class to store the list of events of a given type associated with a given listener. We
@@ -114,7 +114,7 @@ public class DefaultObservationManager implements ObservationManager, Initializa
      *          the event to add
      */
     void addEvent(Event event) {
-      this.events.add(event);
+      events.add(event);
     }
 
     /**
@@ -122,7 +122,7 @@ public class DefaultObservationManager implements ObservationManager, Initializa
      *          the event to remove
      */
     void removeEvent(Event event) {
-      this.events.remove(event);
+      events.remove(event);
     }
   }
 
@@ -131,23 +131,16 @@ public class DefaultObservationManager implements ObservationManager, Initializa
    * <p>
    * Register all components implementing the {@link EventListener} interface.
    *
-   * @see Initializable#initialize()
    */
-  @Override
-  public void initialize() throws InitializationException {
-    try {
-      for (EventListener listener : this.componentManager.lookupList(EventListener.class)) {
-        addListener(listener);
-      }
-    } catch (ComponentLookupException e) {
-      throw new InitializationException("Failed to lookup Event Listeners", e);
-    }
+  @PostConstruct
+  public void initialize() {
+    allEventListeners.forEach(this::addListener);
   }
 
   @Override
   public void addListener(EventListener eventListener) {
     // Register the listener by name. If already registered, override it.
-    EventListener previousListener = this.listenersByName.put(eventListener.getName(),
+    EventListener previousListener = listenersByName.put(eventListener.getName(),
         eventListener);
 
     // If the passed event listener name is already registered, log a warning
@@ -163,12 +156,12 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     // For each event defined for this listener, add it to the Event Map.
     for (Event event : eventListener.getEvents()) {
       // Check if this is a new Event type not already registered
-      Map<String, RegisteredListener> eventListeners = this.listenersByEvent.get(event.getClass());
+      Map<String, RegisteredListener> eventListeners = listenersByEvent.get(event.getClass());
       if (eventListeners == null) {
         // No listener registered for this event yet. Create a map to store listeners for this
         // event.
         eventListeners = new ConcurrentHashMap<>();
-        this.listenersByEvent.put(event.getClass(), eventListeners);
+        listenersByEvent.put(event.getClass(), eventListeners);
         // There is no RegisteredListener yet, create one
         eventListeners.put(eventListener.getName(), new RegisteredListener(eventListener, event));
       } else {
@@ -185,19 +178,19 @@ public class DefaultObservationManager implements ObservationManager, Initializa
 
   @Override
   public void removeListener(String listenerName) {
-    this.listenersByName.remove(listenerName);
-    for (Map.Entry<Class<? extends Event>, Map<String, RegisteredListener>> entry : this.listenersByEvent
+    listenersByName.remove(listenerName);
+    for (Map.Entry<Class<? extends Event>, Map<String, RegisteredListener>> entry : listenersByEvent
         .entrySet()) {
       entry.getValue().remove(listenerName);
       if (entry.getValue().isEmpty()) {
-        this.listenersByEvent.remove(entry.getKey());
+        listenersByEvent.remove(entry.getKey());
       }
     }
   }
 
   @Override
   public void addEvent(String listenerName, Event event) {
-    Map<String, RegisteredListener> listeners = this.listenersByEvent.get(event.getClass());
+    Map<String, RegisteredListener> listeners = listenersByEvent.get(event.getClass());
     RegisteredListener listener = listeners.get(listenerName);
     if (listener != null) {
       listener.addEvent(event);
@@ -206,7 +199,7 @@ public class DefaultObservationManager implements ObservationManager, Initializa
 
   @Override
   public void removeEvent(String listenerName, Event event) {
-    Map<String, RegisteredListener> listeners = this.listenersByEvent.get(event.getClass());
+    Map<String, RegisteredListener> listeners = listenersByEvent.get(event.getClass());
     RegisteredListener listener = listeners.get(listenerName);
     if (listener != null) {
       listener.removeEvent(event);
@@ -215,7 +208,7 @@ public class DefaultObservationManager implements ObservationManager, Initializa
 
   @Override
   public EventListener getListener(String listenerName) {
-    return this.listenersByName.get(listenerName);
+    return listenersByName.get(listenerName);
   }
 
   @Override
@@ -233,12 +226,12 @@ public class DefaultObservationManager implements ObservationManager, Initializa
     Object source = localEvent.getSource();
     Object data = localEvent.getData();
     // Find all listeners for this event
-    Map<String, RegisteredListener> regListeners = this.listenersByEvent.get(event.getClass());
+    Map<String, RegisteredListener> regListeners = listenersByEvent.get(event.getClass());
     if (regListeners != null) {
       notify(regListeners.values(), event, source, data);
     }
     // Find listener listening all events
-    Map<String, RegisteredListener> allEventRegListeners = this.listenersByEvent
+    Map<String, RegisteredListener> allEventRegListeners = listenersByEvent
         .get(AllEvent.class);
     if (allEventRegListeners != null) {
       notify(allEventRegListeners.values(), event, source, data);
