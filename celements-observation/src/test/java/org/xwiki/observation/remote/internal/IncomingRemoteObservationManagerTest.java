@@ -21,7 +21,7 @@ import org.xwiki.observation.remote.converter.EventConverterManager;
 
 import com.celements.common.test.AbstractBaseComponentTest;
 
-public class IncomingObservationManagerTest extends AbstractBaseComponentTest {
+public class IncomingRemoteObservationManagerTest extends AbstractBaseComponentTest {
 
   private static final String ADAPTER_NAME = "testAdapter";
 
@@ -47,7 +47,7 @@ public class IncomingObservationManagerTest extends AbstractBaseComponentTest {
     adapter.start(anyObject(Consumer.class));
 
     replayDefault();
-    getBeanFactory().getBean(IncomingObservationManager.class);
+    getBeanFactory().getBean(IncomingRemoteObservationManager.class);
     verifyDefault();
   }
 
@@ -57,13 +57,13 @@ public class IncomingObservationManagerTest extends AbstractBaseComponentTest {
         .andReturn(Optional.empty());
 
     replayDefault();
-    getBeanFactory().getBean(IncomingObservationManager.class);
+    getBeanFactory().getBean(IncomingRemoteObservationManager.class);
     verifyDefault();
   }
 
   @Test
   public void test_notify_replays_remoteEventLocally() throws Exception {
-    IncomingObservationManager manager = newIncomingObservationManager();
+    IncomingRemoteObservationManager manager = newIncomingRemoteObservationManager();
     RemoteEventData remoteEvent = new RemoteEventData();
     Event event = new TestEvent();
     LocalEventData localEvent = new LocalEventData(event, "source", "data");
@@ -84,7 +84,7 @@ public class IncomingObservationManagerTest extends AbstractBaseComponentTest {
 
   @Test
   public void test_notify_skips_whenConverterReturnsNull() throws Exception {
-    IncomingObservationManager manager = newIncomingObservationManager();
+    IncomingRemoteObservationManager manager = newIncomingRemoteObservationManager();
     RemoteEventData remoteEvent = new RemoteEventData();
 
     getMock(Execution.class).setContext(anyObject(ExecutionContext.class));
@@ -98,8 +98,8 @@ public class IncomingObservationManagerTest extends AbstractBaseComponentTest {
     verifyDefault();
   }
 
-  private IncomingObservationManager newIncomingObservationManager() {
-    return new IncomingObservationManager(
+  private IncomingRemoteObservationManager newIncomingRemoteObservationManager() {
+    return new IncomingRemoteObservationManager(
         getMock(RemoteObservationManagerConfiguration.class),
         getMock(EventConverterManager.class),
         getMock(ObservationManager.class),

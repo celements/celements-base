@@ -14,7 +14,7 @@ import org.xwiki.observation.event.AllEvent;
 import org.xwiki.observation.event.Event;
 import org.xwiki.observation.internal.DefaultObservationManager;
 import org.xwiki.observation.remote.LocalEventData;
-import org.xwiki.observation.remote.internal.OutgoingObservationManager;
+import org.xwiki.observation.remote.internal.OutgoingRemoteObservationManager;
 
 import com.celements.common.test.AbstractBaseComponentTest;
 
@@ -24,7 +24,7 @@ public class ObservationManagerTest extends AbstractBaseComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    registerComponentMock(OutgoingObservationManager.class);
+    registerComponentMock(OutgoingRemoteObservationManager.class);
     manager = getBeanFactory().getBean(DefaultObservationManager.class);
   }
 
@@ -179,8 +179,8 @@ public class ObservationManagerTest extends AbstractBaseComponentTest {
   }
 
   private void expectRemoteObservation() {
-    expect(getMock(OutgoingObservationManager.class).isEnabled()).andReturn(true);
-    getMock(OutgoingObservationManager.class).notifyLocalThenRemote(anyObject(LocalEventData.class),
+    expect(getMock(OutgoingRemoteObservationManager.class).isEnabled()).andReturn(true);
+    getMock(OutgoingRemoteObservationManager.class).notifyLocalThenRemote(anyObject(LocalEventData.class),
         anyObject(Consumer.class));
     expectLastCall().andAnswer((IAnswer<Void>) () -> {
       LocalEventData localEvent = getCurrentArgument(0);

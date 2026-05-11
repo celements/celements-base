@@ -39,7 +39,7 @@ import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.AllEvent;
 import org.xwiki.observation.event.Event;
 import org.xwiki.observation.remote.LocalEventData;
-import org.xwiki.observation.remote.internal.OutgoingObservationManager;
+import org.xwiki.observation.remote.internal.OutgoingRemoteObservationManager;
 
 /**
  * Default implementation of the {@link ObservationManager}.
@@ -78,7 +78,7 @@ public class DefaultObservationManager implements ObservationManager, Initializa
   private ComponentManager componentManager;
 
   @Requirement
-  private OutgoingObservationManager outgoingObservationManager;
+  private OutgoingRemoteObservationManager outgoingObservationManager;
 
   /**
    * Helper class to store the list of events of a given type associated with a given listener. We

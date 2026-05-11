@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -59,19 +60,23 @@ import com.celements.common.observation.converter.Local;
  * @see CELDEV-1314
  */
 @Service
-public class OutgoingObservationManager {
+public class OutgoingRemoteObservationManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingObservationManager.class);
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(OutgoingRemoteObservationManager.class);
 
   private final RemoteObservationManagerConfiguration configuration;
   private final EventConverterManager eventConverterManager;
   private final RemoteObservationManagerContext remoteEventManagerContext;
   private final BeanFactory beanFactory;
+
   private final ThreadLocal<LinkedList<LocalEventData>> eventQueue = new ThreadLocal<>();
-  final Map<Class<? extends Event>, LogCounter> logCounts = new ConcurrentHashMap<>();
+  private final Map<Class<? extends Event>, LogCounter> logCounts = new ConcurrentHashMap<>();
+
+  private NetworkAdapter networkAdapter;
 
   @Inject
-  public OutgoingObservationManager(
+  public OutgoingRemoteObservationManager(
       RemoteObservationManagerConfiguration configuration,
       EventConverterManager eventConverterManager,
       RemoteObservationManagerContext remoteEventManagerContext,
@@ -82,9 +87,19 @@ public class OutgoingObservationManager {
     this.beanFactory = beanFactory;
   }
 
+  @PostConstruct
+  public void initialize() {
+    networkAdapter = configuration.getImplementation()
+        .map(name -> beanFactory.getBean(name, NetworkAdapter.class))
+        .orElse(null);
+    checkState(!configuration.isEnabled() || (networkAdapter != null),
+        "remote observation is enabled but network adapter implementation missing");
+  }
+
   /**
    * Outgoing observation is enabled if it's explicitly enabled in the configuration and the
-   * current event doesn't originate from {@link IncomingObservationManager} to avoid loops between
+   * current event doesn't originate from {@link IncomingRemoteObservationManager} to avoid loops
+   * between
    * nodes.
    */
   public boolean isEnabled() {
@@ -94,26 +109,26 @@ public class OutgoingObservationManager {
   public void notifyLocalThenRemote(
       LocalEventData localEvent, Consumer<LocalEventData> notifyLocal) {
     checkState(isEnabled(), "remote observation is disabled");
-    boolean first = queue(localEvent);
+    boolean outermost = ensureEventQueue();
+    eventQueue.get().add(localEvent);
     try {
       notifyLocal.accept(localEvent);
     } finally {
-      if (first) {
-        flushQueue();
+      if (outermost) {
+        flushEventQueue();
       }
     }
   }
 
-  private boolean queue(LocalEventData localEvent) {
-    boolean first = (eventQueue.get() == null);
-    if (first) {
+  private boolean ensureEventQueue() {
+    if (eventQueue.get() == null) {
       eventQueue.set(new LinkedList<>());
+      return true;
     }
-    eventQueue.get().add(localEvent);
-    return first;
+    return false;
   }
 
-  private void flushQueue() {
+  private void flushEventQueue() {
     var events = eventQueue.get();
     eventQueue.remove();
     events.stream()
@@ -126,9 +141,6 @@ public class OutgoingObservationManager {
   }
 
   void notify(LocalEventData localEvent) {
-    NetworkAdapter networkAdapter = getNetworkAdapter();
-    checkState(networkAdapter != null,
-        "remote observation is enabled but network adapter implementation missing");
     try {
       RemoteEventData remoteEvent = eventConverterManager.createRemoteEventData(localEvent);
       if (remoteEvent != null) {
@@ -146,12 +158,6 @@ public class OutgoingObservationManager {
         LOGGER.error("Failed to send remote observation event [{}]", localEvent, exc);
       }
     }
-  }
-
-  private NetworkAdapter getNetworkAdapter() {
-    return configuration.getImplementation()
-        .map(name -> beanFactory.getBean(name, NetworkAdapter.class))
-        .orElse(null);
   }
 
   private boolean isNotSerializableExc(Throwable exc) {

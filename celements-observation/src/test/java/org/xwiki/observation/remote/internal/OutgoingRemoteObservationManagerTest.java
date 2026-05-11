@@ -21,11 +21,11 @@ import org.xwiki.observation.remote.converter.EventConverterManager;
 import com.celements.common.observation.converter.Local;
 import com.celements.common.test.AbstractBaseComponentTest;
 
-public class OutgoingObservationManagerTest extends AbstractBaseComponentTest {
+public class OutgoingRemoteObservationManagerTest extends AbstractBaseComponentTest {
 
   private static final String ADAPTER_NAME = "testAdapter";
 
-  private OutgoingObservationManager manager;
+  private OutgoingRemoteObservationManager manager;
   private NetworkAdapter adapter;
 
   @Before
@@ -36,7 +36,11 @@ public class OutgoingObservationManagerTest extends AbstractBaseComponentTest {
         RemoteObservationManagerContext.class);
     adapter = createDefaultMock(NetworkAdapter.class);
     getBeanFactory().registerSingleton(ADAPTER_NAME, adapter);
-    manager = getBeanFactory().getBean(OutgoingObservationManager.class);
+    manager = new OutgoingRemoteObservationManager(
+        getMock(RemoteObservationManagerConfiguration.class),
+        getMock(EventConverterManager.class),
+        getMock(RemoteObservationManagerContext.class),
+        getBeanFactory());
   }
 
   @Test
@@ -46,11 +50,13 @@ public class OutgoingObservationManagerTest extends AbstractBaseComponentTest {
 
     expect(getMock(RemoteObservationManagerConfiguration.class).getImplementation())
         .andReturn(Optional.of(ADAPTER_NAME));
+    expect(getMock(RemoteObservationManagerConfiguration.class).isEnabled()).andReturn(true);
     expect(getMock(EventConverterManager.class).createRemoteEventData(same(localEvent)))
         .andReturn(remoteEvent);
     adapter.send(same(remoteEvent));
 
     replayDefault();
+    manager.initialize();
     manager.notify(localEvent);
     verifyDefault();
   }
@@ -90,7 +96,7 @@ public class OutgoingObservationManagerTest extends AbstractBaseComponentTest {
 
   @Test
   public void test_notifyLocalThenRemote_keeps_parentBeforeNestedEventOrder() {
-    RecordingOutgoingObservationManager manager = new RecordingOutgoingObservationManager();
+    RecordingOutgoingRemoteObservationManager manager = new RecordingOutgoingRemoteObservationManager();
     LocalEventData parent = new LocalEventData(new TestEvent(), "parent source", "parent data");
     LocalEventData nested = new LocalEventData(new TestEvent(), "nested source", "nested data");
 
@@ -102,11 +108,11 @@ public class OutgoingObservationManagerTest extends AbstractBaseComponentTest {
     assertEquals(List.of(parent, nested), manager.notifiedEvents);
   }
 
-  private static class RecordingOutgoingObservationManager extends OutgoingObservationManager {
+  private static class RecordingOutgoingRemoteObservationManager extends OutgoingRemoteObservationManager {
 
     private final List<LocalEventData> notifiedEvents = new ArrayList<>();
 
-    RecordingOutgoingObservationManager() {
+    RecordingOutgoingRemoteObservationManager() {
       super(null, null, null, null);
     }
 

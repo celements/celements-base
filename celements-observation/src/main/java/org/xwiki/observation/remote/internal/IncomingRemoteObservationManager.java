@@ -40,9 +40,9 @@ import org.xwiki.observation.remote.RemoteObservationManagerContext;
 import org.xwiki.observation.remote.converter.EventConverterManager;
 
 @Service
-public class IncomingObservationManager {
+public class IncomingRemoteObservationManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(IncomingObservationManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(IncomingRemoteObservationManager.class);
 
   private final RemoteObservationManagerConfiguration configuration;
   private final EventConverterManager eventConverterManager;
@@ -53,7 +53,7 @@ public class IncomingObservationManager {
   private final BeanFactory beanFactory;
 
   @Inject
-  public IncomingObservationManager(
+  public IncomingRemoteObservationManager(
       RemoteObservationManagerConfiguration configuration,
       EventConverterManager eventConverterManager,
       ObservationManager observationManager,
