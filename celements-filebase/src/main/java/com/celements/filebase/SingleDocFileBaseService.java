@@ -66,7 +66,8 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
 
   public SingleDocFileBaseService(IAttachmentServiceRole attService, IModelAccessFacade modelAccess,
       IRightsAccessFacadeRole rightsAccess, ITreeNodeService treeNodeService, ModelUtils modelUtils,
-      ConfigurationSource configuration, ModelContext modelContext, IWebUtilsService webUtilsService,
+      ConfigurationSource configuration, ModelContext modelContext,
+      IWebUtilsService webUtilsService,
       INextFreeDocRole nextFreeDoc) {
     this.attService = attService;
     this.modelAccess = modelAccess;
@@ -102,9 +103,18 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
   }
 
   @Override
-  public boolean hasListingRight(User user) {
+  public boolean hasListingRight(String dirPath, User user) {
+    return hasRight(user, EAccessLevel.VIEW);
+  }
+
+  @Override
+  public boolean hasUploadRight(String dirPath, User user) {
+    return hasRight(user, EAccessLevel.EDIT);
+  }
+
+  private boolean hasRight(User user, EAccessLevel accessLevel) {
     return getFileBaseDocRef()
-        .filter(docRef -> rightsAccess.hasAccessLevel(docRef, EAccessLevel.VIEW, user))
+        .filter(docRef -> rightsAccess.hasAccessLevel(docRef, accessLevel, user))
         .isPresent();
   }
 
@@ -180,7 +190,6 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
         .orElse(Collections.emptyList());
   }
 
-
   private FileBaseTag buildFileBaseTag(DocumentReference docRef) {
     XWikiContext ctx = modelContext.getXWikiContext();
     Map<String, String> names = webUtilsService.getAllowedLanguages().stream()
@@ -209,7 +218,9 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
       menuItemObj.setStringValue(INavigationClassConfig.PART_NAME_FIELD, "");
 
       for (String lang : webUtilsService.getAllowedLanguages()) {
-        ClassField<String> langField = new StringField.Builder(INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD).build();
+        ClassField<String> langField = new StringField.Builder(
+            INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD)
+                .build();
         BaseObject menuNameObj = XWikiObjectEditor.on(tagDoc)
             .filter(INavigationClassConfig.MENU_NAME_CLASS_REF)
             .filter(langField, lang)
@@ -240,7 +251,9 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
     try {
       XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tagRef);
       for (String lang : webUtilsService.getAllowedLanguages()) {
-        ClassField<String> langField = new StringField.Builder(INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD).build();
+        ClassField<String> langField = new StringField.Builder(
+            INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD)
+                .build();
         BaseObject menuNameObj = XWikiObjectEditor.on(tagDoc)
             .filter(INavigationClassConfig.MENU_NAME_CLASS_REF)
             .filter(langField, lang)

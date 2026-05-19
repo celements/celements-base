@@ -96,9 +96,9 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ListResponse list(@RequestParam(name = "path", required = false) String path) {
     checkAuth();
+    String dirPath = normalizeDirPath(path);
     if (modelContext.user().isPresent()
-        && fileBaseService.hasListingRight(modelContext.user().get())) {
-      String dirPath = normalizeDirPath(path);
+        && fileBaseService.hasListingRight(dirPath, modelContext.user().get())) {
       // TODO extend filebase for directory support
       try {
         List<FileItem> files = fileBaseService.getFilesNameMatch(new AllAttachmentMatcher())
@@ -125,23 +125,28 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public Object upload(@RequestParam("path") String path,
       @RequestParam("file") List<MultipartFile> files) {
+    checkAuth();
     String dirPath = normalizeDirPath(path);
-    // TODO extend filebase for directory support
-    for (MultipartFile file : files) {
-      if ((file == null) || file.isEmpty()) {
-        continue;
-      }
-      String original = file.getOriginalFilename();
-      String fileName = StringUtils.hasText(original) ? original : "upload.bin";
+    if (modelContext.user().isPresent()
+        && fileBaseService.hasUploadRight(dirPath, modelContext.user().get())) {
+      // TODO extend filebase for directory support
+      for (MultipartFile file : files) {
+        if ((file == null) || file.isEmpty()) {
+          continue;
+        }
+        String original = file.getOriginalFilename();
+        String fileName = StringUtils.hasText(original) ? original : "upload.bin";
 
-      try (InputStream in = file.getInputStream()) {
-        fileBaseService.addFile(in, fileName, "Uploaded via VueFinder");
-      } catch (IOException | FileBaseAddFileException exp) {
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fileupload failed.",
-            exp);
+        try (InputStream in = file.getInputStream()) {
+          fileBaseService.addFile(in, fileName, "Uploaded via VueFinder");
+        } catch (IOException | FileBaseAddFileException exp) {
+          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fileupload failed.",
+              exp);
+        }
       }
+      return java.util.Collections.emptyMap();
     }
-    return java.util.Collections.emptyMap();
+    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
   }
 
   /**

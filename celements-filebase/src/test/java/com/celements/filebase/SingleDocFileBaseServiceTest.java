@@ -110,7 +110,7 @@ public class SingleDocFileBaseServiceTest extends AbstractComponentTest {
     expect(rightsAccessMock.hasAccessLevel(eq(fileBaseDocRef), eq(EAccessLevel.VIEW), same(user)))
         .andReturn(true);
     replayDefault();
-    assertTrue(fbService.hasListingRight(user));
+    assertTrue(fbService.hasListingRight("local://filebase", user));
     verifyDefault();
   }
 
@@ -126,7 +126,7 @@ public class SingleDocFileBaseServiceTest extends AbstractComponentTest {
     expect(rightsAccessMock.hasAccessLevel(eq(fileBaseDocRef), eq(EAccessLevel.VIEW), same(user)))
         .andReturn(false);
     replayDefault();
-    assertFalse(fbService.hasListingRight(user));
+    assertFalse(fbService.hasListingRight("local://filebase", user));
     verifyDefault();
   }
 
@@ -135,7 +135,48 @@ public class SingleDocFileBaseServiceTest extends AbstractComponentTest {
     expect(configurationMock.getProperty(eq(
         IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(null);
     replayDefault();
-    assertFalse(fbService.hasListingRight(null));
+    assertFalse(fbService.hasListingRight("local://filebase", null));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_hasUploadRights_allowed() throws Exception {
+    String spcName = "FBSpace";
+    String docName = "FBDoc";
+    DocumentReference fileBaseDocRef = new DocumentReference(getXContext().getDatabase(), spcName,
+        docName);
+    User user = createDefaultMock(User.class);
+    expect(configurationMock.getProperty(eq(
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(spcName + "." + docName);
+    expect(rightsAccessMock.hasAccessLevel(eq(fileBaseDocRef), eq(EAccessLevel.EDIT), same(user)))
+        .andReturn(true);
+    replayDefault();
+    assertTrue(fbService.hasUploadRight("local://filebase", user));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_hasUploadRights_denied() throws Exception {
+    String spcName = "FBSpace";
+    String docName = "FBDoc";
+    DocumentReference fileBaseDocRef = new DocumentReference(getXContext().getDatabase(), spcName,
+        docName);
+    User user = createDefaultMock(User.class);
+    expect(configurationMock.getProperty(eq(
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(spcName + "." + docName);
+    expect(rightsAccessMock.hasAccessLevel(eq(fileBaseDocRef), eq(EAccessLevel.EDIT), same(user)))
+        .andReturn(false);
+    replayDefault();
+    assertFalse(fbService.hasUploadRight("local://filebase", user));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_hasUploadRights_noConfig() {
+    expect(configurationMock.getProperty(eq(
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(null);
+    replayDefault();
+    assertFalse(fbService.hasUploadRight("local://filebase", null));
     verifyDefault();
   }
 
