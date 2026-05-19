@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
@@ -123,9 +124,10 @@ public class AttachmentService implements IAttachmentServiceRole {
       doc.getAttachmentList().add(attachment);
     }
 
-    String safeUsername = StringUtils.isNotBlank(username) ? username
-        : context.user()
-            .map(u -> u.asXWikiUser().getUser()).orElse(XWikiRightService.GUEST_USER);
+    String safeUsername = Optional.ofNullable(username)
+        .filter(s -> !s.isBlank())
+        .or(() -> context.user().map(u -> u.asXWikiUser().getUser()))
+        .orElse(XWikiRightService.GUEST_USER);
 
     try {
       attachment.setContent(in);

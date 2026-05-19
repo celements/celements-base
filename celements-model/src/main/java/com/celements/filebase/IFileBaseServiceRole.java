@@ -3,6 +3,9 @@ package com.celements.filebase;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
 
@@ -19,35 +22,40 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 @ComponentRole
 public interface IFileBaseServiceRole {
 
-        public static final String FILEBASE_CONFIG_FIELD = "cel_centralfilebase";
+  public static final String FILEBASE_CONFIG_FIELD = "cel_centralfilebase";
 
-        public boolean hasListingRight(String dirPath, User user);
+  public boolean hasListingRight(@NotNull String dirPath, @Nullable User user);
 
-        public boolean hasUploadRight(String dirPath, User user);
+  public boolean hasUploadRight(@NotNull String dirPath, @Nullable User user);
 
-        public boolean existsFileNameEqual(String filename) throws FileBaseLoadException;
+  public boolean existsFileNameEqual(@NotNull String filename) throws FileBaseLoadException;
 
-        public XWikiAttachment getFileNameEqual(String filename) throws FileNotExistsException,
-                        FileBaseLoadException;
+  @NotNull
+  public XWikiAttachment getFileNameEqual(@NotNull String filename) throws FileNotExistsException,
+      FileBaseLoadException;
 
-        public List<XWikiAttachment> getFilesNameMatch(IAttachmentMatcher attMatcher)
-                        throws FileBaseLoadException;
+  @NotNull
+  public List<XWikiAttachment> getFilesNameMatch(@NotNull IAttachmentMatcher attMatcher)
+      throws FileBaseLoadException;
 
-        public XWikiAttachment addFile(InputStream in, String filename, String username,
-                        String comment)
-                        throws FileBaseAddFileException;
+  @NotNull
+  public XWikiAttachment addFile(@NotNull InputStream in, @NotNull String filename,
+      @Nullable String username, @Nullable String comment) throws FileBaseAddFileException;
 
-        public XWikiAttachment addFile(InputStream in, String filename, String comment)
-                        throws FileBaseAddFileException;
+  @NotNull
+  public XWikiAttachment addFile(@NotNull InputStream in, @NotNull String filename,
+      @Nullable String comment) throws FileBaseAddFileException;
 
-        public int deleteFileList(List<String> files);
+  public int deleteFileList(@NotNull List<String> files);
 
-        public List<FileBaseTag> getFileTags();
+  @NotNull
+  public List<FileBaseTag> getFileTags();
 
-        public DocumentReference createFileTag(String label) throws FileBaseTagCreateException;
+  @NotNull
+  public DocumentReference createFileTag(@NotNull String label) throws FileBaseTagCreateException;
 
-        public void deleteFileTag(DocumentReference tagRef) throws FileBaseTagDeleteException;
+  public void deleteFileTag(@NotNull DocumentReference tagRef) throws FileBaseTagDeleteException;
 
-        public void renameFileTag(DocumentReference tagRef, String newLabel)
-                        throws FileBaseTagRenameException;
+  public void renameFileTag(@NotNull DocumentReference tagRef, @NotNull String newLabel)
+      throws FileBaseTagRenameException;
 }

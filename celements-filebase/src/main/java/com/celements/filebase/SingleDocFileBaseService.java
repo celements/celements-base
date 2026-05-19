@@ -1,5 +1,7 @@
 package com.celements.filebase;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -81,15 +83,12 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
   }
 
   XWikiDocument getFileBaseDoc() throws FileBaseLoadException {
-    var fileBaseDocRefOpt = getFileBaseDocRef();
-    if (fileBaseDocRefOpt.isPresent()) {
-      try {
-        return modelAccess.getOrCreateDocument(fileBaseDocRefOpt.get());
-      } catch (DocumentLoadException exp) {
-        throw new FileBaseLoadException(modelUtils.serializeRef(fileBaseDocRefOpt.get()), exp);
-      }
-    } else {
-      throw new FileBaseLoadException("Filebase document not configured");
+    DocumentReference fileBaseDocRef = getFileBaseDocRef()
+        .orElseThrow(() -> new FileBaseLoadException("Filebase document not configured"));
+    try {
+      return modelAccess.getOrCreateDocument(fileBaseDocRef);
+    } catch (DocumentLoadException exp) {
+      throw new FileBaseLoadException(modelUtils.serializeRef(fileBaseDocRef), exp);
     }
   }
 
@@ -164,14 +163,7 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
       final DocumentReference fileBaseDocRef = getFileBaseDocRef()
           .orElseThrow(() -> new FileBaseLoadException("Filebase document not configured"));
       return attService.deleteAttachmentList(filenames.stream()
-          .filter(fn -> {
-            try {
-              return existsFileNameEqual(fn);
-            } catch (FileBaseLoadException e) {
-              LOGGER.error("FileBase loading failed. Skipping delete for " + fn, e);
-              return false;
-            }
-          })
+          .filter(rethrowPredicate(this::existsFileNameEqual))
           .map(fn -> new AttachmentReference(fn, fileBaseDocRef))
           .collect(Collectors.toList()));
     } catch (FileBaseLoadException exp) {
@@ -209,14 +201,12 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
       SpaceReference spaceRef = fileBaseDocRef.getLastSpaceReference();
       DocumentReference tagDocRef = nextFreeDoc.getNextTitledPageDocRef(spaceRef, "tag");
       XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tagDocRef);
-
       BaseObject menuItemObj = XWikiObjectEditor.on(tagDoc)
           .filter(INavigationClassConfig.MENU_ITEM_CLASS_REF)
           .createFirstIfNotExists();
       menuItemObj.setIntValue(INavigationClassConfig.MENU_POSITION_FIELD, getFileTags().size());
       menuItemObj.setStringValue("menu_parent", "");
       menuItemObj.setStringValue(INavigationClassConfig.PART_NAME_FIELD, "");
-
       for (String lang : webUtilsService.getAllowedLanguages()) {
         ClassField<String> langField = new StringField.Builder(
             INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD)
@@ -228,7 +218,6 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
         menuNameObj.setStringValue(INavigationClassConfig.MENU_NAME_LANG_FIELD, lang);
         menuNameObj.setStringValue(INavigationClassConfig.MENU_NAME_FIELD, label);
       }
-
       modelAccess.saveDocument(tagDoc, "Tag created via MediaLib");
       return tagDocRef;
     } catch (Exception e) {

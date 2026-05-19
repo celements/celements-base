@@ -43,6 +43,7 @@ import com.celements.filebase.exceptions.FileBaseTagRenameException;
 import com.celements.filebase.exceptions.FileNotExistsException;
 import com.celements.filebase.matcher.AllAttachmentMatcher;
 import com.celements.model.access.IModelAccessFacade;
+import com.celements.model.access.exception.DocumentSaveException;
 import com.celements.model.context.ModelContext;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.reference.RefBuilder;
@@ -136,7 +137,6 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
         }
         String original = file.getOriginalFilename();
         String fileName = StringUtils.hasText(original) ? original : "upload.bin";
-
         try (InputStream in = file.getInputStream()) {
           fileBaseService.addFile(in, fileName, "Uploaded via VueFinder");
         } catch (IOException | FileBaseAddFileException exp) {
@@ -244,7 +244,8 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
    */
   @PostMapping("/tags/assign")
   @PreAuthorize("permitAll()")
-  public ResponseEntity<?> assignTag(@RequestBody TagAssignRequest body) {
+  public ResponseEntity<?> assignTag(@RequestBody TagAssignRequest body)
+      throws DocumentSaveException {
     if (checkAuth().isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -260,11 +261,7 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
           .filter(FileBaseTag.ATTACHMENT_FIELD, attKey)
           .createFirstIfNotExists();
     }
-    try {
-      modelAccess.saveDocument(tagDoc);
-    } catch (com.celements.model.access.exception.DocumentSaveException e) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save tag", e);
-    }
+    modelAccess.saveDocument(tagDoc);
     return ResponseEntity.ok(Map.of());
   }
 
@@ -273,7 +270,8 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
    */
   @PostMapping("/tags/remove")
   @PreAuthorize("permitAll()")
-  public ResponseEntity<?> removeTag(@RequestBody TagAssignRequest body) {
+  public ResponseEntity<?> removeTag(@RequestBody TagAssignRequest body)
+      throws DocumentSaveException {
     if (checkAuth().isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
@@ -289,11 +287,7 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
           .filter(FileBaseTag.ATTACHMENT_FIELD, attKey)
           .delete();
     }
-    try {
-      modelAccess.saveDocument(tagDoc);
-    } catch (com.celements.model.access.exception.DocumentSaveException e) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save tag", e);
-    }
+    modelAccess.saveDocument(tagDoc);
     return ResponseEntity.ok(Map.of());
   }
 
@@ -307,56 +301,44 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
 
   @PostMapping("/tags/create")
   @PreAuthorize("permitAll()")
-  public ResponseEntity<?> createTag(@RequestBody TagCreateRequest body) {
+  public ResponseEntity<?> createTag(@RequestBody TagCreateRequest body)
+      throws FileBaseTagCreateException {
     User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
-    try {
-      DocumentReference ref = fileBaseService.createFileTag(body.label);
-      TagDto dto = new TagDto();
-      dto.id = modelUtils.serializeRefLocal(ref);
-      dto.prettyName = body.label;
-      dto.prettyNames = Map.of();
-      return ResponseEntity.ok(dto);
-    } catch (FileBaseTagCreateException exp) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create tag",
-          exp);
-    }
+    DocumentReference ref = fileBaseService.createFileTag(body.label);
+    TagDto dto = new TagDto();
+    dto.id = modelUtils.serializeRefLocal(ref);
+    dto.prettyName = body.label;
+    dto.prettyNames = Map.of();
+    return ResponseEntity.ok(dto);
   }
 
   @PostMapping("/tags/delete")
   @PreAuthorize("permitAll()")
-  public ResponseEntity<?> deleteTag(@RequestBody TagDeleteRequest body) {
+  public ResponseEntity<?> deleteTag(@RequestBody TagDeleteRequest body)
+      throws FileBaseTagDeleteException {
     User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
-    try {
-      FileBaseTag tag = findTag(body.tagId);
-      fileBaseService.deleteFileTag(tag.getTagRef());
-      return ResponseEntity.ok(Map.of());
-    } catch (FileBaseTagDeleteException exp) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete tag",
-          exp);
-    }
+    FileBaseTag tag = findTag(body.tagId);
+    fileBaseService.deleteFileTag(tag.getTagRef());
+    return ResponseEntity.ok(Map.of());
   }
 
   @PostMapping("/tags/rename")
   @PreAuthorize("permitAll()")
-  public ResponseEntity<?> renameTag(@RequestBody TagRenameRequest body) {
+  public ResponseEntity<?> renameTag(@RequestBody TagRenameRequest body)
+      throws FileBaseTagRenameException {
     User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
-    try {
-      FileBaseTag tag = findTag(body.tagId);
-      fileBaseService.renameFileTag(tag.getTagRef(), body.newLabel);
-      return ResponseEntity.ok(Map.of());
-    } catch (FileBaseTagRenameException exp) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to rename tag",
-          exp);
-    }
+    FileBaseTag tag = findTag(body.tagId);
+    fileBaseService.renameFileTag(tag.getTagRef(), body.newLabel);
+    return ResponseEntity.ok(Map.of());
   }
 
   private FileBaseTag findTag(String tagId) {
@@ -401,23 +383,22 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
 
   private FileItem toFileItem(String dirPath, XWikiAttachment att) {
     String name = att.getFilename();
-    FileItem item = new FileItem();
-    item.dir = dirPath;
-    item.basename = name;
-    item.extension = extensionOf(name);
-    item.path = dirPath.endsWith("/") ? (dirPath + name) : (dirPath + "/" + name);
-    item.storage = STORAGE;
-    item.type = "file";
-    item.file_size = (long) att.getFilesize();
-    item.last_modified = toUnixSeconds(att.getDate());
-    item.mime_type = guessMimeType(name);
-    item.visibility = "public";
     AttachmentReference attachmentRef = RefBuilder.from(att.getDoc().getDocumentReference())
         .att(name).build(AttachmentReference.class);
-    item.url = urlService.getURL(attachmentRef, "download");
     String query = "celwidth=" + MAX_WIDTH + "&celheight=" + MAX_HEIGHT;
-    item.previewUrl = urlService.getURL(attachmentRef, "download", query);
-    return item;
+    return new FileItem(
+        dirPath,
+        name,
+        extensionOf(name),
+        dirPath.endsWith("/") ? (dirPath + name) : (dirPath + "/" + name),
+        urlService.getURL(attachmentRef, "download"),
+        urlService.getURL(attachmentRef, "download", query),
+        STORAGE,
+        "file",
+        (long) att.getFilesize(),
+        toUnixSeconds(att.getDate()),
+        guessMimeType(name),
+        "public");
   }
 
   private String guessMimeType(String filename) {
@@ -438,79 +419,36 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
     return date.toInstant().getEpochSecond();
   }
 
-  // ----------------------------
-  // DTOs matching VueFinder’s expected JSON shape
-  // ----------------------------
-
-  public static class ListResponse {
-
-    public List<String> storages;
-    public String dirname;
-    public boolean read_only;
-    public List<FileItem> files;
-
-    public ListResponse(List<String> storages, String dirname, boolean read_only,
-        List<FileItem> files) {
-      this.storages = storages;
-      this.dirname = dirname;
-      this.read_only = read_only;
-      this.files = files;
-    }
-  }
-
-  public static class FileItem {
-
-    public String dir;
-    public String basename;
-    public String extension;
-    public String path;
-    public String url;
-    public String previewUrl;
-    public String storage;
-    public String type; // "file" or "dir"
-    public long file_size;
-    public long last_modified; // unix seconds
-    public String mime_type;
-    public String visibility; // "public"/"private"
-  }
-
   public static class DeleteRequest {
-
     public String path;
     public List<DeleteItem> items;
   }
 
   public static class DeleteItem {
-
     public String path;
     public String type;
   }
 
   public static class TagDto {
-
     public String id;
     public String prettyName;
     public Map<String, String> prettyNames;
   }
 
   public static class TagAssignRequest {
-
     public String tagId;
     public List<String> filePaths;
   }
 
   public static class TagCreateRequest {
-
     public String label;
   }
 
   public static class TagDeleteRequest {
-
     public String tagId;
   }
 
   public static class TagRenameRequest {
-
     public String tagId;
     public String newLabel;
   }
@@ -521,5 +459,31 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
         .status(ex.getStatus())
         .body(java.util.Map.of("message",
             ex.getReason() != null ? ex.getReason() : "Request failed"));
+  }
+
+  @ExceptionHandler(DocumentSaveException.class)
+  public ResponseEntity<?> handle(DocumentSaveException exp) {
+    return internalServerError("Failed to save tag");
+  }
+
+  @ExceptionHandler(FileBaseTagCreateException.class)
+  public ResponseEntity<?> handle(FileBaseTagCreateException exp) {
+    return internalServerError("Failed to create tag");
+  }
+
+  @ExceptionHandler(FileBaseTagDeleteException.class)
+  public ResponseEntity<?> handle(FileBaseTagDeleteException exp) {
+    return internalServerError("Failed to delete tag");
+  }
+
+  @ExceptionHandler(FileBaseTagRenameException.class)
+  public ResponseEntity<?> handle(FileBaseTagRenameException exp) {
+    return internalServerError("Failed to rename tag");
+  }
+
+  private ResponseEntity<?> internalServerError(String message) {
+    return ResponseEntity
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(java.util.Map.of("message", message));
   }
 }
