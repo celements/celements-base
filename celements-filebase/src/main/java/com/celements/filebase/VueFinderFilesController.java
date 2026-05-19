@@ -1,7 +1,5 @@
 package com.celements.filebase;
 
-import static com.celements.execution.XWikiExecutionProp.*;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
@@ -12,7 +10,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -34,32 +31,28 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import org.xwiki.context.Execution;
 import org.xwiki.model.reference.AttachmentReference;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.auth.user.User;
-import com.celements.auth.user.UserInstantiationException;
-import com.celements.auth.user.UserService;
 import com.celements.filebase.exceptions.FileBaseAddFileException;
+import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.exceptions.FileBaseTagCreateException;
 import com.celements.filebase.exceptions.FileBaseTagDeleteException;
 import com.celements.filebase.exceptions.FileBaseTagRenameException;
-import com.celements.filebase.exceptions.FileBaseLoadException;
-import com.celements.model.access.IModelAccessFacade;
-import com.celements.model.object.xwiki.XWikiObjectEditor;
-import com.celements.model.util.ModelUtils;
-import org.xwiki.model.reference.DocumentReference;
-import com.celements.rights.access.EAccessLevel;
-import com.celements.rights.access.IRightsAccessFacadeRole;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.exceptions.FileNotExistsException;
 import com.celements.filebase.matcher.AllAttachmentMatcher;
+import com.celements.model.access.IModelAccessFacade;
+import com.celements.model.context.ModelContext;
+import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.reference.RefBuilder;
+import com.celements.model.util.ModelUtils;
+import com.celements.rights.access.EAccessLevel;
+import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.spring.security.AuthenticatedBaseController;
 import com.celements.url.UrlService;
-import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
+import com.xpn.xwiki.doc.XWikiDocument;
 
 @RestController
 @RestControllerAdvice
@@ -77,8 +70,7 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   private final IModelAccessFacade modelAccess;
   private final IRightsAccessFacadeRole rightsAccess;
   private final ModelUtils modelUtils;
-  private final Execution execution;
-  private final UserService userService;
+  private final ModelContext modelContext;
 
   @Inject
   public VueFinderFilesController(
@@ -87,15 +79,13 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
       IModelAccessFacade modelAccess,
       IRightsAccessFacadeRole rightsAccess,
       ModelUtils modelUtils,
-      Execution execution,
-      UserService userService) {
+      ModelContext modelContext) {
     this.fileBaseService = fileBaseService;
     this.urlService = urlService;
     this.modelAccess = modelAccess;
     this.rightsAccess = rightsAccess;
     this.modelUtils = modelUtils;
-    this.execution = execution;
-    this.userService = userService;
+    this.modelContext = modelContext;
   }
 
   @GetMapping("/helloFinder")
@@ -111,18 +101,24 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   @GetMapping(path = "")
   @PreAuthorize("permitAll()")
   public ListResponse list(@RequestParam(name = "path", required = false) String path) {
-    String dirPath = normalizeDirPath(path);
-    // TODO extend filebase for directory support
-    try {
-      List<FileItem> files = fileBaseService.getFilesNameMatch(new AllAttachmentMatcher()).stream()
-          .map(att -> toFileItem(dirPath, att))
-          // enforce XWiki rights (skip what user cannot access)
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      return new ListResponse(List.of(STORAGE), dirPath, false, files);
-    } catch (FileBaseLoadException exp) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Folder not found.", exp);
+    checkAuth();
+    if (modelContext.user().isPresent()
+        && fileBaseService.hasListingRight(modelContext.user().get())) {
+      String dirPath = normalizeDirPath(path);
+      // TODO extend filebase for directory support
+      try {
+        List<FileItem> files = fileBaseService.getFilesNameMatch(new AllAttachmentMatcher())
+            .stream()
+            .map(att -> toFileItem(dirPath, att))
+            // enforce XWiki rights (skip what user cannot access)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+        return new ListResponse(List.of(STORAGE), dirPath, false, files);
+      } catch (FileBaseLoadException exp) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Folder not found.", exp);
+      }
     }
+    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
   }
 
   /**
@@ -187,12 +183,12 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   @GetMapping("/search")
   @PreAuthorize("permitAll()")
   public ListResponse search(@RequestParam("q") String query,
-                             @RequestParam(name="path", required=false) String path) {
+      @RequestParam(name = "path", required = false) String path) {
     String dirPath = normalizeDirPath(path);
     String lower = query.toLowerCase(Locale.ROOT);
     try {
       List<FileItem> files = fileBaseService.getFilesNameMatch(
-              att -> att.getFilename().toLowerCase(Locale.ROOT).contains(lower))
+          att -> att.getFilename().toLowerCase(Locale.ROOT).contains(lower))
           .stream()
           .map(att -> toFileItem(dirPath, att))
           .filter(Objects::nonNull)
@@ -223,7 +219,6 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
         .collect(Collectors.toList());
     return ResponseEntity.ok(tags);
   }
-
 
   /**
    * Get files (attachments) belonging to a tag.
@@ -263,8 +258,8 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
       String attKey = toAttachmentKey(filePath);
       var editor = XWikiObjectEditor.on(tagDoc);
       editor.filter(FileBaseTag.FILEBASE_TAG_CLASS_REF)
-            .filter(FileBaseTag.ATTACHMENT_FIELD, attKey)
-            .createFirstIfNotExists();
+          .filter(FileBaseTag.ATTACHMENT_FIELD, attKey)
+          .createFirstIfNotExists();
     }
     try {
       modelAccess.saveDocument(tagDoc);
@@ -292,8 +287,8 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
       String attKey = toAttachmentKey(filePath);
       var editor = XWikiObjectEditor.on(tagDoc);
       editor.filter(FileBaseTag.FILEBASE_TAG_CLASS_REF)
-            .filter(FileBaseTag.ATTACHMENT_FIELD, attKey)
-            .delete();
+          .filter(FileBaseTag.ATTACHMENT_FIELD, attKey)
+          .delete();
     }
     try {
       modelAccess.saveDocument(tagDoc);
@@ -326,7 +321,8 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
       dto.prettyNames = Map.of();
       return ResponseEntity.ok(dto);
     } catch (FileBaseTagCreateException exp) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create tag", exp);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create tag",
+          exp);
     }
   }
 
@@ -342,7 +338,8 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
       fileBaseService.deleteFileTag(tag.getTagRef());
       return ResponseEntity.ok(Map.of());
     } catch (FileBaseTagDeleteException exp) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete tag", exp);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete tag",
+          exp);
     }
   }
 
@@ -358,36 +355,16 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
       fileBaseService.renameFileTag(tag.getTagRef(), body.newLabel);
       return ResponseEntity.ok(Map.of());
     } catch (FileBaseTagRenameException exp) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to rename tag", exp);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to rename tag",
+          exp);
     }
   }
-
 
   private FileBaseTag findTag(String tagId) {
     return fileBaseService.getFileTags().stream()
         .filter(t -> modelUtils.serializeRefLocal(t.getTagRef()).equals(tagId))
         .findFirst()
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tag not found"));
-  }
-
-  /**
-   * Checks authentication via the legacy Struts auth mechanism.
-   * This is necessary because the system supports Struts-only sessions that have
-   * no Spring Security principal, so Spring's isAuthenticated() alone is insufficient.
-   */
-  private Optional<User> checkAuth() {
-    try {
-      var eCtx = execution.getContext();
-      var ctx = eCtx.get(XWIKI_CONTEXT).orElseThrow();
-      var xuser = eCtx.get(XWIKI).orElseThrow().checkAuth(ctx);
-      if (xuser != null) {
-        ctx.setUser(xuser.getUser());
-        return Optional.of(userService.getUser(xuser.getUser()));
-      }
-    } catch (XWikiException | UserInstantiationException e) {
-      LOGGER.warn("Failed to check auth", e);
-    }
-    return Optional.empty();
   }
 
   private String toAttachmentKey(String filePath) {
@@ -425,20 +402,15 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
 
   private FileItem toFileItem(String dirPath, XWikiAttachment att) {
     String name = att.getFilename();
-    String ext = extensionOf(name);
-    long size = att.getFilesize();
-    long lm = toUnixSeconds(att.getDate());
-    String filePath = dirPath.endsWith("/") ? (dirPath + name) : (dirPath + "/" + name);
-
     FileItem item = new FileItem();
     item.dir = dirPath;
     item.basename = name;
-    item.extension = ext;
-    item.path = filePath;
+    item.extension = extensionOf(name);
+    item.path = dirPath.endsWith("/") ? (dirPath + name) : (dirPath + "/" + name);
     item.storage = STORAGE;
     item.type = "file";
-    item.file_size = size;
-    item.last_modified = lm;
+    item.file_size = (long) att.getFilesize();
+    item.last_modified = toUnixSeconds(att.getDate());
     item.mime_type = guessMimeType(name);
     item.visibility = "public";
     AttachmentReference attachmentRef = RefBuilder.from(att.getDoc().getDocumentReference())
@@ -516,25 +488,30 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   }
 
   public static class TagDto {
+
     public String id;
     public String prettyName;
     public Map<String, String> prettyNames;
   }
 
   public static class TagAssignRequest {
+
     public String tagId;
     public List<String> filePaths;
   }
 
   public static class TagCreateRequest {
+
     public String label;
   }
 
   public static class TagDeleteRequest {
+
     public String tagId;
   }
 
   public static class TagRenameRequest {
+
     public String tagId;
     public String newLabel;
   }

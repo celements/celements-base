@@ -16,6 +16,7 @@ import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 
+import com.celements.auth.user.User;
 import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.exceptions.FileBaseTagCreateException;
@@ -36,6 +37,8 @@ import com.celements.navigation.INavigationClassConfig;
 import com.celements.navigation.cmd.MultilingualMenuNameCommand;
 import com.celements.navigation.service.ITreeNodeService;
 import com.celements.nextfreedoc.INextFreeDocRole;
+import com.celements.rights.access.EAccessLevel;
+import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.web.service.IWebUtilsService;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
@@ -52,6 +55,7 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
 
   private final IAttachmentServiceRole attService;
   private final IModelAccessFacade modelAccess;
+  private final IRightsAccessFacadeRole rightsAccess;
   private final ModelUtils modelUtils;
   private final ConfigurationSource configuration;
   private final ITreeNodeService treeNodeService;
@@ -61,10 +65,12 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
   private final MultilingualMenuNameCommand menuNameCmd = new MultilingualMenuNameCommand();
 
   public SingleDocFileBaseService(IAttachmentServiceRole attService, IModelAccessFacade modelAccess,
-      ITreeNodeService treeNodeService, ModelUtils modelUtils, ConfigurationSource configuration,
-      ModelContext modelContext, IWebUtilsService webUtilsService, INextFreeDocRole nextFreeDoc) {
+      IRightsAccessFacadeRole rightsAccess, ITreeNodeService treeNodeService, ModelUtils modelUtils,
+      ConfigurationSource configuration, ModelContext modelContext, IWebUtilsService webUtilsService,
+      INextFreeDocRole nextFreeDoc) {
     this.attService = attService;
     this.modelAccess = modelAccess;
+    this.rightsAccess = rightsAccess;
     this.modelUtils = modelUtils;
     this.configuration = configuration;
     this.treeNodeService = treeNodeService;
@@ -93,6 +99,13 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
     } else {
       return Optional.empty();
     }
+  }
+
+  @Override
+  public boolean hasListingRight(User user) {
+    return getFileBaseDocRef()
+        .filter(docRef -> rightsAccess.hasAccessLevel(docRef, EAccessLevel.VIEW, user))
+        .isPresent();
   }
 
   @Override

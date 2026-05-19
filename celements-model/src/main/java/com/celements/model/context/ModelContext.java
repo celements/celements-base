@@ -115,7 +115,7 @@ public interface ModelContext {
   XWikiDocument setDoc(@Nullable XWikiDocument doc);
 
   /**
-   * @deprecated instead use {@link #getUserOpt}
+   * @deprecated instead use {@link #user}
    */
   @Deprecated(since = "3.6", forRemoval = true)
   @Nullable

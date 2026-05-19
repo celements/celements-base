@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.xwiki.component.annotation.ComponentRole;
 
+import com.celements.auth.user.User;
 import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.exceptions.FileBaseTagCreateException;
@@ -19,6 +20,8 @@ import org.xwiki.model.reference.DocumentReference;
 public interface IFileBaseServiceRole {
 
     public static final String FILEBASE_CONFIG_FIELD = "cel_centralfilebase";
+
+    public boolean hasListingRight(User user);
 
     public boolean existsFileNameEqual(String filename) throws FileBaseLoadException;
 
