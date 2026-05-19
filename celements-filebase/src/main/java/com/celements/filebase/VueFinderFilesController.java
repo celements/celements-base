@@ -98,12 +98,6 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
     this.userService = userService;
   }
 
-  @GetMapping("/helloFinder")
-  @PreAuthorize("permitAll()")
-  public String helloFinder() {
-    return "VueFinder Backend comming here!";
-  }
-
   /**
    * List files (attachments) in a "directory" (XWiki document).
    * GET /api/files?path=local://public/FileRepo
