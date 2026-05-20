@@ -60,7 +60,7 @@ public class VueFinderFilesControllerTest extends AbstractComponentTest {
     ListResponse response = vueFinderCtrl.search("test", "local://");
     verifyDefault();
     assertNotNull(response);
-    assertEquals("local://", response.path);
+    assertEquals("local://", response.dirname());
   }
 
   @Test
@@ -121,7 +121,7 @@ public class VueFinderFilesControllerTest extends AbstractComponentTest {
 
   private void expectCheckAuth() throws Exception {
     XWikiUser xuser = new XWikiUser("xwiki:User.test");
-    expect(getWikiMock().checkAuth(same(getContext()))).andReturn(xuser).anyTimes();
+    expect(getXContext().getWiki().checkAuth(same(getXContext()))).andReturn(xuser).anyTimes();
     expect(userServiceMock.getUser(eq("xwiki:User.test"))).andReturn(userMock).anyTimes();
   }
 
