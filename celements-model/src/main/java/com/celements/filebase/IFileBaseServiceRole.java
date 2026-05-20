@@ -28,6 +28,8 @@ public interface IFileBaseServiceRole {
 
   public boolean hasUploadRight(@NotNull String dirPath, @Nullable User user);
 
+  public boolean hasDeleteRight(@NotNull String dirPath, @Nullable User user);
+
   public boolean existsFileNameEqual(@NotNull String filename) throws FileBaseLoadException;
 
   @NotNull

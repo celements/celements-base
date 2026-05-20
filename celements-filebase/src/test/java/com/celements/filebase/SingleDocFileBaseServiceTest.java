@@ -180,4 +180,45 @@ public class SingleDocFileBaseServiceTest extends AbstractComponentTest {
     verifyDefault();
   }
 
+  @Test
+  public void test_hasDeleteRight_allowed() throws Exception {
+    String spcName = "FBSpace";
+    String docName = "FBDoc";
+    DocumentReference fileBaseDocRef = new DocumentReference(getXContext().getDatabase(), spcName,
+        docName);
+    User user = createDefaultMock(User.class);
+    expect(configurationMock.getProperty(eq(
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(spcName + "." + docName);
+    expect(rightsAccessMock.hasAccessLevel(eq(fileBaseDocRef), eq(EAccessLevel.DELETE), same(user)))
+        .andReturn(true);
+    replayDefault();
+    assertTrue(fbService.hasDeleteRight("local://filebase", user));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_hasDeleteRight_denied() throws Exception {
+    String spcName = "FBSpace";
+    String docName = "FBDoc";
+    DocumentReference fileBaseDocRef = new DocumentReference(getXContext().getDatabase(), spcName,
+        docName);
+    User user = createDefaultMock(User.class);
+    expect(configurationMock.getProperty(eq(
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(spcName + "." + docName);
+    expect(rightsAccessMock.hasAccessLevel(eq(fileBaseDocRef), eq(EAccessLevel.DELETE), same(user)))
+        .andReturn(false);
+    replayDefault();
+    assertFalse(fbService.hasDeleteRight("local://filebase", user));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_hasDeleteRight_noConfig() {
+    expect(configurationMock.getProperty(eq(
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(null);
+    replayDefault();
+    assertFalse(fbService.hasDeleteRight("local://filebase", null));
+    verifyDefault();
+  }
+
 }

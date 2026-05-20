@@ -158,22 +158,27 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   @PostMapping(path = "/delete")
   @PreAuthorize("permitAll()")
   public ListResponse delete(@RequestBody DeleteRequest body) {
+    checkAuth();
     String dirPath = normalizeDirPath(body.path);
-    List<String> refs = new ArrayList<>();
-    if ((body.items != null)) {
-      for (DeleteItem item : body.items) {
-        if ((item == null) || !"file".equalsIgnoreCase(item.type)) {
-          continue;
+    if (modelContext.user().isPresent()
+        && fileBaseService.hasDeleteRight(dirPath, modelContext.user().get())) {
+      List<String> refs = new ArrayList<>();
+      if ((body.items != null)) {
+        for (DeleteItem item : body.items) {
+          if ((item == null) || !"file".equalsIgnoreCase(item.type)) {
+            continue;
+          }
+          String delFileName = normalizeFileName(item.path);
+          LOGGER.debug("add filename '{}' to delete list", delFileName);
+          refs.add(delFileName);
         }
-        String delFileName = normalizeFileName(item.path);
-        LOGGER.debug("add filename '{}' to delete list", delFileName);
-        refs.add(delFileName);
       }
+      if (!refs.isEmpty()) {
+        fileBaseService.deleteFileList(refs);
+      }
+      return list(dirPath);
     }
-    if (!refs.isEmpty()) {
-      fileBaseService.deleteFileList(refs);
-    }
-    return list(dirPath);
+    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
   }
 
   /**
@@ -183,19 +188,24 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ListResponse search(@RequestParam("q") String query,
       @RequestParam(name = "path", required = false) String path) {
+    checkAuth();
     String dirPath = normalizeDirPath(path);
-    String lower = query.toLowerCase(Locale.ROOT);
-    try {
-      List<FileItem> files = fileBaseService.getFilesNameMatch(
-          att -> att.getFilename().toLowerCase(Locale.ROOT).contains(lower))
-          .stream()
-          .map(att -> toFileItem(dirPath, att))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      return new ListResponse(List.of(STORAGE), dirPath, false, files);
-    } catch (FileBaseLoadException ex) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Search failed", ex);
+    if (modelContext.user().isPresent()
+        && fileBaseService.hasListingRight(dirPath, modelContext.user().get())) {
+      String lower = query.toLowerCase(Locale.ROOT);
+      try {
+        List<FileItem> files = fileBaseService.getFilesNameMatch(
+            att -> att.getFilename().toLowerCase(Locale.ROOT).contains(lower))
+            .stream()
+            .map(att -> toFileItem(dirPath, att))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+        return new ListResponse(List.of(STORAGE), dirPath, false, files);
+      } catch (FileBaseLoadException ex) {
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Search failed", ex);
+      }
     }
+    throw new ResponseStatusException(HttpStatus.FORBIDDEN);
   }
 
   /**

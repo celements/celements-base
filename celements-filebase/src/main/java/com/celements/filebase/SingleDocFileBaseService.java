@@ -111,6 +111,11 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
     return hasRight(user, EAccessLevel.EDIT);
   }
 
+  @Override
+  public boolean hasDeleteRight(String dirPath, User user) {
+    return hasRight(user, EAccessLevel.DELETE);
+  }
+
   private boolean hasRight(User user, EAccessLevel accessLevel) {
     return getFileBaseDocRef()
         .filter(docRef -> rightsAccess.hasAccessLevel(docRef, accessLevel, user))
