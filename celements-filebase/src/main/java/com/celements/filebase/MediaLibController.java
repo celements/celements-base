@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -58,9 +59,9 @@ import com.xpn.xwiki.doc.XWikiDocument;
 @RestController
 @RestControllerAdvice
 @RequestMapping("/files")
-public class VueFinderFilesController extends AuthenticatedBaseController {
+public class MediaLibController extends AuthenticatedBaseController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(VueFinderFilesController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MediaLibController.class);
 
   private static final String STORAGE = "local";
   private static final int MAX_WIDTH = 800;
@@ -74,7 +75,7 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   private final ModelContext modelContext;
 
   @Inject
-  public VueFinderFilesController(
+  public MediaLibController(
       IFileBaseServiceRole fileBaseService,
       UrlService urlService,
       IModelAccessFacade modelAccess,
@@ -96,10 +97,16 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   @GetMapping(path = "")
   @PreAuthorize("permitAll()")
   public ListResponse list(@RequestParam(name = "path", required = false) String path) {
-    checkAuth();
+    Optional<User> checkAuthUser = checkAuth();
     String dirPath = normalizeDirPath(path);
-    if (modelContext.user().isPresent()
-        && fileBaseService.hasListingRight(dirPath, modelContext.user().get())) {
+    Optional<User> modelContextUser = modelContext.user();
+    LOGGER.debug("checkAuth returned '{}' for filebase path '{}'", checkAuthUser, dirPath);
+    if (modelContextUser.isEmpty()) {
+      LOGGER.debug("Listing denied for filebase path '{}' because modelContext.user() is empty; "
+          + "checkAuth returned '{}'", dirPath, checkAuthUser);
+    }
+    if (modelContextUser.isPresent()
+        && fileBaseService.hasListingRight(dirPath, modelContextUser.get())) {
       // TODO extend filebase for directory support
       try {
         List<FileItem> files = fileBaseService.getFilesNameMatch(new AllAttachmentMatcher())
@@ -464,6 +471,7 @@ public class VueFinderFilesController extends AuthenticatedBaseController {
   }
 
   @ExceptionHandler(ResponseStatusException.class)
+  @PreAuthorize("permitAll()")
   public ResponseEntity<?> handle(ResponseStatusException ex) {
     return ResponseEntity
         .status(ex.getStatus())

@@ -19,9 +19,9 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.context.ModelContext;
 import com.xpn.xwiki.user.api.XWikiUser;
 
-public class VueFinderFilesControllerTest extends AbstractComponentTest {
+public class MediaLibControllerTest extends AbstractComponentTest {
 
-  private VueFinderFilesController vueFinderCtrl;
+  private MediaLibController mediaLibCtrl;
   private IFileBaseServiceRole fileBaseServiceMock;
   private ModelContext modelContextMock;
   private UserService userServiceMock;
@@ -35,18 +35,18 @@ public class VueFinderFilesControllerTest extends AbstractComponentTest {
     modelContextMock = registerComponentMock(ModelContext.class);
     userServiceMock = registerComponentMock(UserService.class);
     userMock = createDefaultMock(User.class);
-    vueFinderCtrl = getBeanFactory().getBean(VueFinderFilesController.class);
+    mediaLibCtrl = getBeanFactory().getBean(MediaLibController.class);
   }
 
   @Test
   public void testNormalizeFileName_file() {
-    String fileName = vueFinderCtrl.normalizeFileName("local://IMG-20250606-WA0000.jpg");
+    String fileName = mediaLibCtrl.normalizeFileName("local://IMG-20250606-WA0000.jpg");
     assertEquals("IMG-20250606-WA0000.jpg", fileName);
   }
 
   @Test
   public void testNormalizeFileName_subPath() {
-    String fileName = vueFinderCtrl.normalizeFileName("local://test/IMG-20250606-WA0000.jpg");
+    String fileName = mediaLibCtrl.normalizeFileName("local://test/IMG-20250606-WA0000.jpg");
     assertEquals("IMG-20250606-WA0000.jpg", fileName);
   }
 
@@ -57,7 +57,7 @@ public class VueFinderFilesControllerTest extends AbstractComponentTest {
     expect(fileBaseServiceMock.hasListingRight(eq("local://"), same(userMock))).andReturn(true);
     expect(fileBaseServiceMock.getFilesNameMatch(anyObject())).andReturn(List.of());
     replayDefault();
-    ListResponse response = vueFinderCtrl.search("test", "local://");
+    ListResponse response = mediaLibCtrl.search("test", "local://");
     verifyDefault();
     assertNotNull(response);
     assertEquals("local://", response.dirname());
@@ -70,7 +70,7 @@ public class VueFinderFilesControllerTest extends AbstractComponentTest {
     expect(fileBaseServiceMock.hasListingRight(eq("local://"), same(userMock))).andReturn(false);
     replayDefault();
     try {
-      vueFinderCtrl.search("test", "local://");
+      mediaLibCtrl.search("test", "local://");
       fail("Expected FORBIDDEN");
     } catch (ResponseStatusException rse) {
       assertEquals(HttpStatus.FORBIDDEN, rse.getStatus());
@@ -88,14 +88,14 @@ public class VueFinderFilesControllerTest extends AbstractComponentTest {
     expect(fileBaseServiceMock.deleteFileList(eq(List.of("a.png")))).andReturn(1);
     replayDefault();
 
-    VueFinderFilesController.DeleteRequest request = new VueFinderFilesController.DeleteRequest();
+    MediaLibController.DeleteRequest request = new MediaLibController.DeleteRequest();
     request.path = "local://";
-    VueFinderFilesController.DeleteItem item = new VueFinderFilesController.DeleteItem();
+    MediaLibController.DeleteItem item = new MediaLibController.DeleteItem();
     item.path = "local://a.png";
     item.type = "file";
     request.items = List.of(item);
 
-    ListResponse response = vueFinderCtrl.delete(request);
+    ListResponse response = mediaLibCtrl.delete(request);
     verifyDefault();
     assertNotNull(response);
   }
@@ -107,11 +107,11 @@ public class VueFinderFilesControllerTest extends AbstractComponentTest {
     expect(fileBaseServiceMock.hasDeleteRight(eq("local://"), same(userMock))).andReturn(false);
     replayDefault();
 
-    VueFinderFilesController.DeleteRequest request = new VueFinderFilesController.DeleteRequest();
+    MediaLibController.DeleteRequest request = new MediaLibController.DeleteRequest();
     request.path = "local://";
 
     try {
-      vueFinderCtrl.delete(request);
+      mediaLibCtrl.delete(request);
       fail("Expected FORBIDDEN");
     } catch (ResponseStatusException rse) {
       assertEquals(HttpStatus.FORBIDDEN, rse.getStatus());
