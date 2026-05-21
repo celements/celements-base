@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -102,8 +104,15 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
   }
 
   @Override
-  public boolean hasListingRight(String dirPath, User user) {
-    return hasRight(user, EAccessLevel.VIEW);
+  public boolean hasListingRight(String dirPath, @Nullable User user) {
+    boolean hasListingRight = hasRight(user, EAccessLevel.VIEW);
+    if (!hasListingRight) {
+      String fileBaseDocFN = configuration.getProperty(FILEBASE_CONFIG_FIELD);
+      LOGGER.debug(
+          "Listing denied for filebase path '{}' and user '{}' on filebase document '{}'",
+          dirPath, user, fileBaseDocFN);
+    }
+    return hasListingRight;
   }
 
   @Override
@@ -215,7 +224,7 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
       for (String lang : webUtilsService.getAllowedLanguages()) {
         ClassField<String> langField = new StringField.Builder(
             INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD)
-                .build();
+            .build();
         BaseObject menuNameObj = XWikiObjectEditor.on(tagDoc)
             .filter(INavigationClassConfig.MENU_NAME_CLASS_REF)
             .filter(langField, lang)
@@ -247,7 +256,7 @@ public class SingleDocFileBaseService implements IFileBaseServiceRole {
       for (String lang : webUtilsService.getAllowedLanguages()) {
         ClassField<String> langField = new StringField.Builder(
             INavigationClassConfig.MENU_NAME_CLASS_REF, INavigationClassConfig.MENU_NAME_LANG_FIELD)
-                .build();
+            .build();
         BaseObject menuNameObj = XWikiObjectEditor.on(tagDoc)
             .filter(INavigationClassConfig.MENU_NAME_CLASS_REF)
             .filter(langField, lang)

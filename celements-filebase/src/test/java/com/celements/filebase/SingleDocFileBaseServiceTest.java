@@ -122,9 +122,9 @@ public class SingleDocFileBaseServiceTest extends AbstractComponentTest {
         docName);
     User user = createDefaultMock(User.class);
     expect(configurationMock.getProperty(eq(
-        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(spcName + "." + docName);
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(spcName + "." + docName).atLeastOnce();
     expect(rightsAccessMock.hasAccessLevel(eq(fileBaseDocRef), eq(EAccessLevel.VIEW), same(user)))
-        .andReturn(false);
+        .andReturn(false).atLeastOnce();
     replayDefault();
     assertFalse(fbService.hasListingRight("local://filebase", user));
     verifyDefault();
@@ -133,7 +133,7 @@ public class SingleDocFileBaseServiceTest extends AbstractComponentTest {
   @Test
   public void test_hasListingRight_noConfig() {
     expect(configurationMock.getProperty(eq(
-        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(null);
+        IFileBaseServiceRole.FILEBASE_CONFIG_FIELD))).andReturn(null).atLeastOnce();
     replayDefault();
     assertFalse(fbService.hasListingRight("local://filebase", null));
     verifyDefault();
