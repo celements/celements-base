@@ -69,8 +69,7 @@ public class ActionFilterFBHack implements Filter {
     if ((request instanceof HttpServletRequest) && !Boolean.valueOf((String) request.getAttribute(
         ATTRIBUTE_ACTION_DISPATCHED))) {
       HttpServletRequest hrequest = (HttpServletRequest) request;
-      String relativePath = hrequest.getRequestURI().substring(hrequest.getContextPath().length());
-      if (relativePath.startsWith("/api/")) {
+      if (shouldSkipParameterInspection(hrequest)) {
         chain.doFilter(request, response);
         return;
       }
@@ -95,6 +94,13 @@ public class ActionFilterFBHack implements Filter {
     }
     // Let the request pass through unchanged.
     chain.doFilter(request, response);
+  }
+
+  boolean shouldSkipParameterInspection(HttpServletRequest request) {
+    String relativePath = request.getRequestURI().substring(request.getContextPath().length());
+    String contentType = request.getContentType();
+    return relativePath.startsWith("/api/")
+        || (contentType != null && contentType.toLowerCase().startsWith("multipart/"));
   }
 
   boolean needsDispatch(String parameter) {
