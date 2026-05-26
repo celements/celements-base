@@ -69,6 +69,11 @@ public class ActionFilterFBHack implements Filter {
     if ((request instanceof HttpServletRequest) && !Boolean.valueOf((String) request.getAttribute(
         ATTRIBUTE_ACTION_DISPATCHED))) {
       HttpServletRequest hrequest = (HttpServletRequest) request;
+      String relativePath = hrequest.getRequestURI().substring(hrequest.getContextPath().length());
+      if (relativePath.startsWith("/api/")) {
+        chain.doFilter(request, response);
+        return;
+      }
       Enumeration<String> parameterNames = hrequest.getParameterNames();
       while (parameterNames.hasMoreElements()) {
         String parameter = parameterNames.nextElement();
