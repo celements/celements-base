@@ -107,7 +107,7 @@ public class PageAttachmentsController extends AuthenticatedBaseController {
   public Object upload(
       @PathVariable String spaceName,
       @PathVariable String docName,
-      @RequestParam("path") String path,
+      @RequestParam(name = "path", required = false) String path,
       @RequestParam("file") List<MultipartFile> files) {
     AttachmentRequest request = prepareRequest(spaceName, docName, path, EAccessLevel.EDIT);
     try {
@@ -272,5 +272,38 @@ public class PageAttachmentsController extends AuthenticatedBaseController {
         .status(ex.getStatus())
         .body(java.util.Map.of("message",
             ex.getReason() != null ? ex.getReason() : "Request failed"));
+  }
+
+  @ExceptionHandler({
+      org.springframework.web.bind.MissingServletRequestParameterException.class,
+      org.springframework.web.multipart.support.MissingServletRequestPartException.class
+  })
+  @PreAuthorize("permitAll()")
+  public ResponseEntity<?> handleMissingParams(
+      Exception ex,
+      javax.servlet.http.HttpServletRequest request) {
+    LOGGER.warn("Missing parameter/part: {}, Request URI: {}, Content-Type: {}",
+        ex.getMessage(), request.getRequestURI(), request.getContentType());
+    java.util.Enumeration<String> headerNames = request.getHeaderNames();
+    while (headerNames.hasMoreElements()) {
+      String headerName = headerNames.nextElement();
+      LOGGER.warn("Header {}: {}", headerName, request.getHeader(headerName));
+    }
+    try {
+      if (request instanceof org.springframework.web.multipart.MultipartHttpServletRequest) {
+        org.springframework.web.multipart.MultipartHttpServletRequest multipartRequest =
+            (org.springframework.web.multipart.MultipartHttpServletRequest) request;
+        LOGGER.warn("Multipart parameter names: {}", multipartRequest.getParameterMap().keySet());
+        LOGGER.warn("Multipart file names: {}", multipartRequest.getFileMap().keySet());
+      } else {
+        LOGGER.warn("Request is not a MultipartHttpServletRequest. Parameter names: {}",
+            request.getParameterMap().keySet());
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to log request details", e);
+    }
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(java.util.Map.of("message", ex.getMessage()));
   }
 }
