@@ -97,13 +97,12 @@ public class MediaLibController extends AuthenticatedBaseController {
   @GetMapping(path = "")
   @PreAuthorize("permitAll()")
   public ListResponse list(@RequestParam(name = "path", required = false) String path) {
-    Optional<User> checkAuthUser = checkAuth();
+    checkAuth();
     String dirPath = normalizeDirPath(path);
     Optional<User> modelContextUser = modelContext.user();
-    LOGGER.debug("checkAuth returned '{}' for filebase path '{}'", checkAuthUser, dirPath);
     if (modelContextUser.isEmpty()) {
-      LOGGER.debug("Listing denied for filebase path '{}' because modelContext.user() is empty; "
-          + "checkAuth returned '{}'", dirPath, checkAuthUser);
+      LOGGER.debug("Listing denied for filebase path '{}' because modelContext.user() is empty",
+          dirPath);
     }
     if (modelContextUser.isPresent()
         && fileBaseService.hasListingRight(dirPath, modelContextUser.get())) {
@@ -159,8 +158,10 @@ public class MediaLibController extends AuthenticatedBaseController {
   /**
    * Delete files (attachments).
    * POST /api/files/delete?path=local://public/FileRepo
-   * body: { "items": [ { "path": "local://public/FileRepo/a.png", "type":"file" } ] }
-   * Response: updated list (same structure as GET /). :contentReference[oaicite:5]{index=5}
+   * body: { "items": [ { "path": "local://public/FileRepo/a.png", "type":"file" }
+   * ] }
+   * Response: updated list (same structure as GET /).
+   * :contentReference[oaicite:5]{index=5}
    */
   @PostMapping(path = "/delete")
   @PreAuthorize("permitAll()")
