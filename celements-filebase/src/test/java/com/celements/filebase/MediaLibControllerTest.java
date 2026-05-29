@@ -14,6 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.celements.auth.user.User;
+import com.celements.filebase.dto.DeleteItem;
+import com.celements.filebase.dto.DeleteRequest;
+import com.celements.filebase.dto.ListResponse;
 import com.celements.auth.user.UserService;
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.context.ModelContext;
@@ -88,12 +91,8 @@ public class MediaLibControllerTest extends AbstractComponentTest {
     expect(fileBaseServiceMock.deleteFileList(eq(List.of("a.png")))).andReturn(1);
     replayDefault();
 
-    MediaLibController.DeleteRequest request = new MediaLibController.DeleteRequest();
-    request.path = "local://";
-    MediaLibController.DeleteItem item = new MediaLibController.DeleteItem();
-    item.path = "local://a.png";
-    item.type = "file";
-    request.items = List.of(item);
+    DeleteItem item = new DeleteItem("local://a.png", "file");
+    DeleteRequest request = new DeleteRequest("local://", List.of(item));
 
     ListResponse response = mediaLibCtrl.delete(request);
     verifyDefault();
@@ -107,8 +106,7 @@ public class MediaLibControllerTest extends AbstractComponentTest {
     expect(fileBaseServiceMock.hasDeleteRight(eq("local://"), same(userMock))).andReturn(false);
     replayDefault();
 
-    MediaLibController.DeleteRequest request = new MediaLibController.DeleteRequest();
-    request.path = "local://";
+    DeleteRequest request = new DeleteRequest("local://", null);
 
     try {
       mediaLibCtrl.delete(request);

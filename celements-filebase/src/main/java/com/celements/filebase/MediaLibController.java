@@ -36,6 +36,15 @@ import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.auth.user.User;
+import com.celements.filebase.dto.DeleteItem;
+import com.celements.filebase.dto.DeleteRequest;
+import com.celements.filebase.dto.FileItem;
+import com.celements.filebase.dto.ListResponse;
+import com.celements.filebase.dto.TagAssignRequest;
+import com.celements.filebase.dto.TagCreateRequest;
+import com.celements.filebase.dto.TagDeleteRequest;
+import com.celements.filebase.dto.TagDto;
+import com.celements.filebase.dto.TagRenameRequest;
 import com.celements.filebase.exceptions.FileBaseAddFileException;
 import com.celements.filebase.exceptions.FileBaseLoadException;
 import com.celements.filebase.exceptions.FileBaseTagCreateException;
@@ -167,16 +176,16 @@ public class MediaLibController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ListResponse delete(@RequestBody DeleteRequest body) {
     checkAuth();
-    String dirPath = normalizeDirPath(body.path);
+    String dirPath = normalizeDirPath(body.path());
     if (modelContext.user().isPresent()
         && fileBaseService.hasDeleteRight(dirPath, modelContext.user().get())) {
       List<String> refs = new ArrayList<>();
-      if ((body.items != null)) {
-        for (DeleteItem item : body.items) {
-          if ((item == null) || !"file".equalsIgnoreCase(item.type)) {
+      if ((body.items() != null)) {
+        for (DeleteItem item : body.items()) {
+          if ((item == null) || !"file".equalsIgnoreCase(item.type())) {
             continue;
           }
-          String delFileName = normalizeFileName(item.path);
+          String delFileName = normalizeFileName(item.path());
           LOGGER.debug("add filename '{}' to delete list", delFileName);
           refs.add(delFileName);
         }
@@ -226,13 +235,10 @@ public class MediaLibController extends AuthenticatedBaseController {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
     List<TagDto> tags = fileBaseService.getFileTags().stream()
-        .map(t -> {
-          TagDto dto = new TagDto();
-          dto.id = modelUtils.serializeRefLocal(t.getTagRef());
-          dto.prettyName = t.getPrettyName();
-          dto.prettyNames = t.getPrettyNames();
-          return dto;
-        })
+        .map(t -> new TagDto(
+            modelUtils.serializeRefLocal(t.getTagRef()),
+            t.getPrettyName(),
+            t.getPrettyNames()))
         .collect(Collectors.toList());
     return ResponseEntity.ok(tags);
   }
@@ -267,12 +273,12 @@ public class MediaLibController extends AuthenticatedBaseController {
     if (checkAuth().isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-    FileBaseTag tag = findTag(body.tagId);
+    FileBaseTag tag = findTag(body.tagId());
     if (!rightsAccess.hasAccessLevel(tag.getTagRef(), EAccessLevel.EDIT)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No edit rights on tag document");
     }
     XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tag.getTagRef());
-    for (String filePath : body.filePaths) {
+    for (String filePath : body.filePaths()) {
       String attKey = toAttachmentKey(filePath);
       var editor = XWikiObjectEditor.on(tagDoc);
       editor.filter(FileBaseTag.FILEBASE_TAG_CLASS_REF)
@@ -293,12 +299,12 @@ public class MediaLibController extends AuthenticatedBaseController {
     if (checkAuth().isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-    FileBaseTag tag = findTag(body.tagId);
+    FileBaseTag tag = findTag(body.tagId());
     if (!rightsAccess.hasAccessLevel(tag.getTagRef(), EAccessLevel.EDIT)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No edit rights on tag document");
     }
     XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tag.getTagRef());
-    for (String filePath : body.filePaths) {
+    for (String filePath : body.filePaths()) {
       String attKey = toAttachmentKey(filePath);
       var editor = XWikiObjectEditor.on(tagDoc);
       editor.filter(FileBaseTag.FILEBASE_TAG_CLASS_REF)
@@ -325,11 +331,11 @@ public class MediaLibController extends AuthenticatedBaseController {
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
-    DocumentReference ref = fileBaseService.createFileTag(body.label);
-    TagDto dto = new TagDto();
-    dto.id = modelUtils.serializeRefLocal(ref);
-    dto.prettyName = body.label;
-    dto.prettyNames = Map.of();
+    DocumentReference ref = fileBaseService.createFileTag(body.label());
+    TagDto dto = new TagDto(
+        modelUtils.serializeRefLocal(ref),
+        body.label(),
+        Map.of());
     return ResponseEntity.ok(dto);
   }
 
@@ -341,7 +347,7 @@ public class MediaLibController extends AuthenticatedBaseController {
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
-    FileBaseTag tag = findTag(body.tagId);
+    FileBaseTag tag = findTag(body.tagId());
     fileBaseService.deleteFileTag(tag.getTagRef());
     return ResponseEntity.ok(Map.of());
   }
@@ -354,8 +360,8 @@ public class MediaLibController extends AuthenticatedBaseController {
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
-    FileBaseTag tag = findTag(body.tagId);
-    fileBaseService.renameFileTag(tag.getTagRef(), body.newLabel);
+    FileBaseTag tag = findTag(body.tagId());
+    fileBaseService.renameFileTag(tag.getTagRef(), body.newLabel());
     return ResponseEntity.ok(Map.of());
   }
 
@@ -437,39 +443,7 @@ public class MediaLibController extends AuthenticatedBaseController {
     return date.toInstant().getEpochSecond();
   }
 
-  public static class DeleteRequest {
-    public String path;
-    public List<DeleteItem> items;
-  }
-
-  public static class DeleteItem {
-    public String path;
-    public String type;
-  }
-
-  public static class TagDto {
-    public String id;
-    public String prettyName;
-    public Map<String, String> prettyNames;
-  }
-
-  public static class TagAssignRequest {
-    public String tagId;
-    public List<String> filePaths;
-  }
-
-  public static class TagCreateRequest {
-    public String label;
-  }
-
-  public static class TagDeleteRequest {
-    public String tagId;
-  }
-
-  public static class TagRenameRequest {
-    public String tagId;
-    public String newLabel;
-  }
+  // inner classes moved to com.celements.filebase.dto package
 
   @ExceptionHandler(ResponseStatusException.class)
   @PreAuthorize("permitAll()")

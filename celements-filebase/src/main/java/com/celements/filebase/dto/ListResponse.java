@@ -1,4 +1,4 @@
-package com.celements.filebase;
+package com.celements.filebase.dto;
 
 import java.util.List;
 

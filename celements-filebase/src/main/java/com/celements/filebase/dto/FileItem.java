@@ -1,4 +1,4 @@
-package com.celements.filebase;
+package com.celements.filebase.dto;
 
 public record FileItem(
     String dir,
