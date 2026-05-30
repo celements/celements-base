@@ -34,6 +34,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormatSymbols;
@@ -55,6 +56,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
 
@@ -246,8 +249,8 @@ public class XWiki implements EventListener {
    */
   private static final String VERSION_FILE = "/WEB-INF/version.properties";
 
-  private static final java.util.regex.Pattern CEL_LANGUAGE_PARAM_PATTERN =
-      java.util.regex.Pattern.compile("(?:^|&)language=([^&]*)");
+  private static final Pattern CEL_LANGUAGE_PARAM_PATTERN =
+      Pattern.compile("(?:^|&)language=([^&]*)");
 
   /**
    * Property containing the version value in the {@link #VERSION_FILE} file.
@@ -1894,11 +1897,11 @@ public class XWiki implements EventListener {
    */
   private String getLanguageFromQueryString(String queryString) {
     if (queryString != null) {
-      java.util.regex.Matcher m = CEL_LANGUAGE_PARAM_PATTERN.matcher(queryString);
+      Matcher m = CEL_LANGUAGE_PARAM_PATTERN.matcher(queryString);
       if (m.find()) {
         try {
-          return java.net.URLDecoder.decode(m.group(1), "UTF-8");
-        } catch (java.io.UnsupportedEncodingException | IllegalArgumentException e) {
+          return URLDecoder.decode(m.group(1), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
           return m.group(1);
         }
       }
