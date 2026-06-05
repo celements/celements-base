@@ -34,6 +34,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormatSymbols;
@@ -55,6 +56,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
 
@@ -245,6 +248,9 @@ public class XWiki implements EventListener {
    * File containing XWiki's version, in the format: <version name>.<SVN revision number>.
    */
   private static final String VERSION_FILE = "/WEB-INF/version.properties";
+
+  private static final Pattern CEL_LANGUAGE_PARAM_PATTERN =
+      Pattern.compile("(?:^|&)language=([^&]*)");
 
   /**
    * Property containing the version value in the {@link #VERSION_FILE} file.
@@ -1778,7 +1784,15 @@ public class XWiki implements EventListener {
     // from the XWiki preferences settings. Otherwise set a cookie to remember the language
     // in use.
     try {
-      language = Util.normalizeLanguage(context.getRequest().getParameter("language"));
+      XWikiRequest request = context.getRequest();
+      if (request != null) {
+        String contentType = request.getContentType();
+        if (contentType != null && contentType.toLowerCase().startsWith("multipart/")) {
+          language = Util.normalizeLanguage(getLanguageFromQueryString(request.getQueryString()));
+        } else {
+          language = Util.normalizeLanguage(request.getParameter("language"));
+        }
+      }
       if ((language != null) && (!language.equals(""))) {
         LOGGER.debug("language '{}' from request found, setting cookie", language);
         if (language.equals("default")) {
@@ -1868,6 +1882,31 @@ public class XWiki implements EventListener {
     // Finally, use the default language from the global preferences.
     context.setLanguage(defaultLanguage);
     return defaultLanguage;
+  }
+
+  /**
+   * Extract the language parameter from the query string.
+   * <p>
+   * This is used to bypass {@link javax.servlet.ServletRequest#getParameter(String)} for multipart
+   * requests because calling `getParameter` triggers the container (Tomcat) to parse the request
+   * body, which consumes the input stream and breaks downstream multipart parsing in Spring's
+   * DispatcherServlet.
+   *
+   * @param queryString the request query string
+   * @return the language parameter value, or null if not found
+   */
+  private String getLanguageFromQueryString(String queryString) {
+    if (queryString != null) {
+      Matcher m = CEL_LANGUAGE_PARAM_PATTERN.matcher(queryString);
+      if (m.find()) {
+        try {
+          return URLDecoder.decode(m.group(1), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+          return m.group(1);
+        }
+      }
+    }
+    return null;
   }
 
   /**
