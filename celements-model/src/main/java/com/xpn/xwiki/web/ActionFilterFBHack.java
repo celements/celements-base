@@ -30,9 +30,12 @@ public class ActionFilterFBHack implements Filter {
   private static final String PATH_SEPARATOR = "/";
 
   /**
-   * The name of the request attribute that specifies if the action has been already
-   * dispatched. This flag is required to prevent recursive dispatch loop and allows us to
-   * map this filter to INCLUDE and FORWARD. The value of this request attribute is a
+   * The name of the request attribute that specifies if the action has been
+   * already
+   * dispatched. This flag is required to prevent recursive dispatch loop and
+   * allows us to
+   * map this filter to INCLUDE and FORWARD. The value of this request attribute
+   * is a
    * string. The associated boolean value is determined using
    * {@link Boolean#valueOf(String)}.
    */
@@ -96,6 +99,11 @@ public class ActionFilterFBHack implements Filter {
     chain.doFilter(request, response);
   }
 
+  /**
+   * TODO CELDEV-1318 remove the '/api/' path prefix check in 8.0 release.
+   * Instead, update your web.xml to bind ActionFilterFBHack to the action
+   * servlet.
+   */
   boolean shouldSkipParameterInspection(HttpServletRequest request) {
     String relativePath = request.getRequestURI().substring(request.getContextPath().length());
     String contentType = request.getContentType();
@@ -125,24 +133,29 @@ public class ActionFilterFBHack implements Filter {
   }
 
   /**
-   * Compose a new URL path based on the original request and the specified action. The
+   * Compose a new URL path based on the original request and the specified
+   * action. The
    * result is relative to the application context, so that it can be used with
-   * {@link HttpServletRequest#getRequestDispatcher(String)}. For example, calling this
+   * {@link HttpServletRequest#getRequestDispatcher(String)}. For example, calling
+   * this
    * method with a request for <tt>/xwiki/bin/edit/Some/Document</tt> and
    * <tt>action_save</tt>, the result is <tt>/bin/save/Some/Document</tt>.
    *
    * @param request
-   *          the original request
+   *                the original request
    * @param action
-   *          the action parameter, starting with <tt>action_</tt>
-   * @return The rebuilt URL path, with the specified action in place of the original
-   *         Struts action. Note that unlike the HTTP path, this does not contain the
+   *                the action parameter, starting with <tt>action_</tt>
+   * @return The rebuilt URL path, with the specified action in place of the
+   *         original
+   *         Struts action. Note that unlike the HTTP path, this does not contain
+   *         the
    *         application context part.
    */
   private String getTargetURL(HttpServletRequest request, String action) {
     String newAction = PATH_SEPARATOR + action.substring(ACTION_PREFIX.length());
 
-    // Extract the document name from the requested path. We don't use getPathInfo() since
+    // Extract the document name from the requested path. We don't use getPathInfo()
+    // since
     // it is decoded
     // by the container, thus it will not work when XWiki uses a non-UTF-8 encoding.
     String path = request.getRequestURI();
@@ -154,9 +167,11 @@ public class ActionFilterFBHack implements Filter {
     String servletPath = request.getServletPath();
     path = XWiki.stripSegmentFromPath(path, servletPath);
 
-    // Third step, remove the struts mapping. This step is mandatory, so this filter will
+    // Third step, remove the struts mapping. This step is mandatory, so this filter
+    // will
     // fail if the
-    // requested action was a hidden (default) 'view', like in '/bin/Main/'. This is OK,
+    // requested action was a hidden (default) 'view', like in '/bin/Main/'. This is
+    // OK,
     // since forms
     // don't use 'view' as a target.
     int index = path.indexOf(PATH_SEPARATOR, 1);
