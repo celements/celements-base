@@ -29,16 +29,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.context.Execution;
+import org.springframework.stereotype.Component;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 
@@ -49,6 +49,7 @@ import com.celements.model.access.exception.AttachmentNotExistsException;
 import com.celements.model.access.exception.DocumentLoadException;
 import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.access.exception.DocumentSaveException;
+import com.celements.model.context.ModelContext;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
@@ -60,6 +61,7 @@ import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
+import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.web.XWikiResponse;
 
 /**
@@ -78,22 +80,24 @@ public class AttachmentService implements IAttachmentServiceRole {
   /** The prefix of the corresponding filename input field name. */
   private static final String FILENAME_FIELD_NAME = "filename";
 
-  @Requirement
-  private IModelAccessFacade modelAccess;
+  private final IModelAccessFacade modelAccess;
+  private final IRightsAccessFacadeRole rightsAccess;
+  private final ModelContext context;
 
-  @Requirement
-  private Execution execution;
-
-  @Requirement
-  private IRightsAccessFacadeRole rightsAccess;
+  public AttachmentService(IModelAccessFacade modelAccess, IRightsAccessFacadeRole rightsAccess,
+      ModelContext context) {
+    this.modelAccess = modelAccess;
+    this.rightsAccess = rightsAccess;
+    this.context = context;
+  }
 
   private XWikiContext getContext() {
-    return (XWikiContext) execution.getContext().getProperty("xwikicontext");
+    return context.getXWikiContext();
   }
 
   @Override
   public XWikiAttachment addAttachment(XWikiDocument doc, byte[] data, String filename,
-      String username, String comment) throws AttachmentToBigException,
+      @Nullable String username, String comment) throws AttachmentToBigException,
       AddingAttachmentContentFailedException, DocumentSaveException {
     ByteArrayInputStream dataStream = null;
     try {
@@ -106,7 +110,7 @@ public class AttachmentService implements IAttachmentServiceRole {
 
   @Override
   public XWikiAttachment addAttachment(XWikiDocument doc, InputStream in, String filename,
-      String username, String comment) throws AttachmentToBigException,
+      @Nullable String username, String comment) throws AttachmentToBigException,
       AddingAttachmentContentFailedException, DocumentSaveException {
     XWikiAttachment attachment = null;
     try {
@@ -120,6 +124,11 @@ public class AttachmentService implements IAttachmentServiceRole {
       doc.getAttachmentList().add(attachment);
     }
 
+    String safeUsername = Optional.ofNullable(username)
+        .filter(s -> !s.isBlank())
+        .or(() -> context.user().map(u -> u.asXWikiUser().getUser()))
+        .orElse(XWikiRightService.GUEST_USER);
+
     try {
       attachment.setContent(in);
     } catch (IOException exp) {
@@ -127,13 +136,13 @@ public class AttachmentService implements IAttachmentServiceRole {
     }
 
     attachment.setFilename(filename);
-    attachment.setAuthor(username);
+    attachment.setAuthor(safeUsername);
 
     // Add the attachment to the document
     attachment.setDoc(doc);
     doc.setMetaDataDirty(true);
     doc.setContentDirty(true);
-    doc.setAuthor(username);
+    doc.setAuthor(safeUsername);
 
     // Adding a comment with a link to the download URL
     String nextRev = attachment.getNextVersion();
