@@ -35,6 +35,7 @@ import com.xpn.xwiki.user.api.XWikiUser;
 public class PageAttachmentsControllerTest extends AbstractComponentTest {
 
   private PageAttachmentsController pageAttachmentsCtrl;
+  private FileItemHelper fileItemHelper;
   private IAttachmentServiceRole attServiceMock;
   private UrlService urlServiceMock;
   private IModelAccessFacade modelAccessMock;
@@ -54,12 +55,13 @@ public class PageAttachmentsControllerTest extends AbstractComponentTest {
     modelContextMock = registerComponentMock(ModelContext.class);
     userServiceMock = registerComponentMock(UserService.class);
     userMock = createDefaultMock(User.class);
+    fileItemHelper = getBeanFactory().getBean(FileItemHelper.class);
     pageAttachmentsCtrl = getBeanFactory().getBean(PageAttachmentsController.class);
   }
 
   @Test
   public void testNormalizeFileName_file() {
-    String fileName = pageAttachmentsCtrl.normalizeFileName("attachments://MySpace/MyDoc/IMG.jpg");
+    String fileName = fileItemHelper.normalizeFileName("attachments://MySpace/MyDoc/IMG.jpg");
     assertEquals("IMG.jpg", fileName);
   }
 

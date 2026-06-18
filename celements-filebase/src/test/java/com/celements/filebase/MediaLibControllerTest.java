@@ -25,6 +25,7 @@ import com.xpn.xwiki.user.api.XWikiUser;
 public class MediaLibControllerTest extends AbstractComponentTest {
 
   private MediaLibController mediaLibCtrl;
+  private FileItemHelper fileItemHelper;
   private IFileBaseServiceRole fileBaseServiceMock;
   private ModelContext modelContextMock;
   private UserService userServiceMock;
@@ -38,18 +39,19 @@ public class MediaLibControllerTest extends AbstractComponentTest {
     modelContextMock = registerComponentMock(ModelContext.class);
     userServiceMock = registerComponentMock(UserService.class);
     userMock = createDefaultMock(User.class);
+    fileItemHelper = getBeanFactory().getBean(FileItemHelper.class);
     mediaLibCtrl = getBeanFactory().getBean(MediaLibController.class);
   }
 
   @Test
   public void testNormalizeFileName_file() {
-    String fileName = mediaLibCtrl.normalizeFileName("local://IMG-20250606-WA0000.jpg");
+    String fileName = fileItemHelper.normalizeFileName("local://IMG-20250606-WA0000.jpg");
     assertEquals("IMG-20250606-WA0000.jpg", fileName);
   }
 
   @Test
   public void testNormalizeFileName_subPath() {
-    String fileName = mediaLibCtrl.normalizeFileName("local://test/IMG-20250606-WA0000.jpg");
+    String fileName = fileItemHelper.normalizeFileName("local://test/IMG-20250606-WA0000.jpg");
     assertEquals("IMG-20250606-WA0000.jpg", fileName);
   }
 
