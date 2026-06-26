@@ -2,10 +2,8 @@ package com.celements.filebase;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLConnection;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,10 +27,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.auth.user.User;
@@ -56,28 +52,23 @@ import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.DocumentSaveException;
 import com.celements.model.context.ModelContext;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
-import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.spring.security.AuthenticatedBaseController;
-import com.celements.url.UrlService;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @RestController
-@RestControllerAdvice
 @RequestMapping("/files")
 public class MediaLibController extends AuthenticatedBaseController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MediaLibController.class);
 
   private static final String STORAGE = "local";
-  private static final int MAX_WIDTH = 800;
-  private static final int MAX_HEIGHT = 800;
 
   private final IFileBaseServiceRole fileBaseService;
-  private final UrlService urlService;
+  private final FileItemHelper fileItemHelper;
   private final IModelAccessFacade modelAccess;
   private final IRightsAccessFacadeRole rightsAccess;
   private final ModelUtils modelUtils;
@@ -86,17 +77,17 @@ public class MediaLibController extends AuthenticatedBaseController {
   @Inject
   public MediaLibController(
       IFileBaseServiceRole fileBaseService,
-      UrlService urlService,
+      FileItemHelper fileItemHelper,
       IModelAccessFacade modelAccess,
       IRightsAccessFacadeRole rightsAccess,
       ModelUtils modelUtils,
       ModelContext modelContext) {
-    this.fileBaseService = fileBaseService;
-    this.urlService = urlService;
-    this.modelAccess = modelAccess;
-    this.rightsAccess = rightsAccess;
-    this.modelUtils = modelUtils;
-    this.modelContext = modelContext;
+    this.fileBaseService = Objects.requireNonNull(fileBaseService);
+    this.fileItemHelper = Objects.requireNonNull(fileItemHelper);
+    this.modelAccess = Objects.requireNonNull(modelAccess);
+    this.rightsAccess = Objects.requireNonNull(rightsAccess);
+    this.modelUtils = Objects.requireNonNull(modelUtils);
+    this.modelContext = Objects.requireNonNull(modelContext);
   }
 
   /**
@@ -119,7 +110,7 @@ public class MediaLibController extends AuthenticatedBaseController {
       try {
         List<FileItem> files = fileBaseService.getFilesNameMatch(new AllAttachmentMatcher())
             .stream()
-            .map(att -> toFileItem(dirPath, att))
+            .map(att -> fileItemHelper.toFileItem(dirPath, att, STORAGE))
             // enforce XWiki rights (skip what user cannot access)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
@@ -159,7 +150,7 @@ public class MediaLibController extends AuthenticatedBaseController {
               exp);
         }
       }
-      return java.util.Collections.emptyMap();
+      return Collections.emptyMap();
     }
     throw new ResponseStatusException(HttpStatus.FORBIDDEN);
   }
@@ -170,7 +161,6 @@ public class MediaLibController extends AuthenticatedBaseController {
    * body: { "items": [ { "path": "local://public/FileRepo/a.png", "type":"file" }
    * ] }
    * Response: updated list (same structure as GET /).
-   * :contentReference[oaicite:5]{index=5}
    */
   @PostMapping(path = "/delete")
   @PreAuthorize("permitAll()")
@@ -185,7 +175,7 @@ public class MediaLibController extends AuthenticatedBaseController {
           if ((item == null) || !"file".equalsIgnoreCase(item.type())) {
             continue;
           }
-          String delFileName = normalizeFileName(item.path());
+          String delFileName = fileItemHelper.normalizeFileName(item.path());
           LOGGER.debug("add filename '{}' to delete list", delFileName);
           refs.add(delFileName);
         }
@@ -214,7 +204,7 @@ public class MediaLibController extends AuthenticatedBaseController {
         List<FileItem> files = fileBaseService.getFilesNameMatch(
             att -> att.getFilename().toLowerCase(Locale.ROOT).contains(lower))
             .stream()
-            .map(att -> toFileItem(dirPath, att))
+            .map(att -> fileItemHelper.toFileItem(dirPath, att, STORAGE))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
         return new ListResponse(List.of(STORAGE), dirPath, false, files);
@@ -256,9 +246,9 @@ public class MediaLibController extends AuthenticatedBaseController {
         .filter(t -> modelUtils.serializeRefLocal(t.getTagRef()).equals(tagId))
         .findFirst()
         .map(FileBaseTag::getTagFileList)
-        .orElse(java.util.Collections.emptyList())
+        .orElse(Collections.emptyList())
         .stream()
-        .map(ref -> normalizeFileName(ref.getName()))
+        .map(ref -> fileItemHelper.normalizeFileName(ref.getName()))
         .collect(Collectors.toList());
     return ResponseEntity.ok(files);
   }
@@ -373,7 +363,7 @@ public class MediaLibController extends AuthenticatedBaseController {
   }
 
   private String toAttachmentKey(String filePath) {
-    String filename = normalizeFileName(filePath);
+    String filename = fileItemHelper.normalizeFileName(filePath);
     try {
       XWikiAttachment att = fileBaseService.getFileNameEqual(filename);
       return modelUtils.serializeRefLocal(att.getDoc().getDocumentReference()) + "/" + filename;
@@ -399,58 +389,12 @@ public class MediaLibController extends AuthenticatedBaseController {
     return p;
   }
 
-  String normalizeFileName(String path) {
-    String p = StringUtils.hasText(path) ? path.trim() : (STORAGE + "://");
-    var parts = p.split("://|/");
-    return parts[Math.max(0, parts.length - 1)];
-  }
-
-  private FileItem toFileItem(String dirPath, XWikiAttachment att) {
-    String name = att.getFilename();
-    AttachmentReference attachmentRef = RefBuilder.from(att.getDoc().getDocumentReference())
-        .att(name).build(AttachmentReference.class);
-    String query = "celwidth=" + MAX_WIDTH + "&celheight=" + MAX_HEIGHT;
-    return new FileItem(
-        dirPath,
-        name,
-        extensionOf(name),
-        dirPath.endsWith("/") ? (dirPath + name) : (dirPath + "/" + name),
-        urlService.getURL(attachmentRef, "download"),
-        urlService.getURL(attachmentRef, "download", query),
-        STORAGE,
-        "file",
-        (long) att.getFilesize(),
-        toUnixSeconds(att.getDate()),
-        guessMimeType(name),
-        "public");
-  }
-
-  private String guessMimeType(String filename) {
-    String mime = URLConnection.guessContentTypeFromName(filename);
-    return (mime != null) ? mime : "application/octet-stream";
-  }
-
-  private String extensionOf(String name) {
-    int i = name.lastIndexOf('.');
-    return ((i > 0) && (i < (name.length() - 1))) ? name.substring(i + 1).toLowerCase(Locale.ROOT)
-        : "";
-  }
-
-  private long toUnixSeconds(Date date) {
-    if (date == null) {
-      return Instant.now().getEpochSecond();
-    }
-    return date.toInstant().getEpochSecond();
-  }
-
-  // inner classes moved to com.celements.filebase.dto package
-
   @ExceptionHandler(ResponseStatusException.class)
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> handle(ResponseStatusException ex) {
     return ResponseEntity
         .status(ex.getStatus())
-        .body(java.util.Map.of("message",
+        .body(Map.of("message",
             ex.getReason() != null ? ex.getReason() : "Request failed"));
   }
 
@@ -477,6 +421,6 @@ public class MediaLibController extends AuthenticatedBaseController {
   private ResponseEntity<?> internalServerError(String message) {
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(java.util.Map.of("message", message));
+        .body(Map.of("message", message));
   }
 }
