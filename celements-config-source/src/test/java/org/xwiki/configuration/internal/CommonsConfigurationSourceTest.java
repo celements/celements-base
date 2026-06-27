@@ -43,13 +43,13 @@ import org.xwiki.test.AbstractComponentTestCase;
 public class CommonsConfigurationSourceTest extends AbstractComponentTestCase {
 
   private Configuration configuration;
-
+  private ConverterManager converterManager;
   private CommonsConfigurationSource source;
 
   @Before
-  public void setUp() throws Exception {
+  public void prepareTest() throws Exception {
     source = new CommonsConfigurationSource();
-    ConverterManager converterManager = getComponentManager().lookup(ConverterManager.class);
+    converterManager = getComponentManager().lookup(ConverterManager.class);
     ReflectionUtils.setFieldValue(source, "converterManager", converterManager);
     configuration = new BaseConfiguration();
     source.setConfiguration(configuration);
@@ -112,6 +112,7 @@ public class CommonsConfigurationSourceTest extends AbstractComponentTestCase {
 
     assertEquals(expected, source.getProperty("list"));
     assertEquals(expected, source.getProperty("list", List.class));
+    assertEquals(expected, source.getStringListProperty("list"));
 
     assertTrue(source.getProperty("unknown", List.class).isEmpty());
   }

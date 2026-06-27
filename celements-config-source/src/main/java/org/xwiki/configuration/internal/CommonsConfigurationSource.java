@@ -103,7 +103,8 @@ public class CommonsConfigurationSource implements ConfigurationSource {
         result = (T) getEnv(key)
             .orElseGet(() -> configuration.getString(key));
       } else if (List.class.isAssignableFrom(valueClass)) {
-        result = (T) configuration.getList(key);
+        result = (T) getEnvList(key).<List<?>>map(x -> x)
+            .orElseGet(() -> configuration.getList(key));
       } else if (Properties.class.isAssignableFrom(valueClass)) {
         result = (T) configuration.getProperties(key);
       } else {
