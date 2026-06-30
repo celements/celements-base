@@ -26,64 +26,54 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.celements</groupId>
-    <artifactId>base-pom</artifactId>
+    <artifactId>celements-parent</artifactId>
     <version>7.1-SNAPSHOT</version>
   </parent>
   <artifactId>celements-xwiki-rendering-api</artifactId>
-  <version>7.1-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-observation</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-xwiki-velocity</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-xwiki-xml</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -147,27 +137,8 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
-    <!-- <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-shared-tests</artifactId>
-      <version>7.0-SNAPSHOT</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency> -->
-    <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <!-- xwiki legacy testing -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>

@@ -26,34 +26,29 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.celements</groupId>
-    <artifactId>base-pom</artifactId>
+    <artifactId>celements-parent</artifactId>
     <version>7.1-SNAPSHOT</version>
   </parent>
   <artifactId>celements-xwiki-xml</artifactId>
-  <version>7.1-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -122,12 +117,6 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
-      <version>7.1-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -152,6 +141,7 @@
       <artifactId>jmock-cglib</artifactId>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>

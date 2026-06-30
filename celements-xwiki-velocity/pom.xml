@@ -26,46 +26,39 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.celements</groupId>
-    <artifactId>base-pom</artifactId>
+    <artifactId>celements-parent</artifactId>
     <version>7.1-SNAPSHOT</version>
   </parent>
   <artifactId>celements-xwiki-velocity</artifactId>
-  <version>7.1-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-component</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-reference</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source-api</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-config-source</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-servlet</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-xwiki-xml</artifactId>
-      <version>7.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
 
@@ -139,7 +132,6 @@
     <dependency>
       <groupId>org.apache.velocity</groupId>
       <artifactId>velocity</artifactId>
-      <version>1.7</version>
     </dependency>
     <dependency>
       <groupId>velocity-tools</groupId>
@@ -151,12 +143,6 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-base-tests</artifactId>
-      <version>7.1-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -181,6 +167,7 @@
       <artifactId>jmock-cglib</artifactId>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
