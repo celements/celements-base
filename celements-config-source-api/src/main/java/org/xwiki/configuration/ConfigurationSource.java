@@ -20,6 +20,7 @@
 package org.xwiki.configuration;
 
 import static java.util.function.Predicate.*;
+import static org.xwiki.configuration.SystemEnvUtils.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -101,18 +102,21 @@ public interface ConfigurationSource {
   }
 
   default List<String> getStringListProperty(String key) {
-    Stream<?> values;
-    Object prop = getProperty(key);
-    if (prop instanceof Iterable) {
-      values = StreamSupport.stream(((Iterable<?>) prop).spliterator(), false);
-    } else if (prop != null) {
-      values = Stream.of(prop);
-    } else {
-      values = Stream.of();
-    }
-    return values
+    return getEnvList(key)
+        .<Stream<?>>map(x -> x.stream())
+        .orElseGet(() -> toStream(getProperty(key)))
         .map(o -> Objects.toString(o, "").trim())
         .filter(not(String::isEmpty))
         .collect(Collectors.toList());
+  }
+
+  private static Stream<?> toStream(Object value) {
+    if (value instanceof Iterable) {
+      return StreamSupport.stream(((Iterable<?>) value).spliterator(), false);
+    } else if (value != null) {
+      return Stream.of(value);
+    } else {
+      return Stream.of();
+    }
   }
 }

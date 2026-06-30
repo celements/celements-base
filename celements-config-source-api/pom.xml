@@ -25,6 +25,11 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
   </dependencies>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
