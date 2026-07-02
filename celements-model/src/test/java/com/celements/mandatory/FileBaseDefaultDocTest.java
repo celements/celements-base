@@ -18,6 +18,8 @@ import com.xpn.xwiki.web.Utils;
 
 public class FileBaseDefaultDocTest extends AbstractComponentTest {
 
+  private static final String CFG_KEY_ENABLED = "celements.mandatory.FileBaseDefaultDoc.enabled";
+
   private FileBaseDefaultDoc mandatory;
   private WikiReference wikiRef;
   private IModelAccessFacade modelAccessMock;
@@ -45,6 +47,23 @@ public class FileBaseDefaultDocTest extends AbstractComponentTest {
     expect(modelAccessMock.exists(eq(docRef))).andReturn(false).once();
     replayDefault();
     assertTrue(mandatory.checkDocuments(doc));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_checkDocuments_disabledByConfig() throws Exception {
+    getConfigurationSource().setProperty(CFG_KEY_ENABLED, "0");
+
+    replayDefault();
+    mandatory.checkDocuments();
+    verifyDefault();
+  }
+
+  @Test
+  public void test_isEnabled_default() throws Exception {
+    replayDefault();
+    assertTrue(mandatory.isEnabledByDefault());
+    assertTrue(mandatory.isEnabled());
     verifyDefault();
   }
 
