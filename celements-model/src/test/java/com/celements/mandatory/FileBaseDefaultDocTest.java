@@ -18,7 +18,7 @@ import com.xpn.xwiki.web.Utils;
 
 public class FileBaseDefaultDocTest extends AbstractComponentTest {
 
-  private static final String CFG_KEY_ENABLED = "celements.mandatory.FileBaseDefaultDoc.enabled";
+  private static final String CFG_KEY_ENABLED = "celements.mandatory.enabled.FileBaseDefaultDoc";
 
   private FileBaseDefaultDoc mandatory;
   private WikiReference wikiRef;

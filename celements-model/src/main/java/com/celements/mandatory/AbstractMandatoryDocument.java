@@ -36,7 +36,7 @@ import com.xpn.xwiki.user.api.XWikiUser;
 
 public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRole {
 
-  static final String CFG_KEY_ENABLED = "celements.mandatory.%s.enabled";
+  static final String CFG_KEY_ENABLED = "celements.mandatory.enabled.%s";
 
   @Requirement
   protected IModelAccessFacade modelAccess;
