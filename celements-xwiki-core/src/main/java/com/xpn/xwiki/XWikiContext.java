@@ -41,6 +41,7 @@ import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.WikiReference;
 
 import com.celements.execution.XWikiExecutionProp;
 import com.celements.init.XWikiProvider;
@@ -92,6 +93,8 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private static final String ORIGINAL_WIKI_KEY = "originalWiki";
 
+  private static final String DOC_KEY = "doc";
+
   private boolean finished = false;
 
   private XWiki wiki;
@@ -107,8 +110,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
   private String action;
 
   private String orig_database;
-
-  private String database;
 
   private static final String USER_KEY = "user";
 
@@ -218,19 +219,24 @@ public class XWikiContext extends Hashtable<Object, Object> {
     this.response = response;
   }
 
+  public WikiReference getWikiRef() {
+    return getExecutionContext().get(XWikiExecutionProp.WIKI).orElse(null);
+  }
+
   public String getDatabase() {
-    return this.database;
+    return Optional.ofNullable(getWikiRef()).map(WikiReference::getName).orElse(null);
   }
 
   public void setDatabase(String database) {
-    this.database = database;
     if (database == null) {
+      getExecutionContext().removeProperty(XWikiExecutionProp.WIKI.getName());
       super.remove(WIKI_KEY);
     } else {
+      getExecutionContext().set(XWikiExecutionProp.WIKI, new WikiReference(database));
       super.put(WIKI_KEY, database);
     }
-    if (this.orig_database == null) {
-      this.orig_database = database;
+    if (orig_database == null) {
+      orig_database = database;
       if (database == null) {
         super.remove(ORIGINAL_WIKI_KEY);
       } else {
@@ -239,45 +245,52 @@ public class XWikiContext extends Hashtable<Object, Object> {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   * <p>
-   * Make sure to keep {@link #database} field and map synchronized.
-   *
-   * @see java.util.Hashtable#put(java.lang.Object, java.lang.Object)
-   */
+  @Override
+  public synchronized Object get(Object key) {
+    if (WIKI_KEY.equals(key)) {
+      return getDatabase();
+    } else if (DOC_KEY.equals(key)) {
+      return getDoc();
+    } else if (USER_KEY.equals(key)) {
+      return (getXWikiUser() != null) ? getUser() : null;
+    } else {
+      return super.get(key);
+    }
+  }
+
   @Override
   public synchronized Object put(Object key, Object value) {
     Object previous;
-
     if (WIKI_KEY.equals(key)) {
       previous = get(WIKI_KEY);
       setDatabase((String) value);
+    } else if (DOC_KEY.equals(key)) {
+      previous = get(DOC_KEY);
+      setDoc((XWikiDocument) value);
+    } else if (USER_KEY.equals(key)) {
+      previous = get(USER_KEY);
+      setUser((String) value);
     } else {
       previous = super.put(key, value);
     }
-
     return previous;
   }
 
-  /**
-   * {@inheritDoc}
-   * <p>
-   * Make sure to keep {@link #database} field and map synchronized.
-   *
-   * @see java.util.Hashtable#remove(java.lang.Object)
-   */
   @Override
   public synchronized Object remove(Object key) {
     Object previous;
-
     if (WIKI_KEY.equals(key)) {
       previous = get(WIKI_KEY);
       setDatabase(null);
+    } else if (DOC_KEY.equals(key)) {
+      previous = get(DOC_KEY);
+      setDoc(null);
+    } else if (USER_KEY.equals(key)) {
+      previous = get(USER_KEY);
+      setUser(null);
     } else {
       previous = super.remove(key);
     }
-
     return previous;
   }
 
@@ -307,32 +320,31 @@ public class XWikiContext extends Hashtable<Object, Object> {
    * @return true it's main wiki's context, false otherwise.
    */
   public boolean isMainWiki(String wikiName) {
-    String mainWiki = Optional.ofNullable(getMainXWiki())
-        .orElse(XWikiConstant.MAIN_WIKI.getName());
-    return !getXWikiCfg().isVirtualMode()
-        || mainWiki.equalsIgnoreCase(wikiName)
-        || getXWikiCfg().getProperty("xwiki.db", mainWiki).equalsIgnoreCase(wikiName);
+    return XWikiConstant.MAIN_WIKI.getName().equalsIgnoreCase(wikiName)
+        || getXWikiCfg().getMainWikiName().equalsIgnoreCase(wikiName);
   }
 
   public XWikiDocument getDoc() {
-    return (XWikiDocument) get("doc");
+    return getExecutionContext().get(XWikiExecutionProp.DOC).orElse(null);
   }
 
   public void setDoc(XWikiDocument doc) {
     if (doc == null) {
-      remove("doc");
+      getExecutionContext().removeProperty(XWikiExecutionProp.DOC.getName());
+      super.remove(DOC_KEY);
     } else {
-      put("doc", doc);
+      getExecutionContext().set(XWikiExecutionProp.DOC, doc);
+      super.put(DOC_KEY, doc);
     }
   }
 
   public void setUser(String user, boolean main) {
     if (user == null) {
       getExecutionContext().removeProperty(XWikiExecutionProp.XWIKI_USER.getName());
-      remove(USER_KEY);
+      super.remove(USER_KEY);
     } else {
       getExecutionContext().set(XWikiExecutionProp.XWIKI_USER, new XWikiUser(user, main));
-      put(USER_KEY, user);
+      super.put(USER_KEY, user);
     }
   }
 
@@ -578,9 +590,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
    *             {@link XWikiContext#getMainXWiki()} since 1.4M1.
    */
   @Deprecated
-  public void setVirtual(boolean virtual) {
-    // this.virtual = virtual;
-  }
+  public void setVirtual(boolean virtual) {}
   // END XWikiContextCompatibilityAspect
 
   private XWikiConfigSource getXWikiCfg() {
@@ -588,7 +598,11 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   private ExecutionContext getExecutionContext() {
-    return getBeanFactory().getBean(Execution.class).getContext();
+    try {
+      return getBeanFactory().getBean(Execution.class).getContext();
+    } catch (IllegalStateException exc) {
+      return Utils.getComponent(Execution.class).getContext();
+    }
   }
 
 }

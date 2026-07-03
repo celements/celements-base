@@ -33,8 +33,10 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.rendering.syntax.Syntax;
 import org.xwiki.test.AbstractComponentTestCase;
 
+import com.celements.execution.XWikiExecutionProp;
 import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.CoreConfiguration;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
@@ -64,8 +66,6 @@ public abstract class AbstractBridgedComponentTestCase extends AbstractComponent
   @Before
   public void setUp() throws Exception {
     this.context = new XWikiContext();
-    this.context.setDatabase("xwiki");
-    this.context.setMainXWiki("xwiki");
     super.setUp();
 
     // Statically store the component manager in {@link Utils} to be able to access it without
@@ -77,7 +77,11 @@ public abstract class AbstractBridgedComponentTestCase extends AbstractComponent
 
     // Bridge with old XWiki Context, required for old code.
     Execution execution = getComponentManager().lookup(Execution.class);
-    execution.getContext().setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, context);
+    ExecutionContext execCtx = execution.getContext();
+    execCtx.set(XWikiExecutionProp.WIKI, XWikiConstant.MAIN_WIKI);
+    execCtx.set(XWikiExecutionProp.XWIKI_CONTEXT, context);
+    context.setDatabase(XWikiConstant.MAIN_WIKI.getName());
+    context.setOriginalDatabase(XWikiConstant.MAIN_WIKI.getName());
 
     // Set a simple application context, as some components fail to start without one.
     Container c = getComponentManager().lookup(Container.class);

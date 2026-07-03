@@ -34,7 +34,8 @@ import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
-import com.celements.init.WikiUpdater;
+import com.celements.init.update.WikiUpdater;
+import com.celements.model.context.Contextualiser;
 import com.xpn.xwiki.XWikiContext;
 
 @Component
@@ -64,7 +65,8 @@ public class MandatoryDocumentCompositor implements IMandatoryDocumentCompositor
   @Override
   public void checkAllMandatoryDocuments(WikiReference wikiRef) {
     if (wikiUpdater.isShutdown()) {
-      checkAllMandatoryDocumentsForContext();
+      new Contextualiser().withWiki(wikiRef)
+          .execute(this::checkAllMandatoryDocumentsForContext);
     } else {
       wikiUpdater.runUpdateAsync(wikiRef, this::checkAllMandatoryDocumentsForContext);
     }

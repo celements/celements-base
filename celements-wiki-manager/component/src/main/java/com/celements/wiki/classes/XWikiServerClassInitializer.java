@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.celements.common.classes.XClassCreateException;
 import com.celements.common.classes.XClassCreator;
-import com.celements.init.MainXClassInitializer;
+import com.celements.init.wiki.MainXClassInitializer;
 
 @Component
 public class XWikiServerClassInitializer implements MainXClassInitializer {

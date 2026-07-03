@@ -215,7 +215,7 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param force
    *          defines wether or not to force the update despite the xwiki.cfg settings
    * @throws HibernateException
-   * @deprecated since 6.0 instead use {@link #updateSchema(String, boolean)}
+   * @deprecated since 6.0 instead use {@link #updateSchema(WikiReference, boolean)}
    */
   @Deprecated
   public synchronized void updateSchema(XWikiContext context, boolean force)
@@ -981,8 +981,7 @@ public class XWikiHibernateBaseStore implements Initializable {
   }
 
   protected WikiReference getWikiRef(XWikiContext context) {
-    return Strings.isNullOrEmpty(context.getDatabase()) ? null
-        : new WikiReference(context.getDatabase());
+    return context.getWikiRef();
   }
 
 }

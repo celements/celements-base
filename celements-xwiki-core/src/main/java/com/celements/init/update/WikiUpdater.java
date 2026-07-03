@@ -1,7 +1,8 @@
-package com.celements.init;
+package com.celements.init.update;
 
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
+import static com.xpn.xwiki.user.api.XWikiRightService.*;
 
 import java.util.Collections;
 import java.util.Map;
@@ -21,11 +22,13 @@ import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.lambda.LambdaExceptionUtil.ThrowingRunnable;
+import com.celements.init.XWikiProvider;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.user.api.XWikiUser;
 import com.xpn.xwiki.util.AbstractXWikiRunnable;
 
 import one.util.streamex.EntryStream;
@@ -132,10 +135,12 @@ public class WikiUpdater {
     private final ThrowingRunnable<Exception> action;
 
     WikiUpdateRunnable(WikiReference wikiRef, ThrowingRunnable<Exception> action) {
-      super(Map.of(WIKI.getName(), wikiRef,
+      super(Map.of(
+          WIKI.getName(), wikiRef,
           // make XWiki available in the runnable's execution context since it's not necessarily
           // already available in the servlet context, see XWikiProvider
-          XWIKI.getName(), wikiProvider.get().orElseThrow(IllegalStateException::new)));
+          XWIKI.getName(), wikiProvider.get().orElseThrow(IllegalStateException::new),
+          XWIKI_USER.getName(), new XWikiUser(SUPERADMIN_FQN, true)));
       this.action = action;
     }
 

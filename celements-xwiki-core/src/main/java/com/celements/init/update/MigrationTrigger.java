@@ -1,4 +1,4 @@
-package com.celements.init;
+package com.celements.init.update;
 
 import static com.celements.execution.XWikiExecutionProp.*;
 
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.context.Execution;
 
+import com.celements.init.CelementsStartedEvent;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;

@@ -23,12 +23,6 @@ public interface IClassesCompositorComponent {
    */
   void checkClasses(@NotNull WikiReference wikiRef);
 
-  /**
-   * @deprecated instead use {@link #checkClasses()} or {@link #checkClasses(WikiReference)}
-   */
-  @Deprecated(since = "3.0", forRemoval = true)
-  void checkAllClassCollections();
-
   boolean isActivated(@NotEmpty String name);
 
 }
