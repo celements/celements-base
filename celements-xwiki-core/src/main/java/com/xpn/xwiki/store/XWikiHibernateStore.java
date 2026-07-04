@@ -184,6 +184,7 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     }
   }
 
+  @Override
   public boolean isWikiEmpty(WikiReference wikiRef) throws WikiMissingException, XWikiException {
     boolean bTransaction = true;
     try {
@@ -199,6 +200,17 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
       if (bTransaction) {
         endTransaction(false);
       }
+    }
+  }
+
+  @Override
+  public void initWiki(WikiReference wikiRef) throws XWikiException {
+    try {
+      updateSchema(wikiRef, true);
+    } catch (HibernateException e) {
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_CREATE_DATABASE,
+          "Exception while initializing wiki {0}", e, new Object[] { wikiRef });
     }
   }
 

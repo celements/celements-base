@@ -31,6 +31,7 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryExecutor;
 import org.xwiki.query.QueryManager;
 
+import com.celements.wiki.WikiMissingException;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -665,6 +666,10 @@ public interface XWikiStoreInterface {
    *           error when checking wiki existence
    */
   boolean existsWiki(@NotNull WikiReference wikiRef) throws XWikiException;
+
+  boolean isWikiEmpty(WikiReference wikiRef) throws WikiMissingException, XWikiException;
+
+  void initWiki(WikiReference wikiRef) throws XWikiException;
 
   /**
    * @deprecated instead use {@link #existsWiki(WikiReference)}

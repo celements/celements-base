@@ -10,23 +10,19 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
-import com.celements.init.wiki.WikiCreationCoordinator;
-import com.xpn.xwiki.XWikiException;
+import com.celements.init.wiki.WikiCreator;
+import com.celements.init.wiki.WikiCreator.WikiCreationException;
 
 @Component
 public class CentralWikiCreator implements ApplicationListener<CelementsStartedEvent>, Ordered {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CentralWikiCreator.class);
 
-  private final XWikiProvider xwikiProvider;
-  private final WikiCreationCoordinator lifecyclePublisher;
+  private final WikiCreator wikiCreator;
 
   @Inject
-  public CentralWikiCreator(
-      XWikiProvider xwikiProvider,
-      WikiCreationCoordinator lifecyclePublisher) {
-    this.xwikiProvider = xwikiProvider;
-    this.lifecyclePublisher = lifecyclePublisher;
+  public CentralWikiCreator(WikiCreator wikiCreator) {
+    this.wikiCreator = wikiCreator;
   }
 
   @Override
@@ -36,20 +32,9 @@ public class CentralWikiCreator implements ApplicationListener<CelementsStartedE
 
   @Override
   public void onApplicationEvent(CelementsStartedEvent event) {
-    var xwiki = xwikiProvider.get().orElseThrow();
     try {
-      if (xwiki.getStore().existsWiki(CENTRAL_WIKI)) {
-        LOGGER.debug("skipped central wiki creation [{}], already exists", CENTRAL_WIKI);
-        return;
-      }
-      xwiki.getStore().createWiki(CENTRAL_WIKI);
-      var force = true; // force schema update
-      var initClasses = false; // init classes are created by WikiMandatoryClassesListener
-      xwiki.updateDatabase(CENTRAL_WIKI.getName(), force, initClasses, null);
-      // listeners create wiki descriptor, classes, mandatory documents, ...
-      lifecyclePublisher.publishCreated(CENTRAL_WIKI);
-      LOGGER.info("created central wiki [{}]", CENTRAL_WIKI);
-    } catch (XWikiException xwe) {
+      wikiCreator.ensureWiki(CENTRAL_WIKI);
+    } catch (WikiCreationException xwe) {
       LOGGER.error("Failed to create central wiki [{}]", CENTRAL_WIKI, xwe);
     }
   }
