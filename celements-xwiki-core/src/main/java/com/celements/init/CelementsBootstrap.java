@@ -105,8 +105,8 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
 
   private XWiki bootstrapXWiki()
       throws WikiCreationException, XWikiException, ExecutionContextException {
-    ExecutionContext eCtx = createExecutionContext();
     Utils.setComponentManager(componentManager);
+    ExecutionContext eCtx = createExecutionContext();
     LOGGER.debug("initialising hibernate...");
     hibernateStore.initHibernate();
     var postActions = wikiCreator.ensureWikiDeferred(getMainWikiRef());
