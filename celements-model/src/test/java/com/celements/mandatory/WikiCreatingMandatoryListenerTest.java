@@ -9,19 +9,19 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.mandatory.IMandatoryDocumentCompositorRole;
-import com.celements.mandatory.WikiCreateEventListener;
+import com.celements.mandatory.WikiCreatingMandatoryListener;
 import com.celements.wiki.event.WikiCreatingEvent;
 
-public class WikiCreateEventListenerTest extends AbstractComponentTest {
+public class WikiCreatingMandatoryListenerTest extends AbstractComponentTest {
 
-  private WikiCreateEventListener listener;
+  private WikiCreatingMandatoryListener listener;
 
   private IMandatoryDocumentCompositorRole mandatoryDocCmpMock;
 
   @Before
   public void prepare() throws Exception {
     mandatoryDocCmpMock = registerComponentMock(IMandatoryDocumentCompositorRole.class);
-    listener = getBeanFactory().getBean(WikiCreateEventListener.class);
+    listener = getBeanFactory().getBean(WikiCreatingMandatoryListener.class);
   }
 
   @Test

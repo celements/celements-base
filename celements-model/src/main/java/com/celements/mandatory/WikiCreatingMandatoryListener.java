@@ -1,4 +1,4 @@
-package com.celements.common.classes;
+package com.celements.mandatory;
 
 import javax.inject.Inject;
 
@@ -11,27 +11,27 @@ import org.springframework.stereotype.Component;
 import com.celements.wiki.event.WikiCreatingEvent;
 
 @Component
-public class WikiCreateEventListener implements ApplicationListener<WikiCreatingEvent>, Ordered {
+public class WikiCreatingMandatoryListener implements ApplicationListener<WikiCreatingEvent>, Ordered {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WikiCreateEventListener.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WikiCreatingMandatoryListener.class);
 
-  private IClassesCompositorComponent classesCompositor;
+  private IMandatoryDocumentCompositorRole mandatoryDocCmp;
 
   @Inject
-  public WikiCreateEventListener(IClassesCompositorComponent classesCompositor) {
-    this.classesCompositor = classesCompositor;
+  public WikiCreatingMandatoryListener(IMandatoryDocumentCompositorRole mandatoryDocCmp) {
+    this.mandatoryDocCmp = mandatoryDocCmp;
   }
 
   @Override
   public int getOrder() {
-    return -200;
+    return -100;
   }
 
   @Override
   public void onApplicationEvent(WikiCreatingEvent event) {
     String database = event.getWiki().getName();
     LOGGER.debug("received WikiCreatingEvent for database '{}'", database);
-    classesCompositor.checkClasses(event.getWiki());
+    mandatoryDocCmp.checkAllMandatoryDocuments(event.getWiki());
   }
 
 }

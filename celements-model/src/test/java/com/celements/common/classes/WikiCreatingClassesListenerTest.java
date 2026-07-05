@@ -8,20 +8,20 @@ import org.junit.Test;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.classes.IClassesCompositorComponent;
-import com.celements.common.classes.WikiCreateEventListener;
+import com.celements.common.classes.WikiCreatingClassesListener;
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.wiki.event.WikiCreatingEvent;
 
-public class WikiCreateEventListenerTest extends AbstractComponentTest {
+public class WikiCreatingClassesListenerTest extends AbstractComponentTest {
 
-  private WikiCreateEventListener listener;
+  private WikiCreatingClassesListener listener;
 
   private IClassesCompositorComponent classesCmpMock;
 
   @Before
   public void prepare() throws Exception {
     classesCmpMock = registerComponentMock(IClassesCompositorComponent.class);
-    listener = getBeanFactory().getBean(WikiCreateEventListener.class);
+    listener = getBeanFactory().getBean(WikiCreatingClassesListener.class);
   }
 
   @Test
