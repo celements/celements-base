@@ -22,24 +22,22 @@
 package com.xpn.xwiki.user.api;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
+import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.web.Utils;
 
 public class XWikiUser {
 
-  /**
-   * @see com.xpn.xwiki.internal.model.reference.CurrentMixedStringDocumentReferenceResolver
-   */
   @SuppressWarnings("unchecked")
-  private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
-      .getComponent(
-          DocumentReferenceResolver.class, "currentmixed");
+  private final Supplier<DocumentReferenceResolver<String>> docRefResolver = Suppliers
+      .memoize(() -> Utils.getComponent(DocumentReferenceResolver.class, "currentmixed"));
 
   private String user;
 
@@ -58,8 +56,8 @@ public class XWikiUser {
     return user;
   }
 
-  private DocumentReference getUserReference(XWikiContext context) {
-    return this.currentMixedDocumentReferenceResolver.resolve(getUser());
+  public DocumentReference getUserDocRef() {
+    return docRefResolver.get().resolve(getUser());
   }
 
   public void setUser(String user) {
@@ -82,18 +80,13 @@ public class XWikiUser {
   public boolean isUserInGroup(String groupName, XWikiContext context) throws XWikiException {
     if (!StringUtils.isEmpty(getUser())) {
       XWikiGroupService groupService = context.getWiki().getGroupService(context);
-
-      DocumentReference groupReference = this.currentMixedDocumentReferenceResolver
-          .resolve(groupName);
-
+      DocumentReference groupReference = docRefResolver.get().resolve(groupName);
       Collection<DocumentReference> groups = groupService
-          .getAllGroupsReferencesForMember(getUserReference(context), 0, 0, context);
-
+          .getAllGroupsReferencesForMember(getUserDocRef(), 0, 0, context);
       if (groups.contains(groupReference)) {
         return true;
       }
     }
-
     return false;
   }
 

@@ -1,4 +1,4 @@
-package com.celements.init;
+package com.celements.init.wiki;
 
 import java.util.concurrent.ExecutionException;
 

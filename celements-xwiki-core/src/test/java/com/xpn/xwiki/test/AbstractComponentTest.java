@@ -31,10 +31,12 @@ import org.xwiki.context.ExecutionContext;
 import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.common.test.AbstractBaseComponentTest;
+import com.celements.execution.XWikiExecutionProp;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiConfigSource;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
@@ -58,18 +60,20 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
     // the context.
     Utils.setComponentManager(getComponentManager());
 
+    ExecutionContext execCtx = new ExecutionContext();
+    getComponentManager().lookup(Execution.class).setContext(execCtx);
+    execCtx.set(XWikiExecutionProp.WIKI, XWikiConstant.MAIN_WIKI);
+
+    // Bridge with old XWiki Context, required for old code.
     context = new XWikiContext();
-    context.setDatabase("xwiki");
-    context.setMainXWiki("xwiki");
+    execCtx.set(XWikiExecutionProp.XWIKI_CONTEXT, context);
+    context.setDatabase(XWikiConstant.MAIN_WIKI.getName());
+    context.setOriginalDatabase(XWikiConstant.MAIN_WIKI.getName());
     context.setWiki(createDefaultMock(XWiki.class));
 
     // We need to initialize the Component Manager so that the components can be looked up
     getContext().put(ComponentManager.class.getName(), getComponentManager());
 
-    // Bridge with old XWiki Context, required for old code.
-    ExecutionContext execCtx = new ExecutionContext();
-    getComponentManager().lookup(Execution.class).setContext(execCtx);
-    execCtx.setProperty(XWikiContext.EXECUTIONCONTEXT_KEY, context);
     XWikiStubContextProvider ctxProviderMock = registerComponentMock(
         XWikiStubContextProvider.class);
     expect(ctxProviderMock.createStubContext(same(execCtx))).andReturn(context).anyTimes();

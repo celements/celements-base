@@ -32,7 +32,7 @@ public class WikiSpringXWikiEventConverter
       LOGGER.info("firing [{}]", xwikiEvent);
       observationManager.notify(xwikiEvent, this);
     } else {
-      LOGGER.info("unable to convert lifecycle event [{}] to an xwiki event", event);
+      LOGGER.debug("unable to convert lifecycle event [{}] to an xwiki event", event);
     }
   }
 

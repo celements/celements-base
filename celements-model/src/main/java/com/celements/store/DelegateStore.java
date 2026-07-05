@@ -18,6 +18,7 @@ import org.xwiki.query.QueryManager;
 
 import com.celements.configuration.CelementsAllPropertiesConfigurationSource;
 import com.celements.model.metadata.DocumentMetaData;
+import com.celements.wiki.WikiMissingException;
 import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -93,6 +94,16 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   @Override
   public boolean exists(XWikiDocument doc, XWikiContext context) throws XWikiException {
     return getBackingStore().exists(doc, context);
+  }
+
+  @Override
+  public boolean isWikiEmpty(WikiReference wikiRef) throws WikiMissingException, XWikiException {
+    return getBackingStore().isWikiEmpty(wikiRef);
+  }
+
+  @Override
+  public void initWiki(WikiReference wikiRef) throws XWikiException {
+    getBackingStore().initWiki(wikiRef);
   }
 
   @Override

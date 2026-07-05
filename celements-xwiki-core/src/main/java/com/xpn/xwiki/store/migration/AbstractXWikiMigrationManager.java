@@ -35,7 +35,7 @@ import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.execution.XWikiExecutionProp;
-import com.celements.init.WikiUpdater;
+import com.celements.init.update.WikiUpdater;
 import com.celements.wiki.WikiService;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
