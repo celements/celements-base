@@ -22,6 +22,7 @@ package com.xpn.xwiki;
 import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.spring.context.SpringContextProvider.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +56,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,6 +105,7 @@ import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
+import com.celements.init.wiki.MainXClassInitializer;
 import com.celements.logging.LogUtils;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.StoreFactory;
@@ -249,8 +252,8 @@ public class XWiki implements EventListener {
    */
   private static final String VERSION_FILE = "/WEB-INF/version.properties";
 
-  private static final Pattern CEL_LANGUAGE_PARAM_PATTERN =
-      Pattern.compile("(?:^|&)language=([^&]*)");
+  private static final Pattern CEL_LANGUAGE_PARAM_PATTERN = Pattern
+      .compile("(?:^|&)language=([^&]*)");
 
   /**
    * Property containing the version value in the {@link #VERSION_FILE} file.
@@ -427,9 +430,22 @@ public class XWiki implements EventListener {
     getSkinClass(context);
     getGlobalRightsClass(context);
     getSheetClass(context);
-    if (context.getDatabase().equals(context.getMainXWiki()) && "1".equals(Param(
-        "xwiki.preferences.redirect"))) {
-      getRedirectClass(context);
+    if (context.isMainWiki()) {
+      initializeMandatoryMainClasses();
+      // TODO move to own MainXClassInitializer in celements-global-redirect
+      if ("1".equals(Param("xwiki.preferences.redirect"))) {
+        getRedirectClass(context);
+      }
+    }
+    getPluginManager().virtualInit(context); // init plugin classes
+  }
+
+  private void initializeMandatoryMainClasses() throws XWikiException {
+    try {
+      getSpringContext().getBeansOfType(MainXClassInitializer.class).values()
+          .forEach(rethrowConsumer(MainXClassInitializer::run));
+    } catch (ExecutionException exc) {
+      throw new XWikiException(0, 0, "failed to create main classes", exc);
     }
   }
 
@@ -464,12 +480,10 @@ public class XWiki implements EventListener {
       synchronized (wikiName) {
         XWikiHibernateStore store = getHibernateStore();
         if (store != null) {
-          store.updateSchema(context, force);
+          store.updateSchema(context.getWikiRef(), force);
         }
         if (initClasses) {
           initializeMandatoryClasses(context);
-          getPluginManager().virtualInit(context);
-          getRenderingEngine().virtualInit(context);
         }
       }
     } finally {
@@ -1787,7 +1801,7 @@ public class XWiki implements EventListener {
       XWikiRequest request = context.getRequest();
       if (request != null) {
         String contentType = request.getContentType();
-        if (contentType != null && contentType.toLowerCase().startsWith("multipart/")) {
+        if ((contentType != null) && contentType.toLowerCase().startsWith("multipart/")) {
           language = Util.normalizeLanguage(getLanguageFromQueryString(request.getQueryString()));
         } else {
           language = Util.normalizeLanguage(request.getParameter("language"));
@@ -1892,7 +1906,8 @@ public class XWiki implements EventListener {
    * body, which consumes the input stream and breaks downstream multipart parsing in Spring's
    * DispatcherServlet.
    *
-   * @param queryString the request query string
+   * @param queryString
+   *          the request query string
    * @return the language parameter value, or null if not found
    */
   private String getLanguageFromQueryString(String queryString) {

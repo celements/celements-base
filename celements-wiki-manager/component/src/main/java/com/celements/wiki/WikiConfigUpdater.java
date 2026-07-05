@@ -23,7 +23,7 @@ import com.celements.model.util.ModelUtils;
 import com.celements.wiki.classes.XWikiServerClass;
 import com.celements.wiki.classes.XWikiServerClass.State;
 import com.celements.wiki.classes.XWikiServerClass.Visibility;
-import com.celements.wiki.event.WikiCreatedEvent;
+import com.celements.wiki.event.WikiCreatingEvent;
 import com.celements.wiki.event.WikiDeletedEvent;
 import com.celements.wiki.event.WikiEvent;
 import com.celements.wiki.service.WikiManagerService;
@@ -67,17 +67,17 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
 
   @Override
   public int getOrder() {
-    return -1000; // high precedence
+    return -800; // after XWikiServerClass creation in XWiki#initializeMandatoryClasses
   }
 
   @Override
   public void onApplicationEvent(WikiEvent wikiEvent) {
-    if (wikiEvent instanceof WikiCreatedEvent) {
+    if (wikiEvent instanceof WikiCreatingEvent) {
       createWikiConfig(wikiEvent.getWiki());
     } else if (wikiEvent instanceof WikiDeletedEvent) {
       deleteWikiConfig(wikiEvent.getWiki());
     } else {
-      LOGGER.warn("unsupported event [{}]", wikiEvent);
+      LOGGER.debug("unsupported event [{}]", wikiEvent);
     }
   }
 

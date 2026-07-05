@@ -31,8 +31,9 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.WikiReference;
 
-import com.celements.init.WikiUpdater;
+import com.celements.init.update.WikiUpdater;
 import com.celements.model.classes.ClassPackage;
+import com.celements.model.context.Contextualiser;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.web.Utils;
@@ -70,7 +71,8 @@ public class ClassesCompositorComponent implements IClassesCompositorComponent {
   @Override
   public void checkClasses(WikiReference wikiRef) {
     if (wikiUpdater.isShutdown()) {
-      checkClassesForContext();
+      new Contextualiser().withWiki(wikiRef)
+          .execute(this::checkClassesForContext);
     } else {
       wikiUpdater.runUpdateAsync(wikiRef, this::checkClassesForContext);
     }
@@ -82,12 +84,6 @@ public class ClassesCompositorComponent implements IClassesCompositorComponent {
     checkClassCollections();
     checkOldClassCollections();
     LOGGER.debug("finish checkClasses for wiki '{}'", getContext().getDatabase());
-  }
-
-  @Override
-  @Deprecated
-  public void checkAllClassCollections() {
-    checkClasses();
   }
 
   @Deprecated

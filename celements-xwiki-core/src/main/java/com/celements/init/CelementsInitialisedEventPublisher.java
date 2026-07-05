@@ -9,6 +9,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
+import com.celements.init.update.WikiUpdater;
+
 @Component
 public class CelementsInitialisedEventPublisher
     implements ApplicationListener<CelementsStartedEvent>, Ordered {

@@ -1,4 +1,4 @@
-package com.celements.init;
+package com.celements.init.update;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -11,6 +11,7 @@ import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.xwiki.configuration.ConfigurationSource;
 
+import com.celements.init.CelementsStartedEvent;
 import com.celements.wiki.WikiService;
 
 @Component

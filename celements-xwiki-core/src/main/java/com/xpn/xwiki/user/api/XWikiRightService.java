@@ -23,6 +23,7 @@ package com.xpn.xwiki.user.api;
 
 import java.util.List;
 
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -38,6 +39,8 @@ public interface XWikiRightService {
    * The Superadmin full name.
    */
   String SUPERADMIN_USER_FULLNAME = "XWiki." + SUPERADMIN_USER;
+
+  String SUPERADMIN_FQN = XWikiConstant.MAIN_WIKI.getName() + ":" + SUPERADMIN_USER_FULLNAME;
 
   /**
    * The Guest username.

@@ -1,4 +1,4 @@
-package com.celements.init;
+package com.celements.init.request;
 
 import static com.celements.logging.LogUtils.*;
 import static com.celements.spring.context.SpringContextProvider.*;

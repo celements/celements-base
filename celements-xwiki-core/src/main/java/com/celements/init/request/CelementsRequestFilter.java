@@ -1,4 +1,4 @@
-package com.celements.init;
+package com.celements.init.request;
 
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
@@ -27,6 +27,8 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.init.XWikiProvider;
+import com.celements.init.update.WikiUpdater;
 import com.celements.struts.StrutsActionUtils;
 import com.celements.url.UrlService;
 import com.celements.wiki.WikiMissingException;
