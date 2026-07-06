@@ -9,7 +9,6 @@ import static org.junit.Assert.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
+import com.xpn.xwiki.web.Utils;
 
 public class ObjectEditorTest extends AbstractComponentTest {
 
@@ -42,17 +42,14 @@ public class ObjectEditorTest extends AbstractComponentTest {
   public void prepareTest() throws Exception {
     wikiRef = new WikiReference("db");
     doc = new XWikiDocument(new DocumentReference(wikiRef.getName(), "space", "doc"));
-    var classDef = getBeanFactory().getBean(NAME, ClassDefinition.class);
+    ClassDefinition classDef = Utils.getComponent(ClassDefinition.class, NAME);
     classRef = classDef.getClassReference();
-    expectClass(classDef, wikiRef);
+    BaseClass bClass = expectNewBaseObject(classRef.getDocRef(wikiRef));
+    for (ClassField<?> field : classDef.getFields()) {
+      expect(bClass.get(eq(field.getName()))).andReturn(field.getXField()).anyTimes();
+    }
     classRef2 = new ClassReference("class", "other");
     expectNewBaseObject(classRef2.getDocRef(wikiRef));
-  }
-
-  private BaseClass expectClass(ClassDefinition classDef, WikiReference wikiRef)
-      throws XWikiException {
-    return expectPropertyClasses(classDef.getDocRef(wikiRef), classDef.getFields().stream()
-        .collect(Collectors.toMap(ClassField::getName, ClassField::getXField)));
   }
 
   private XWikiObjectEditor newEditor() {
@@ -61,7 +58,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
 
   @Test
   public void test_nullDoc() throws Exception {
-    new ExceptionAsserter<>(NullPointerException.class) {
+    new ExceptionAsserter<NullPointerException>(NullPointerException.class) {
 
       @Override
       protected void execute() throws Exception {
@@ -73,7 +70,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
   @Test
   public void test_fetch_noClone() throws Exception {
     BaseObject obj = addObj(classRef, null, null);
-    BaseObject ret = newEditor().fetch().findFirst().get();
+    BaseObject ret = newEditor().fetch().first().get();
     assertSame(obj, ret);
   }
 
@@ -90,7 +87,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
   public void test_isTranslation() throws Exception {
     doc.setLanguage("en");
     doc.setTranslation(1);
-    IllegalArgumentException iae = new ExceptionAsserter<>(
+    IllegalArgumentException iae = new ExceptionAsserter<IllegalArgumentException>(
         IllegalArgumentException.class) {
 
       @Override
@@ -168,7 +165,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
     expect(createBaseClassMock(classRef.getDocRef(wikiRef)).newCustomClassInstance(same(
         getContext()))).andThrow(cause).once();
     replayDefault();
-    ClassDocumentLoadException exc = new ExceptionAsserter<>(
+    ClassDocumentLoadException exc = new ExceptionAsserter<ClassDocumentLoadException>(
         ClassDocumentLoadException.class) {
 
       @Override
@@ -182,7 +179,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
   @Test
   public void test_create_docField() throws Exception {
     replayDefault();
-    new ExceptionAsserter<>(IllegalArgumentException.class) {
+    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class) {
 
       @Override
       protected void execute() throws IllegalArgumentException {
@@ -260,7 +257,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
   @Test
   public void test_createFirst_none() throws Exception {
     replayDefault();
-    new ExceptionAsserter<>(IllegalArgumentException.class) {
+    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class) {
 
       @Override
       protected void execute() throws Exception {
@@ -292,7 +289,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
   @Test
   public void test_createFirstIfNotExists_none() throws Exception {
     replayDefault();
-    new ExceptionAsserter<>(IllegalArgumentException.class) {
+    new ExceptionAsserter<IllegalArgumentException>(IllegalArgumentException.class) {
 
       @Override
       protected void execute() throws Exception {
