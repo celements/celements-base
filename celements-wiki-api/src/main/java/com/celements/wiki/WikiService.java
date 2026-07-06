@@ -9,6 +9,8 @@ import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.wiki.exception.WikiMissingException;
+
 public interface WikiService {
 
   /**

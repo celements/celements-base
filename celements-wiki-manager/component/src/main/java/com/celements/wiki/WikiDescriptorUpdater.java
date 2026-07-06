@@ -26,42 +26,35 @@ import com.celements.wiki.classes.XWikiServerClass.Visibility;
 import com.celements.wiki.event.WikiCreatingEvent;
 import com.celements.wiki.event.WikiDeletedEvent;
 import com.celements.wiki.event.WikiEvent;
-import com.celements.wiki.service.WikiManagerService;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 /**
- * Creates/deletes wiki config in main wiki on creation/deletion events.
+ * Creates/deletes wiki descriptors in main wiki on creation/deletion events.
  */
 @Component
-public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordered {
+public class WikiDescriptorUpdater implements ApplicationListener<WikiEvent>, Ordered {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WikiConfigUpdater.class);
-
-  /**
-   * @deprecated since 6.9 instead use {@link WikiManagerService#DOC_NAME_PREFIX}
-   */
-  @Deprecated(since = "6.9", forRemoval = true)
-  public static final String DOC_NAME_PREFIX = WikiManagerService.DOC_NAME_PREFIX;
+  private static final Logger LOGGER = LoggerFactory.getLogger(WikiDescriptorUpdater.class);
 
   private final ModelUtils modelUtils;
   private final IModelAccessFacade modelAccess;
   private final WikiService wikiService;
   private final XWikiConfigSource xwikiCfg;
-  private final WikiManagerService wikiManager;
+  private final WikiDescriptorService descriptorService;
 
   @Inject
-  public WikiConfigUpdater(
+  public WikiDescriptorUpdater(
       ModelUtils modelUtils,
       IModelAccessFacade modelAccess,
       WikiService wikiService,
-      WikiManagerService wikiManager,
+      WikiDescriptorService descriptorService,
       XWikiConfigSource xwikiCfg) {
     this.modelUtils = modelUtils;
     this.modelAccess = modelAccess;
     this.wikiService = wikiService;
-    this.wikiManager = wikiManager;
+    this.descriptorService = descriptorService;
     this.xwikiCfg = xwikiCfg;
   }
 
@@ -73,37 +66,37 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
   @Override
   public void onApplicationEvent(WikiEvent wikiEvent) {
     if (wikiEvent instanceof WikiCreatingEvent) {
-      createWikiConfig(wikiEvent.getWiki());
+      createWikiDescriptor(wikiEvent.getWiki());
     } else if (wikiEvent instanceof WikiDeletedEvent) {
-      deleteWikiConfig(wikiEvent.getWiki());
+      deleteWikiDescriptor(wikiEvent.getWiki());
     } else {
       LOGGER.debug("unsupported event [{}]", wikiEvent);
     }
   }
 
-  private void createWikiConfig(WikiReference wikiRef) {
+  private void createWikiDescriptor(WikiReference wikiRef) {
     XWikiDocument cfgDoc = modelAccess
-        .getOrCreateDocument(wikiManager.getWikiConfigDocRef(wikiRef));
+        .getOrCreateDocument(descriptorService.getDescriptorDocRef(wikiRef));
     var editor = XWikiObjectEditor.on(cfgDoc).filter(XWikiServerClass.CLASS_REF);
     if (editor.fetch().exists()) {
-      LOGGER.debug("skip wiki config creation for [{}], already exists", wikiRef.getName());
+      LOGGER.debug("skip wiki descriptor creation for [{}], already exists", wikiRef.getName());
       return;
     }
     var host = determineHost();
     if (modelUtils.isMainWiki(wikiRef)) {
-      createWikiConfig(editor, wikiRef.getName(), host);
+      createWikiDescriptor(editor, wikiRef.getName(), host);
     }
-    createWikiConfig(editor, wikiRef.getName(), wikiRef.getName() + "." + host);
+    createWikiDescriptor(editor, wikiRef.getName(), wikiRef.getName() + "." + host);
     cfgDoc.setContent("#includeForm('XWiki.XWikiServerClassSheet')");
     try {
-      modelAccess.saveDocument(cfgDoc, "WikiConfigUpdater");
-      LOGGER.info("created wiki config for [{}]", wikiRef.getName());
+      modelAccess.saveDocument(cfgDoc, "WikiDescriptorUpdater");
+      LOGGER.info("created wiki descriptor for [{}]", wikiRef.getName());
     } catch (DocumentSaveException dse) {
-      LOGGER.error("failed to create wiki config for [{}]", wikiRef, dse);
+      LOGGER.error("failed to create wiki descriptor for [{}]", wikiRef, dse);
     }
   }
 
-  private BaseObject createWikiConfig(XWikiObjectEditor editor, String name, String host) {
+  private BaseObject createWikiDescriptor(XWikiObjectEditor editor, String name, String host) {
     return editor
         .filter(FIELD_PRETTY_NAME, name)
         .filter(FIELD_SERVER, host)
@@ -117,11 +110,11 @@ public class WikiConfigUpdater implements ApplicationListener<WikiEvent>, Ordere
         .createFirst();
   }
 
-  private void deleteWikiConfig(WikiReference wikiRef) {
+  private void deleteWikiDescriptor(WikiReference wikiRef) {
     try {
-      modelAccess.deleteDocument(wikiManager.getWikiConfigDocRef(wikiRef), true);
+      modelAccess.deleteDocument(descriptorService.getDescriptorDocRef(wikiRef), true);
     } catch (DocumentDeleteException dde) {
-      LOGGER.error("failed to delete wiki config for [{}]", wikiRef, dde);
+      LOGGER.error("failed to delete wiki descriptor for [{}]", wikiRef, dde);
     }
   }
 

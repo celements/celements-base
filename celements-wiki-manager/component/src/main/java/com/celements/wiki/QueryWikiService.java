@@ -25,9 +25,8 @@ import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryManager;
 
-import com.celements.common.MoreOptional;
 import com.celements.common.lambda.Try;
-import com.celements.wiki.service.WikiManagerService;
+import com.celements.wiki.exception.WikiMissingException;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
@@ -105,7 +104,7 @@ public class QueryWikiService implements WikiService {
     WikiReference wikiRef = findWikis(u -> u.getHost().equals(host)).findFirst()
         // no wiki found based on the full host name, try to use the first part as the wiki name
         .or(() -> getWikiFromDomain(host))
-        .orElseThrow(() -> new WikiMissingException("The wiki " + host + " does not exist"));
+        .orElseThrow(() -> new WikiMissingException(new WikiReference(host)));
     LOGGER.debug("determineWiki - [{}] for [{}]", wikiRef.getName(), url);
     return wikiRef;
   }
@@ -140,14 +139,14 @@ public class QueryWikiService implements WikiService {
                 (Integer) row[1], // secure.value
                 row[2].toString())) // host.value
         .flatMapKeys(this::toWikiRef)
-        .flatMapValues(MoreOptional::stream)
+        .flatMapValues(Optional::stream)
         .collect(toImmutableSetMultimap(Entry::getKey, Entry::getValue));
     LOGGER.info("queryAllWikis - {}", ret);
     return ret;
   }
 
   private Stream<WikiReference> toWikiRef(String name) {
-    return Stream.of(name.replace(WikiManagerService.DOC_NAME_PREFIX, "").trim())
+    return Stream.of(name.replace(XWikiServerDescriptorService.DOC_NAME_PREFIX, "").trim())
         .filter(not(String::isEmpty))
         .map(WikiReference::new)
         .map(this::convertMainWiki);

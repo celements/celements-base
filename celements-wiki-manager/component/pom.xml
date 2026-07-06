@@ -36,6 +36,16 @@
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
+      <artifactId>celements-servlet</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-wiki-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
       <artifactId>celements-xwiki-core</artifactId>
       <scope>provided</scope>
     </dependency>
@@ -107,11 +117,6 @@
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-shared-tests</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-servlet</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -10,8 +10,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
-import com.celements.init.wiki.WikiCreator;
-import com.celements.init.wiki.WikiCreator.WikiCreationException;
+import com.celements.wiki.WikiCreator;
+import com.celements.wiki.exception.WikiCreationException;
 
 @Component
 public class CentralWikiCreator implements ApplicationListener<CelementsStartedEvent>, Ordered {
