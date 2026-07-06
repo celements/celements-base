@@ -28,7 +28,7 @@ import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.WikiReference;
 
-import com.celements.wiki.WikiMissingException;
+import com.celements.wiki.exception.WikiMissingException;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;

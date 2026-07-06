@@ -24,7 +24,7 @@ import org.xwiki.query.QueryException;
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
 import com.celements.store.DefaultHibernateStore;
-import com.celements.wiki.WikiMissingException;
+import com.celements.wiki.exception.WikiMissingException;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiHibernateBaseStore.HibernateCallback;

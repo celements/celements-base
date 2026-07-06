@@ -2,11 +2,11 @@ package com.celements.convert.bean;
 
 import static com.celements.common.test.CelementsTestUtils.*;
 import static com.celements.model.classes.TestClassDefinition.*;
-import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,11 +43,8 @@ public class XDocBeanLoaderTest extends AbstractComponentTest {
 
   private BaseClass expectClass(ClassDefinition classDef, WikiReference wikiRef)
       throws XWikiException {
-    BaseClass bClass = expectNewBaseObject(classDef.getDocRef(wikiRef));
-    for (ClassField<?> field : classDef.getFields()) {
-      expect(bClass.get(field.getName())).andReturn(field.getXField()).anyTimes();
-    }
-    return bClass;
+    return expectPropertyClasses(classDef.getDocRef(wikiRef), classDef.getFields().stream()
+        .collect(Collectors.toMap(ClassField::getName, ClassField::getXField)));
   }
 
   @Test
@@ -95,7 +92,7 @@ public class XDocBeanLoaderTest extends AbstractComponentTest {
   @Test
   public void test_noObj() throws Exception {
     replayDefault();
-    new ExceptionAsserter<BeanLoadException>(BeanLoadException.class) {
+    new ExceptionAsserter<>(BeanLoadException.class) {
 
       @Override
       protected void execute() throws BeanLoadException {
@@ -110,7 +107,7 @@ public class XDocBeanLoaderTest extends AbstractComponentTest {
   public void test_notInitialized() throws Exception {
     loader = Utils.getComponent(XDocBeanLoader.class);
     replayDefault();
-    new ExceptionAsserter<IllegalStateException>(IllegalStateException.class) {
+    new ExceptionAsserter<>(IllegalStateException.class) {
 
       @Override
       protected void execute() throws IllegalStateException, BeanLoadException {
