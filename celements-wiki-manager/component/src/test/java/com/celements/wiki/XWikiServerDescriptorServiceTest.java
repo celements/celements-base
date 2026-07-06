@@ -33,6 +33,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
+import com.xpn.xwiki.objects.classes.PropertyClass;
 
 public class XWikiServerDescriptorServiceTest extends AbstractComponentTest {
 
@@ -235,7 +236,8 @@ public class XWikiServerDescriptorServiceTest extends AbstractComponentTest {
 
   private BaseClass expectClass(ClassDefinition classDef, WikiReference wikiRef)
       throws XWikiException {
-    return expectPropertyClasses(classDef.getDocRef(wikiRef), classDef.getFields().stream()
+    BaseClass bClass = expectNewBaseObject(classDef.getDocRef(wikiRef));
+    return expectPropertyClasses(bClass, classDef.getFields().stream()
         .collect(Collectors.toMap(ClassField::getName, ClassField::getXField)));
   }
 

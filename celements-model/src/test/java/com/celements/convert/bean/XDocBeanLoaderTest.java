@@ -43,7 +43,8 @@ public class XDocBeanLoaderTest extends AbstractComponentTest {
 
   private BaseClass expectClass(ClassDefinition classDef, WikiReference wikiRef)
       throws XWikiException {
-    return expectPropertyClasses(classDef.getDocRef(wikiRef), classDef.getFields().stream()
+    BaseClass bClass = expectNewBaseObject(classDef.getDocRef(wikiRef));
+    return expectPropertyClasses(bClass, classDef.getFields().stream()
         .collect(Collectors.toMap(ClassField::getName, ClassField::getXField)));
   }
 
