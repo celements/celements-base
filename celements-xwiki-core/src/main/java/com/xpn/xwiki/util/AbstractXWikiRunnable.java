@@ -75,8 +75,11 @@ public abstract class AbstractXWikiRunnable implements Runnable {
     try {
       initExecutionContext();
       runInternal();
-    } catch (Exception e) {
+    } catch (ExecutionContextException e) {
       logger.error("Failed to initialize execution context", e);
+      throw new RuntimeException(e);
+    } catch (Exception e) {
+      logger.error("execution failed", e);
       throw new RuntimeException(e);
     } finally {
       cleanupExecutionContext();

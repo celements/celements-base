@@ -2,6 +2,7 @@ package com.celements.init;
 
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.google.common.base.Preconditions.*;
+import static com.xpn.xwiki.XWikiConstant.*;
 import static com.xpn.xwiki.user.api.XWikiRightService.*;
 
 import java.util.concurrent.CompletableFuture;
@@ -24,12 +25,11 @@ import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
-import org.xwiki.model.reference.WikiReference;
 
+import com.celements.init.update.WikiUpdater;
 import com.celements.init.wiki.WikiCreator;
 import com.celements.init.wiki.WikiCreator.WikiCreationException;
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.internal.XWikiExecutionContextInitializer;
 import com.xpn.xwiki.store.XWikiCacheStoreInterface;
@@ -54,8 +54,8 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
   private final ExecutionContextManager executionManager;
   private final ComponentManager componentManager;
   private final XWikiHibernateStore hibernateStore;
-  private final XWikiConfigSource xwikiCfg;
   private final WikiCreator wikiCreator;
+  private final WikiUpdater wikiUpdater;
   private final ListableBeanFactory beanFactory;
 
   @Inject
@@ -65,16 +65,16 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
       ExecutionContextManager executionManager,
       ComponentManager componentManager,
       @Named("hibernate") XWikiStoreInterface hibernateStore,
-      XWikiConfigSource xwikiCfg,
       WikiCreator wikiCreator,
+      WikiUpdater wikiUpdater,
       ListableBeanFactory beanFactory) {
     this.servletContext = servletContext;
     this.execution = execution;
     this.executionManager = executionManager;
     this.componentManager = componentManager;
     this.hibernateStore = (XWikiHibernateStore) hibernateStore;
-    this.xwikiCfg = xwikiCfg;
     this.wikiCreator = wikiCreator;
+    this.wikiUpdater = wikiUpdater;
     this.beanFactory = beanFactory;
   }
 
@@ -109,7 +109,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
     ExecutionContext eCtx = createExecutionContext();
     LOGGER.debug("initialising hibernate...");
     hibernateStore.initHibernate();
-    var postActions = wikiCreator.ensureWikiDeferred(getMainWikiRef());
+    var postActions = wikiCreator.ensureWikiDeferred(MAIN_WIKI);
     LOGGER.debug("initialising ExecutionContext...");
     executionManager.initialize(eCtx);
     LOGGER.debug("initialising XWiki...");
@@ -121,9 +121,7 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
       LOGGER.debug("post main wiki creation action...");
       action.run();
       LOGGER.debug("flushing store caches...");
-      // prevents borked XWikiPreferences
-      beanFactory.getBeansOfType(XWikiCacheStoreInterface.class).values()
-          .forEach(XWikiCacheStoreInterface::flushCache);
+      flushCacheStores();
     });
     return xwiki;
   }
@@ -137,8 +135,11 @@ public class CelementsBootstrap implements ApplicationListener<CelementsStartedE
     return executionCtx;
   }
 
-  WikiReference getMainWikiRef() {
-    return new WikiReference(xwikiCfg.getMainWikiName());
+  // prevents borked XWikiPreferences
+  private void flushCacheStores() {
+    wikiUpdater.awaitCompletion(MAIN_WIKI); // don't flush caches while wiki updaters still operate
+    beanFactory.getBeansOfType(XWikiCacheStoreInterface.class).values()
+        .forEach(XWikiCacheStoreInterface::flushCache);
   }
 
   public class CelementsBootstrapException extends RuntimeException {
