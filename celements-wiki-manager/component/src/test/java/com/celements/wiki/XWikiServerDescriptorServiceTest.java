@@ -1,4 +1,4 @@
-package com.celements.wiki.service;
+package com.celements.wiki;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -9,17 +9,20 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
+import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.util.ModelUtils;
 import com.xpn.xwiki.XWikiConstant;
 
-public class WikiManagerServiceTest extends AbstractComponentTest {
+public class XWikiServerDescriptorServiceTest extends AbstractComponentTest {
 
-  private WikiManagerService service;
+  private WikiDescriptorService service;
 
   @Before
-  public void prepare() throws Exception {
-    registerComponentMock(ModelUtils.class);
-    service = getSpringContext().getBean(WikiManagerService.class);
+  public void prepareTest() throws Exception {
+    registerComponentMocks(
+        ModelUtils.class,
+        IModelAccessFacade.class);
+    service = getBeanFactory().getBean(WikiDescriptorService.class);
   }
 
   @Test
@@ -30,12 +33,12 @@ public class WikiManagerServiceTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_getWikiConfigDocRef_mainWiki() {
+  public void test_getDescriptorDocRef_mainWiki() {
     expect(getMock(ModelUtils.class).getMainWikiRef()).andReturn(new WikiReference("unkownMain"));
     expect(getMock(ModelUtils.class).normalizeWikiRef(eq(XWikiConstant.MAIN_WIKI)))
         .andReturn(new WikiReference("main"));
     replayDefault();
-    DocumentReference configDocRef = service.getWikiConfigDocRef(XWikiConstant.MAIN_WIKI);
+    DocumentReference configDocRef = service.getDescriptorDocRef(XWikiConstant.MAIN_WIKI);
     verifyDefault();
     assertEquals("XWikiServerMain", configDocRef.getName());
   }

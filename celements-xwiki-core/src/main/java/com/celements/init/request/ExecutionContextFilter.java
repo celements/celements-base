@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.xwiki.container.servlet.ServletContainerException;
 import org.xwiki.context.ExecutionContextException;
 
-import com.celements.wiki.WikiMissingException;
+import com.celements.wiki.exception.WikiMissingException;
 
 public class ExecutionContextFilter implements Filter {
 

@@ -1,4 +1,4 @@
-package com.celements.wiki.service;
+package com.celements.wiki;
 
 import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
@@ -21,14 +21,14 @@ import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.object.xwiki.XWikiObjectFetcher;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
-import com.celements.wiki.WikiMissingException;
 import com.celements.wiki.classes.XWikiServerClass;
+import com.celements.wiki.exception.WikiMissingException;
 import com.xpn.xwiki.doc.XWikiDocument;
 
 @Service
-public class WikiManagerService {
+public class XWikiServerDescriptorService implements WikiDescriptorService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WikiManagerService.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(XWikiServerDescriptorService.class);
 
   public static final String DOC_NAME_PREFIX = "XWikiServer";
 
@@ -36,15 +36,16 @@ public class WikiManagerService {
   private final IModelAccessFacade modelAccess;
 
   @Inject
-  public WikiManagerService(
+  public XWikiServerDescriptorService(
       ModelUtils modelUtils,
       IModelAccessFacade modelAccess) {
     this.modelUtils = modelUtils;
     this.modelAccess = modelAccess;
   }
 
+  @Override
   @NotNull
-  public DocumentReference getWikiConfigDocRef(@NotNull WikiReference wikiRef) {
+  public DocumentReference getDescriptorDocRef(@NotNull WikiReference wikiRef) {
     WikiReference normWikiRef = modelUtils.normalizeWikiRef(wikiRef);
     checkNotNull(normWikiRef);
     return RefBuilder.create()
@@ -55,6 +56,7 @@ public class WikiManagerService {
         .build(DocumentReference.class);
   }
 
+  @Override
   public boolean isOicdEnabled(@NotNull WikiReference wikiRef) {
     return getWikiConfigOptional(wikiRef)
         .flatMap(fetcher -> fetcher.fetchField(XWikiServerClass.FIELD_OICD_ACTIVE)
@@ -76,7 +78,7 @@ public class WikiManagerService {
   private XWikiObjectFetcher getWikiConfig(@NotNull WikiReference wikiRef)
       throws WikiMissingException {
     try {
-      XWikiDocument cfgDoc = modelAccess.getDocument(getWikiConfigDocRef(wikiRef));
+      XWikiDocument cfgDoc = modelAccess.getDocument(getDescriptorDocRef(wikiRef));
       LOGGER.debug("return object-fetcher for {}", defer(cfgDoc::getDocRef));
       return XWikiObjectFetcher.on(cfgDoc).filter(XWikiServerClass.CLASS_REF);
     } catch (DocumentNotExistsException exp) {

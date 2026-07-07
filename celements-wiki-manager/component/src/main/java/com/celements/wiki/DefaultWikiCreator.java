@@ -1,4 +1,4 @@
-package com.celements.init.wiki;
+package com.celements.wiki;
 
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.xpn.xwiki.user.api.XWikiRightService.*;
@@ -20,18 +20,20 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.init.XWikiProvider;
 import com.celements.init.update.WikiUpdater;
-import com.celements.wiki.WikiMissingException;
 import com.celements.wiki.event.WikiCreatedEvent;
 import com.celements.wiki.event.WikiCreatingEvent;
+import com.celements.wiki.exception.WikiCreationException;
+import com.celements.wiki.exception.WikiExistsException;
+import com.celements.wiki.exception.WikiMissingException;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.user.api.XWikiUser;
 
 @Component
-public class WikiCreator {
+public class DefaultWikiCreator implements WikiCreator {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WikiCreator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultWikiCreator.class);
 
   private final XWikiStoreInterface hibStore;
   private final XWikiProvider xwikiProvider;
@@ -40,7 +42,7 @@ public class WikiCreator {
   private final Execution execution;
 
   @Inject
-  public WikiCreator(
+  public DefaultWikiCreator(
       @Named("hibernate") XWikiStoreInterface hibStore,
       XWikiProvider xwikiProvider,
       WikiUpdater wikiUpdater,
@@ -57,18 +59,21 @@ public class WikiCreator {
     return xwikiProvider.get().map(XWiki::getStore).orElse(hibStore);
   }
 
+  @Override
   public void createWiki(WikiReference wikiRef) throws WikiCreationException {
     ensureWikiDeferred(wikiRef)
-        .orElseThrow(() -> new WikiCreationException("wiki [" + wikiRef.getName() + "] not empty"))
+        .orElseThrow(() -> new WikiExistsException(wikiRef))
         .run();
   }
 
+  @Override
   public boolean ensureWiki(WikiReference wikiRef) throws WikiCreationException {
     var postAction = ensureWikiDeferred(wikiRef);
     postAction.ifPresent(Runnable::run);
     return postAction.isPresent();
   }
 
+  @Override
   public Optional<Runnable> ensureWikiDeferred(WikiReference wikiRef) throws WikiCreationException {
     requireNonNull(wikiRef);
     createWikiIfMissing(wikiRef);
@@ -87,7 +92,7 @@ public class WikiCreator {
         LOGGER.debug("skipped wiki creation [{}], already exists", wikiRef);
       }
     } catch (XWikiException | HibernateException e) {
-      throw new WikiCreationException("failed to create wiki [" + wikiRef.getName() + "]", e);
+      throw new WikiCreationException(wikiRef, e);
     }
   }
 
@@ -101,7 +106,7 @@ public class WikiCreator {
       }
       return false;
     } catch (WikiMissingException | XWikiException | HibernateException e) {
-      throw new WikiCreationException("failed to init wiki [" + wikiRef.getName() + "]", e);
+      throw new WikiCreationException(wikiRef, e);
     }
   }
 
@@ -126,19 +131,6 @@ public class WikiCreator {
       wikiUpdater.getFuture(wikiRef).ifPresent(CompletableFuture::join);
     } finally {
       ectx.set(XWIKI_USER, userPrev);
-    }
-  }
-
-  public static class WikiCreationException extends Exception {
-
-    private static final long serialVersionUID = 1L;
-
-    public WikiCreationException(String message) {
-      super(message);
-    }
-
-    public WikiCreationException(String message, Throwable cause) {
-      super(message, cause);
     }
   }
 
