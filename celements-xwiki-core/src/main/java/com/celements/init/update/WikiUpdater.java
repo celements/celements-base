@@ -64,6 +64,14 @@ public class WikiUpdater {
     return Optional.ofNullable(wikiUpdates.get(wiki));
   }
 
+  public void awaitCompletion(WikiReference wikiRef) {
+    CompletableFuture<Void> none = CompletableFuture.completedFuture(null);
+    CompletableFuture<Void> awaited;
+    do {
+      (awaited = getFuture(wikiRef).orElse(none)).join();
+    } while (awaited != getFuture(wikiRef).orElse(none));
+  }
+
   public Map<WikiReference, CompletableFuture<Void>> getAllFutures() {
     return Collections.unmodifiableMap(wikiUpdates);
   }
