@@ -65,10 +65,12 @@ public class WikiDescriptorUpdater implements ApplicationListener<WikiEvent>, Or
   private void createDescriptors(WikiReference wikiRef) {
     var host = determineHost();
     try {
+      var hostPrefix = wikiRef.getName();
       if (modelUtils.isMainWiki(wikiRef)) {
         descriptorService.createDescriptor(wikiRef, host);
+        hostPrefix = xwikiCfg.getMainWikiName(); // prefix 'main' and not 'xwiki'
       }
-      descriptorService.createDescriptor(wikiRef, wikiRef.getName() + "." + host);
+      descriptorService.createDescriptor(wikiRef, hostPrefix + "." + host);
     } catch (WikiDescriptorException exc) {
       LOGGER.error("failed to create wiki descriptors for [{}]", wikiRef, exc);
     }
