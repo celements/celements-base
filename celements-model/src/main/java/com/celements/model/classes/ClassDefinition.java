@@ -11,12 +11,11 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.classes.fields.ClassField;
-import com.google.common.collect.ImmutableList;
 
 @ComponentRole
 public interface ClassDefinition extends ClassIdentity {
 
-  ImmutableList<String> LANG_FIELD_NAMES = ImmutableList.of("lang", "language");
+  List<String> LANG_FIELD_NAMES = List.of("lang", "language");
 
   String CFG_SRC_KEY = "celements.classdefinition.blacklist";
 

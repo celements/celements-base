@@ -144,7 +144,8 @@ public class DefaultWikiCreatorTest extends AbstractComponentTest {
       assertEquals(wikiRef.getName(), xcontext.getDatabase());
       return null;
     }).once();
-    expect(wikiUpdater.getFuture(wikiRef)).andReturn(Optional.empty()).once();
+    wikiUpdater.awaitCompletion(wikiRef);
+    expectLastCall().once();
     eventPublisher.publishEvent(isA(WikiCreatedEvent.class));
     expectLastCall().andAnswer(() -> {
       WikiCreatedEvent event = (WikiCreatedEvent) getCurrentArguments()[0];

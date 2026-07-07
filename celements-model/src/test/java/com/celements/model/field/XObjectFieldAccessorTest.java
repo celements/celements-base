@@ -1,13 +1,15 @@
 package com.celements.model.field;
 
 import static com.celements.common.test.CelementsTestUtils.*;
-import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
+
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.common.test.ExceptionAsserter;
@@ -32,15 +34,14 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     accessor = (XObjectFieldAccessor) Utils.getComponent(FieldAccessor.class,
         XObjectFieldAccessor.NAME);
     testClassDef = Utils.getComponent(ClassDefinition.class, TestClassDefinition.NAME);
-    expectClass(testClassDef);
+    expectClass(testClassDef, getXContext().getWikiRef());
   }
 
-  private static BaseClass expectClass(ClassDefinition classDef) throws XWikiException {
-    BaseClass bClass = expectNewBaseObject(classDef.getDocRef());
-    for (ClassField<?> field : classDef.getFields()) {
-      expect(bClass.get(field.getName())).andReturn(field.getXField()).anyTimes();
-    }
-    return bClass;
+  private BaseClass expectClass(ClassDefinition classDef, WikiReference wikiRef)
+      throws XWikiException {
+    BaseClass bClass = expectNewBaseObject(classDef.getDocRef(wikiRef));
+    return expectPropertyClasses(bClass, classDef.getFields().stream()
+        .collect(Collectors.toMap(ClassField::getName, ClassField::getXField)));
   }
 
   @Test
@@ -90,14 +91,14 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     final ClassField<String> field = TestClassDefinition.FIELD_MY_STRING;
     final BaseObject obj = new BaseObject();
     obj.setXClassReference(new ClassReference("space", "class"));
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
+    new ExceptionAsserter<>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
         accessor.get(obj, field);
       }
     }.evaluate();
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
+    new ExceptionAsserter<>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
@@ -111,14 +112,14 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     final ClassField<String> field = XWikiDocumentClass.FIELD_CONTENT;
     final BaseObject obj = new BaseObject();
     obj.setXClassReference(new ClassReference("space", "class"));
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
+    new ExceptionAsserter<>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
         accessor.get(obj, field);
       }
     }.evaluate();
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
+    new ExceptionAsserter<>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
@@ -132,7 +133,7 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
     final BaseObject obj = new BaseObject();
     final ClassReference classRef = testClassDef.getClassReference();
     obj.setXClassReference(classRef);
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
+    new ExceptionAsserter<>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
@@ -140,7 +141,7 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
       }
     }.evaluate();
     final DocumentReference docRef = new DocumentReference("wiki", "space", "doc");
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
+    new ExceptionAsserter<>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {
@@ -148,7 +149,7 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
       }
     }.evaluate();
     final Integer number = 5;
-    new ExceptionAsserter<FieldAccessException>(FieldAccessException.class) {
+    new ExceptionAsserter<>(FieldAccessException.class) {
 
       @Override
       protected void execute() throws FieldAccessException {

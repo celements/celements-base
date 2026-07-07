@@ -5,6 +5,8 @@ import static com.celements.model.classes.TestClassDefinition.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
+import java.util.stream.Collectors;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
@@ -40,10 +42,8 @@ public class BeanXDocMarshallerTest extends AbstractComponentTest {
   private BaseClass expectClass(ClassDefinition classDef, WikiReference wikiRef)
       throws XWikiException {
     BaseClass bClass = expectNewBaseObject(classDef.getDocRef(wikiRef));
-    for (ClassField<?> field : classDef.getFields()) {
-      expect(bClass.get(field.getName())).andReturn(field.getXField()).anyTimes();
-    }
-    return bClass;
+    return expectPropertyClasses(bClass, classDef.getFields().stream()
+        .collect(Collectors.toMap(ClassField::getName, ClassField::getXField)));
   }
 
   @Test

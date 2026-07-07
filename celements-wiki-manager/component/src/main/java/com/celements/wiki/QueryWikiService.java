@@ -159,7 +159,7 @@ public class QueryWikiService implements WikiService {
     return wikiRef;
   }
 
-  private Optional<URI> toUri(Integer secure, String host) {
+  public Optional<URI> toUri(Integer secure, String host) {
     try {
       return Optional.of(UriComponentsBuilder.newInstance()
           .scheme(Optional.ofNullable(secure)

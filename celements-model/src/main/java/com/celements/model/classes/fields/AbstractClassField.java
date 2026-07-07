@@ -17,7 +17,6 @@ import org.xwiki.model.reference.ClassReference;
 
 import com.celements.model.classes.ClassDefinition;
 import com.google.common.base.Strings;
-import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 
 /**
@@ -124,7 +123,7 @@ public abstract class AbstractClassField<T> implements ClassField<T> {
   }
 
   @Override
-  public PropertyInterface getXField() {
+  public PropertyClass getXField() {
     PropertyClass element = getPropertyClass();
     element.setName(name);
     if (prettyName != null) {

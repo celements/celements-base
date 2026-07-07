@@ -44,6 +44,11 @@
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
+      <artifactId>celements-spring-security</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
       <artifactId>celements-wiki-api</artifactId>
     </dependency>
     <dependency>

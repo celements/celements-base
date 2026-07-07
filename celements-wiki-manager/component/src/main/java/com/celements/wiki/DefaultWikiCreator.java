@@ -5,7 +5,6 @@ import static com.xpn.xwiki.user.api.XWikiRightService.*;
 import static java.util.Objects.*;
 
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -128,7 +127,7 @@ public class DefaultWikiCreator implements WikiCreator {
     XWikiUser userPrev = ectx.set(XWIKI_USER, new XWikiUser(SUPERADMIN_FQN, true));
     try {
       eventPublisher.publishEvent(new WikiCreatingEvent(wikiRef));
-      wikiUpdater.getFuture(wikiRef).ifPresent(CompletableFuture::join);
+      wikiUpdater.awaitCompletion(wikiRef);
     } finally {
       ectx.set(XWIKI_USER, userPrev);
     }
