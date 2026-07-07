@@ -1,4 +1,4 @@
-package com.celements.init.wiki;
+package com.celements.wiki;
 
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.xpn.xwiki.user.api.XWikiRightService.*;
@@ -14,16 +14,18 @@ import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.test.AbstractComponentTest;
 import com.celements.init.XWikiProvider;
 import com.celements.init.update.WikiUpdater;
 import com.celements.wiki.event.WikiCreatedEvent;
 import com.celements.wiki.event.WikiCreatingEvent;
+import com.celements.wiki.exception.WikiExistsException;
+import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.store.XWikiStoreInterface;
-import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.user.api.XWikiUser;
 
-public class WikiCreatorTest extends AbstractComponentTest {
+public class DefaultWikiCreatorTest extends AbstractComponentTest {
 
   private XWikiProvider xwikiProvider;
   private XWikiStoreInterface store;
@@ -31,7 +33,8 @@ public class WikiCreatorTest extends AbstractComponentTest {
   private ApplicationEventPublisher eventPublisher;
   private ExecutionContext ectx;
   private XWikiContext xcontext;
-  private WikiCreator wikiCreator;
+  private XWiki xwiki;
+  private DefaultWikiCreator wikiCreator;
 
   @Before
   public void prepareTest() throws Exception {
@@ -40,8 +43,9 @@ public class WikiCreatorTest extends AbstractComponentTest {
     wikiUpdater = registerComponentMock(WikiUpdater.class);
     eventPublisher = registerComponentMock(ApplicationEventPublisher.class);
     ectx = getComponentManager().lookup(Execution.class).getContext();
-    xcontext = getContext();
-    wikiCreator = getBeanFactory().getBean(WikiCreator.class);
+    xcontext = getXContext();
+    xwiki = xcontext.getWiki();
+    wikiCreator = getBeanFactory().getBean(DefaultWikiCreator.class);
   }
 
   @Test
@@ -76,7 +80,7 @@ public class WikiCreatorTest extends AbstractComponentTest {
     expect(store.isWikiEmpty(wikiRef)).andReturn(false);
 
     replayDefault();
-    assertThrows(WikiCreator.WikiCreationException.class, () -> wikiCreator.createWiki(wikiRef));
+    assertThrows(WikiExistsException.class, () -> wikiCreator.createWiki(wikiRef));
     verifyDefault();
   }
 
@@ -121,8 +125,8 @@ public class WikiCreatorTest extends AbstractComponentTest {
   }
 
   private void expectStoreFromXWiki(int times) {
-    expect(xwikiProvider.get()).andReturn(Optional.of(getWikiMock())).times(times);
-    expect(getWikiMock().getStore()).andReturn(store).times(times);
+    expect(xwikiProvider.get()).andReturn(Optional.of(xwiki)).times(times);
+    expect(xwiki.getStore()).andReturn(store).times(times);
   }
 
   private void expectFallbackStore(int times) {
@@ -140,7 +144,8 @@ public class WikiCreatorTest extends AbstractComponentTest {
       assertEquals(wikiRef.getName(), xcontext.getDatabase());
       return null;
     }).once();
-    expect(wikiUpdater.getFuture(wikiRef)).andReturn(Optional.empty()).once();
+    wikiUpdater.awaitCompletion(wikiRef);
+    expectLastCall().once();
     eventPublisher.publishEvent(isA(WikiCreatedEvent.class));
     expectLastCall().andAnswer(() -> {
       WikiCreatedEvent event = (WikiCreatedEvent) getCurrentArguments()[0];

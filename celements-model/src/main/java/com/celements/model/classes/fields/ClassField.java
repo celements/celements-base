@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 import org.xwiki.model.reference.ClassReference;
 
 import com.celements.model.classes.ClassDefinition;
-import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.PropertyClass;
 
 public interface ClassField<T> {
 
@@ -26,7 +26,7 @@ public interface ClassField<T> {
   Class<T> getType();
 
   @NotNull
-  PropertyInterface getXField();
+  PropertyClass getXField();
 
   @NotNull
   String serialize();

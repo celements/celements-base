@@ -8,7 +8,7 @@ import org.xwiki.model.reference.ClassReference;
 
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.object.ObjectFetcher;
-import com.xpn.xwiki.objects.PropertyInterface;
+import com.xpn.xwiki.objects.classes.PropertyClass;
 
 /**
  * A plain {@link ClassField} without the necessity of a backing {@link ClassDefinition}.
@@ -49,7 +49,7 @@ public class PlainClassField<T> implements ClassField<T> {
   }
 
   @Override
-  public PropertyInterface getXField() {
+  public PropertyClass getXField() {
     throw new UnsupportedOperationException("PlainClassField not generateable");
   }
 

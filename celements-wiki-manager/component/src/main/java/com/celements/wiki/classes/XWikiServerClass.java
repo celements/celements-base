@@ -18,6 +18,8 @@ import com.celements.model.classes.fields.list.DisplayType;
 import com.celements.model.classes.fields.list.ListOfUsersField;
 import com.celements.model.classes.fields.list.single.EnumSingleListField;
 import com.celements.model.classes.fields.list.single.StringSingleListField;
+import com.celements.wiki.WikiDescriptor.State;
+import com.celements.wiki.WikiDescriptor.Visibility;
 import com.celements.web.classes.oldcore.IOldCoreClassDef;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.user.api.XWikiUser;
@@ -31,14 +33,6 @@ public class XWikiServerClass extends AbstractClassDefinition implements ClassDe
   public static final String CLASS_FN = IOldCoreClassDef.CLASS_SPACE + "." + CLASS_NAME;
   public static final String CLASS_DEF_HINT = CLASS_FN;
   public static final ClassReference CLASS_REF = new ClassReference(CLASS_SPACE, CLASS_NAME);
-
-  public enum Visibility {
-    PUBLIC, PRIVATE
-  }
-
-  public enum State {
-    ACTIVE, INACTIVE, LOCKED
-  }
 
   public static final ClassField<String> FIELD_PRETTY_NAME = new StringField.Builder(
       CLASS_REF, "wikiprettyname")

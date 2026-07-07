@@ -8,32 +8,29 @@
     <version>7.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>celements-config-source-api</artifactId>
+  <artifactId>celements-wiki-api</artifactId>
   <version>7.1-SNAPSHOT</version>
-  <description>Celements Configuration Source API</description>
+  <description>Celements Wiki API</description>
   <dependencies>
-
-    <!-- celements -->
     <dependency>
       <groupId>com.celements</groupId>
-      <artifactId>celements-commons</artifactId>
+      <artifactId>celements-reference</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-component</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
+      <artifactId>jackson-annotations</artifactId>
     </dependency>
   </dependencies>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
-    <url>https://github.com/celements/celements-base/celements-config-source-api</url>
+    <url>https://github.com/celements/celements-base/celements-wiki-api</url>
     <tag>HEAD</tag>
   </scm>
 </project>

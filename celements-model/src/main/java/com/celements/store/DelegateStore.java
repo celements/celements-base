@@ -18,7 +18,7 @@ import org.xwiki.query.QueryManager;
 
 import com.celements.configuration.CelementsAllPropertiesConfigurationSource;
 import com.celements.model.metadata.DocumentMetaData;
-import com.celements.wiki.WikiMissingException;
+import com.celements.wiki.exception.WikiMissingException;
 import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;

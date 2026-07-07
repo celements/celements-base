@@ -27,8 +27,8 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 
 import com.celements.init.update.WikiUpdater;
-import com.celements.init.wiki.WikiCreator;
-import com.celements.init.wiki.WikiCreator.WikiCreationException;
+import com.celements.wiki.WikiCreator;
+import com.celements.wiki.exception.WikiCreationException;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.internal.XWikiExecutionContextInitializer;
