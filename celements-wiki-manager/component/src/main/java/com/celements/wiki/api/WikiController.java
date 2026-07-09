@@ -10,6 +10,7 @@ import javax.inject.Inject;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ import com.celements.wiki.exception.WikiMissingException;
 
 @RestController
 @RequestMapping("/v1/wikis")
+@PreAuthorize("permitAll()") // endpoints are protected by requireSuperAdmin checks
 public class WikiController extends AuthenticatedBaseController {
 
   private final WikiService wikiService;

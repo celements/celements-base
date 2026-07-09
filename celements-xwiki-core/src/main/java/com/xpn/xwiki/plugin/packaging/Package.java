@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,6 +67,7 @@ import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.web.Utils;
 
 import net.sf.json.JSONObject;
+import one.util.streamex.StreamEx;
 
 public class Package {
 
@@ -186,7 +188,7 @@ public class Package {
   }
 
   public List<DocumentInfo> getFiles() {
-    return this.files;
+    return files;
   }
 
   public List<DocumentInfo> getCustomMappingFiles() {
@@ -242,7 +244,7 @@ public class Package {
       return false;
     }
     LOG.debug("add - doc [{}:{}]", doc.getFullName(), doc.getLanguage());
-    for (DocumentInfo di : this.files) {
+    for (DocumentInfo di : getFiles()) {
       if (di.getFullName().equals(doc.getFullName())
           && (di.getLanguage().equals(doc.getLanguage()))) {
         if (defaultAction != DocumentInfo.ACTION_NOT_DEFINED) {
@@ -263,7 +265,7 @@ public class Package {
 
       DocumentInfo docinfo = new DocumentInfo(doc, checkEditRights);
       docinfo.setAction(defaultAction);
-      this.files.add(docinfo);
+      getFiles().add(docinfo);
       BaseClass bclass = doc.getxWikiClass();
       if (bclass.getFieldList().size() > 0) {
         this.classFiles.add(docinfo);
@@ -333,12 +335,12 @@ public class Package {
   }
 
   public String export(OutputStream os, XWikiContext context) throws IOException, XWikiException {
-    if (this.files.size() == 0) {
+    if (getFiles().size() == 0) {
       return "No Selected file";
     }
 
     ZipOutputStream zos = new ZipOutputStream(os);
-    for (DocumentInfo docinfo : this.files) {
+    for (DocumentInfo docinfo : getFiles()) {
       XWikiDocument doc = docinfo.getDoc();
       addToZip(doc, zos, this.withVersions, context);
     }
@@ -357,7 +359,7 @@ public class Package {
           "Error creating directory {0}", null, args);
     }
 
-    for (DocumentInfo docinfo : this.files) {
+    for (DocumentInfo docinfo : getFiles()) {
       XWikiDocument doc = docinfo.getDoc();
       addToDir(doc, dir, this.withVersions, context);
     }
@@ -524,10 +526,7 @@ public class Package {
   }
 
   private void setDocumentDefaultAction(String docName, String language, int defaultAction) {
-    if (this.files == null) {
-      return;
-    }
-    for (DocumentInfo docInfo : this.files) {
+    for (DocumentInfo docInfo : getFiles()) {
       if (docInfo.getFullName().equals(docName) && docInfo.getLanguage().equals(language)) {
         docInfo.setAction(defaultAction);
         return;
@@ -542,12 +541,12 @@ public class Package {
 
     int result = DocumentInfo.INSTALL_IMPOSSIBLE;
     try {
-      if (this.files.size() == 0) {
+      if (getFiles().size() == 0) {
         return result;
       }
 
-      result = this.files.get(0).testInstall(isAdmin, context);
-      for (DocumentInfo docInfo : this.files) {
+      result = getFiles().get(0).testInstall(isAdmin, context);
+      for (DocumentInfo docInfo : getFiles()) {
         int res = docInfo.testInstall(isAdmin, context);
         if (res < result) {
           result = res;
@@ -598,7 +597,9 @@ public class Package {
     }
 
     // Install the remaining documents (without class definitions).
-    for (DocumentInfo docInfo : this.files) {
+    // sorting: ensure translations are always installed last
+    for (DocumentInfo docInfo : StreamEx.of(getFiles()).sorted(Comparator
+        .comparing((DocumentInfo doc) -> !doc.getLanguage().isEmpty()))) {
       if (!this.classFiles.contains(docInfo)
           && (installDocument(docInfo, isAdmin, backup, context) == DocumentInfo.INSTALL_ERROR)) {
         status = DocumentInfo.INSTALL_ERROR;
@@ -942,7 +943,7 @@ public class Package {
     Element elfiles = new DOMElement("files");
     wr.writeOpen(elfiles);
 
-    for (DocumentInfo docInfo : this.files) {
+    for (DocumentInfo docInfo : getFiles()) {
       Element elfile = new DOMElement("file");
       elfile.addAttribute("defaultAction", String.valueOf(docInfo.getAction()));
       elfile.addAttribute("language", String.valueOf(docInfo.getLanguage()));
@@ -1264,7 +1265,7 @@ public class Package {
 
     Map<String, Map<String, List<Map<String, String>>>> files = new HashMap<>();
 
-    for (DocumentInfo docInfo : this.files) {
+    for (DocumentInfo docInfo : getFiles()) {
       Map<String, String> fileInfos = new HashMap<>();
       fileInfos.put("defaultAction", String.valueOf(docInfo.getAction()));
       fileInfos.put("language", String.valueOf(docInfo.getLanguage()));

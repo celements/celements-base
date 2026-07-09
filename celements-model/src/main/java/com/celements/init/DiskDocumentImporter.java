@@ -30,6 +30,7 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.plugin.packaging.DocumentInfo;
 import com.xpn.xwiki.plugin.packaging.Package;
+import com.xpn.xwiki.plugin.packaging.PackageException;
 
 import one.util.streamex.StreamEx;
 
@@ -119,12 +120,15 @@ public class DiskDocumentImporter {
     var skipAll = true;
     for (DocumentInfo docInfo : importer.getFiles()) {
       var docRef = modelUtils.resolveRef(docInfo.getFullName(), DocumentReference.class);
-      var skip = !force && modelAccess.exists(docRef);
+      var skip = !force && modelAccess.existsLang(docRef, docInfo.getLanguage());
       docInfo.setAction(skip ? ACTION_SKIP : ACTION_OVERWRITE);
       skipAll &= skip;
     }
     if (!skipAll) {
-      importer.install(getXContext());
+      int status = importer.install(getXContext());
+      if ((status == INSTALL_ERROR) || (status == INSTALL_IMPOSSIBLE)) {
+        throw new PackageException(0, "Failed to import disk docs from [" + path + "]");
+      }
       LOGGER.debug("imported [{}]", path);
     } else {
       LOGGER.debug("skipped import [{}], nothing to do", path);
