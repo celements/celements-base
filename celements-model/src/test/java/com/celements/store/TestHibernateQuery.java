@@ -13,6 +13,7 @@ import org.easymock.IAnswer;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -104,10 +105,14 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
     return theQueryMock.setLockMode(alias, lockMode);
   }
 
-  @SuppressWarnings("rawtypes")
   @Override
-  protected Map getLockModes() {
+  public LockOptions getLockOptions() {
     throw new UnsupportedOperationException("getLockModes not supported");
+  }
+
+  @Override
+  public Query setLockOptions(LockOptions lockOptions) {
+    throw new UnsupportedOperationException("setLockModes not supported");
   }
 
   public static void expectLoadExistingDocs(Session sessionMock, List<Object[]> existingDocs) {
@@ -168,7 +173,7 @@ public abstract class TestHibernateQuery<T> extends AbstractQueryImpl {
     };
     expect(sessionMock.createQuery(eq(hql))).andReturn(queryProp).atLeastOnce();
     sessionMock.load(isA(PropertyInterface.class), isA(Serializable.class));
-    expectLastCall().andAnswer(new IAnswer<Object>() {
+    expectLastCall().andAnswer(new IAnswer<>() {
 
       @Override
       public Object answer() throws Throwable {
