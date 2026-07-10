@@ -26,8 +26,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.reference.EntityReference;
-
-import jakarta.ws.rs.core.UriBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public interface UrlService {
 
@@ -52,10 +51,10 @@ public interface UrlService {
       @Nullable String queryString);
 
   @NotNull
-  UriBuilder createURIBuilder(@NotNull EntityReference ref);
+  UriComponentsBuilder createURIBuilder(@NotNull EntityReference ref);
 
   @NotNull
-  UriBuilder createURIBuilder(@NotNull EntityReference ref, @Nullable String action);
+  UriComponentsBuilder createURIBuilder(@NotNull EntityReference ref, @Nullable String action);
 
   /**
    * CAUTION: incomplete implementation. Not all valid strut-actions are recognized
