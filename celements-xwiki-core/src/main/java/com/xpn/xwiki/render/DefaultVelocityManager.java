@@ -20,6 +20,8 @@
  */
 package com.xpn.xwiki.render;
 
+import static org.xwiki.velocity.VelocityExecutionProp.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -35,7 +37,6 @@ import org.xwiki.velocity.VelocityEngine;
 import org.xwiki.velocity.VelocityFactory;
 import org.xwiki.velocity.VelocityManager;
 import org.xwiki.velocity.XWikiVelocityException;
-import org.xwiki.velocity.internal.VelocityExecutionContextInitializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.api.Context;
@@ -69,8 +70,7 @@ public class DefaultVelocityManager implements VelocityManager {
     // The Velocity Context is set in VelocityRequestInterceptor, when the XWiki Request is
     // initialized so we are
     // guaranteed it is defined when this method is called.
-    VelocityContext vcontext = (VelocityContext) this.execution.getContext().getProperty(
-        VelocityExecutionContextInitializer.VELOCITY_CONTEXT_ID);
+    VelocityContext vcontext = this.execution.getContext().get(VELOCITY_CONTEXT).orElseThrow();
 
     // Bridge. To be removed later.
     if (vcontext.get("util") == null) {

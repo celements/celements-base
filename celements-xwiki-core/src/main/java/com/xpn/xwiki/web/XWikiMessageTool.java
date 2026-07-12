@@ -102,6 +102,9 @@ public class XWikiMessageTool {
    */
   protected XWikiContext context;
 
+  /** Optional language used instead of the current context language. */
+  private final String language;
+
   /**
    * Cache properties loaded from the document bundles for maximum efficiency. The map is of type
    * (Long, Properties)
@@ -137,8 +140,18 @@ public class XWikiMessageTool {
    *          documents
    */
   public XWikiMessageTool(ResourceBundle bundle, XWikiContext context) {
+    this(bundle, context, null);
+  }
+
+  /**
+   * @param language
+   *          the language used to resolve translated document bundles, or {@code null} to use the
+   *          current context language
+   */
+  public XWikiMessageTool(ResourceBundle bundle, XWikiContext context, String language) {
     this.bundle = bundle;
     this.context = context;
+    this.language = language;
   }
 
   /**
@@ -264,7 +277,7 @@ public class XWikiMessageTool {
       try {
         // First, looks for a document suffixed by the language
         docBundle = this.context.getWiki().getDocument(documentName, this.context);
-        docBundle = docBundle.getTranslatedDocument(this.context);
+        docBundle = getTranslatedDocument(docBundle);
       } catch (XWikiException e) {
         // Error while loading the document.
         // TODO: A runtime exception should be thrown that will bubble up till the
@@ -297,7 +310,7 @@ public class XWikiMessageTool {
       try {
         // First, looks for a document suffixed by the language
         XWikiDocument docBundle = this.context.getWiki().getDocument(documentName, this.context);
-        XWikiDocument tdocBundle = docBundle.getTranslatedDocument(this.context);
+        XWikiDocument tdocBundle = getTranslatedDocument(docBundle);
         list.add(tdocBundle);
         if (!tdocBundle.getRealLanguage().equals(defaultLanguage)) {
           XWikiDocument defdocBundle = docBundle.getTranslatedDocument(defaultLanguage,
@@ -316,6 +329,12 @@ public class XWikiMessageTool {
     }
 
     return list;
+  }
+
+  private XWikiDocument getTranslatedDocument(XWikiDocument document) throws XWikiException {
+    return (language != null)
+        ? document.getTranslatedDocument(language, context)
+        : document.getTranslatedDocument(context);
   }
 
   /**

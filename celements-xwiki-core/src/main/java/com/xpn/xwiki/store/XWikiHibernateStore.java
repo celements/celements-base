@@ -1003,17 +1003,17 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     // renderer uses context.getDoc().getSpace() to find out the space name if no
     // space is specified in the link. A better implementation would be to pass
     // explicitely the current space to the render() method.
-    ExecutionContext econtext = new ExecutionContext();
     Execution execution = Utils.getComponent(Execution.class);
     List<String> links;
     try {
       // Create new clean context to avoid wiki manager plugin requests in same session
-      XWikiContext renderContext = (XWikiContext) context.clone();
-      renderContext.setDoc(doc);
-      econtext.set(XWIKI_CONTEXT, renderContext);
-      Utils.getComponent(ExecutionContextManager.class).initialize(econtext);
+      ExecutionContext econtext = Utils.getComponent(ExecutionContextManager.class)
+          .clone(execution.getContext());
       execution.pushContext(econtext);
       try {
+        econtext.set(DOC, doc);
+        XWikiContext renderContext = econtext.get(XWIKI_CONTEXT)
+            .orElseThrow(IllegalStateException::new);
         XWikiRenderer renderer = renderContext.getWiki().getRenderingEngine().getRenderer("wiki");
         renderer.render(doc.getContent(), doc, doc, renderContext);
         links = (List<String>) renderContext.get("links");

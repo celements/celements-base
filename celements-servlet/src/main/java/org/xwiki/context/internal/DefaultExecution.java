@@ -20,9 +20,11 @@
  */
 package org.xwiki.context.internal;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.util.Stack;
 
-import org.xwiki.component.annotation.Component;
+import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 
@@ -41,27 +43,37 @@ public class DefaultExecution implements Execution {
 
   private final ThreadLocal<Stack<ExecutionContext>> context = new ThreadLocal<>();
 
+  private Stack<ExecutionContext> getOrCreateStack() {
+    Stack<ExecutionContext> stack = context.get();
+    if (stack == null) {
+      stack = new Stack<>();
+      context.set(stack);
+    }
+    return stack;
+  }
+
   @Override
-  public void pushContext(ExecutionContext context) {
-    this.context.get().push(context);
+  public void pushContext(ExecutionContext newContext) {
+    getOrCreateStack().push(checkNotNull(newContext));
   }
 
   @Override
   public void popContext() {
-    context.get().pop();
+    Stack<ExecutionContext> stack = context.get();
+    checkState((stack != null) && !stack.isEmpty(), "no execution context to pop");
+    stack.pop();
   }
 
   @Override
   public ExecutionContext getContext() {
     Stack<ExecutionContext> stack = context.get();
-    return stack == null ? null : stack.peek();
+    return (stack == null) || stack.isEmpty() ? null : stack.peek();
   }
 
   @Override
-  public void setContext(ExecutionContext context) {
-    Stack<ExecutionContext> stack = new Stack<>();
-    stack.push(context);
-    this.context.set(stack);
+  public void setContext(ExecutionContext newContext) {
+    removeContext();
+    pushContext(newContext);
   }
 
   @Override
