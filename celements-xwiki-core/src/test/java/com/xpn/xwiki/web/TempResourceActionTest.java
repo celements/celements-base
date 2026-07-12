@@ -19,17 +19,19 @@
  */
 package com.xpn.xwiki.web;
 
+import static org.easymock.EasyMock.*;
+
 import java.io.File;
 import java.io.IOException;
 
-import org.jmock.Expectations;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.container.ApplicationContext;
 import org.xwiki.container.Container;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 import junit.framework.Assert;
 
@@ -38,7 +40,7 @@ import junit.framework.Assert;
  *
  * @version $Id$
  */
-public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
+public class TempResourceActionTest extends AbstractComponentTest {
 
   /**
    * The action being tested.
@@ -50,43 +52,19 @@ public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
    */
   private File base;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see AbstractBridgedComponentTestCase#registerComponents()
-   */
-  @Override
-  protected void registerComponents() throws Exception {
-    super.registerComponents();
-
-    final Container mockContainer = registerMockComponent(Container.class);
-    final ApplicationContext mockAppContext = registerMockComponent(ApplicationContext.class);
-
-    getMockery().checking(new Expectations() {
-
-      {
-        ignoring(mockContainer).setApplicationContext(with(any(ApplicationContext.class)));
-        allowing(mockContainer).getApplicationContext();
-        will(returnValue(mockAppContext));
-        allowing(mockAppContext).getTemporaryDirectory();
-        will(returnValue(base));
-      }
-    });
+  @Before
+  public void prepareTest() throws Exception {
+    base = new File(getClass().getResource("/").toURI());
+    ApplicationContext applicationContext = createDefaultMock(ApplicationContext.class);
+    expect(applicationContext.getTemporaryDirectory()).andReturn(base).anyTimes();
+    replayDefault();
+    getBeanFactory().getBean(Container.class).setApplicationContext(applicationContext);
+    action = new TempResourceAction();
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see AbstractBridgedComponentTestCase#setUp()
-   */
-  @Override
-  @Before
-  public void setUp() throws Exception {
-    base = new File(getClass().getResource("/").toURI());
-
-    super.setUp();
-
-    action = new TempResourceAction();
+  @After
+  public void verifyTest() {
+    verifyDefault();
   }
 
   /**
@@ -109,7 +87,7 @@ public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
    * doesn't match the known pattern.
    */
   @Test
-  public void testGetTemporaryFileForBadURI() throws Exception {
+  public void test_getTemporaryFile_forBadURI() throws Exception {
     createEmptyFile("temp/secret.txt");
     Assert.assertNull(action.getTemporaryFile("/xwiki/bin/temp/secret.txt", getContext()));
   }
@@ -121,7 +99,7 @@ public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
    * folder).
    */
   @Test
-  public void testGetTemporaryFileForRelativeURI() throws Exception {
+  public void test_getTemporaryFile_forRelativeURI() throws Exception {
     createEmptyFile("temp/secret.txt");
     Assert.assertNull(
         action.getTemporaryFile("/xwiki/bin/temp/../../module/secret.txt", getContext()));
@@ -132,7 +110,7 @@ public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
    * missing.
    */
   @Test
-  public void testGetTemporaryFileMissing() throws Exception {
+  public void test_getTemporaryFile_missing() throws Exception {
     Assert.assertFalse(new File(base, "temp/module/xwiki/Space/Page/file.txt").exists());
     Assert.assertNull(
         action.getTemporaryFile("/xwiki/bin/temp/Space/Page/module/file.txt", getContext()));
@@ -143,7 +121,7 @@ public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
    * present.
    */
   @Test
-  public void testGetTemporaryFile() throws Exception {
+  public void test_getTemporaryFile() throws Exception {
     getContext().setDatabase("wiki");
     createEmptyFile("temp/module/wiki/Space/Page/file.txt");
     Assert.assertNotNull(
@@ -155,7 +133,7 @@ public class TempResourceActionTest extends AbstractBridgedComponentTestCase {
    * encoded.
    */
   @Test
-  public void testGetTemporaryFileForOverEncodedURL() throws Exception {
+  public void test_getTemporaryFile_forOverEncodedURL() throws Exception {
     createEmptyFile(
         "temp/officeviewer/xwiki/Sp*ace/Pa-ge/presentation.odp/presentation-slide0.jpg");
     Assert.assertNotNull(action.getTemporaryFile(

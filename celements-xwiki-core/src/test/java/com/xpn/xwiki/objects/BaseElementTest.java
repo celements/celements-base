@@ -24,17 +24,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for the {@link BaseElement} class.
  *
  * @version $Id$
  */
-public class BaseElementTest extends AbstractBridgedComponentTestCase {
+public class BaseElementTest extends AbstractComponentTest {
 
   @Test
-  public void testSetReferenceGetName() throws Exception {
+  public void test_setReference_getName() throws Exception {
     BaseElement baseElement = new BaseElement() {};
 
     baseElement.setDocumentReference(new DocumentReference("wiki", "space", "page"));

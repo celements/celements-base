@@ -20,9 +20,12 @@
  */
 package com.xpn.xwiki.objects.classes;
 
-import org.jmock.Mock;
-import org.jmock.core.Invocation;
-import org.jmock.core.stub.CustomStub;
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
@@ -30,49 +33,49 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.render.XWikiRenderingEngine;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiStoreInterface;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link com.xpn.xwiki.objects.classes.DBTreeListClass}.
  *
  * @version $Id$
  */
-public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
+public class DBTreeListClassTest extends AbstractComponentTest {
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
+  @Before
+  public void prepareTest() throws Exception {
     getContext().setDoc(new XWikiDocument());
 
     XWiki xwiki = new XWiki(false);
     xwiki.setConfig(new XWikiConfig());
 
-    Mock mockXWikiStore = mock(XWikiHibernateStore.class, new Class[] {}, new Object[] {});
-    xwiki.setStore((XWikiStoreInterface) mockXWikiStore.proxy());
+    XWikiStoreInterface store = createDefaultMock(XWikiHibernateStore.class);
+    registerComponentMock(XWikiStoreInterface.class, "hibernate", store);
+    xwiki.setStore(store);
 
-    Mock mockXWikiRenderingEngine = mock(XWikiRenderingEngine.class);
-    mockXWikiRenderingEngine.stubs().method("interpretText").will(
-        new CustomStub("Implements XWikiRenderingEngine.interpretText") {
-
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            return invocation.parameterValues.get(0);
-          }
-        });
-
-    xwiki.setRenderingEngine((XWikiRenderingEngine) mockXWikiRenderingEngine.proxy());
+    XWikiRenderingEngine renderingEngine = createDefaultMock(XWikiRenderingEngine.class);
+    expect(renderingEngine.interpretText(anyString(), same(getContext().getDoc()),
+        same(getContext()))).andAnswer(() -> getCurrentArgument(0)).anyTimes();
+    xwiki.setRenderingEngine(renderingEngine);
 
     getContext().setWiki(xwiki);
+    replayDefault();
   }
 
-  public void testGetQueryWhenNoSQLSCriptSpecified() {
+  @After
+  public void verifyTest() {
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getQuery_whenNoSqlScriptSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     assertEquals("select doc.name from XWikiDocument doc where 1 = 0",
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithSqlScriptSpecified() {
+  @Test
+  public void test_getQuery_withSqlScriptSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     assertEquals("", dbtlc.getSql());
     String sql = "select doc.name, doc.title, doc.creator from XWikiDocument as doc";
@@ -80,7 +83,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals(sql, dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithClassSpecified() {
+  @Test
+  public void test_getQuery_withClassSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setClassname("XWiki.XWikiUsers");
     assertEquals("select distinct doc.fullName, doc.fullName, doc.parent"
@@ -89,7 +93,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithClassAndParentSpecified() {
+  @Test
+  public void test_getQuery_withClassAndParentSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setClassname("XWiki.XWikiUsers");
     dbtlc.setParentField("obj.id");
@@ -99,7 +104,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdSpecified() {
+  @Test
+  public void test_getQuery_withIdSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setIdField("doc.name");
     assertEquals("select distinct doc.name, doc.name, doc.parent from XWikiDocument as doc",
@@ -114,7 +120,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdAndParentSpecified() {
+  @Test
+  public void test_getQuery_withIdAndParentSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setIdField("doc.name");
     dbtlc.setParentField("doc.name");
@@ -161,14 +168,16 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithValueSpecified() {
+  @Test
+  public void test_getQuery_withValueSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setValueField("doc.name");
     assertEquals("select distinct doc.name, doc.name, doc.parent from XWikiDocument as doc",
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdAndClassnameSpecified() {
+  @Test
+  public void test_getQuery_withIdAndClassnameSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setClassname("XWiki.XWikiUsers");
     dbtlc.setIdField("doc.name");
@@ -189,7 +198,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         + " and obj.id=idprop.id.id and idprop.id.name='property'", dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdParentAndClassnameSpecified() {
+  @Test
+  public void test_getQuery_withIdParentAndClassnameSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setClassname("XWiki.XWikiUsers");
     dbtlc.setParentField("doc.name");
@@ -253,7 +263,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdAndValueSpecified() {
+  @Test
+  public void test_getQuery_withIdAndValueSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setIdField("doc.name");
     dbtlc.setValueField("doc.name");
@@ -309,7 +320,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdValueAndParentSpecified() {
+  @Test
+  public void test_getQuery_withIdValueAndParentSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setIdField("doc.name");
     dbtlc.setValueField("doc.title");
@@ -326,7 +338,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdValueAndClassSpecified() {
+  @Test
+  public void test_getQuery_withIdValueAndClassSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setClassname("XWiki.XWikiUsers");
     dbtlc.setIdField("doc.name");
@@ -362,7 +375,8 @@ public class DBTreeListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dbtlc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdValueParentAndClassSpecified() {
+  @Test
+  public void test_getQuery_withIdValueParentAndClassSpecified() {
     DBTreeListClass dbtlc = new DBTreeListClass();
     dbtlc.setClassname("XWiki.XWikiUsers");
     dbtlc.setIdField("doc.name");

@@ -20,16 +20,17 @@
  */
 package com.xpn.xwiki.objects.classes;
 
+import static org.easymock.EasyMock.*;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jmock.Mock;
+import org.junit.Test;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.IntegerProperty;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.web.XWikiMessageTool;
 
 /**
@@ -37,26 +38,28 @@ import com.xpn.xwiki.web.XWikiMessageTool;
  *
  * @version $Id$
  */
-public class BooleanClassTest extends AbstractBridgedXWikiComponentTestCase {
+public class BooleanClassTest extends AbstractComponentTest {
 
   /** Test localization. */
-  public void testLocalization() {
+  @Test
+  public void test_localization() throws Exception {
     // Setup
     ResourceBundle bundle = ResourceBundle.getBundle("ApplicationResources", new Locale("en"));
-    Mock mockXWiki = mock(XWiki.class);
-    mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    mockXWiki.stubs().method("getLanguagePreference").will(returnValue("en"));
-    mockXWiki.stubs().method("getXWikiPreference").will(returnValue("Fake.Translations"));
-    mockXWiki.stubs().method("Param").will(returnValue(null));
+    expect(getWikiMock().getDefaultLanguage(same(getContext()))).andReturn("en").anyTimes();
+    expect(getWikiMock().getLanguagePreference(same(getContext()))).andReturn("en").anyTimes();
+    expect(getWikiMock().getXWikiPreference(anyString(), same(getContext())))
+        .andReturn("Fake.Translations").anyTimes();
+    expect(getWikiMock().Param(anyString())).andReturn(null).anyTimes();
     XWikiDocument translationDoc = new XWikiDocument();
     translationDoc
         .setContent("Some.Class_prop_0=Nay\nSome.Class_prop_1=Aye\nSome.Class_prop_2=Dunno\n");
     translationDoc.setLanguage("en");
     translationDoc.setDefaultLanguage("en");
     translationDoc.setNew(false);
-    mockXWiki.stubs().method("getDocument").will(returnValue(translationDoc));
+    expect(getWikiMock().getDocument(anyString(), same(getContext())))
+        .andReturn(translationDoc).anyTimes();
+    replayDefault();
 
-    this.getContext().setWiki((XWiki) mockXWiki.proxy());
     this.getContext().put("msg", new XWikiMessageTool(bundle, this.getContext()));
 
     // Create a Boolean meta-property and an associated object with a property instance
@@ -135,5 +138,6 @@ public class BooleanClassTest extends AbstractBridgedXWikiComponentTestCase {
     prop.setValue(2);
     metaProperty.displayView(out, "prop", "", obj, this.getContext());
     // assertEquals("Dunno", out.toString());
+    verifyDefault();
   }
 }

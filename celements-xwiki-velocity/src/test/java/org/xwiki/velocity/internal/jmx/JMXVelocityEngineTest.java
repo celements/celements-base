@@ -19,11 +19,17 @@
  */
 package org.xwiki.velocity.internal.jmx;
 
+import static org.easymock.EasyMock.*;
+
 import org.apache.velocity.VelocityContext;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 import org.junit.Test;
-import org.xwiki.test.AbstractComponentTestCase;
+import org.xwiki.velocity.VelocityConfiguration;
 import org.xwiki.velocity.VelocityEngine;
+
+import com.celements.velocity.test.AbstractComponentTest;
 
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
@@ -39,11 +45,27 @@ import java.util.Properties;
  * @version $Id$
  * @since 2.4M2
  */
-public class JMXVelocityEngineTest extends AbstractComponentTestCase {
+public class JMXVelocityEngineTest extends AbstractComponentTest {
+
+  private VelocityEngine engine;
+
+  @Before
+  public void prepareTest() throws Exception {
+    VelocityConfiguration configuration = registerComponentMock(VelocityConfiguration.class);
+    Properties properties = new Properties();
+    properties.setProperty("velocimacro.permissions.allow.inline.local.scope", "true");
+    expect(configuration.getProperties()).andReturn(properties);
+    engine = getBeanFactory().getBean(VelocityEngine.class);
+  }
+
+  @After
+  public void verifyTest() {
+    verifyDefault();
+  }
 
   @Test
-  public void testGetTemplates() throws Exception {
-    VelocityEngine engine = getComponentManager().lookup(VelocityEngine.class);
+  public void test_getTemplates() throws Exception {
+    replayDefault();
     engine.initialize(new Properties());
     JMXVelocityEngine jmxBean = new JMXVelocityEngine(engine);
 

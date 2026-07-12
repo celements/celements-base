@@ -1,26 +1,32 @@
 package com.xpn.xwiki.plugin.diff;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.suigeneris.jrcs.diff.delta.Chunk;
 import org.suigeneris.jrcs.diff.delta.Delta;
 
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Created by IntelliJ IDEA. User: ldubost Date: 1 mai 2007 Time: 15:06:14 To change this template
  * use File | Settings | File Templates.
  */
-public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
+public class DiffTest extends AbstractComponentTest {
 
   private DiffPlugin plugin;
 
-  @Override
-  protected void setUp() {
-    this.plugin = new DiffPlugin("diff", DiffPlugin.class.getName(), null);
+  @Before
+  public void prepareTest() {
+    plugin = new DiffPlugin("diff", DiffPlugin.class.getName(), null);
   }
 
-  public void testSimpleLineDiff() throws XWikiException {
+  @Test
+  public void test_simpleLineDiff() throws XWikiException {
     String text1 = "A";
     String text2 = "A B";
     List diffs = this.plugin.getDifferencesAsList(text1, text2);
@@ -32,7 +38,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
     assertEquals("Revised should be", "A B", revised.toString());
   }
 
-  public void testSimpleLineDiff2() throws XWikiException {
+  @Test
+  public void test_simpleLineDiff2() throws XWikiException {
     String text1 = "A\nB\nC";
     String text2 = "A\nB B\nC";
     List diffs = this.plugin.getDifferencesAsList(text1, text2);
@@ -44,7 +51,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
     assertEquals("Revised should be", "B B", revised.toString());
   }
 
-  public void testSimpleWordDiff() throws XWikiException {
+  @Test
+  public void test_simpleWordDiff() throws XWikiException {
     String text1 = "I love Paris";
     String text2 = "I live in Paris";
     List diffs = this.plugin.getWordDifferencesAsList(text1, text2);
@@ -59,7 +67,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
     assertEquals("Revised 1 should be", "livein", revised1.toString());
   }
 
-  public void testSimpleWordDiff2() throws XWikiException {
+  @Test
+  public void test_simpleWordDiff2() throws XWikiException {
     String text1 = "I love Paris and London";
     String text2 = "I live in Paris and London";
     List diffs = this.plugin.getWordDifferencesAsList(text1, text2);
@@ -72,7 +81,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
     assertEquals("Revised 1 should be", "livein", revised1.toString());
   }
 
-  public void testSimpleWordDiff3() throws XWikiException {
+  @Test
+  public void test_simpleWordDiff3() throws XWikiException {
     String text1 = "I love Paris and London";
     String text2 = "I love London and Paris";
     List diffs = this.plugin.getWordDifferencesAsList(text1, text2);
@@ -90,7 +100,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
     assertEquals("Revised 2 should be", "andParis", revised2.toString());
   }
 
-  public void testSimpleWordDiff4() throws XWikiException {
+  @Test
+  public void test_simpleWordDiff4() throws XWikiException {
     String text1 = "I love Paris and I like London";
     String text2 = "I love London and I like Paris";
     List diffs = this.plugin.getWordDifferencesAsList(text1, text2);
@@ -108,7 +119,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
     assertEquals("Revised 2 should be", "Paris", revised2.toString());
   }
 
-  public void testSimpleWordDiffAsHTML() throws XWikiException {
+  @Test
+  public void test_simpleWordDiffAsHTML() throws XWikiException {
     String text1 = "A";
     String text2 = "A B";
     String html = this.plugin.getWordDifferencesAsHTML(text1, text2);
@@ -118,7 +130,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
         html);
   }
 
-  public void testSimpleWordDiffAsHTML2() throws XWikiException {
+  @Test
+  public void test_simpleWordDiffAsHTML2() throws XWikiException {
     String text1 = "A C";
     String text2 = "A B";
     String html = this.plugin.getWordDifferencesAsHTML(text1, text2);
@@ -128,7 +141,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
         html);
   }
 
-  public void testSimpleWordDiffAsHTML3() throws XWikiException {
+  @Test
+  public void test_simpleWordDiffAsHTML3() throws XWikiException {
     String text1 = "A B C D E F";
     String text2 = "A C B D E G";
     String html = this.plugin.getWordDifferencesAsHTML(text1, text2);
@@ -138,7 +152,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
         html);
   }
 
-  public void testSimpleLineDiffAsHTML2() throws XWikiException {
+  @Test
+  public void test_simpleLineDiffAsHTML2() throws XWikiException {
     String text1 = "A C";
     String text2 = "A B";
     String html = this.plugin.getDifferencesAsHTML(text1, text2);
@@ -148,7 +163,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
         html);
   }
 
-  public void testSimpleLineDiffAsHTML3() throws XWikiException {
+  @Test
+  public void test_simpleLineDiffAsHTML3() throws XWikiException {
     String text1 = "A B C D E F";
     String text2 = "A C B D E G";
     String html = this.plugin.getDifferencesAsHTML(text1, text2);
@@ -158,7 +174,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
         html);
   }
 
-  public void testSimpleLineDiffAsHTML4() throws XWikiException {
+  @Test
+  public void test_simpleLineDiffAsHTML4() throws XWikiException {
     String text1 = "A B C\nD E F\nG H I\nJ K L\n";
     String text2 = "A B C\nG H I\nD E F\nJ K L\n";
     String html = this.plugin.getDifferencesAsHTML(text1, text2);
@@ -168,7 +185,8 @@ public class DiffTest extends org.jmock.cglib.MockObjectTestCase {
         html);
   }
 
-  public void testMultiLineDiffAsHTML() throws XWikiException {
+  @Test
+  public void test_multiLineDiffAsHTML() throws XWikiException {
     String text1 = "A\n";
     String text2 = "AA\nAB\n";
     String html = this.plugin.getDifferencesAsHTML(text1, text2);

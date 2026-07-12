@@ -19,6 +19,9 @@
  */
 package com.xpn.xwiki.plugin.packaging;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,39 +30,42 @@ import java.io.StringReader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.jmock.Mock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for the {@link com.xpn.xwiki.plugin.packaging.Package} class.
  *
  * @version $Id$
  */
-public class PackageTest extends AbstractBridgedXWikiComponentTestCase {
+public class PackageTest extends AbstractComponentTest {
 
   private Package pack;
 
-  private Mock mockXWiki;
+  @Before
+  public void prepareTest() throws Exception {
+    pack = new Package();
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    this.pack = new Package();
-
-    this.mockXWiki = mock(XWiki.class);
-    this.mockXWiki.stubs().method("getEncoding").will(returnValue("UTF-8"));
-    this.mockXWiki.stubs().method("checkAccess").will(returnValue(true));
+    expect(getWikiMock().getEncoding()).andReturn("UTF-8").anyTimes();
+    expect(getWikiMock().checkAccess(eq("edit"), anyObject(XWikiDocument.class),
+        same(getContext()))).andReturn(true).anyTimes();
 
     // clone calls getVersioningStore but returning null will be satisfactory for the test.
-    this.mockXWiki.stubs().method("getVersioningStore").will(returnValue(null));
-
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
+    expect(getWikiMock().getVersioningStore()).andReturn(null).anyTimes();
+    replayDefault();
   }
 
-  public void testImportWithHeterogeneousEncodingInFiles() throws Exception {
+  @After
+  public void verifyTest() {
+    verifyDefault();
+  }
+
+  @Test
+  public void test_import_withHeterogeneousEncodingInFiles() throws Exception {
     String docTitle = "Un \u00e9t\u00e9 36";
     String docContent = "\u00e0\u00e7\u00e9\u00e8\u00c0\u00c7\u00c9\u00c8\u00ef\u00f6\u00eb\u00fc";
 

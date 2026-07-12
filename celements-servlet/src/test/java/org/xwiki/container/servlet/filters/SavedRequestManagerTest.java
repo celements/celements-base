@@ -19,14 +19,14 @@
  */
 package org.xwiki.container.servlet.filters;
 
+import static org.easymock.EasyMock.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,39 +46,24 @@ public class SavedRequestManagerTest {
   /** Mocked request. */
   private HttpServletRequest request;
 
+  private HttpSession session;
+
   @Before
-  public void setUp() {
-    Mockery mockery = new Mockery();
-    final HttpSession mockSession = mockery.mock(HttpSession.class);
-    final HttpServletRequest mockRequest = mockery.mock(HttpServletRequest.class);
+  public void prepareTest() {
+    session = createMock(HttpSession.class);
+    request = createMock(HttpServletRequest.class);
     final Map<String, String[]> params = new HashMap<>();
     params.put("aaa", new String[] { "bbb" });
     params.put("srid", new String[] { "r4Nd0m" });
-    // request
-    mockery.checking(new Expectations() {
-
-      {
-        allowing(mockRequest).getSession();
-        will(returnValue(mockSession));
-        allowing(mockRequest).getParameterMap();
-        will(returnValue(params));
-        allowing(mockRequest).getRequestURL();
-        will(returnValue(new StringBuffer(TEST_URL)));
-        allowing(mockRequest).getParameter("srid");
-        will(returnValue("r4Nd0m"));
-      }
-    });
+    expect(request.getSession()).andReturn(session).anyTimes();
+    expect(request.getParameterMap()).andReturn(params).anyTimes();
+    expect(request.getRequestURL()).andReturn(new StringBuffer(TEST_URL)).anyTimes();
+    expect(request.getParameter("srid")).andReturn("r4Nd0m").anyTimes();
+    replay(request);
     final Map<String, SavedRequest> saveMap = new HashMap<>();
-    saveMap.put("r4Nd0m", new SavedRequest(mockRequest));
-    // session
-    mockery.checking(new Expectations() {
-
-      {
-        allowing(mockSession).getAttribute(with(any(String.class)));
-        will(returnValue(saveMap));
-      }
-    });
-    this.request = mockRequest;
+    saveMap.put("r4Nd0m", new SavedRequest(request));
+    expect(session.getAttribute(anyString())).andReturn(saveMap).anyTimes();
+    replay(session);
   }
 
   @Test

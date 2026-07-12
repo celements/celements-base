@@ -20,20 +20,25 @@
  */
 package com.xpn.xwiki.objects.classes;
 
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link StaticListClass}.
  *
  * @version $Id$
  */
-public class StaticListClassTest extends AbstractBridgedXWikiComponentTestCase {
+public class StaticListClassTest extends AbstractComponentTest {
 
   /**
    * Tests that {@link StaticListClass#getList} returns values sorted according to the property's
    * sort option.
    */
-  public void testGetListIsSorted() {
+  @Test
+  public void test_getList_isSorted() {
     StaticListClass listClass = new StaticListClass();
     listClass.setValues("a=A|c=D|d=C|b");
 

@@ -22,42 +22,39 @@ package org.xwiki.velocity.internal;
 import java.util.Arrays;
 import java.util.Properties;
 
+import static org.easymock.EasyMock.*;
+
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.tools.generic.ListTool;
-import org.jmock.Expectations;
+import org.junit.Before;
 import org.junit.Assert;
 import org.junit.Test;
-import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.test.AbstractMockingComponentTestCase;
-import org.xwiki.test.annotation.MockingRequirement;
 import org.xwiki.velocity.VelocityConfiguration;
 import org.xwiki.velocity.VelocityContextInitializer;
+
+import com.celements.velocity.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link DefaultVelocityContextFactory}.
  *
  * @version $Id$
  */
-public class DefaultVelocityContextFactoryTest extends AbstractMockingComponentTestCase {
+public class DefaultVelocityContextFactoryTest extends AbstractComponentTest {
 
-  @MockingRequirement
   private DefaultVelocityContextFactory factory;
 
-  /**
-   * @see org.xwiki.test.AbstractMockingComponentTestCase#configure()
-   */
-  public void configure() throws Exception {
-    final VelocityConfiguration configuration = getComponentManager()
-        .lookup(VelocityConfiguration.class);
-    final Properties properties = new Properties();
+  @Before
+  public void prepareTest() throws Exception {
+    VelocityConfiguration configuration = registerComponentMock(VelocityConfiguration.class);
+    VelocityContextInitializer initializer = registerComponentMock(
+        VelocityContextInitializer.class);
+    Properties properties = new Properties();
     properties.put("listtool", ListTool.class.getName());
-    getMockery().checking(new Expectations() {
-
-      {
-        allowing(configuration).getTools();
-        will(returnValue(properties));
-      }
-    });
+    expect(configuration.getTools()).andReturn(properties);
+    initializer.initialize(anyObject(VelocityContext.class));
+    expectLastCall().times(2);
+    replayDefault();
+    factory = getBeanFactory().getBean(DefaultVelocityContextFactory.class);
   }
 
   /**
@@ -68,21 +65,7 @@ public class DefaultVelocityContextFactoryTest extends AbstractMockingComponentT
    * contexts. Also verifies that Velocity Context Initializers are called.
    */
   @Test
-  public void testCreateDifferentContext() throws Exception {
-    // We also verify that the VelocityContextInitializers are called.
-    final VelocityContextInitializer mockInitializer = getMockery()
-        .mock(VelocityContextInitializer.class);
-    final ComponentManager mockComponentManager = getComponentManager()
-        .lookup(ComponentManager.class);
-    getMockery().checking(new Expectations() {
-
-      {
-        exactly(2).of(mockInitializer).initialize(with(any(VelocityContext.class)));
-        exactly(2).of(mockComponentManager).lookupList(VelocityContextInitializer.class);
-        will(returnValue(Arrays.asList(mockInitializer)));
-      }
-    });
-
+  public void test_createDifferentContext() throws Exception {
     VelocityContext context1 = this.factory.createContext();
     context1.put("param", "value");
     VelocityContext context2 = this.factory.createContext();
@@ -91,5 +74,6 @@ public class DefaultVelocityContextFactoryTest extends AbstractMockingComponentT
     Assert.assertNotNull(context1.get("listtool"));
     Assert.assertSame(context2.get("listtool"), context1.get("listtool"));
     Assert.assertNull(context2.get("param"));
+    verifyDefault();
   }
 }

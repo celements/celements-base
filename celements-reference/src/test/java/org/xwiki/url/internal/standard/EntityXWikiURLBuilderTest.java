@@ -22,17 +22,19 @@ package org.xwiki.url.internal.standard;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.junit.Before;
 import org.junit.Assert;
 import org.junit.Test;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.WikiReference;
-import org.xwiki.test.AbstractComponentTestCase;
 import org.xwiki.url.XWikiEntityURL;
 import org.xwiki.url.XWikiURL;
 import org.xwiki.url.XWikiURLType;
 import org.xwiki.url.standard.XWikiURLBuilder;
+
+import com.celements.reference.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link EntityXWikiURLBuilder}.
@@ -40,19 +42,19 @@ import org.xwiki.url.standard.XWikiURLBuilder;
  * @version $Id$
  * @since 2.3M1
  */
-public class EntityXWikiURLBuilderTest extends AbstractComponentTestCase {
+public class EntityXWikiURLBuilderTest extends AbstractComponentTest {
 
   private static final WikiReference WIKI_REFERENCE = new WikiReference("Wiki");
 
   private XWikiURLBuilder builder;
 
-  @Override
-  protected void registerComponents() throws Exception {
-    this.builder = getComponentManager().lookup(XWikiURLBuilder.class, "entity");
+  @Before
+  public void prepareTest() throws Exception {
+    builder = getBeanFactory().getBean("entity", XWikiURLBuilder.class);
   }
 
   @Test
-  public void testCreateXWikiURLWhenNoViewAction() throws Exception {
+  public void test_createXWikiURL_whenNoViewAction() throws Exception {
     XWikiURL xwikiURL = builder.build(WIKI_REFERENCE, Collections.<String>emptyList());
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Main", "WebHome"));
 
@@ -70,7 +72,7 @@ public class EntityXWikiURLBuilderTest extends AbstractComponentTestCase {
   }
 
   @Test
-  public void testCreateXWikiURLWhenViewAction() throws Exception {
+  public void test_createXWikiURL_whenViewAction() throws Exception {
     XWikiURL xwikiURL = builder.build(WIKI_REFERENCE, Arrays.asList("view", "Space", ""));
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "WebHome"));
 
@@ -90,7 +92,7 @@ public class EntityXWikiURLBuilderTest extends AbstractComponentTestCase {
   }
 
   @Test
-  public void testCreateXWikiURLWhenDownloadAction() throws Exception {
+  public void test_createXWikiURL_whenDownloadAction() throws Exception {
     XWikiURL xwikiURL = builder.build(WIKI_REFERENCE,
         Arrays.asList("download", "Space", "Page", "attachment.ext"));
     assertXWikiURL(xwikiURL, "download",

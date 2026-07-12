@@ -19,7 +19,9 @@
  */
 package com.xpn.xwiki.internal.cache;
 
-import org.jmock.Mock;
+import static org.easymock.EasyMock.*;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.cache.config.CacheConfiguration;
@@ -27,9 +29,8 @@ import org.xwiki.cache.eviction.EntryEvictionConfiguration;
 import org.xwiki.cache.eviction.LRUEvictionConfiguration;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 import junit.framework.Assert;
 
@@ -39,20 +40,15 @@ import junit.framework.Assert;
  * @version $Id$
  * @since 2.4M1
  */
-public class DefaultDocumentCacheTest extends AbstractBridgedXWikiComponentTestCase {
-
-  private Mock mockXWiki;
+public class DefaultDocumentCacheTest extends AbstractComponentTest {
 
   private XWikiDocument document;
 
   private DefaultDocumentCache<String> cache;
 
-  @Override
   @Before
-  public void setUp() throws Exception {
-    super.setUp();
-
-    this.cache = (DefaultDocumentCache<String>) getComponentManager().lookup(DocumentCache.class);
+  public void prepareTest() throws Exception {
+    cache = (DefaultDocumentCache<String>) getBeanFactory().getBean(DocumentCache.class);
 
     CacheConfiguration cacheConfiguration = new CacheConfiguration();
     cacheConfiguration.setConfigurationId("documentcachetest");
@@ -62,23 +58,19 @@ public class DefaultDocumentCacheTest extends AbstractBridgedXWikiComponentTestC
 
     this.document = new XWikiDocument(new DocumentReference("wiki", "space", "page"));
 
-    this.mockXWiki = mock(XWiki.class);
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
-
-    this.mockXWiki.stubs().method("getDocument")
-        .with(eq(this.document.getDocumentReference()), ANYTHING).will(
-            returnValue(this.document));
+    expect(getWikiMock().getDocument(eq(document.getDocumentReference()), same(getContext())))
+        .andReturn(document).anyTimes();
+    replayDefault();
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    this.cache.dispose();
-
-    super.tearDown();
+  @After
+  public void cleanUpTest() throws Exception {
+    cache.dispose();
+    verifyDefault();
   }
 
   @Test
-  public void testGetSet() throws InterruptedException {
+  public void test_getSet() throws InterruptedException {
     this.cache.set("data", this.document.getDocumentReference());
     this.cache.set("data2", this.document.getDocumentReference(), "ext1", "ext2");
 

@@ -21,39 +21,43 @@
  */
 package com.xpn.xwiki.web;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ListResourceBundle;
 
-import org.jmock.Mock;
-import org.jmock.core.Invocation;
-import org.jmock.core.stub.CustomStub;
+import org.easymock.IExpectationSetters;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for the {@link com.xpn.xwiki.web.XWikiMessageTool} class.
  *
  * @version $Id$
  */
-public class XWikiMessageToolTest extends AbstractBridgedXWikiComponentTestCase {
-
-  private Mock mockXWiki;
+public class XWikiMessageToolTest extends AbstractComponentTest {
 
   private XWikiMessageTool tool;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  private boolean mocksReplayed;
 
-    this.mockXWiki = mock(XWiki.class, new Class[] {}, new Object[] {});
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
+  @Before
+  public void prepareTest() throws Exception {
+    tool = new XWikiMessageTool(new TestResources(), getContext());
+  }
 
-    this.tool = new XWikiMessageTool(new TestResources(), getContext());
+  @After
+  public void verifyTest() {
+    if (mocksReplayed) {
+      verifyDefault();
+    }
   }
 
   public class TestResources extends ListResourceBundle {
@@ -69,18 +73,18 @@ public class XWikiMessageToolTest extends AbstractBridgedXWikiComponentTestCase 
   /**
    * When no preference exist the returned value is the value of the key.
    */
-  public void testGetWhenPreferenceDoesNotExist() {
-    this.mockXWiki.stubs().method("getXWikiPreference").will(returnValue(null));
-    this.mockXWiki.stubs().method("Param").will(returnValue(null));
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
+  @Test
+  public void test_get_whenPreferenceDoesNotExist() {
+    expectWiki(null, null);
+    replayMocks();
 
     assertEquals("invalid", this.tool.get("invalid"));
   }
 
-  public void testGetWhenNoTranslationAvailable() {
-    this.mockXWiki.stubs().method("getXWikiPreference").will(returnValue(null));
-    this.mockXWiki.stubs().method("Param").will(returnValue(null));
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
+  @Test
+  public void test_get_whenNoTranslationAvailable() {
+    expectWiki(null, null);
+    replayMocks();
 
     assertEquals("value", this.tool.get("key"));
   }
@@ -88,30 +92,31 @@ public class XWikiMessageToolTest extends AbstractBridgedXWikiComponentTestCase 
   /**
    * When the key is null the returned value is null.
    */
-  public void testGetWhenKeyIsNull() {
+  @Test
+  public void test_get_whenKeyIsNull() {
+    replayMocks();
     assertNull(this.tool.get(null));
   }
 
-  public void testGetWhenInXWikiPreferences() {
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    this.mockXWiki.stubs().method("getXWikiPreference")
-        .will(returnValue("Space1.Doc1, Space2.Doc2"));
-    this.mockXWiki.stubs().method("getDocument").with(eq("Space1.Doc1"), ANYTHING).will(
-        returnValue(createDocument(111111L, "Space1.Doc1", "somekey=somevalue", false)));
-    this.mockXWiki.stubs().method("getDocument").with(eq("Space2.Doc2"), ANYTHING).will(
-        returnValue(createDocument(222222L, "Space2.Doc2",
-            "someKey=someValue\n" + "keyInXWikiPreferences=eureka",
-            false)));
+  @Test
+  public void test_get_whenInXWikiPreferences() throws Exception {
+    expectWiki("Space1.Doc1, Space2.Doc2", null);
+    expect(getWikiMock().getDocument(eq("Space1.Doc1"), same(getContext())))
+        .andReturn(createDocument(111111L, "Space1.Doc1", "somekey=somevalue", false));
+    expect(getWikiMock().getDocument(eq("Space2.Doc2"), same(getContext())))
+        .andReturn(createDocument(222222L, "Space2.Doc2",
+            "someKey=someValue\nkeyInXWikiPreferences=eureka", false));
+    replayMocks();
 
     assertEquals("eureka", this.tool.get("keyInXWikiPreferences"));
   }
 
-  public void testGetWhenInXWikiConfigurationFile() {
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    this.mockXWiki.stubs().method("getXWikiPreference").will(returnValue(null));
-    this.mockXWiki.stubs().method("Param").will(returnValue("Space1.Doc1"));
-    this.mockXWiki.stubs().method("getDocument").with(eq("Space1.Doc1"), ANYTHING).will(
-        returnValue(createDocument(111111L, "Space1.Doc1", "keyInXWikiCfg=gotcha", false)));
+  @Test
+  public void test_get_whenInXWikiConfigurationFile() throws Exception {
+    expectWiki(null, "Space1.Doc1");
+    expect(getWikiMock().getDocument(eq("Space1.Doc1"), same(getContext())))
+        .andReturn(createDocument(111111L, "Space1.Doc1", "keyInXWikiCfg=gotcha", false));
+    replayMocks();
 
     assertEquals("gotcha", this.tool.get("keyInXWikiCfg"));
   }
@@ -119,14 +124,13 @@ public class XWikiMessageToolTest extends AbstractBridgedXWikiComponentTestCase 
   /**
    * Validate usage of parameters in bundles
    */
-  public void testGetWithParameters() {
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    this.mockXWiki.stubs().method("getXWikiPreference").will(returnValue(null));
-    this.mockXWiki.stubs().method("Param").will(returnValue("Space1.Doc1"));
-    this.mockXWiki.stubs().method("getDocument").with(eq("Space1.Doc1"), ANYTHING).will(
-        returnValue(createDocument(111111L, "Space1.Doc1",
-            "key=We have {0} new documents with {1} objects. {2}",
-            false)));
+  @Test
+  public void test_get_withParameters() throws Exception {
+    expectWiki(null, "Space1.Doc1");
+    expect(getWikiMock().getDocument(eq("Space1.Doc1"), same(getContext())))
+        .andReturn(createDocument(111111L, "Space1.Doc1",
+            "key=We have {0} new documents with {1} objects. {2}", false));
+    replayMocks();
 
     List<String> params = new ArrayList<>();
     params.add("12");
@@ -139,50 +143,42 @@ public class XWikiMessageToolTest extends AbstractBridgedXWikiComponentTestCase 
    * Verify that a document listed as a bundle document that doesn't exist is not returned as a
    * bundle document.
    */
-  public void testGetDocumentBundlesWhenDocumentDoesNotExist() {
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    this.mockXWiki.stubs().method("getXWikiPreference").will(returnValue("Space1.Doc1"));
-    this.mockXWiki.stubs().method("getDocument").with(eq("Space1.Doc1"), ANYTHING).will(
-        returnValue(createDocument(111111L, "Space1.Doc1", "", true)));
+  @Test
+  public void test_getDocumentBundles_whenDocumentDoesNotExist() throws Exception {
+    expectWiki("Space1.Doc1", null);
+    expect(getWikiMock().getDocument(eq("Space1.Doc1"), same(getContext())))
+        .andReturn(createDocument(111111L, "Space1.Doc1", "", true));
+    replayMocks();
     List<XWikiDocument> docs = this.tool.getDocumentBundles();
     assertEquals(0, docs.size());
   }
 
-  public void testGetReturnsFromCacheWhenCalledTwice() {
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    this.mockXWiki.stubs().method("getXWikiPreference").will(returnValue("Space1.Doc1"));
-
-    Mock document = createMockDocument(11111L, "Space1.Doc1", "key=value", false);
-
-    this.mockXWiki.stubs().method("getDocument").with(eq("Space1.Doc1"), ANYTHING).will(
-        returnValue(document.proxy()));
+  @Test
+  public void test_get_returnsFromCacheWhenCalledTwice() throws Exception {
+    expectWiki("Space1.Doc1", null);
+    XWikiDocument document = createMockDocument(11111L, "Space1.Doc1", "key=value", false, 1);
+    expect(getWikiMock().getDocument(eq("Space1.Doc1"), same(getContext())))
+        .andReturn(document).anyTimes();
+    replayMocks();
 
     // After this call, the value should be in cache.
     this.tool.get("key");
 
     // We verify that the second time the getContent method is NOT called as the value is
     // returned from cache
-    document.expects(never()).method("getContent");
     this.tool.get("key");
   }
 
-  public void testGetWhenDocumentModifiedAfterItIsInCache() {
-    this.mockXWiki.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    this.mockXWiki.stubs().method("getXWikiPreference").will(returnValue("Space1.Doc1"));
-
-    Mock document = createMockDocument(11111L, "Space1.Doc1", "key=value", false);
-
-    this.mockXWiki.stubs().method("getDocument").with(eq("Space1.Doc1"), ANYTHING).will(
-        returnValue(document.proxy()));
+  @Test
+  public void test_get_whenDocumentModifiedAfterItIsInCache() throws Exception {
+    expectWiki("Space1.Doc1", null);
+    XWikiDocument document = createModifiedDocument(11111L, "Space1.Doc1");
+    expect(getWikiMock().getDocument(eq("Space1.Doc1"), same(getContext())))
+        .andReturn(document).anyTimes();
+    replayMocks();
 
     // First time get any key just to put the doc properties in cache
     assertEquals("modifiedKey", this.tool.get("modifiedKey"));
-
-    // Now modify the document content to add a new key and change the document's date. We add
-    // one second to ensure the new date is definitely newer than the old one.
-    document.stubs().method("getContent").will(returnValue("modifiedKey=found"));
-    document.stubs().method("getDate")
-        .will(returnValue(new Date(System.currentTimeMillis() + 1000L)));
 
     // Even though the document has been cached it's reloaded because its date has changed
     assertEquals("found", this.tool.get("modifiedKey"));
@@ -208,78 +204,55 @@ public class XWikiMessageToolTest extends AbstractBridgedXWikiComponentTestCase 
   // assertEquals("somevalue2", this.tool.get("somekey2"));
   // }
 
-  private XWikiDocument createDocument(long id, String name, String content, boolean isNew) {
-    return (XWikiDocument) createMockDocument(id, name, content, isNew).proxy();
+  private void expectWiki(String preference, String param) {
+    expect(getWikiMock().getDefaultLanguage(same(getContext()))).andReturn("en").anyTimes();
+    expect(getWikiMock().getXWikiPreference(anyString(), same(getContext())))
+        .andReturn(preference).anyTimes();
+    expect(getWikiMock().Param(anyString())).andReturn(param).anyTimes();
   }
 
-  private Mock createMockDocument(long id, String name, String content, boolean isNew) {
-    Mock mockDocument = mock(XWikiDocument.class);
-    XWikiDocument document = (XWikiDocument) mockDocument.proxy();
-    mockDocument.stubs().method("getTranslatedDocument").will(returnValue(document));
-    mockDocument.stubs().method("isNew").will(returnValue(isNew));
-    mockDocument.stubs().method("getId").will(returnValue(new Long(id)));
-    mockDocument.stubs().method("getDate").will(returnValue(new Date()));
-    mockDocument.stubs().method("getContent").will(returnValue(content));
-    mockDocument.stubs().method("getFullName").will(returnValue(name));
-    mockDocument.stubs().method("getRealLanguage").will(returnValue("en"));
-    return mockDocument;
+  private void replayMocks() {
+    replayDefault();
+    mocksReplayed = true;
   }
 
-  private XWikiDocument createDocumentWithTrans(long id, String name, String content,
-      String transContent,
-      boolean isNew) {
-    return (XWikiDocument) createMockDocumentWithTrans(id, name, content, transContent, isNew)
-        .proxy();
+  private XWikiDocument createDocument(long id, String name, String content, boolean isNew)
+      throws Exception {
+    return createMockDocument(id, name, content, isNew, -1);
   }
 
-  private Mock createMockDocumentWithTrans(long id, String name, String content,
-      String transContent, boolean isNew) {
-    Mock mockDocument = mock(XWikiDocument.class);
-    final XWikiDocument document = (XWikiDocument) mockDocument.proxy();
-    final XWikiDocument transdocument = createDocument(name, transContent, "fr", "", false);
-    mockDocument.stubs().method("getTranslatedDocument")
-        .will(new CustomStub("Implements getTranslatedDocument") {
-
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            if (invocation.parameterValues.size() == 1) {
-              XWikiContext context = (XWikiContext) invocation.parameterValues.get(0);
-              String lang = context.getLanguage();
-              if ("fr".equals(lang)) {
-                return transdocument;
-              } else {
-                return document;
-              }
-            } else {
-              String lang = (String) invocation.parameterValues.get(0);
-              if ("fr".equals(lang)) {
-                return transdocument;
-              } else {
-                return document;
-              }
-            }
-          }
-        });
-    mockDocument.stubs().method("isNew").will(returnValue(isNew));
-    mockDocument.stubs().method("getId").will(returnValue(new Long(id)));
-    mockDocument.stubs().method("getDate").will(returnValue(new Date()));
-    mockDocument.stubs().method("getContent").will(returnValue(content));
-    mockDocument.stubs().method("getFullName").will(returnValue(name));
-    mockDocument.stubs().method("getLanguage").will(returnValue(""));
-    mockDocument.stubs().method("getDefaultLanguage").will(returnValue("en"));
-    mockDocument.stubs().method("getRealLanguage").will(returnValue("en"));
-    return mockDocument;
+  private XWikiDocument createMockDocument(long id, String name, String content, boolean isNew,
+      int contentCalls) throws Exception {
+    XWikiDocument document = createDefaultMock(XWikiDocument.class);
+    expect(document.getTranslatedDocument(same(getContext()))).andReturn(document).anyTimes();
+    expect(document.isNew()).andReturn(isNew).anyTimes();
+    expect(document.getId()).andReturn(id).anyTimes();
+    expect(document.getDate()).andReturn(new Date()).anyTimes();
+    IExpectationSetters<String> contentExpectation = expect(document.getContent())
+        .andReturn(content);
+    if (contentCalls >= 0) {
+      contentExpectation.times(contentCalls);
+    } else {
+      contentExpectation.anyTimes();
+    }
+    expect(document.getFullName()).andReturn(name).anyTimes();
+    expect(document.getRealLanguage()).andReturn("en").anyTimes();
+    return document;
   }
 
-  private XWikiDocument createDocument(String name, String content, String language,
-      String defaultLanguage,
-      boolean isNew) {
-    XWikiDocument doc = new XWikiDocument();
-    doc.setFullName(name);
-    doc.setContent(content);
-    doc.setLanguage(language);
-    doc.setDefaultLanguage(defaultLanguage);
-    doc.setNew(isNew);
-    return doc;
+  private XWikiDocument createModifiedDocument(long id, String name) throws Exception {
+    XWikiDocument document = createDefaultMock(XWikiDocument.class);
+    Date initialDate = new Date(1);
+    Date modifiedDate = new Date(2);
+    expect(document.getTranslatedDocument(same(getContext()))).andReturn(document).anyTimes();
+    expect(document.isNew()).andReturn(false).anyTimes();
+    expect(document.getId()).andReturn(id).anyTimes();
+    expect(document.getDate()).andReturn(initialDate).once();
+    expect(document.getDate()).andReturn(modifiedDate).anyTimes();
+    expect(document.getContent()).andReturn("modifiedKey=modifiedKey").once();
+    expect(document.getContent()).andReturn("modifiedKey=found").anyTimes();
+    expect(document.getFullName()).andReturn(name).anyTimes();
+    expect(document.getRealLanguage()).andReturn("en").anyTimes();
+    return document;
   }
 }

@@ -20,8 +20,9 @@
 package com.xpn.xwiki.objects.classes;
 
 import org.apache.commons.lang.math.RandomUtils;
+import org.junit.Test;
 
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 import junit.framework.Assert;
 
@@ -31,10 +32,11 @@ import junit.framework.Assert;
  * @version $Id$
  * @since 2.4M2
  */
-public class PropertyClassTest extends AbstractBridgedXWikiComponentTestCase {
+public class PropertyClassTest extends AbstractComponentTest {
 
   /** Test the {@link PropertyClass#compareTo(PropertyClass)} method. */
-  public void testCompareTo() {
+  @Test
+  public void test_compareTo() {
     PropertyClass one = new PropertyClass();
     PropertyClass two = new PropertyClass();
     // Random numbers to be used as property indexes.
