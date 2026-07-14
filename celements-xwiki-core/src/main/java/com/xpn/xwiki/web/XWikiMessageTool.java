@@ -155,6 +155,18 @@ public class XWikiMessageTool {
   }
 
   /**
+   * @param context
+   *          the context for the returned message tool
+   * @return this message tool if already bound to {@code context}, otherwise an equivalent message
+   *         tool bound to {@code context}
+   */
+  public XWikiMessageTool forContext(XWikiContext context) {
+    return (this.context == context)
+        ? this
+        : new XWikiMessageTool(bundle, context, language);
+  }
+
+  /**
    * @param key
    *          the key identifying the message to look for
    * @return the message in the defined language. The message should be a simple string without any

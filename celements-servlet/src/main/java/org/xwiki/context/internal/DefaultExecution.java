@@ -73,7 +73,9 @@ public class DefaultExecution implements Execution {
   @Override
   public void setContext(ExecutionContext newContext) {
     removeContext();
-    pushContext(newContext);
+    if (newContext != null) {
+      pushContext(newContext);
+    }
   }
 
   @Override
