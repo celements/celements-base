@@ -9,13 +9,12 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.script.service.ScriptService;
 
 import com.celements.model.context.ModelContext;
 import com.celements.url.UrlService;
-
-import jakarta.ws.rs.core.UriBuilder;
 
 @Component("url")
 public class UrlScriptService implements ScriptService {
@@ -84,18 +83,19 @@ public class UrlScriptService implements ScriptService {
     }
   }
 
-  @NotNull
-  public UriBuilder createURIBuilder() {
+  @Nullable
+  public UriComponentsBuilder createURIBuilder() {
     return createURIBuilder(null);
   }
 
-  @NotNull
-  UriBuilder createURIBuilder(@Nullable EntityReference ref) {
+  @Nullable
+  public UriComponentsBuilder createURIBuilder(@Nullable EntityReference ref) {
     return createURIBuilder(ref, null);
   }
 
   @Nullable
-  UriBuilder createURIBuilder(@Nullable EntityReference ref, @Nullable String action) {
+  public UriComponentsBuilder createURIBuilder(@Nullable EntityReference ref,
+      @Nullable String action) {
     try {
       return urlService.createURIBuilder(firstNonNull(ref, getCurrentReference()), action);
     } catch (Exception iae) {

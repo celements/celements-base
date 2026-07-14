@@ -15,6 +15,7 @@ import javax.validation.constraints.NotEmpty;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 
@@ -25,8 +26,6 @@ import com.google.common.base.Strings;
 import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
 import com.xpn.xwiki.web.ViewAction;
 import com.xpn.xwiki.web.XWikiURLFactory;
-
-import jakarta.ws.rs.core.UriBuilder;
 
 @Component
 public class XWikiUrlService implements UrlService {
@@ -79,15 +78,15 @@ public class XWikiUrlService implements UrlService {
   }
 
   @Override
-  public UriBuilder createURIBuilder(EntityReference ref) {
+  public UriComponentsBuilder createURIBuilder(EntityReference ref) {
     return createURIBuilder(ref, null);
   }
 
   @Override
-  public UriBuilder createURIBuilder(EntityReference ref, String action) {
+  public UriComponentsBuilder createURIBuilder(EntityReference ref, String action) {
     checkArgument(ref != null, "reference may not be null");
     try {
-      return UriBuilder.fromUri(createURLObject(ref, action, null).toURI());
+      return UriComponentsBuilder.fromUri(createURLObject(ref, action, null).toURI()).encode();
     } catch (URISyntaxException exc) {
       throw new IllegalArgumentException("illegal reference provided: " + ref, exc);
     }
@@ -124,9 +123,9 @@ public class XWikiUrlService implements UrlService {
       URL url = context.getXWikiContext().getWiki().getServerURL(wikiName,
           context.getXWikiContext());
       checkArgument(url != null, "wiki [%s] does not exist", wikiName);
-      UriBuilder builder = UriBuilder.fromUri(url.toURI());
+      UriComponentsBuilder builder = UriComponentsBuilder.fromUri(url.toURI());
       builder.replaceQuery(queryString);
-      return builder.build().toURL();
+      return builder.build().toUri().toURL();
     } catch (MalformedURLException | URISyntaxException exc) {
       throw new IllegalArgumentException("illegal wiki name provided: " + wikiName, exc);
     }
