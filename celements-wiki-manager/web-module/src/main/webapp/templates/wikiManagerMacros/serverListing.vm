@@ -82,9 +82,15 @@ $adminMsg.get("wikimanager.totalnumberofwiki") : $wikiList.size()
         <td>#if($firstalias.wikiPrettyName && $firstalias.wikiPrettyName.trim().length() > 0) $firstalias.wikiPrettyName ($wiki.wikiName) #else $wiki.wikiName #end</td>
         <td>
 <ul>
+          #set($urlBuilder = $services.url.createURIBuilder())
+          #set($stfu = $urlBuilder.replacePath('/'))
+          #set($stfu = $urlBuilder.replaceQuery(''))
           #foreach ($wikialias in $wikiAliasList)
             #if ($wikialias.server && $wikialias.server.trim().length() > 0)
-              <li> <a href="$wikialias.homePageUrl">$wikialias.server</a>
+              #set($stfu = $urlBuilder.host($wikialias.server))
+              #set($stfu = $urlBuilder.scheme('https'))
+              #if (!$wikialias.secure) #set($stfu = $urlBuilder.scheme('http')) #end
+              <li> <a href="$urlBuilder.build()">$wikialias.server</a>
             #end
           #end
 </ul>
@@ -99,7 +105,11 @@ $adminMsg.get("wikimanager.totalnumberofwiki") : $wikiList.size()
           #end
         </td>
         <td>
-          #if(($WikiManager.canDeleteWiki()) && ($wiki.WikiName != $context.mainWikiName) && ("$request.confirmwikidel" == '1')) <a href="?action=delete&amp;wikiname=$wiki.WikiName">$adminMsg.get("delete")</a> |#end <a href="$wiki.getURL("view")">$adminMsg.get("wikimanager.action.settings")</a></td>
+          #if(($WikiManager.canDeleteWiki()) && ($wiki.WikiName != $context.mainWikiName) && ("$request.confirmwikidel" == '1'))
+            <a href="?action=delete&amp;wikiname=$wiki.WikiName">$adminMsg.get("delete")</a>
+          #end
+          <a href="$services.url.getURL($wiki.documentReference)">$adminMsg.get("wikimanager.action.settings")</a>
+        </td>
       </tr>
     #end
   </table>
