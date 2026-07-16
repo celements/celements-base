@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.test.AbstractComponentTest;
 
@@ -96,6 +97,18 @@ public class XWikiMessageToolTest extends AbstractComponentTest {
   public void test_get_whenKeyIsNull() {
     replayMocks();
     assertNull(this.tool.get(null));
+  }
+
+  @Test
+  public void test_forContext() {
+    XWikiContext context = new XWikiContext();
+
+    XWikiMessageTool contextTool = tool.forContext(context);
+
+    assertSame(tool, tool.forContext(getContext()));
+    assertNotSame(tool, contextTool);
+    assertSame(context, contextTool.context);
+    assertSame(contextTool, contextTool.forContext(context));
   }
 
   @Test

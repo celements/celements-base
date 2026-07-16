@@ -20,50 +20,44 @@
  */
 package org.xwiki.velocity.internal;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+import static org.xwiki.velocity.VelocityExecutionProp.*;
+
+import java.util.Optional;
+
+import javax.inject.Inject;
+
 import org.apache.velocity.VelocityContext;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.stereotype.Component;
 import org.xwiki.context.ExecutionContext;
-import org.xwiki.context.ExecutionContextInitializer;
 import org.xwiki.context.ExecutionContextException;
+import org.xwiki.context.ExecutionContextInitializer;
 import org.xwiki.velocity.VelocityContextFactory;
 import org.xwiki.velocity.XWikiVelocityException;
 
 /**
  * Allow registering the Velocity Context in the Execution Context object since it's shared during
- * the whole execution
- * of the current request.
- *
- * @see org.xwiki.context.ExecutionContextInitializer
- * @since 1.5M1
- * @version $Id$
+ * the whole execution of the current request.
  */
-@Component("velocity")
+@Component
 public class VelocityExecutionContextInitializer implements ExecutionContextInitializer {
 
-  /**
-   * The id under which the Velocity Context is stored in the Execution Context.
-   */
-  public static final String VELOCITY_CONTEXT_ID = "velocityContext";
+  private final VelocityContextFactory factory;
 
-  /**
-   * The Velocity context factory component used for creating the Velocity Context (injected
-   * automatically by the
-   * Component subsystem).
-   */
-  @Requirement
-  private VelocityContextFactory velocityContextFactory;
+  @Inject
+  public VelocityExecutionContextInitializer(VelocityContextFactory factory) {
+    this.factory = factory;
+  }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.context.ExecutionContextInitializer#initialize(org.xwiki.context.ExecutionContext)
-   */
-  public void initialize(ExecutionContext executionContext) throws ExecutionContextException {
+  @Override
+  public void initialize(ExecutionContext context, ExecutionContext source)
+      throws ExecutionContextException {
     try {
-      VelocityContext context = this.velocityContextFactory.createContext();
-      executionContext.setProperty(VelocityExecutionContextInitializer.VELOCITY_CONTEXT_ID,
-          context);
+      var vCtx = Optional.ofNullable(source)
+          .flatMap(eCtx -> eCtx.get(VELOCITY_CONTEXT))
+          .map(VelocityContext::new)
+          .orElseGet(rethrowSupplier(factory::createContext));
+      context.set(VELOCITY_CONTEXT, vCtx);
     } catch (XWikiVelocityException e) {
       throw new ExecutionContextException("Failed to initialize Velocity Context", e);
     }

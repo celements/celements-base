@@ -124,6 +124,13 @@
       <version>1.4</version>
     </dependency>
 
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- testing -->
     <dependency>
       <groupId>com.celements</groupId>
