@@ -20,11 +20,12 @@
  */
 package org.xwiki.context.internal;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Component;
+import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextInitializer;
@@ -33,48 +34,39 @@ import org.xwiki.context.ExecutionContextManager;
 @Component
 public class DefaultExecutionContextManager implements ExecutionContextManager {
 
-  @Requirement
-  private List<ExecutionContextInitializer> initializers = new ArrayList<>();
+  private final List<ExecutionContextInitializer> initializers;
+  private final Execution execution;
+
+  @Inject
+  public DefaultExecutionContextManager(
+      List<ExecutionContextInitializer> initializers,
+      Execution execution) {
+    this.initializers = List.copyOf(initializers);
+    this.execution = execution;
+  }
 
   @Override
   public ExecutionContext clone(ExecutionContext context) throws ExecutionContextException {
-    // Ideally we would like to do a deep cloning here. However it's just too hard since we don't
-    // control objects put in the Execution Context and they can be of any type, including Maps
-    // which are cloneable but only do shallow clones.
-    // Thus instead we recreate the Execution Context from scratch and reinitialize it by calling
-    // all the Execution Context Initializers on it.
-    ExecutionContext clonedContext = new ExecutionContext();
-    clonedContext.setProperty("xwikicontext", context.getProperty("xwikicontext"));
-    initialize(clonedContext);
-    // Manually clone the Velocity Context too since currently the XWikiVelocityContextInitializer
-    // is not yet implemented.
-    // Note that we're using reflection since we don't want to add a dependency on Velocity module
-    // since that would cause a cyclic dependency.
-    // TODO: Fix this when XWikiVelocityContextInitializer is implemented
-    // Note that Velocity doesn't provide a method for cloning a Velocity Context
-    // (see https://issues.apache.org/jira/browse/VELOCITY-712). Thus we're not cloning the Velocity
-    // Context which can raise problems if the included page modifies the Velocity Context...
-    Object velocityContext = context.getProperty("velocityContext");
-    if (velocityContext != null) {
-      try {
-        clonedContext.setProperty("velocityContext",
-            velocityContext.getClass().getMethod("clone").invoke(velocityContext));
-      } catch (Exception e) {
-        throw new ExecutionContextException(
-            "Failed to clone Velocity Context for the new Execution Context", e);
-      }
+    var clone = new ExecutionContext();
+    execution.pushContext(clone);
+    try {
+      initialize(clone, context);
+    } finally {
+      execution.popContext();
     }
-    return clonedContext;
+    return clone;
   }
 
   @Override
   public void initialize(ExecutionContext context) throws ExecutionContextException {
+    initialize(context, null);
+  }
+
+  private void initialize(ExecutionContext context, ExecutionContext source)
+      throws ExecutionContextException {
     for (ExecutionContextInitializer initializer : this.initializers) {
-      initializer.initialize(context);
+      initializer.initialize(context, source);
     }
   }
 
-  public void addExecutionContextInitializer(ExecutionContextInitializer initializer) {
-    this.initializers.add(initializer);
-  }
 }

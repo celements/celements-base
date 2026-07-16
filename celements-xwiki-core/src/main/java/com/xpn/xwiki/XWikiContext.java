@@ -605,4 +605,9 @@ public class XWikiContext extends Hashtable<Object, Object> {
     }
   }
 
+  @Override
+  public XWikiContext clone() {
+    return (XWikiContext) super.clone();
+  }
+
 }

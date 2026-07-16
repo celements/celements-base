@@ -20,11 +20,12 @@
  */
 package org.xwiki.context;
 
-import org.xwiki.component.annotation.ComponentRole;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
-@ComponentRole
 public interface ExecutionContextInitializer {
 
-  void initialize(ExecutionContext context) throws ExecutionContextException;
+  void initialize(@NotNull ExecutionContext context, @Nullable ExecutionContext source)
+      throws ExecutionContextException;
 
 }

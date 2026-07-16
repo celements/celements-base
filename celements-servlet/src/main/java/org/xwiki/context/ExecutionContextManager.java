@@ -20,19 +20,29 @@
  */
 package org.xwiki.context;
 
-import org.xwiki.component.annotation.ComponentRole;
+import javax.validation.constraints.NotNull;
 
-@ComponentRole
 public interface ExecutionContextManager {
 
-  void initialize(ExecutionContext context) throws ExecutionContextException;
+  /**
+   * Initializes the given context by asking all registered {@link ExecutionContextInitializer}s to
+   * initialize their module-specific state.
+   *
+   * @param context
+   *          the context to initialize
+   */
+  void initialize(@NotNull ExecutionContext context) throws ExecutionContextException;
 
   /**
-   * Perform deep cloning of Execution Context properties by calling all implementations of
-   * {@link ExecutionContextCloner}.
+   * Creates and initializes an independent child context by asking all registered
+   * {@link ExecutionContextInitializer}s to initialize their module-specific state from the source
+   * context.
    *
-   * @return the cloned Execution Context
+   * @param context
+   *          the context from which state is inherited
+   * @return the cloned and initialized context
    */
-  ExecutionContext clone(ExecutionContext context) throws ExecutionContextException;
+  @NotNull
+  ExecutionContext clone(@NotNull ExecutionContext context) throws ExecutionContextException;
 
 }

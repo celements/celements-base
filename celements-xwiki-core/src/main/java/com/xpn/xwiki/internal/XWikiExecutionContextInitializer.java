@@ -15,6 +15,7 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextInitializer;
 
 import com.celements.init.XWikiProvider;
+import com.xpn.xwiki.XWikiContext;
 
 @Component
 public class XWikiExecutionContextInitializer implements ExecutionContextInitializer {
@@ -22,11 +23,17 @@ public class XWikiExecutionContextInitializer implements ExecutionContextInitial
   public static final Property<Boolean> NO_AWAIT = new Property<>(
       "XWikiExecutionContextInitializer.noAwait", Boolean.class);
 
+  private final XWikiProvider wikiProvider;
+
   @Inject
-  private XWikiProvider wikiProvider;
+  public XWikiExecutionContextInitializer(XWikiProvider wikiProvider) {
+    this.wikiProvider = wikiProvider;
+  }
 
   @Override
-  public void initialize(ExecutionContext context) throws ExecutionContextException {
+  public void initialize(ExecutionContext context, ExecutionContext source)
+      throws ExecutionContextException {
+    copyProps(context, source);
     try {
       context.computeIfAbsent(XWIKI, rethrow(() -> context.get(NO_AWAIT).orElse(false)
           ? wikiProvider.get().orElse(null)
@@ -34,6 +41,28 @@ public class XWikiExecutionContextInitializer implements ExecutionContextInitial
     } catch (ExecutionException xwe) {
       throw new ExecutionContextException("failed initializing XWiki", xwe);
     }
+  }
+
+  private void copyProps(ExecutionContext context, ExecutionContext source) {
+    if (source == null) {
+      return;
+    }
+    copyProp(WIKI, source, context);
+    copyProp(DOC, source, context);
+    copyProp(XWIKI, source, context);
+    copyProp(XWIKI_USER, source, context);
+    copyProp(XWIKI_REQUEST_URI, source, context);
+    copyProp(XWIKI_REQUEST_ACTION, source, context);
+    copyProp(XWIKI_REQUEST, source, context);
+    copyProp(XWIKI_RESPONSE, source, context);
+    source.get(XWIKI_CONTEXT)
+        .map(XWikiContext::clone)
+        .ifPresent(xCtx -> context.set(XWIKI_CONTEXT, xCtx));
+  }
+
+  private <T> void copyProp(Property<T> property, ExecutionContext source,
+      ExecutionContext target) {
+    source.get(property).ifPresent(value -> target.set(property, value));
   }
 
 }

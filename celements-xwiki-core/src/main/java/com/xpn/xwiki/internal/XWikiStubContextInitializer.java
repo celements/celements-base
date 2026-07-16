@@ -1,7 +1,8 @@
 package com.xpn.xwiki.internal;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Component;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextInitializer;
@@ -16,16 +17,21 @@ import com.xpn.xwiki.util.XWikiStubContextProvider;
  * @see XWikiStubContextProvider
  * @since 2.0M3
  */
-@Component("XWikiStubContextInitializer")
+@Component
 public class XWikiStubContextInitializer implements ExecutionContextInitializer {
 
-  @Requirement
-  private XWikiStubContextProvider stubContextProvider;
+  private final XWikiStubContextProvider provider;
+
+  @Inject
+  public XWikiStubContextInitializer(XWikiStubContextProvider provider) {
+    this.provider = provider;
+  }
 
   @Override
-  public void initialize(ExecutionContext context) throws ExecutionContextException {
+  public void initialize(ExecutionContext context, ExecutionContext source) 
+      throws ExecutionContextException {
     context.computeIfAbsent(XWikiExecutionProp.XWIKI_CONTEXT,
-        () -> stubContextProvider.createStubContext(context));
+        () -> provider.createStubContext(context));
   }
 
 }

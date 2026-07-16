@@ -102,7 +102,6 @@
       <artifactId>xwiki-core-shared-tests</artifactId>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
   <scm>
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
