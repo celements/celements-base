@@ -28,6 +28,11 @@
       <artifactId>xwiki-core-script</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- Spring -->
     <dependency>
