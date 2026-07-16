@@ -64,7 +64,6 @@ public class StandardXWikiURLFactoryTest extends AbstractComponentTest {
     configuration = registerComponentMock(StandardURLConfiguration.class);
     hostResolver = registerComponentMock(HostResolver.class);
     factory = getBeanFactory().getBean("standard", XWikiURLFactory.class);
-    expect(hostResolver.resolve(anyString())).andReturn(new WikiReference("Wiki")).anyTimes();
     expect(configuration.isPathBasedMultiWiki()).andReturn(false).anyTimes();
     expect(configuration.getWikiPathPrefix()).andReturn("wiki").anyTimes();
   }
@@ -79,35 +78,35 @@ public class StandardXWikiURLFactoryTest extends AbstractComponentTest {
     reset(configuration);
     expect(configuration.isPathBasedMultiWiki()).andReturn(true).anyTimes();
     expect(configuration.getWikiPathPrefix()).andReturn("wiki").anyTimes();
+    expectResolvedHosts("localhost", "subwiki");
     replayDefault();
     // Verify Main wiki URL.
-    XWikiURL xwikiURL = createURL("http://localhost:8080/xwiki/bin/view/Space/Page", false,
-        "localhost");
+    XWikiURL xwikiURL = createURL("http://localhost:8080/xwiki/bin/view/Space/Page");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "Page"));
 
     // Verify Sub Wiki URL.
-    xwikiURL = createURL("http://host/xwiki/wiki/subwiki/view/Space/Page", false, "subwiki");
+    xwikiURL = createURL("http://host/xwiki/wiki/subwiki/view/Space/Page");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "Page"));
   }
 
   @Test
   public void test_createDomainBasedXWikiURL() throws Exception {
+    expectResolvedHosts("localhost", "subwiki.domain.ext");
     replayDefault();
     // Verify Main wiki URL.
-    XWikiURL xwikiURL = createURL("http://localhost:8080/xwiki/bin/view/Space/Page", true,
-        "localhost");
+    XWikiURL xwikiURL = createURL("http://localhost:8080/xwiki/bin/view/Space/Page");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "Page"));
 
     // Verify Sub Wiki URL.
-    xwikiURL = createURL("http://subwiki.domain.ext/xwiki/bin/view/Space/Page", true,
-        "subwiki.domain.ext");
+    xwikiURL = createURL("http://subwiki.domain.ext/xwiki/bin/view/Space/Page");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "Page"));
   }
 
   @Test
   public void test_createXWikiURL_whenTrailingSlash() throws Exception {
+    expectResolvedHosts("host");
     replayDefault();
-    XWikiURL xwikiURL = createURL("http://host/xwiki/bin/", true, "host");
+    XWikiURL xwikiURL = createURL("http://host/xwiki/bin/");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Main", "WebHome"));
   }
 
@@ -116,7 +115,7 @@ public class StandardXWikiURLFactoryTest extends AbstractComponentTest {
     replayDefault();
     try {
       // Invalid URL since the space in the page name isn't encoded.
-      createURL("http://host/xwiki/bin/view/Space/Page Name", true, "host");
+      createURL("http://host/xwiki/bin/view/Space/Page Name");
       Assert.fail("Should have thrown an exception here");
     } catch (InvalidURLException expected) {
       Assert.assertEquals("Invalid URL [http://host/xwiki/bin/view/Space/Page Name]",
@@ -126,9 +125,10 @@ public class StandardXWikiURLFactoryTest extends AbstractComponentTest {
 
   @Test
   public void test_createXWikiURL_whenURLHasParameters() throws Exception {
+    expectResolvedHosts("host", "host");
     replayDefault();
     XWikiURL xwikiURL = createURL(
-        "http://host/xwiki/bin/view/Space/Page?param1=value1&param2=value2", true, "host");
+        "http://host/xwiki/bin/view/Space/Page?param1=value1&param2=value2");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "Page"));
 
     // Note: the parameters order are the same as the order specified in the URL.
@@ -138,7 +138,7 @@ public class StandardXWikiURLFactoryTest extends AbstractComponentTest {
     Assert.assertEquals(expectedMap, xwikiURL.getParameters());
 
     // Verify it works when there's a param with no value.
-    xwikiURL = createURL("http://host/xwiki/bin/view/Space/Page?param", true, "host");
+    xwikiURL = createURL("http://host/xwiki/bin/view/Space/Page?param");
     expectedMap = new LinkedHashMap<>();
     expectedMap.put("param", Collections.<String>emptyList());
     Assert.assertEquals(expectedMap, xwikiURL.getParameters());
@@ -146,9 +146,9 @@ public class StandardXWikiURLFactoryTest extends AbstractComponentTest {
 
   @Test
   public void test_createXWikiURL_withEncodedChars() throws Exception {
+    expectResolvedHosts("host");
     replayDefault();
-    XWikiURL xwikiURL = createURL("http://host/xwiki/bin/view/Space/Page%20Name?param=%2D", true,
-        "host");
+    XWikiURL xwikiURL = createURL("http://host/xwiki/bin/view/Space/Page%20Name?param=%2D");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "Page Name"));
     Map<String, List<String>> expectedMap = new LinkedHashMap<>();
     expectedMap.put("param", Arrays.asList("-"));
@@ -161,21 +161,26 @@ public class StandardXWikiURLFactoryTest extends AbstractComponentTest {
    */
   @Test
   public void test_createXWikiURL_whenURLHasPathParameters() throws Exception {
+    expectResolvedHosts("host", "host");
     replayDefault();
     XWikiURL xwikiURL = createURL(
-        "http://host/xwiki/bin/view/Space;param1=value1/Page;param2=value2", true, "host");
+        "http://host/xwiki/bin/view/Space;param1=value1/Page;param2=value2");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "Page"));
 
     // Ensure we don't remove ";" when they are encoded in order to allow the ";" character to be in
     // document names
     // for example.
-    xwikiURL = createURL("http://host/xwiki/bin/view/Space/My%3BPage", true, "host");
+    xwikiURL = createURL("http://host/xwiki/bin/view/Space/My%3BPage");
     assertXWikiURL(xwikiURL, "view", new DocumentReference("Wiki", "Space", "My;Page"));
   }
 
-  private XWikiURL createURL(String url, final boolean isDomainBasedWikiFormat,
-      final String expectedHost)
-      throws Exception {
+  private void expectResolvedHosts(String... hosts) {
+    for (String host : hosts) {
+      expect(hostResolver.resolve(host)).andReturn(new WikiReference("Wiki"));
+    }
+  }
+
+  private XWikiURL createURL(String url) throws Exception {
     return this.factory.createURL(new URL(url),
         Collections.<String, Object>singletonMap("ignorePrefix", "/xwiki"));
   }
