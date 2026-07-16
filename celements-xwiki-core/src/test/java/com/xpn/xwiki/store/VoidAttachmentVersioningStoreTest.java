@@ -19,6 +19,10 @@
  */
 package com.xpn.xwiki.store;
 
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.suigeneris.jrcs.rcs.Version;
 
 import com.xpn.xwiki.XWiki;
@@ -27,28 +31,28 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiAttachmentArchive;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.store.VoidAttachmentVersioningStore.VoidAttachmentArchive;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link VoidAttachmentVersioningStore} and {@link VoidAttachmentArchive}.
  *
  * @version $Id$
  */
-public class VoidAttachmentVersioningStoreTest extends AbstractBridgedXWikiComponentTestCase {
+public class VoidAttachmentVersioningStoreTest extends AbstractComponentTest {
 
   AttachmentVersioningStore store;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void prepareTest() throws Exception {
     XWiki xwiki = new XWiki(false);
     getContext().setWiki(xwiki);
 
-    this.store = getComponentManager().lookup(AttachmentVersioningStore.class, "void");
+    store = getBeanFactory().getBean("void", AttachmentVersioningStore.class);
     xwiki.setAttachmentVersioningStore(this.store);
   }
 
-  public void testStore() throws XWikiException {
+  @Test
+  public void test_store() throws XWikiException {
     // is store correctly inited?
     assertEquals(VoidAttachmentVersioningStore.class, this.store.getClass());
     // create doc, attachment & attachment archive
@@ -66,7 +70,8 @@ public class VoidAttachmentVersioningStoreTest extends AbstractBridgedXWikiCompo
     this.store.deleteArchive(attachment, getContext(), true);
   }
 
-  public void testHistory() throws XWikiException {
+  @Test
+  public void test_history() throws XWikiException {
     XWikiDocument doc = new XWikiDocument("Main", "Test");
     XWikiAttachment attachment = new XWikiAttachment(doc, "filename");
     // 1.1

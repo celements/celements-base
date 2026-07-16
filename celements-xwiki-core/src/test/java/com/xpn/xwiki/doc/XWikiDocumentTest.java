@@ -20,6 +20,7 @@
 package com.xpn.xwiki.doc;
 
 import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,16 +29,18 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.velocity.VelocityContext;
 import org.easymock.EasyMock;
-import org.jmock.Mock;
+import org.junit.Before;
+import org.junit.Test;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.rendering.syntax.Syntax;
+import org.xwiki.velocity.VelocityManager;
 
 import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.XWiki;
@@ -53,7 +56,7 @@ import com.xpn.xwiki.objects.classes.TextAreaClass;
 import com.xpn.xwiki.render.XWikiRenderingEngine;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.store.XWikiVersioningStoreInterface;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.web.XWikiMessageTool;
 
@@ -62,7 +65,7 @@ import com.xpn.xwiki.web.XWikiMessageTool;
  *
  * @version $Id$
  */
-public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
+public class XWikiDocumentTest extends AbstractComponentTest {
 
   private static final String DOCWIKI = "wiki";
 
@@ -76,26 +79,30 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
 
   private XWikiDocument document;
 
-  private Mock mockXWiki;
-
   private XWikiRenderingEngine mockXWikiRenderingEngine;
 
-  private Mock mockXWikiVersioningStore;
+  private XWikiVersioningStoreInterface mockXWikiVersioningStore;
 
-  private Mock mockXWikiStoreInterface;
+  private XWikiStoreInterface mockXWikiStoreInterface;
 
-  private Mock mockXWikiMessageTool;
+  private XWikiMessageTool mockXWikiMessageTool;
 
-  private Mock mockXWikiRightService;
+  private XWikiRightService mockXWikiRightService;
+
+  private String wikiEncoding;
+
+  private BaseClass wikiClass;
+
+  private BaseClass wikiXClass;
+
+  private XWikiDocument wikiDocument;
 
   private BaseClass baseClass;
 
   private BaseObject baseObject;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
+  @Before
+  public void prepareTest() throws Exception {
     this.document = new XWikiDocument(new DocumentReference(DOCWIKI, DOCSPACE, DOCNAME));
     this.document.setId(1, IdVersion.CELEMENTS_3);
     this.document.setSyntax(Syntax.XWIKI_1_0);
@@ -105,39 +112,15 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
 
     getContext().put("isInRenderingEngine", true);
 
-    this.mockXWiki = mock(XWiki.class);
-    this.mockXWiki.stubs().method("Param").will(returnValue(null));
-
     this.mockXWikiRenderingEngine = createMock(XWikiRenderingEngine.class);
-
-    this.mockXWikiVersioningStore = mock(XWikiVersioningStoreInterface.class);
-    this.mockXWikiVersioningStore.stubs().method("getXWikiDocumentArchive").will(returnValue(null));
-
-    this.mockXWikiStoreInterface = mock(XWikiStoreInterface.class);
-    this.document.setStore((XWikiStoreInterface) this.mockXWikiStoreInterface.proxy());
-
-    this.mockXWikiMessageTool = mock(XWikiMessageTool.class,
-        new Class[] { ResourceBundle.class, XWikiContext.class }, new Object[] {
-            null, getContext() });
-    this.mockXWikiMessageTool.stubs().method("get").will(returnValue("message"));
-
-    this.mockXWikiRightService = mock(XWikiRightService.class);
-    this.mockXWikiRightService.stubs().method("hasProgrammingRights").will(returnValue(true));
-
-    this.mockXWiki.stubs().method("getRenderingEngine")
-        .will(returnValue(this.mockXWikiRenderingEngine));
-    this.mockXWiki.stubs().method("getVersioningStore")
-        .will(returnValue(this.mockXWikiVersioningStore.proxy()));
-    this.mockXWiki.stubs().method("getStore")
-        .will(returnValue(this.mockXWikiStoreInterface.proxy()));
-    this.mockXWiki.stubs().method("getDocument").will(returnValue(this.document));
-    this.mockXWiki.stubs().method("getLanguagePreference").will(returnValue("en"));
-    this.mockXWiki.stubs().method("getSectionEditingDepth").will(returnValue(2L));
-    this.mockXWiki.stubs().method("getRightService")
-        .will(returnValue(this.mockXWikiRightService.proxy()));
-
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
-    getContext().put("msg", this.mockXWikiMessageTool.proxy());
+    this.mockXWikiVersioningStore = createDefaultMock(XWikiVersioningStoreInterface.class);
+    this.mockXWikiStoreInterface = createDefaultMock(XWikiStoreInterface.class);
+    this.document.setStore(this.mockXWikiStoreInterface);
+    this.mockXWikiMessageTool = createDefaultMock(XWikiMessageTool.class);
+    this.mockXWikiRightService = createDefaultMock(XWikiRightService.class);
+    VelocityManager velocityManagerMock = registerComponentMock(VelocityManager.class);
+    expect(velocityManagerMock.getVelocityContext()).andReturn(new VelocityContext()).anyTimes();
+    getContext().put("msg", this.mockXWikiMessageTool);
 
     this.baseClass = this.document.getxWikiClass();
     this.baseClass.addTextField("string", "String", 30);
@@ -150,10 +133,9 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     this.baseClass.addNumberField("int", "Int", 10, "integer");
     this.baseClass.addStaticListField("stringlist", "StringList", "value1, value2");
 
-    this.mockXWiki.stubs().method("getClass").will(returnValue(this.baseClass));
-    this.mockXWiki.stubs().method("getXClass").will(returnValue(this.baseClass));
-
-    this.baseObject = this.document.newObject(CLASSNAME, getContext());
+    this.baseObject = this.baseClass.newCustomClassInstance(getContext());
+    this.baseObject.setClassName(CLASSNAME);
+    this.document.addObject(CLASSNAME, this.baseObject);
     this.baseObject.setStringValue("string", "string");
     this.baseObject.setLargeStringValue("area", "area");
     this.baseObject.setStringValue("passwd", "passwd");
@@ -161,11 +143,44 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     this.baseObject.setIntValue("int", 42);
     this.baseObject.setStringListValue("stringlist", Arrays.asList("VALUE1", "VALUE2"));
 
-    this.mockXWikiStoreInterface.stubs().method("search")
-        .will(returnValue(new ArrayList<>()));
+    this.wikiEncoding = "UTF-8";
+    this.wikiClass = this.baseClass;
+    this.wikiXClass = this.baseClass;
+    this.wikiDocument = this.document;
+
+    expect(getWikiMock().Param(anyString())).andReturn(null).anyTimes();
+    expect(getWikiMock().getRenderingEngine()).andReturn(this.mockXWikiRenderingEngine).anyTimes();
+    expect(getWikiMock().getVersioningStore()).andReturn(this.mockXWikiVersioningStore).anyTimes();
+    expect(getWikiMock().getStore()).andReturn(this.mockXWikiStoreInterface).anyTimes();
+    expect(getWikiMock().getDocument(anyObject(DocumentReference.class), same(getContext())))
+        .andAnswer(() -> this.wikiDocument).anyTimes();
+    expect(getWikiMock().getLanguagePreference(same(getContext()))).andReturn("en").anyTimes();
+    expect(getWikiMock().getSectionEditingDepth()).andReturn(2L).anyTimes();
+    expect(getWikiMock().getRightService()).andReturn(this.mockXWikiRightService).anyTimes();
+    expect(getWikiMock().getClass(anyString(), same(getContext())))
+        .andAnswer(() -> this.wikiClass).anyTimes();
+    expect(getWikiMock().getXClass(anyObject(DocumentReference.class), same(getContext())))
+        .andAnswer(() -> this.wikiXClass).anyTimes();
+    expect(getWikiMock().getEncoding()).andAnswer(() -> this.wikiEncoding).anyTimes();
+    expect(getWikiMock().getConfig()).andReturn(new XWikiConfig()).anyTimes();
+    expect(getWikiMock().exists(anyString(), same(getContext()))).andReturn(true).anyTimes();
+    expect(getWikiMock().copyDocument(anyObject(DocumentReference.class),
+        anyObject(DocumentReference.class), eq(false), same(getContext())))
+        .andReturn(true).anyTimes();
+    getWikiMock().saveDocument(anyObject(XWikiDocument.class), same(getContext()));
+    expectLastCall().anyTimes();
+    getWikiMock().deleteDocument(anyObject(XWikiDocument.class), same(getContext()));
+    expectLastCall().anyTimes();
+    expect(this.mockXWikiVersioningStore.getXWikiDocumentArchive(anyObject(XWikiDocument.class),
+        same(getContext()))).andReturn(null).anyTimes();
+    expect(this.mockXWikiMessageTool.get(anyString())).andReturn("message").anyTimes();
+    expect(this.mockXWikiRightService.hasProgrammingRights(same(getContext())))
+        .andReturn(true).anyTimes();
+    replayDefault();
   }
 
-  public void testConstructor() {
+  @Test
+  public void test_constructor() {
     DocumentReference defaultReference = new DocumentReference("xwiki", "Main", "WebHome");
 
     XWikiDocument doc = new XWikiDocument(null);
@@ -195,13 +210,15 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("wiki", doc.getWikiName());
   }
 
-  public void testGetDisplayTitleWhenNoTitleAndNoContent() {
+  @Test
+  public void test_getDisplayTitleWhenNoTitleAndNoContent() {
     this.document.setContent("Some content");
 
     assertEquals("Page", this.document.getDisplayTitle(getContext()));
   }
 
-  public void testGetDisplayWhenTitleExists() {
+  @Test
+  public void test_getDisplayWhenTitleExists() {
     this.document.setContent("Some content");
     this.document.setTitle("Title");
     expect(this.mockXWikiRenderingEngine.interpretText(EasyMock.eq("Title"),
@@ -212,7 +229,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     verifyDefaults();
   }
 
-  public void testGetDisplayWhenNoTitleButSectionExists() {
+  @Test
+  public void test_getDisplayWhenNoTitleButSectionExists() {
     this.document.setContent("Some content\n1 Title");
     expect(this.mockXWikiRenderingEngine.interpretText(EasyMock.eq("Title"),
         EasyMock.isA(XWikiDocument.class), EasyMock.isA(XWikiContext.class))).andReturn("Title")
@@ -225,7 +243,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
   /**
    * Verify that if an error happens when evaluation the title, we fallback to the computed title.
    */
-  public void testGetDisplayTitleWhenVelocityError() throws Exception {
+  @Test
+  public void test_getDisplayTitleWhenVelocityError() throws Exception {
     this.document.setContent("Some content");
     this.document.setTitle("some content that generate a velocity error");
     expect(this.mockXWikiRenderingEngine.interpretText(EasyMock.isA(String.class),
@@ -237,7 +256,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     verifyDefaults();
   }
 
-  public void testMinorMajorVersions() {
+  @Test
+  public void test_minorMajorVersions() {
     // there is no version in doc yet, so 1.1
     assertEquals("1.1", this.document.getVersion());
 
@@ -257,9 +277,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("2.2", this.document.getVersion());
   }
 
-  public void testGetPreviousVersion() throws XWikiException {
-    this.mockXWiki.stubs().method("getEncoding").will(returnValue("UTF-8"));
-    this.mockXWiki.stubs().method("getConfig").will(returnValue(new XWikiConfig()));
+  @Test
+  public void test_getPreviousVersion() throws XWikiException {
     XWikiContext context = this.getContext();
     Date now = new Date();
     XWikiDocumentArchive archiveDoc = new XWikiDocumentArchive(this.document.getId());
@@ -301,7 +320,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertNull(this.document.getPreviousVersion());
   }
 
-  public void testAuthorAfterDocumentCopy() throws XWikiException {
+  @Test
+  public void test_authorAfterDocumentCopy() throws XWikiException {
     String author = "Albatross";
     this.document.setAuthor(author);
     XWikiDocument copy = this.document.copyDocument(this.document.getName() + " Copy",
@@ -310,7 +330,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertTrue(author.equals(copy.getAuthor()));
   }
 
-  public void testCreatorAfterDocumentCopy() throws XWikiException {
+  @Test
+  public void test_creatorAfterDocumentCopy() throws XWikiException {
     String creator = "Condor";
     this.document.setCreator(creator);
     XWikiDocument copy = this.document.copyDocument(this.document.getName() + " Copy",
@@ -319,7 +340,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertTrue(creator.equals(copy.getCreator()));
   }
 
-  public void testCreationDateAfterDocumentCopy() throws Exception {
+  @Test
+  public void test_creationDateAfterDocumentCopy() throws Exception {
     Date sourceCreationDate = this.document.getCreationDate();
     Thread.sleep(1000);
     XWikiDocument copy = this.document.copyDocument(this.document.getName() + " Copy",
@@ -328,7 +350,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertTrue(copy.getCreationDate().equals(sourceCreationDate));
   }
 
-  public void testObjectGuidsAfterDocumentCopy() throws Exception {
+  @Test
+  public void test_objectGuidsAfterDocumentCopy() throws Exception {
     assertTrue(this.document.getXObjects().size() > 0);
 
     List<String> originalGuids = new ArrayList<>();
@@ -350,7 +373,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     }
   }
 
-  public void testRelativeObjectReferencesAfterDocumentCopy() throws Exception {
+  @Test
+  public void test_relativeObjectReferencesAfterDocumentCopy() throws Exception {
     XWikiDocument copy = this.document.copyDocument(
         new DocumentReference("copywiki", "copyspace", "copypage"),
         getContext());
@@ -368,7 +392,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
         bobject.getXClassReference());
   }
 
-  public void testCloneNullObjects() throws XWikiException {
+  @Test
+  public void test_cloneNullObjects() throws XWikiException {
     XWikiDocument document = new XWikiDocument(new DocumentReference("wiki", DOCSPACE, DOCNAME));
 
     EntityReference relativeClassReference = new EntityReference(DOCNAME, EntityType.DOCUMENT,
@@ -410,7 +435,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals(2, duplicatedDocument.getXObjects(duplicatedClassReference).size());
   }
 
-  public void testCloneWithAbsoluteClassReference() {
+  @Test
+  public void test_cloneWithAbsoluteClassReference() {
     XWikiDocument document = new XWikiDocument(new DocumentReference("wiki", DOCSPACE, DOCNAME));
 
     EntityReference relativeClassReference = new EntityReference(DOCNAME, EntityType.DOCUMENT,
@@ -442,12 +468,14 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertNotNull(duplicatedDocument.getXObject(duplicatedClassReference, 2));
   }
 
-  public void testToStringReturnsFullName() {
+  @Test
+  public void test_toStringReturnsFullName() {
     assertEquals("Space.Page", this.document.toString());
     assertEquals("Main.WebHome", new XWikiDocument().toString());
   }
 
-  public void testCloneSaveVersions() {
+  @Test
+  public void test_cloneSaveVersions() {
     XWikiDocument doc1 = new XWikiDocument("qwe", "qwe");
     XWikiDocument doc2 = doc1.clone();
     doc1.incrementVersion();
@@ -455,16 +483,18 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals(doc1.getVersion(), doc2.getVersion());
   }
 
-  public void testAddObject() throws XWikiException {
+  @Test
+  public void test_addObject() throws XWikiException {
     XWikiDocument doc = new XWikiDocument("test", "document");
-    this.mockXWiki.stubs().method("getClass").will(returnValue(new BaseClass()));
+    this.wikiClass = new BaseClass();
     BaseObject object = BaseClass.newCustomClassInstance("XWiki.XWikiUsers", getContext());
     doc.addObject("XWiki.XWikiUsers", object);
     assertEquals("XWikiDocument.addObject does not set the object's name", doc.getFullName(),
         object.getName());
   }
 
-  public void testObjectNumbersAfterXMLRoundrip() throws XWikiException {
+  @Test
+  public void test_objectNumbersAfterXMLRoundrip() throws XWikiException {
     String classname = XWikiConstant.TAG_CLASS;
     BaseClass tagClass = new BaseClass();
     tagClass.setName(classname);
@@ -472,8 +502,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
         "checkbox");
 
     XWikiDocument doc = new XWikiDocument("test", "document");
-    this.mockXWiki.stubs().method("getXClass").will(returnValue(tagClass));
-    this.mockXWiki.stubs().method("getEncoding").will(returnValue("iso-8859-1"));
+    this.wikiXClass = tagClass;
+    this.wikiEncoding = "iso-8859-1";
 
     BaseObject object = BaseClass.newCustomClassInstance(classname, getContext());
     object.setClassName(classname);
@@ -510,11 +540,10 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     }
   }
 
-  public void testGetUniqueLinkedPages10() {
+  @Test
+  public void test_getUniqueLinkedPages10() {
     XWikiDocument contextDocument = new XWikiDocument("contextdocspace", "contextdocpage");
     getContext().setDoc(contextDocument);
-
-    this.mockXWiki.stubs().method("exists").will(returnValue(true));
 
     this.document.setContent("[TargetPage][TargetLabel>TargetPage][TargetSpace.TargetPage]"
         +
@@ -527,7 +556,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
             linkedPages));
   }
 
-  public void testGetSections10() throws XWikiException {
+  @Test
+  public void test_getSections10() throws XWikiException {
     this.document.setContent("content not in section\n" + "1 header 1\nheader 1 content\n"
         + "1.1 header 2\nheader 2 content");
 
@@ -548,7 +578,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("1.1", header2.getSectionLevel());
   }
 
-  public void testGetDocumentSection10() throws XWikiException {
+  @Test
+  public void test_getDocumentSection10() throws XWikiException {
     this.document.setContent("content not in section\n" + "1 header 1\nheader 1 content\n"
         + "1.1 header 2\nheader 2 content");
 
@@ -565,7 +596,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("1.1", header2.getSectionLevel());
   }
 
-  public void testGetContentOfSection10() throws XWikiException {
+  @Test
+  public void test_getContentOfSection10() throws XWikiException {
     this.document.setContent("content not in section\n" + "1 header 1\nheader 1 content\n"
         + "1.1 header 2\nheader 2 content");
 
@@ -576,7 +608,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("1.1 header 2\nheader 2 content", content2);
   }
 
-  public void testSectionSplit10() throws XWikiException {
+  @Test
+  public void test_sectionSplit10() throws XWikiException {
     List<DocumentSection> sections;
     // Simple test
     this.document.setContent("1 Section 1\n" + "Content of first section\n" + "1.1 Subsection 2\n"
@@ -632,7 +665,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals(43, sections.get(1).getSectionIndex());
   }
 
-  public void testUpdateDocumentSection10() throws XWikiException {
+  @Test
+  public void test_updateDocumentSection10() throws XWikiException {
     List<DocumentSection> sections;
     // Fill the document
     this.document.setContent("1 Section 1\n" + "Content of first section\n" + "1.1 Subsection 2\n"
@@ -657,7 +691,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
         this.document.getContentOfSection(3));
   }
 
-  public void testGetRenderedContentWithSourceSyntax() throws XWikiException {
+  @Test
+  public void test_getRenderedContentWithSourceSyntax() throws XWikiException {
     this.document.setSyntaxId("xwiki/1.0");
     String inputText = "**bold**";
     expect(mockXWikiRenderingEngine.renderText(EasyMock.eq(inputText),
@@ -675,19 +710,15 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
    * everything
    * but it does not crash).
    */
-  public void testRename10() throws XWikiException {
+  @Test
+  public void test_rename10() throws XWikiException {
     DocumentReference sourceReference = new DocumentReference(this.document.getDocumentReference());
     this.document.setContent("[pageinsamespace]");
     this.document.setSyntax(Syntax.XWIKI_1_0);
     DocumentReference targetReference = new DocumentReference("newwikiname", "newspace",
         "newpage");
     XWikiDocument targetDocument = this.document.duplicate(targetReference);
-
-    this.mockXWiki.stubs().method("copyDocument").will(returnValue(true));
-    this.mockXWiki.stubs().method("getDocument").with(eq(targetReference), ANYTHING)
-        .will(returnValue(targetDocument));
-    this.mockXWiki.stubs().method("saveDocument").isVoid();
-    this.mockXWiki.stubs().method("deleteDocument").isVoid();
+    this.wikiDocument = targetDocument;
 
     this.document.rename(new DocumentReference("newwikiname", "newspace", "newpage"),
         Collections.<DocumentReference>emptyList(),
@@ -702,7 +733,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
    * gets
    * misplaced, trying to remove it should indeed remove that object, and no other.
    */
-  public void testRemovingObjectWithWrongObjectVector() {
+  @Test
+  public void test_removingObjectWithWrongObjectVector() {
     // Setup: Create a document and two xobjects
     BaseObject o1 = new BaseObject();
     BaseObject o2 = new BaseObject();
@@ -746,7 +778,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     doc.addObject(CLASSNAME, o2);
   }
 
-  public void testCopyDocument() throws XWikiException {
+  @Test
+  public void test_copyDocument() throws XWikiException {
     XWikiDocument doc = new XWikiDocument();
     BaseObject o = new BaseObject();
     o.setClassName(CLASSNAME);
@@ -759,7 +792,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertFalse(newO.getGuid().equals(o.getGuid()));
   }
 
-  public void testResolveClassReference() throws Exception {
+  @Test
+  public void test_resolveClassReference() throws Exception {
     XWikiDocument doc = new XWikiDocument(new DocumentReference("docwiki", "docspace", "docpage"));
 
     DocumentReference expected1 = new DocumentReference("docwiki", "XWiki", "docpage");
@@ -778,7 +812,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
   /**
    * Test that the parent remain the same relative value whatever the context.
    */
-  public void testGetParent() {
+  @Test
+  public void test_getParent() {
     XWikiDocument doc = new XWikiDocument(new DocumentReference("docwiki", "docspace", "docpage"));
 
     assertEquals("", doc.getParent());
@@ -795,7 +830,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("page", doc.getParent());
   }
 
-  public void testGetParentReference() {
+  @Test
+  public void test_getParentReference() {
     XWikiDocument doc = new XWikiDocument(new DocumentReference("docwiki", "docspace", "docpage"));
 
     assertNull(doc.getParentReference());
@@ -835,14 +871,16 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
         doc.getParentReference());
   }
 
-  public void testSetAbsoluteParentReference() {
+  @Test
+  public void test_setAbsoluteParentReference() {
     XWikiDocument doc = new XWikiDocument(new DocumentReference("docwiki", "docspace", "docpage"));
 
     doc.setParentReference(new DocumentReference("docwiki", "docspace", "docpage2"));
     assertEquals("docspace.docpage2", doc.getParent());
   }
 
-  public void testSetRelativeParentReference() {
+  @Test
+  public void test_setRelativeParentReference() {
     XWikiDocument doc = new XWikiDocument(new DocumentReference("docwiki", "docspace", "docpage"));
 
     doc.setParentReference(new EntityReference("docpage2", EntityType.DOCUMENT));
@@ -856,7 +894,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
    * are
    * cloned into.
    */
-  public void testCloneObjectsHaveCorrectReference() {
+  @Test
+  public void test_cloneObjectsHaveCorrectReference() {
     XWikiDocument doc = new XWikiDocument(
         new DocumentReference("somewiki", "somespace", "somepage"));
     doc.cloneXObjects(this.document);
@@ -875,7 +914,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
    * are
    * cloned into and that GUID fors merged objects are different from the original GUIDs.
    */
-  public void testMergeObjectsHaveCorrectReferenceAndDifferentGuids() {
+  @Test
+  public void test_mergeObjectsHaveCorrectReferenceAndDifferentGuids() {
     List<String> originalGuids = new ArrayList<>();
     for (Map.Entry<DocumentReference, List<BaseObject>> entry : this.document.getXObjects()
         .entrySet()) {
@@ -903,7 +943,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
   /**
    * Verify that no ConcurrentModificationException is thrown, see CELDEV-725
    */
-  public void testMergeObjectsConcurrentModificationException() throws Exception {
+  @Test
+  public void test_mergeObjectsConcurrentModificationException() throws Exception {
     XWikiDocument doc = new XWikiDocument(
         new DocumentReference("somewiki", "somespace", "somepage"));
     doc.newObject(CLASSNAME, getContext());
@@ -912,7 +953,8 @@ public class XWikiDocumentTest extends AbstractBridgedXWikiComponentTestCase {
   }
 
   /** Check that a new empty document has empty content (used to have a new line before 2.5). */
-  public void testInitialContent() {
+  @Test
+  public void test_initialContent() {
     XWikiDocument doc = new XWikiDocument(
         new DocumentReference("somewiki", "somespace", "somepage"));
     assertEquals("", doc.getContent());

@@ -22,16 +22,18 @@ package org.xwiki.velocity.internal;
 import java.util.Collections;
 import java.util.Properties;
 
+import static org.easymock.EasyMock.*;
+
 import org.apache.velocity.tools.generic.ListTool;
 import org.apache.velocity.util.introspection.SecureUberspector;
-import org.jmock.Expectations;
+import org.junit.Before;
 import org.junit.Assert;
 import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
-import org.xwiki.test.AbstractMockingComponentTestCase;
-import org.xwiki.test.annotation.MockingRequirement;
 import org.xwiki.velocity.introspection.ChainingUberspector;
 import org.xwiki.velocity.introspection.DeprecatedCheckUberspector;
+
+import com.celements.velocity.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link DefaultVelocityConfiguration}.
@@ -39,35 +41,31 @@ import org.xwiki.velocity.introspection.DeprecatedCheckUberspector;
  * @version $Id$
  * @since 2.4RC1
  */
-public class DefaultVelocityConfigurationTest extends AbstractMockingComponentTestCase {
+public class DefaultVelocityConfigurationTest extends AbstractComponentTest {
 
-  @MockingRequirement
   private DefaultVelocityConfiguration configuration;
 
-  /**
-   * @see org.xwiki.test.AbstractMockingComponentTestCase#configure()
-   */
-  public void configure() throws Exception {
-    final ConfigurationSource source = getComponentManager().lookup(ConfigurationSource.class);
-    getMockery().checking(new Expectations() {
-
-      {
-        allowing(source).getProperty("velocity.tools", Properties.class);
-        will(returnValue(Collections.emptyMap()));
-        allowing(source).getProperty("velocity.properties", Properties.class);
-        will(returnValue(Collections.emptyMap()));
-      }
-    });
+  @Before
+  public void prepareTest() throws Exception {
+    ConfigurationSource source = registerComponentMock(ConfigurationSource.class);
+    expect(source.getProperty("velocity.tools", Properties.class))
+        .andReturn(new Properties()).anyTimes();
+    expect(source.getProperty("velocity.properties", Properties.class))
+        .andReturn(new Properties()).anyTimes();
+    configuration = getBeanFactory().getBean(DefaultVelocityConfiguration.class);
   }
 
   @Test
-  public void testDefaultToolsPresent() throws Exception {
+  public void test_defaultToolsPresent() throws Exception {
+    replayDefault();
     // Verify for example that the List tool is present.
     Assert.assertEquals(ListTool.class.getName(), this.configuration.getTools().get("listtool"));
+    verifyDefault();
   }
 
   @Test
-  public void testDefaultPropertiesPresent() throws Exception {
+  public void test_defaultPropertiesPresent() throws Exception {
+    replayDefault();
     // Verify that the secure uberspector is set by default
     Assert.assertEquals(ChainingUberspector.class.getName(),
         this.configuration.getProperties().getProperty("runtime.introspector.uberspect"));
@@ -84,5 +82,6 @@ public class DefaultVelocityConfigurationTest extends AbstractMockingComponentTe
     Assert.assertEquals(Boolean.TRUE.toString(),
         this.configuration.getProperties()
             .getProperty("velocimacro.permissions.allow.inline.local.scope"));
+    verifyDefault();
   }
 }

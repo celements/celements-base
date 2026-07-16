@@ -24,32 +24,48 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.Properties;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.util.introspection.SecureUberspector;
 import org.apache.velocity.util.introspection.UberspectImpl;
-import org.xwiki.test.AbstractXWikiComponentTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.xwiki.velocity.VelocityConfiguration;
 import org.xwiki.velocity.VelocityEngine;
 import org.xwiki.velocity.internal.DefaultVelocityEngine;
+
+import com.celements.velocity.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link ChainingUberspector}.
  */
-public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
+public class ChainingUberspectorTest extends AbstractComponentTest {
 
   private DefaultVelocityEngine engine;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    this.engine = (DefaultVelocityEngine) getComponentManager().lookup(VelocityEngine.class);
+  @Before
+  public void prepareTest() throws Exception {
+    VelocityConfiguration configuration = registerComponentMock(VelocityConfiguration.class);
+    expect(configuration.getProperties()).andReturn(new Properties());
+    engine = getBeanFactory().getBean(DefaultVelocityEngine.class);
+    replayDefault();
+  }
+
+  @After
+  public void verifyTest() {
+    verifyDefault();
   }
 
   /*
    * Tests that the uberspectors in the chain are called, and without a real uberspector no methods
    * are found.
    */
-  public void testEmptyChain() throws Exception {
+  @Test
+  public void test_emptyChain() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());
@@ -69,7 +85,8 @@ public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
    * the last uberspector
    * in the chain.
    */
-  public void testBasicChaining() throws Exception {
+  @Test
+  public void test_basicChaining() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());
@@ -89,7 +106,8 @@ public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
   /*
    * Tests that invalid uberspectors classnames are ignored.
    */
-  public void testInvalidUberspectorsAreIgnored() throws Exception {
+  @Test
+  public void test_invalidUberspectorsAreIgnored() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());
@@ -112,7 +130,8 @@ public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
   /*
    * Tests that a non-chainable entry in the chain does not forward calls.
    */
-  public void testChainBreakingOnNonChainableEntry() throws Exception {
+  @Test
+  public void test_chainBreakingOnNonChainableEntry() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());
@@ -130,7 +149,8 @@ public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
   /*
    * Checks that the default (non-secure) uberspector works and allows calling restricted methods.
    */
-  public void testDefaultUberspectorWorks() throws Exception {
+  @Test
+  public void test_defaultUberspectorWorks() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());
@@ -147,7 +167,8 @@ public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
   /*
    * Checks that the secure uberspector works and does not allow calling restricted methods.
    */
-  public void testSecureUberspectorWorks() throws Exception {
+  @Test
+  public void test_secureUberspectorWorks() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());
@@ -165,7 +186,8 @@ public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
    * Checks that when the chain property is not configured, by default the secure ubespector is
    * used.
    */
-  public void testSecureUberspectorEnabledByDefault() throws Exception {
+  @Test
+  public void test_secureUberspectorEnabledByDefault() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());
@@ -182,7 +204,8 @@ public class ChainingUberspectorTest extends AbstractXWikiComponentTestCase {
    * Checks that the deprecated check uberspector works.
    */
   @SuppressWarnings("deprecation")
-  public void testDeprecatedUberspector() throws Exception {
+  @Test
+  public void test_deprecatedUberspector() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         ChainingUberspector.class.getCanonicalName());

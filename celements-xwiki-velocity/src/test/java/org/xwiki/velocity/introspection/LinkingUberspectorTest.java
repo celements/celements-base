@@ -25,30 +25,46 @@ import java.io.StringWriter;
 import java.util.Date;
 import java.util.Properties;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.util.introspection.SecureUberspector;
 import org.apache.velocity.util.introspection.UberspectImpl;
-import org.xwiki.test.AbstractXWikiComponentTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.xwiki.velocity.VelocityConfiguration;
 import org.xwiki.velocity.VelocityEngine;
+
+import com.celements.velocity.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link LinkingUberspector}.
  */
-public class LinkingUberspectorTest extends AbstractXWikiComponentTestCase {
+public class LinkingUberspectorTest extends AbstractComponentTest {
 
   private VelocityEngine engine;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    this.engine = (VelocityEngine) getComponentManager().lookup(VelocityEngine.class);
+  @Before
+  public void prepareTest() throws Exception {
+    VelocityConfiguration configuration = registerComponentMock(VelocityConfiguration.class);
+    expect(configuration.getProperties()).andReturn(new Properties());
+    engine = getBeanFactory().getBean(VelocityEngine.class);
+    replayDefault();
+  }
+
+  @After
+  public void verifyTest() {
+    verifyDefault();
   }
 
   /*
    * Tests that the uberspectors in the list are called, and without a real uberspector no methods
    * are found.
    */
-  public void testEmptyArray() throws Exception {
+  @Test
+  public void test_emptyArray() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         LinkingUberspector.class.getCanonicalName());
@@ -68,7 +84,8 @@ public class LinkingUberspectorTest extends AbstractXWikiComponentTestCase {
    * valid uberspector in
    * the chain, and after a method is found no further calls are performed.
    */
-  public void testBasicArray() throws Exception {
+  @Test
+  public void test_basicArray() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         LinkingUberspector.class.getCanonicalName());
@@ -91,7 +108,8 @@ public class LinkingUberspectorTest extends AbstractXWikiComponentTestCase {
   /*
    * Tests that invalid uberspectors classnames are ignored.
    */
-  public void testInvalidUberspectorsAreIgnored() throws Exception {
+  @Test
+  public void test_invalidUberspectorsAreIgnored() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         LinkingUberspector.class.getCanonicalName());
@@ -115,7 +133,8 @@ public class LinkingUberspectorTest extends AbstractXWikiComponentTestCase {
   /*
    * Checks that the default (non-secure) uberspector works and allows calling restricted methods.
    */
-  public void testDefaultUberspectorWorks() throws Exception {
+  @Test
+  public void test_defaultUberspectorWorks() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         LinkingUberspector.class.getCanonicalName());
@@ -132,7 +151,8 @@ public class LinkingUberspectorTest extends AbstractXWikiComponentTestCase {
   /*
    * Checks that the secure uberspector works and does not allow calling restricted methods.
    */
-  public void testSecureUberspectorWorks() throws Exception {
+  @Test
+  public void test_secureUberspectorWorks() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         LinkingUberspector.class.getCanonicalName());
@@ -150,7 +170,8 @@ public class LinkingUberspectorTest extends AbstractXWikiComponentTestCase {
    * Checks that when the array property is not configured, by default the secure ubespector is
    * used.
    */
-  public void testSecureUberspectorEnabledByDefault() throws Exception {
+  @Test
+  public void test_secureUberspectorEnabledByDefault() throws Exception {
     Properties prop = new Properties();
     prop.setProperty(RuntimeConstants.UBERSPECT_CLASSNAME,
         LinkingUberspector.class.getCanonicalName());

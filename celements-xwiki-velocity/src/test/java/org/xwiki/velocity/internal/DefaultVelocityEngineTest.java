@@ -26,47 +26,49 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.easymock.EasyMock.*;
+
 import org.apache.velocity.context.Context;
 import org.apache.velocity.util.introspection.SecureUberspector;
-import org.jmock.Expectations;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Assert;
 import org.junit.Test;
-import org.xwiki.test.AbstractMockingComponentTestCase;
-import org.xwiki.test.annotation.MockingRequirement;
 import org.xwiki.velocity.VelocityConfiguration;
 import org.xwiki.velocity.introspection.ChainingUberspector;
 import org.xwiki.velocity.introspection.DeprecatedCheckUberspector;
 
+import com.celements.velocity.test.AbstractComponentTest;
+
 /**
  * Unit tests for {@link DefaultVelocityEngine}.
  */
-public class DefaultVelocityEngineTest extends AbstractMockingComponentTestCase {
+public class DefaultVelocityEngineTest extends AbstractComponentTest {
 
-  @MockingRequirement
   private DefaultVelocityEngine engine;
 
-  @Override
-  public void configure() throws Exception {
-    final Properties properties = new Properties();
+  @Before
+  public void prepareTest() throws Exception {
+    Properties properties = new Properties();
     properties.put("runtime.introspector.uberspect", ChainingUberspector.class.getName());
     properties.put("runtime.introspector.uberspect.chainClasses",
         SecureUberspector.class.getName() + "," + DeprecatedCheckUberspector.class.getName());
     properties.put("directive.set.null.allowed", Boolean.TRUE.toString());
     properties.put("velocimacro.permissions.allow.inline.local.scope", Boolean.TRUE.toString());
 
-    final VelocityConfiguration configuration = getComponentManager()
-        .lookup(VelocityConfiguration.class);
-    getMockery().checking(new Expectations() {
+    VelocityConfiguration configuration = registerComponentMock(VelocityConfiguration.class);
+    expect(configuration.getProperties()).andReturn(properties);
+    engine = getBeanFactory().getBean(DefaultVelocityEngine.class);
+    replayDefault();
+  }
 
-      {
-        oneOf(configuration).getProperties();
-        will(returnValue(properties));
-      }
-    });
+  @After
+  public void verifyTest() {
+    verifyDefault();
   }
 
   @Test
-  public void testEvaluateReader() throws Exception {
+  public void test_evaluateReader() throws Exception {
     this.engine.initialize(new Properties());
     StringWriter writer = new StringWriter();
     this.engine.evaluate(new org.apache.velocity.VelocityContext(), writer, "mytemplate",
@@ -75,7 +77,7 @@ public class DefaultVelocityEngineTest extends AbstractMockingComponentTestCase 
   }
 
   @Test
-  public void testEvaluateString() throws Exception {
+  public void test_evaluateString() throws Exception {
     this.engine.initialize(new Properties());
     StringWriter writer = new StringWriter();
     this.engine.evaluate(new org.apache.velocity.VelocityContext(), writer, "mytemplate",
@@ -87,7 +89,7 @@ public class DefaultVelocityEngineTest extends AbstractMockingComponentTestCase 
    * Verify that the default configuration doesn't allow calling Class.forName.
    */
   @Test
-  public void testSecureUberspectorActiveByDefault() throws Exception {
+  public void test_secureUberspectorActiveByDefault() throws Exception {
     this.engine.initialize(new Properties());
     StringWriter writer = new StringWriter();
     this.engine.evaluate(new org.apache.velocity.VelocityContext(), writer, "mytemplate",
@@ -100,7 +102,7 @@ public class DefaultVelocityEngineTest extends AbstractMockingComponentTestCase 
    * Verify that the default configuration allows #setting existing variables to null.
    */
   @Test
-  public void testSettingNullAllowedByDefault() throws Exception {
+  public void test_settingNullAllowedByDefault() throws Exception {
     this.engine.initialize(new Properties());
     StringWriter writer = new StringWriter();
     Context context = new org.apache.velocity.VelocityContext();
@@ -117,7 +119,7 @@ public class DefaultVelocityEngineTest extends AbstractMockingComponentTestCase 
   }
 
   @Test
-  public void testOverrideConfiguration() throws Exception {
+  public void test_overrideConfiguration() throws Exception {
     // For example try setting a non secure Uberspector.
     Properties properties = new Properties();
     properties.setProperty("runtime.introspector.uberspect",
@@ -131,7 +133,7 @@ public class DefaultVelocityEngineTest extends AbstractMockingComponentTestCase 
   }
 
   @Test
-  public void testMacroIsolation() throws Exception {
+  public void test_macroIsolation() throws Exception {
     this.engine.initialize(new Properties());
     Context context = new org.apache.velocity.VelocityContext();
     this.engine.evaluate(context, new StringWriter(), "template1", "#macro(mymacro)test#end");
@@ -141,7 +143,7 @@ public class DefaultVelocityEngineTest extends AbstractMockingComponentTestCase 
   }
 
   @Test
-  public void testConfigureMacrosToBeGlobal() throws Exception {
+  public void test_configureMacrosToBeGlobal() throws Exception {
     Properties properties = new Properties();
     // Force macros to be global
     properties.put("velocimacro.permissions.allow.inline.local.scope", "false");

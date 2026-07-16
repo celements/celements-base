@@ -19,17 +19,20 @@
  */
 package com.xpn.xwiki.notify;
 
-import org.jmock.Mock;
-import org.jmock.core.constraint.IsEqual;
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Tests the {@link PropertyChangedRule} in the notification mechanism. <br />
@@ -43,7 +46,7 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
  * duplicated by the
  * symmetric call in another test function.
  */
-public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCase
+public class PropertyChangedRuleTest extends AbstractComponentTest
     implements XWikiDocChangeNotificationInterface {
 
   private PropertyChangedRule rule;
@@ -68,8 +71,6 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
 
   private XWikiContext context;
 
-  private Mock mockXWiki;
-
   private boolean passed;
 
   /**
@@ -79,35 +80,33 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
    * a xwiki mock that
    * only returns the above mentioned classes on {@link XWiki#getClass(String, XWikiContext)}.
    */
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
-    this.context = new XWikiContext();
-
-    this.mockXWiki = mock(XWiki.class);
-    this.mockXWiki.stubs().method("getXClass")
-        .with(new IsEqual(testClassReference), new IsEqual(this.context))
-        .will(returnValue(this.testClass));
-    this.mockXWiki.stubs().method("getXClass")
-        .with(new IsEqual(testOtherClassReference), new IsEqual(this.context))
-        .will(returnValue(this.otherClass));
-
-    this.context.setWiki((XWiki) this.mockXWiki.proxy());
-
-    this.classDoc = new XWikiDocument("Test", "TestClass");
-    this.testClass = this.classDoc.getxWikiClass();
+  @Before
+  public void prepareTest() throws Exception {
+    context = getContext();
+    classDoc = new XWikiDocument("Test", "TestClass");
+    testClass = classDoc.getxWikiClass();
     testClass.addTextField(this.testPropertyName, this.testPropertyName, 10);
 
     XWikiDocument otherClassDoc = new XWikiDocument("Test", "OtherClass");
-    this.otherClass = otherClassDoc.getxWikiClass();
+    otherClass = otherClassDoc.getxWikiClass();
     // Just to make tests a little more interesting
     this.otherClass.addTextField(this.testPropertyName, this.testPropertyName, 10);
 
-    this.rule = new PropertyChangedRule(this, this.testClassName, this.testPropertyName);
+    expect(getWikiMock().getXClass(eq(testClassReference), same(context)))
+        .andReturn(testClass).anyTimes();
+    expect(getWikiMock().getXClass(eq(testOtherClassReference), same(context)))
+        .andReturn(otherClass).anyTimes();
+    replayDefault();
+    rule = new PropertyChangedRule(this, this.testClassName, this.testPropertyName);
   }
 
-  public void testVerifySingleObjectNotChanged() throws XWikiException {
+  @After
+  public void verifyTest() {
+    verifyDefault();
+  }
+
+  @Test
+  public void test_verifySingleObject_notChanged() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -127,7 +126,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifySingleObjectChanged() throws XWikiException {
+  @Test
+  public void test_verifySingleObject_changed() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -147,7 +147,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifySingleObjectXWikiClassNotChanged() throws XWikiException {
+  @Test
+  public void test_verifySingleObject_xwikiClassNotChanged() throws XWikiException {
     XWikiDocument newDoc = this.classDoc.clone();
     XWikiDocument oldDoc = this.classDoc.clone();
 
@@ -167,7 +168,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsXWikiClassNotChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_xwikiClassNotChanged() throws XWikiException {
     XWikiDocument newDoc = this.classDoc.clone();
     XWikiDocument oldDoc = this.classDoc.clone();
 
@@ -191,7 +193,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsXWikiClassChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_xwikiClassChanged() throws XWikiException {
     XWikiDocument newDoc = this.classDoc.clone();
     XWikiDocument oldDoc = this.classDoc.clone();
 
@@ -215,7 +218,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifySingleObjectXWikiClassChanged() throws XWikiException {
+  @Test
+  public void test_verifySingleObject_xwikiClassChanged() throws XWikiException {
     XWikiDocument newDoc = this.classDoc.clone();
     XWikiDocument oldDoc = this.classDoc.clone();
 
@@ -235,7 +239,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsMultipleXWikiClassChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_multipleXWikiClassChanged() throws XWikiException {
     XWikiDocument newDoc = this.classDoc.clone();
     XWikiDocument oldDoc = this.classDoc.clone();
 
@@ -263,7 +268,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsMultipleXWikiClassNotChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_multipleXWikiClassNotChanged() throws XWikiException {
     XWikiDocument newDoc = this.classDoc.clone();
     XWikiDocument oldDoc = this.classDoc.clone();
 
@@ -291,7 +297,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifyObjectAdded() throws XWikiException {
+  @Test
+  public void test_verify_objectAdded() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -309,7 +316,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyObjectDeleted() throws XWikiException {
+  @Test
+  public void test_verify_objectDeleted() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -327,7 +335,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyNoObjectOfClassObjectDeleted() throws XWikiException {
+  @Test
+  public void test_verifyNoObjectOfClass_objectDeleted() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -347,7 +356,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyNoObjectOfClass() throws XWikiException {
+  @Test
+  public void test_verify_noObjectOfClass() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -367,7 +377,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsPropertyNotChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_propertyNotChanged() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -391,7 +402,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsPropertyChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_propertyChanged() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -415,7 +427,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsOtherObjectAdded() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_otherObjectAdded() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -441,7 +454,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsOtherObjectDeleted() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_otherObjectDeleted() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -467,7 +481,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertFalse("My notification should not have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsObjectAdded() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_objectAdded() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -489,7 +504,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsObjectDeleted() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_objectDeleted() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -511,7 +527,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsOtherObjectAddedPropertyChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_otherObjectAddedPropertyChanged() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 
@@ -537,7 +554,8 @@ public class PropertyChangedRuleTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue("My notification should have been called", this.passed);
   }
 
-  public void testVerifyMultipleObjectsClassChanged() throws XWikiException {
+  @Test
+  public void test_verifyMultipleObjects_classChanged() throws XWikiException {
     XWikiDocument newDoc = new XWikiDocument("Test", "TestDoc");
     XWikiDocument oldDoc = new XWikiDocument("Test", "TestDoc");
 

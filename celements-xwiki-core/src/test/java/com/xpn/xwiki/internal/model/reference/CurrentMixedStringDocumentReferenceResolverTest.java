@@ -21,6 +21,7 @@ package com.xpn.xwiki.internal.model.reference;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -28,7 +29,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link CurrentMixedStringDocumentReferenceResolver}.
@@ -36,21 +37,19 @@ import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
  * @version $Id: 9a63c8ac43ca59a35010f94e4ccc393dbda3b012 $
  */
 public class CurrentMixedStringDocumentReferenceResolverTest
-    extends AbstractBridgedComponentTestCase {
+    extends AbstractComponentTest {
 
   private static final String CURRENT_SPACE = "currentspace";
 
   private EntityReferenceResolver<String> resolver;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
-    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "currentmixed");
+  @Before
+  public void prepareTest() throws Exception {
+    resolver = getBeanFactory().getBean("currentmixed", EntityReferenceResolver.class);
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenContextDocument() throws Exception {
+  public void test_resolveDocumentReference_whenContextDocument() throws Exception {
     getContext()
         .setDoc(new XWikiDocument(new DocumentReference("not used", CURRENT_SPACE, "notused")));
 
@@ -63,7 +62,7 @@ public class CurrentMixedStringDocumentReferenceResolverTest
   }
 
   @Test
-  public void testResolveDocumentReferenceForDefaultWikiWhenNoContextDocument() throws Exception {
+  public void test_resolveDocumentReferenceForDefaultWiki_whenNoContextDocument() throws Exception {
     getContext().setDatabase("currentwiki");
 
     EntityReference reference = this.resolver.resolve("space.page", EntityType.DOCUMENT);

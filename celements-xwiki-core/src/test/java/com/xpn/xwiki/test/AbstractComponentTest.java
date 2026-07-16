@@ -21,6 +21,9 @@ package com.xpn.xwiki.test;
 
 import static org.easymock.EasyMock.*;
 
+import java.time.Duration;
+import java.util.Optional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.mock.web.MockServletContext;
@@ -32,6 +35,7 @@ import org.xwiki.rendering.syntax.Syntax;
 
 import com.celements.common.test.AbstractBaseComponentTest;
 import com.celements.execution.XWikiExecutionProp;
+import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.CoreConfiguration;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
@@ -42,7 +46,7 @@ import com.xpn.xwiki.util.XWikiStubContextProvider;
 import com.xpn.xwiki.web.Utils;
 
 /**
- * Same as {@link com.xpn.xwiki.test.AbstractBridgedComponentTestCase} but for EasyMock.
+ * Native component test base for the xwiki-core module, which cannot depend on shared tests.
  */
 public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
 
@@ -77,6 +81,10 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
     XWikiStubContextProvider ctxProviderMock = registerComponentMock(
         XWikiStubContextProvider.class);
     expect(ctxProviderMock.createStubContext(same(execCtx))).andReturn(context).anyTimes();
+
+    XWikiProvider xwikiProviderMock = registerComponentMock(XWikiProvider.class);
+    expect(xwikiProviderMock.get()).andReturn(Optional.empty()).anyTimes();
+    expect(xwikiProviderMock.await(anyObject(Duration.class))).andReturn(getWikiMock()).anyTimes();
 
     // Set a simple application context, as some components fail to start without one.
     getComponentManager().lookup(Container.class)

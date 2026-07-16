@@ -26,9 +26,9 @@ import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.store.id.IdVersion;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
-public class BaseElementToStringTest extends AbstractBridgedComponentTestCase {
+public class BaseElementToStringTest extends AbstractComponentTest {
 
   private DocumentReference docRef = new DocumentReference("wiki", "Space", "Doc");
   private DocumentReference classRef = new DocumentReference("wiki", "Celements", "Class");

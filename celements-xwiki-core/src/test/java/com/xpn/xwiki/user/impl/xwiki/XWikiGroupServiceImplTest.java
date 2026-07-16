@@ -19,25 +19,25 @@
  */
 package com.xpn.xwiki.user.impl.xwiki;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.jmock.Mock;
-import org.jmock.core.Invocation;
-import org.jmock.core.stub.CustomStub;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
-public class XWikiGroupServiceImplTest extends AbstractBridgedXWikiComponentTestCase {
+public class XWikiGroupServiceImplTest extends AbstractComponentTest {
 
   XWikiGroupServiceImpl groupService;
-
-  private Mock mockXWiki;
 
   private XWikiDocument user;
 
@@ -46,68 +46,53 @@ public class XWikiGroupServiceImplTest extends AbstractBridgedXWikiComponentTest
   private XWikiDocument group;
   private BaseObject groupObject;
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see junit.framework.TestCase#setUp()
-   */
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void prepareTest() throws Exception {
+    groupService = new XWikiGroupServiceImpl();
 
-    this.groupService = new XWikiGroupServiceImpl();
-
-    this.mockXWiki = mock(XWiki.class);
-    this.mockXWiki.stubs().method("isVirtualMode").will(returnValue(true));
-    this.mockXWiki.stubs().method("isReadOnly").will(returnValue(false));
-    this.mockXWiki.stubs().method("getWikiOwner").will(returnValue(null));
-    this.mockXWiki.stubs().method("getMaxRecursiveSpaceChecks").will(returnValue(0));
-    this.mockXWiki.stubs().method("getDocument").with(ANYTHING, eq("WebPreferences"), ANYTHING)
-        .will(
-            new CustomStub("Implements XWiki.getDocument") {
-
-              @Override
-              public Object invoke(Invocation invocation) throws Throwable {
-                return new XWikiDocument(new DocumentReference(getContext().getDatabase(),
-                    (String) invocation.parameterValues.get(0), "WebPreferences"));
-              }
-            });
-
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
-
-    this.user = new XWikiDocument(new DocumentReference("wiki", "XWiki", "user"));
+    user = new XWikiDocument(new DocumentReference("wiki", "XWiki", "user"));
     getContext().setDatabase(this.user.getWikiName());
     BaseObject userObject = new BaseObject();
     userObject.setClassName("XWiki.XWikiUser");
     this.user.addXObject(userObject);
-    this.mockXWiki.stubs().method("getDocument").with(eq(this.user.getPrefixedFullName()), ANYTHING)
-        .will(
-            returnValue(this.user));
-
-    this.userWithSpaces = new XWikiDocument(
+    userWithSpaces = new XWikiDocument(
         new DocumentReference("wiki", "XWiki", "user with spaces"));
     getContext().setDatabase(this.userWithSpaces.getWikiName());
     BaseObject userWithSpacesObject = new BaseObject();
     userWithSpacesObject.setClassName("XWiki.XWikiUser");
     this.userWithSpaces.addXObject(userWithSpacesObject);
-    this.mockXWiki.stubs().method("getDocument")
-        .with(eq(this.userWithSpaces.getPrefixedFullName()), ANYTHING)
-        .will(returnValue(this.userWithSpaces));
-
-    this.group = new XWikiDocument(new DocumentReference("wiki", "XWiki", "group"));
+    group = new XWikiDocument(new DocumentReference("wiki", "XWiki", "group"));
     getContext().setDatabase(this.group.getWikiName());
     this.groupObject = new BaseObject();
     this.groupObject.setClassName("XWiki.XWikiGroups");
     this.groupObject.setStringValue("member", this.user.getFullName());
     this.group.addXObject(this.groupObject);
-    this.mockXWiki.stubs().method("getDocument")
-        .with(eq(this.group.getPrefixedFullName()), ANYTHING).will(
-            returnValue(this.group));
-    this.mockXWiki.stubs().method("getDocument").with(eq(this.group.getFullName()), ANYTHING).will(
-        returnValue(this.group));
+    expect(getWikiMock().isVirtualMode()).andReturn(true).anyTimes();
+    expect(getWikiMock().isReadOnly()).andReturn(false).anyTimes();
+    expect(getWikiMock().getWikiOwner(anyString(), same(getContext()))).andReturn(null).anyTimes();
+    expect(getWikiMock().getMaxRecursiveSpaceChecks(same(getContext()))).andReturn(0).anyTimes();
+    expect(getWikiMock().getDocument(anyString(), eq("WebPreferences"), same(getContext())))
+        .andAnswer(() -> new XWikiDocument(new DocumentReference(getContext().getDatabase(),
+            (String) getCurrentArgument(0), "WebPreferences"))).anyTimes();
+    expect(getWikiMock().getDocument(anyString(), same(getContext()))).andAnswer(() -> {
+      String name = getCurrentArgument(0);
+      if (name.equals(user.getPrefixedFullName())) {
+        return user;
+      } else if (name.equals(userWithSpaces.getPrefixedFullName())) {
+        return userWithSpaces;
+      }
+      return group;
+    }).anyTimes();
+    replayDefault();
   }
 
-  public void testListMemberForGroup() throws XWikiException {
+  @After
+  public void verifyTest() {
+    verifyDefault();
+  }
+
+  @Test
+  public void test_listMemberForGroup() throws XWikiException {
     assertEquals(new HashSet<>(Arrays.asList(this.user.getFullName())),
         new HashSet<>(this.groupService
             .listMemberForGroup(this.group.getFullName(), getContext())));

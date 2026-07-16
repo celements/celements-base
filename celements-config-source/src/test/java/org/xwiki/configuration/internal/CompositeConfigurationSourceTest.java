@@ -32,7 +32,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.properties.ConverterManager;
-import org.xwiki.test.AbstractComponentTestCase;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link CompositeConfigurationSource}.
@@ -40,7 +41,7 @@ import org.xwiki.test.AbstractComponentTestCase;
  * @version $Id$
  * @since 2.0M1
  */
-public class CompositeConfigurationSourceTest extends AbstractComponentTestCase {
+public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest {
 
   private CompositeConfigurationSource composite;
 

@@ -28,6 +28,11 @@
       <artifactId>xwiki-core-script</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- Spring -->
     <dependency>
@@ -72,8 +77,8 @@
 
     <!-- Testing -->
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-shared-tests</artifactId>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

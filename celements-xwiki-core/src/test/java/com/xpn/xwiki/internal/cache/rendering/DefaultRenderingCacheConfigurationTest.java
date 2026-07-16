@@ -19,17 +19,20 @@
  */
 package com.xpn.xwiki.internal.cache.rendering;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.test.MockConfigurationSource;
 
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit test for {@link DefaultRenderingCacheConfiguration}.
@@ -37,48 +40,45 @@ import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
  * @version $Id$
  * @since 2.4M1
  */
-public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWikiComponentTestCase {
+public class DefaultRenderingCacheConfigurationTest extends AbstractComponentTest {
 
   private RenderingCacheConfiguration configuration;
 
   private DocumentReference documentReference;
 
-  @Override
-  protected void registerComponents() throws Exception {
-    super.registerComponents();
+  private MapConfigurationSource wikiConfigurationSource;
 
-    getComponentManager().registerComponent(MockConfigurationSource.getDescriptor("wiki"));
+  private MapConfigurationSource xwikiPropertiesConfigurationSource;
+
+  private MapConfigurationSource getWikiConfigurationSource() {
+    return wikiConfigurationSource;
   }
 
-  private MockConfigurationSource getWikiConfigurationSource() throws Exception {
-    return (MockConfigurationSource) getComponentManager().lookup(ConfigurationSource.class,
-        "wiki");
+  private MapConfigurationSource getXWikiPropertiesConfigurationSource() {
+    return xwikiPropertiesConfigurationSource;
   }
 
-  private MockConfigurationSource getXWikiPropertiesConfigurationSource() throws Exception {
-    return (MockConfigurationSource) getComponentManager().lookup(ConfigurationSource.class,
-        "xwikiproperties");
-  }
-
-  @Override
   @Before
-  public void setUp() throws Exception {
-    super.setUp();
-
-    this.configuration = getComponentManager().lookup(RenderingCacheConfiguration.class);
-    this.documentReference = new DocumentReference("wiki", "space", "page");
+  public void prepareTest() throws Exception {
+    wikiConfigurationSource = new MapConfigurationSource();
+    xwikiPropertiesConfigurationSource = new MapConfigurationSource();
+    registerComponentMock(ConfigurationSource.class, "wiki", wikiConfigurationSource);
+    registerComponentMock(ConfigurationSource.class, "xwikiproperties",
+        xwikiPropertiesConfigurationSource);
+    configuration = getBeanFactory().getBean(RenderingCacheConfiguration.class);
+    documentReference = new DocumentReference("wiki", "space", "page");
 
     getContext().setDatabase("wiki");
   }
 
   @Test
-  public void testIsCachedWithNoConfiguration() throws Exception {
+  public void test_isCached_withNoConfiguration() throws Exception {
     Assert.assertFalse(this.configuration.isCached(this.documentReference));
   }
 
   @Test
-  public void testIsCachedWhenDisabled() throws Exception {
-    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  public void test_isCached_whenDisabled() throws Exception {
+    MapConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
     source.setProperty("core.renderingcache.enabled", false);
 
@@ -86,8 +86,8 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
   }
 
   @Test
-  public void testIsCachedWhenDisabledWithNoConfiguration() throws Exception {
-    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  public void test_isCached_whenDisabledWithNoConfiguration() throws Exception {
+    MapConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
     source.setProperty("core.renderingcache.enabled", true);
 
@@ -95,8 +95,8 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
   }
 
   @Test
-  public void testIsCachedWithExactReference() throws Exception {
-    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  public void test_isCached_withExactReference() throws Exception {
+    MapConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
     source.setProperty("core.renderingcache.enabled", true);
     source.setProperty("core.renderingcache.documents",
@@ -106,8 +106,8 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
   }
 
   @Test
-  public void testIsCachedWithWrongReference() throws Exception {
-    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  public void test_isCached_withWrongReference() throws Exception {
+    MapConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
     source.setProperty("core.renderingcache.enabled", true);
     source.setProperty("core.renderingcache.documents",
@@ -117,8 +117,8 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
   }
 
   @Test
-  public void testIsCachedWithOnePattern() throws Exception {
-    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  public void test_isCached_withOnePattern() throws Exception {
+    MapConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
     source.setProperty("core.renderingcache.enabled", true);
     source.setProperty("core.renderingcache.documents", Collections.singletonList("wiki:space.*"));
@@ -127,8 +127,8 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
   }
 
   @Test
-  public void testIsCachedWithSeveralPattern() throws Exception {
-    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  public void test_isCached_withSeveralPattern() throws Exception {
+    MapConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
     source.setProperty("core.renderingcache.enabled", true);
     source.setProperty("core.renderingcache.documents",
@@ -138,8 +138,8 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
   }
 
   @Test
-  public void testIsCachedWithSeveralPattern2() throws Exception {
-    MockConfigurationSource source = getXWikiPropertiesConfigurationSource();
+  public void test_isCached_withSeveralPattern2() throws Exception {
+    MapConfigurationSource source = getXWikiPropertiesConfigurationSource();
 
     source.setProperty("core.renderingcache.enabled", true);
     source.setProperty("core.renderingcache.documents",
@@ -149,10 +149,10 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
   }
 
   @Test
-  public void testIsCachedWithWikiConfiguration() throws Exception {
+  public void test_isCached_withWikiConfiguration() throws Exception {
     getXWikiPropertiesConfigurationSource().setProperty("core.renderingcache.enabled", true);
 
-    MockConfigurationSource wikiSource = getWikiConfigurationSource();
+    MapConfigurationSource wikiSource = getWikiConfigurationSource();
 
     wikiSource.setProperty("core.renderingcache.enabled", true);
     wikiSource.setProperty("core.renderingcache.documents",
@@ -164,5 +164,46 @@ public class DefaultRenderingCacheConfigurationTest extends AbstractBridgedXWiki
         Arrays.asList("space.*", "wrongreference"));
 
     Assert.assertTrue(this.configuration.isCached(this.documentReference));
+  }
+
+  private static class MapConfigurationSource implements ConfigurationSource {
+
+    private final Map<String, Object> properties = new HashMap<>();
+
+    void setProperty(String key, Object value) {
+      properties.put(key, value);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(String key, T defaultValue) {
+      return (T) properties.getOrDefault(key, defaultValue);
+    }
+
+    @Override
+    public <T> T getProperty(String key, Class<T> valueClass) {
+      return valueClass.cast(properties.get(key));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(String key) {
+      return (T) properties.get(key);
+    }
+
+    @Override
+    public List<String> getKeys() {
+      return new ArrayList<>(properties.keySet());
+    }
+
+    @Override
+    public boolean containsKey(String key) {
+      return properties.containsKey(key);
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return properties.isEmpty();
+    }
   }
 }

@@ -23,17 +23,17 @@ package com.xpn.xwiki.objects.classes;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for the {@link BaseClass} class.
  *
  * @version $Id$
  */
-public class BaseClassTest extends AbstractBridgedComponentTestCase {
+public class BaseClassTest extends AbstractComponentTest {
 
   @Test
-  public void testSetWikiSetName() throws Exception {
+  public void test_setWiki_setName() throws Exception {
     BaseClass baseClass = new BaseClass();
 
     baseClass.setWiki("otherwiki");
@@ -53,7 +53,7 @@ public class BaseClassTest extends AbstractBridgedComponentTestCase {
   }
 
   @Test
-  public void testSetNameSetWiki() throws Exception {
+  public void test_setName_setWiki() throws Exception {
     String database = getContext().getDatabase();
     BaseClass baseClass = new BaseClass();
 
@@ -75,7 +75,7 @@ public class BaseClassTest extends AbstractBridgedComponentTestCase {
   }
 
   @Test
-  public void testSetNameAloneWithChangingContext() throws Exception {
+  public void test_setNameAlone_withChangingContext() throws Exception {
     String database = getContext().getDatabase();
     BaseClass baseClass = new BaseClass();
 

@@ -20,18 +20,16 @@
 package org.xwiki.model.internal.scripting;
 
 import static org.junit.Assert.*;
+import static org.easymock.EasyMock.*;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
 import org.junit.Before;
 import org.junit.Test;
-import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link org.xwiki.model.internal.scripting.ModelScriptService}.
@@ -39,127 +37,79 @@ import org.xwiki.model.reference.EntityReference;
  * @version $Id: 77b03a9643275e5588336bdb9df2750275884d7a $
  * @since 2.3M1
  */
-public class ModelScriptServiceTest {
+public class ModelScriptServiceTest extends AbstractBaseComponentTest {
 
   private ModelScriptService service;
 
-  private ComponentManager mockComponentManager;
-
-  private DocumentReferenceResolver mockResolver;
-
-  private Mockery mockery = new Mockery();
+  private DocumentReferenceResolver<EntityReference> resolver;
 
   @Before
-  public void setUp() {
-    this.service = new ModelScriptService();
-    this.mockComponentManager = this.mockery.mock(ComponentManager.class);
-    ReflectionUtils.setFieldValue(this.service, "componentManager", this.mockComponentManager);
-    this.mockResolver = this.mockery.mock(DocumentReferenceResolver.class);
+  public void prepareTest() throws Exception {
+    resolver = registerComponentMock(DocumentReferenceResolver.class, "default/reference");
+    service = getBeanFactory().getBean(ModelScriptService.class);
   }
 
   @Test
-  public void testCreateDocumentReference() throws Exception {
-    this.mockery.checking(new Expectations() {
+  public void test_createDocumentReference() throws Exception {
+    expect(resolver.resolve(new DocumentReference("wiki", "space", "page"))).andReturn(null);
 
-      {
-        allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
-        will(returnValue(mockResolver));
-
-        allowing(mockResolver).resolve(new DocumentReference("wiki", "space", "page"));
-      }
-    });
-
-    this.service.createDocumentReference("wiki", "space", "page", "default/reference");
+    replayDefault();
+    service.createDocumentReference("wiki", "space", "page", "default/reference");
+    verifyDefault();
   }
 
   @Test
-  public void testCreateDocumentReferenceWhenEmptyParameters() throws Exception {
-    this.mockery.checking(new Expectations() {
+  public void test_createDocumentReference_whenEmptyParameters() throws Exception {
+    expect(resolver.resolve((EntityReference) null)).andReturn(null);
 
-      {
-        allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
-        will(returnValue(mockResolver));
-
-        allowing(mockResolver).resolve(null);
-      }
-    });
-
-    this.service.createDocumentReference("", "", "", "default/reference");
+    replayDefault();
+    service.createDocumentReference("", "", "", "default/reference");
+    verifyDefault();
   }
 
   @Test
-  public void testCreateDocumentReferenceWhenWikiParameterEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+  public void test_createDocumentReference_whenWikiParameterEmpty() throws Exception {
+    expect(resolver.resolve(new EntityReference("page", EntityType.DOCUMENT,
+        new EntityReference("space", EntityType.SPACE)))).andReturn(null);
 
-      {
-        allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
-        will(returnValue(mockResolver));
-
-        allowing(mockResolver).resolve(new EntityReference("page", EntityType.DOCUMENT,
-            new EntityReference("space", EntityType.SPACE)));
-      }
-    });
-
-    this.service.createDocumentReference("", "space", "page", "default/reference");
+    replayDefault();
+    service.createDocumentReference("", "space", "page", "default/reference");
+    verifyDefault();
   }
 
   @Test
-  public void testCreateDocumentReferenceWhenSpaceParameterEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+  public void test_createDocumentReference_whenSpaceParameterEmpty() throws Exception {
+    expect(resolver.resolve(new EntityReference("page", EntityType.DOCUMENT,
+        new EntityReference("wiki", EntityType.WIKI)))).andReturn(null);
 
-      {
-        allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
-        will(returnValue(mockResolver));
-
-        allowing(mockResolver).resolve(new EntityReference("page", EntityType.DOCUMENT,
-            new EntityReference("wiki", EntityType.WIKI)));
-      }
-    });
-
-    this.service.createDocumentReference("wiki", "", "page", "default/reference");
+    replayDefault();
+    service.createDocumentReference("wiki", "", "page", "default/reference");
+    verifyDefault();
   }
 
   @Test
-  public void testCreateDocumentReferenceWhenPageParameterEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+  public void test_createDocumentReference_whenPageParameterEmpty() throws Exception {
+    expect(resolver.resolve(new EntityReference("space", EntityType.SPACE,
+        new EntityReference("wiki", EntityType.WIKI)))).andReturn(null);
 
-      {
-        allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
-        will(returnValue(mockResolver));
-
-        allowing(mockResolver).resolve(new EntityReference("space", EntityType.SPACE,
-            new EntityReference("wiki", EntityType.WIKI)));
-      }
-    });
-
-    this.service.createDocumentReference("wiki", "space", "", "default/reference");
+    replayDefault();
+    service.createDocumentReference("wiki", "space", "", "default/reference");
+    verifyDefault();
   }
 
   @Test
-  public void testCreateDocumentReferenceWhenWikiAndSpaceParametersEmpty() throws Exception {
-    this.mockery.checking(new Expectations() {
+  public void test_createDocumentReference_whenWikiAndSpaceParametersEmpty() throws Exception {
+    expect(resolver.resolve(new EntityReference("wiki", EntityType.WIKI))).andReturn(null);
 
-      {
-        allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "default/reference");
-        will(returnValue(mockResolver));
-
-        allowing(mockResolver).resolve(new EntityReference("wiki", EntityType.WIKI));
-      }
-    });
-
-    this.service.createDocumentReference("wiki", "", "", "default/reference");
+    replayDefault();
+    service.createDocumentReference("wiki", "", "", "default/reference");
+    verifyDefault();
   }
 
   @Test
-  public void testCreateDocumentReferenceWhenInvalidHint() throws Exception {
-    this.mockery.checking(new Expectations() {
-
-      {
-        allowing(mockComponentManager).lookup(DocumentReferenceResolver.class, "invalid");
-        will(throwException(new ComponentLookupException("error")));
-      }
-    });
-
-    assertNull(this.service.createDocumentReference("wiki", "space", "page", "invalid"));
+  public void test_createDocumentReference_whenInvalidHint() throws Exception {
+    replayDefault();
+    assertNull(service.createDocumentReference("wiki", "space", "page", "invalid"));
+    verifyDefault();
   }
 }

@@ -349,39 +349,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- xwiki legacy testing -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-shared-tests</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>jmock</groupId>
-      <artifactId>jmock</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jmock</groupId>
-      <artifactId>jmock-legacy</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>jmock</groupId>
-      <artifactId>jmock-cglib</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jmock</groupId>
-      <artifactId>jmock-junit4</artifactId>
-      <version>2.5.1</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit-dep</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <dependency>
       <groupId>cglib</groupId>
       <artifactId>cglib</artifactId>
@@ -411,13 +378,6 @@
               <!-- XWiki rule is to put test in *Test classes -->
               <include>**/*Test.class</include>
             </includes>
-            <excludes>
-              <!-- exclude these old jmock tests, they don't run on new jvm's -->
-              <exclude>**/com/xpn/xwiki/plugin/zipexplorer/ZipExplorerTest.java</exclude>
-              <exclude>**/com/xpn/xwiki/render/XWikiRadeoxRendererTest</exclude>
-              <exclude>**/com/xpn/xwiki/render/XWikiVelocityRendererTest.java</exclude>
-              <exclude>**/com/xpn/xwiki/web/XWikiMessageToolTest.java</exclude>
-            </excludes>
           </configuration>
         </plugin>
       </plugins>

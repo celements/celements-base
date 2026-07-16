@@ -21,6 +21,7 @@ package com.xpn.xwiki.internal.model.reference;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.AttachmentReference;
@@ -29,7 +30,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for
@@ -37,30 +38,29 @@ import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
  *
  * @version $Id: be1f78c994b2a81714f6d841db6ee0566a358161 $
  */
-public class CompactStringEntityReferenceSerializerTest extends AbstractBridgedComponentTestCase {
+public class CompactStringEntityReferenceSerializerTest extends AbstractComponentTest {
 
   private EntityReferenceSerializer<EntityReference> serializer;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    this.serializer = getComponentManager().lookup(EntityReferenceSerializer.class, "compact");
+  @Before
+  public void prepareTest() throws Exception {
+    serializer = getBeanFactory().getBean("compact", EntityReferenceSerializer.class);
   }
 
   @Test
-  public void testSerializeWhenNoContext() throws Exception {
+  public void test_serialize_whenNoContext() throws Exception {
     DocumentReference reference = new DocumentReference("wiki", "space", "page");
     assertEquals("wiki:space.page", this.serializer.serialize(reference));
   }
 
   @Test
-  public void testSerializeWhenNoContextDocument() throws Exception {
+  public void test_serialize_whenNoContextDocument() throws Exception {
     DocumentReference reference = new DocumentReference("wiki", "space", "page");
     assertEquals("wiki:space.page", this.serializer.serialize(reference));
   }
 
   @Test
-  public void testSerializeDocumentReferenceWhenContextDocument() throws Exception {
+  public void test_serializeDocumentReference_whenContextDocument() throws Exception {
     DocumentReference reference = new DocumentReference("wiki", "space", "page");
 
     getContext().setDatabase("wiki");
@@ -101,7 +101,7 @@ public class CompactStringEntityReferenceSerializerTest extends AbstractBridgedC
   }
 
   @Test
-  public void testSerializeSpaceReferenceWhenHasChildren() throws Exception {
+  public void test_serializeSpaceReference_whenHasChildren() throws Exception {
     AttachmentReference reference = new AttachmentReference("filename",
         new DocumentReference("wiki", "space", "page"));
 
@@ -118,7 +118,7 @@ public class CompactStringEntityReferenceSerializerTest extends AbstractBridgedC
   }
 
   @Test
-  public void testSerializeAttachmentReferenceWhenContextDocument() throws Exception {
+  public void test_serializeAttachmentReference_whenContextDocument() throws Exception {
     AttachmentReference reference = new AttachmentReference("filename",
         new DocumentReference("wiki", "space", "page"));
 
@@ -136,7 +136,7 @@ public class CompactStringEntityReferenceSerializerTest extends AbstractBridgedC
   }
 
   @Test
-  public void testSerializeEntityReferenceWithExplicit() {
+  public void test_serializeEntityReference_withExplicit() {
     DocumentReference reference = new DocumentReference("wiki", "space", "page");
 
     getContext().setDatabase("wiki");

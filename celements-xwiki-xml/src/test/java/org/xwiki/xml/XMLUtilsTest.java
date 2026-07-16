@@ -20,7 +20,11 @@
  */
 package org.xwiki.xml;
 
-import org.xwiki.test.AbstractXWikiComponentTestCase;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+import com.celements.xml.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link org.xwiki.xml.XMLUtils}.
@@ -28,26 +32,18 @@ import org.xwiki.test.AbstractXWikiComponentTestCase;
  * @version $Id$
  * @since 1.6M1
  */
-public class XMLUtilsTest extends AbstractXWikiComponentTestCase {
+public class XMLUtilsTest extends AbstractComponentTest {
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see org.xwiki.test.AbstractXWikiComponentTestCase#setUp()
-   */
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-  }
-
-  public void testEscapeXMLComment() {
+  @Test
+  public void test_escapeXMLComment() {
     assertEquals("-\\- ", XMLUtils.escapeXMLComment("-- "));
     assertEquals("-\\", XMLUtils.escapeXMLComment("-"));
     assertEquals("-\\-\\-\\", XMLUtils.escapeXMLComment("---"));
     assertEquals("- ", XMLUtils.escapeXMLComment("- "));
   }
 
-  public void testUnescapeXMLComment() {
+  @Test
+  public void test_unescapeXMLComment() {
     assertEquals("", XMLUtils.unescapeXMLComment("\\"));
     assertEquals("\\", XMLUtils.unescapeXMLComment("\\\\"));
     assertEquals("--", XMLUtils.unescapeXMLComment("\\-\\-"));

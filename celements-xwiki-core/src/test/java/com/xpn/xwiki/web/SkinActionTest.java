@@ -20,49 +20,61 @@
  */
 package com.xpn.xwiki.web;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 
-import org.jmock.cglib.MockObjectTestCase;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for the {@link com.xpn.xwiki.web.SkinAction} class.
  *
  * @version $Id$
  */
-public class SkinActionTest extends MockObjectTestCase {
+public class SkinActionTest extends AbstractComponentTest {
 
   private SkinAction action;
 
-  @Override
-  protected void setUp() {
-    this.action = new SkinAction();
+  @Before
+  public void prepareTest() {
+    action = new SkinAction();
   }
 
-  public void testIsTextJavascriptJavaScriptMimetype() {
+  @Test
+  public void test_isTextJavascript_javaScriptMimetype() {
     assertTrue(this.action.isJavascriptMimeType("text/javascript"));
   }
 
-  public void testIsApplicationJavascriptJavaScriptMimetype() {
+  @Test
+  public void test_isApplicationJavascript_javaScriptMimetype() {
     assertTrue(this.action.isJavascriptMimeType("application/javascript"));
   }
 
-  public void testIsApplicationXJavascriptJavaScriptMimetype() {
+  @Test
+  public void test_isApplicationXJavascript_javaScriptMimetype() {
     assertTrue(this.action.isJavascriptMimeType("application/x-javascript"));
   }
 
-  public void testIsTextEcmascriptJavaScriptMimetype() {
+  @Test
+  public void test_isTextEcmascript_javaScriptMimetype() {
     assertTrue(this.action.isJavascriptMimeType("text/ecmascript"));
   }
 
-  public void testIsApplicationEcmascriptJavaScriptMimetype() {
+  @Test
+  public void test_isApplicationEcmascript_javaScriptMimetype() {
     assertTrue(this.action.isJavascriptMimeType("application/ecmascript"));
   }
 
-  public void testNPEJavascriptMimetype() {
+  @Test
+  public void test_npeJavascriptMimetype() {
     assertFalse(this.action.isJavascriptMimeType(null));
   }
 
-  public void testIncorrectSkinFile() {
+  @Test
+  public void test_incorrectSkinFile() {
     try {
       this.action.getSkinFilePath("../../resources/js/xwiki/xwiki.js", "colibri");
       assertTrue("should fail", false);
@@ -89,7 +101,8 @@ public class SkinActionTest extends MockObjectTestCase {
     }
   }
 
-  public void testIncorrectResourceFile() {
+  @Test
+  public void test_incorrectResourceFile() {
     try {
       this.action.getResourceFilePath("../../skins/js/xwiki/xwiki.js");
       assertTrue("should fail", false);

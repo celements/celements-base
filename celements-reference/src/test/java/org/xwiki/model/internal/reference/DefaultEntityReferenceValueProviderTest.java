@@ -20,15 +20,15 @@
 package org.xwiki.model.internal.reference;
 
 import static org.junit.Assert.*;
+import static org.easymock.EasyMock.*;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
 import org.junit.Before;
 import org.junit.Test;
-import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.ModelConfiguration;
 import org.xwiki.model.reference.EntityReferenceValueProvider;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link org.xwiki.model.internal.reference.DefaultEntityReferenceValueProvider}.
@@ -36,38 +36,30 @@ import org.xwiki.model.reference.EntityReferenceValueProvider;
  * @version $Id: 2df8c30e29571f619571a6e6986863b4646101e2 $
  * @since 2.3M1
  */
-public class DefaultEntityReferenceValueProviderTest {
-
-  private Mockery mockery = new Mockery();
+public class DefaultEntityReferenceValueProviderTest extends AbstractBaseComponentTest {
 
   private EntityReferenceValueProvider provider;
 
   @Before
-  public void setUp() {
-    this.provider = new DefaultEntityReferenceValueProvider();
-    final ModelConfiguration mockConfiguration = this.mockery.mock(ModelConfiguration.class);
-    ReflectionUtils.setFieldValue(this.provider, "configuration", mockConfiguration);
-
-    this.mockery.checking(new Expectations() {
-
-      {
-        allowing(mockConfiguration).getDefaultReferenceValue(EntityType.SPACE);
-        will(returnValue("defspace"));
-        allowing(mockConfiguration).getDefaultReferenceValue(EntityType.WIKI);
-        will(returnValue("defwiki"));
-        allowing(mockConfiguration).getDefaultReferenceValue(EntityType.DOCUMENT);
-        will(returnValue("defpage"));
-        allowing(mockConfiguration).getDefaultReferenceValue(EntityType.ATTACHMENT);
-        will(returnValue("deffilename"));
-      }
-    });
+  public void prepareTest() throws Exception {
+    registerComponentMock(ModelConfiguration.class);
+    provider = getBeanFactory().getBean(DefaultEntityReferenceValueProvider.class);
   }
 
   @Test
-  public void testGetDefaultValue() {
+  public void test_getDefaultValue() {
+    ModelConfiguration configuration = getMock(ModelConfiguration.class);
+    expect(configuration.getDefaultReferenceValue(EntityType.SPACE)).andReturn("defspace");
+    expect(configuration.getDefaultReferenceValue(EntityType.WIKI)).andReturn("defwiki");
+    expect(configuration.getDefaultReferenceValue(EntityType.DOCUMENT)).andReturn("defpage");
+    expect(configuration.getDefaultReferenceValue(EntityType.ATTACHMENT))
+        .andReturn("deffilename");
+
+    replayDefault();
     assertEquals("defpage", this.provider.getDefaultValue(EntityType.DOCUMENT));
     assertEquals("defspace", this.provider.getDefaultValue(EntityType.SPACE));
     assertEquals("deffilename", this.provider.getDefaultValue(EntityType.ATTACHMENT));
     assertEquals("defwiki", this.provider.getDefaultValue(EntityType.WIKI));
+    verifyDefault();
   }
 }

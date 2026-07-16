@@ -32,7 +32,8 @@ import org.junit.Test;
 import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.configuration.ConversionException;
 import org.xwiki.properties.ConverterManager;
-import org.xwiki.test.AbstractComponentTestCase;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link CommonsConfigurationSource}.
@@ -40,7 +41,7 @@ import org.xwiki.test.AbstractComponentTestCase;
  * @version $Id$
  * @since 2.0M1
  */
-public class CommonsConfigurationSourceTest extends AbstractComponentTestCase {
+public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
 
   private Configuration configuration;
   private ConverterManager converterManager;

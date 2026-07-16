@@ -20,16 +20,12 @@
  */
 package org.xwiki.component.annotation;
 
+import static org.easymock.EasyMock.*;
+
 import java.util.Set;
 
-import org.hamcrest.Description;
-import org.hamcrest.Factory;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
-import org.hamcrest.core.IsNot;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.junit.After;
+import org.easymock.Capture;
+import org.easymock.CaptureType;
 import org.junit.Assert;
 import org.junit.Test;
 import org.xwiki.component.descriptor.ComponentDescriptor;
@@ -65,41 +61,9 @@ public class ComponentAnnotationLoaderTest {
   @Component("test")
   public class OverrideRole implements Role {}
 
-  private Mockery context = new Mockery();
-
+  @Test
   public void testFindComponentRoleClasses() {
     assertComponentRoleClasses(RoleImpl.class);
-  }
-
-  public static class ComponentDescriptorMatcher extends TypeSafeMatcher<ComponentDescriptor> {
-
-    private Class<?> implementation;
-
-    public ComponentDescriptorMatcher(Class<?> implementation) {
-      this.implementation = implementation;
-    }
-
-    @Override
-    public boolean matchesSafely(ComponentDescriptor item) {
-      return item.getImplementation().equals(this.implementation);
-    }
-
-    @Override
-    public void describeTo(Description description) {
-      description.appendText("a ComponentDescriptor with implementation ")
-          .appendValue(this.implementation);
-    }
-  }
-
-  @Factory
-  public static Matcher<ComponentDescriptor> aComponentDescriptorWithImplementation(
-      Class<?> implementation) {
-    return new ComponentDescriptorMatcher(implementation);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    this.context.assertIsSatisfied();
   }
 
   /**
@@ -109,18 +73,17 @@ public class ComponentAnnotationLoaderTest {
   @Test
   public void testOverrides() throws Exception {
     ComponentAnnotationLoader loader = new ComponentAnnotationLoader();
-    final ComponentManager mockManager = this.context.mock(ComponentManager.class);
-
-    this.context.checking(new Expectations() {
-
-      {
-        allowing(mockManager).registerComponent(
-            with(new IsNot<>(
-                aComponentDescriptorWithImplementation(SimpleRole.class))));
-      }
-    });
+    ComponentManager mockManager = createMock(ComponentManager.class);
+    Capture<ComponentDescriptor> descriptors = newCapture(CaptureType.ALL);
+    mockManager.registerComponent(capture(descriptors));
+    expectLastCall().anyTimes();
+    replay(mockManager);
 
     loader.initialize(mockManager, this.getClass().getClassLoader());
+
+    verify(mockManager);
+    Assert.assertFalse(descriptors.getValues().stream()
+        .anyMatch(descriptor -> descriptor.getImplementation().equals(SimpleRole.class)));
   }
 
   /**

@@ -21,6 +21,7 @@ package com.xpn.xwiki.internal.model.reference;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -28,7 +29,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for
@@ -36,7 +37,7 @@ import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
  *
  * @version $Id: 0f7f7c6796845eb1c903e5220f630705a13fdb5c $
  */
-public class CurrentReferenceEntityReferenceResolverTest extends AbstractBridgedComponentTestCase {
+public class CurrentReferenceEntityReferenceResolverTest extends AbstractComponentTest {
 
   private static final String CURRENT_WIKI = "currentwiki";
 
@@ -46,14 +47,13 @@ public class CurrentReferenceEntityReferenceResolverTest extends AbstractBridged
 
   private EntityReferenceResolver<EntityReference> resolver;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    resolver = getComponentManager().lookup(EntityReferenceResolver.class, "current/reference");
+  @Before
+  public void prepareTest() throws Exception {
+    resolver = getBeanFactory().getBean("current/reference", EntityReferenceResolver.class);
   }
 
   @Test
-  public void testResolveAttachmentReferenceWhenMissingParentsAndNoContextDocument() {
+  public void test_resolveAttachmentReference_whenMissingParentsAndNoContextDocument() {
     EntityReference reference = resolver.resolve(new EntityReference(
         "filename", EntityType.ATTACHMENT), EntityType.ATTACHMENT);
 
@@ -66,7 +66,7 @@ public class CurrentReferenceEntityReferenceResolverTest extends AbstractBridged
   }
 
   @Test
-  public void testResolveAttachmentReferenceWhenMissingParentsAndContextDocument() {
+  public void test_resolveAttachmentReference_whenMissingParentsAndContextDocument() {
     getContext().setDatabase(CURRENT_WIKI);
     getContext().setDoc(new XWikiDocument(new DocumentReference(
         "docwiki", CURRENT_SPACE, CURRENT_PAGE)));

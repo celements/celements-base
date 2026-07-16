@@ -19,14 +19,16 @@
  */
 package org.xwiki.configuration.internal;
 
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
-import org.jmock.Expectations;
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.test.AbstractComponentTestCase;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link org.xwiki.configuration.internal.SpacePreferencesConfigurationSource}.
@@ -34,14 +36,13 @@ import org.xwiki.test.AbstractComponentTestCase;
  * @version $Id$
  * @since 2.4M2
  */
-public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTestCase {
+public class SpacePreferencesConfigurationSourceTest extends AbstractBaseComponentTest {
 
   private DocumentAccessBridge bridge;
 
-  @Override
-  protected void registerComponents() throws Exception {
-    super.registerComponents();
-    bridge = registerMockComponent(DocumentAccessBridge.class);
+  @Before
+  public void prepareTest() throws Exception {
+    bridge = registerComponentMock(DocumentAccessBridge.class);
   }
 
   @Test
@@ -52,18 +53,14 @@ public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTe
         "WebPreferences");
     final DocumentReference currentDocument = new DocumentReference("wiki", "space", "page");
 
-    getMockery().checking(new Expectations() {
+    expect(bridge.getCurrentDocumentReference()).andReturn(currentDocument).anyTimes();
+    expect(bridge.getProperty(webPreferencesReference, webPreferencesReference, "key"))
+        .andReturn("value");
 
-      {
-        allowing(bridge).getCurrentDocumentReference();
-        will(returnValue(currentDocument));
-        oneOf(bridge).getProperty(webPreferencesReference, webPreferencesReference, "key");
-        will(returnValue("value"));
-      }
-    });
-
+    replayDefault();
     String result = source.getProperty("key", String.class);
 
     assertEquals("value", result);
+    verifyDefault();
   }
 }
