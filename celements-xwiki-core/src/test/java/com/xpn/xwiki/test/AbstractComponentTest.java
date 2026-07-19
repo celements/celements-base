@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockServletContext;
 import org.xwiki.component.manager.ComponentManager;
 import org.xwiki.container.Container;
@@ -53,9 +54,9 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
   private XWikiContext context;
 
   @Override
-  protected void beforeSpringContextRefresh() {
-    getBeanFactory().registerSingleton(MockServletContext.class.getName(),
-        new MockServletContext(getSpringContext()));
+  protected void beforeSpringContextRefresh(ConfigurableApplicationContext context) {
+    context.getBeanFactory().registerSingleton(MockServletContext.class.getName(),
+        new MockServletContext(context));
   }
 
   @Before
