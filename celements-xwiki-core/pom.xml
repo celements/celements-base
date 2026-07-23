@@ -362,25 +362,4 @@
     <url>https://github.com/celements/celements-base/celements-xwiki-core</url>
     <tag>HEAD</tag>
   </scm>
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <argLine>
-              --add-opens java.base/java.lang=ALL-UNNAMED
-              --add-opens java.base/java.util=ALL-UNNAMED
-              --add-opens java.base/java.io=ALL-UNNAMED
-            </argLine>
-            <includes>
-              <!-- XWiki rule is to put test in *Test classes -->
-              <include>**/*Test.class</include>
-            </includes>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>
