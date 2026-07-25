@@ -56,4 +56,5 @@ public class DefaultDocumentAccessBridgeTest extends AbstractComponentTest {
         this.documentAccessBridge.getURL(null, "view", "", ""));
     verifyDefault();
   }
+
 }

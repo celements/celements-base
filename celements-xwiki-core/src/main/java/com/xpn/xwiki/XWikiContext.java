@@ -125,7 +125,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private int cacheDuration = 0;
 
-  private int classCacheSize = 20;
+  private int classCacheSize = 100;
 
   private int archiveCacheSize = 20;
 
@@ -472,6 +472,10 @@ public class XWikiContext extends Hashtable<Object, Object> {
   // Used to avoid recursive loading of documents if there are recursives usage of classes
   public void addBaseClass(BaseClass bclass) {
     this.classCache.put(bclass.getDocumentReference(), bclass);
+  }
+
+  public void removeBaseClass(DocumentReference documentReference) {
+    this.classCache.remove(documentReference);
   }
 
   /**

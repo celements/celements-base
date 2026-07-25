@@ -381,7 +381,7 @@ public class BaseClass extends BaseCollection implements ClassInterface {
     bclass.setDefaultViewSheet(getDefaultViewSheet());
     bclass.setDefaultEditSheet(getDefaultEditSheet());
     bclass.setNameField(getNameField());
-
+    bclass.setValidationScript(getValidationScript());
     return bclass;
   }
 

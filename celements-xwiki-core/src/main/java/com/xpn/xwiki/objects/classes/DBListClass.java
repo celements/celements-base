@@ -30,6 +30,8 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ecs.xhtml.input;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
 import org.xwiki.query.QueryExecutor;
@@ -46,6 +48,8 @@ import com.xpn.xwiki.web.Utils;
 
 public class DBListClass extends ListClass {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DBListClass.class);
+
   protected static final String DEFAULT_QUERY = "select doc.name from XWikiDocument doc where 1 = 0";
 
   private List<ListItem> cachedDBList;
@@ -60,6 +64,11 @@ public class DBListClass extends ListClass {
 
   public DBListClass() {
     this(null);
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
   }
 
   public List<ListItem> makeList(List<Object> list) {
@@ -98,7 +107,7 @@ public class DBListClass extends ListClass {
           Query query = getQueryManager().createQuery(queryStr, Query.HQL);
           list = makeList(getQueryExecutor().execute(query));
         } catch (QueryException exc) {
-          logger.warn("getDBList - failed for {}", getFieldFullName(), exc);
+          LOGGER.warn("getDBList - failed for {}", getFieldFullName(), exc);
           list = new ArrayList<>();
         }
       }
@@ -286,7 +295,7 @@ public class DBListClass extends ListClass {
     try {
       sql = context.getWiki().parseContent(sql, context);
     } catch (Exception e) {
-      logger.error("Failed to parse SQL script [" + sql + "]. Continuing with non-rendered script.",
+      LOGGER.error("Failed to parse SQL script [" + sql + "]. Continuing with non-rendered script.",
           e);
     }
     return sql;

@@ -21,7 +21,10 @@
 
 package com.xpn.xwiki.store;
 
+import static com.xpn.xwiki.XWikiConstant.*;
+
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
 
@@ -37,6 +40,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiLink;
 import com.xpn.xwiki.doc.XWikiLock;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
 @ComponentRole
@@ -48,6 +52,14 @@ public interface XWikiStoreInterface {
       throws XWikiException;
 
   XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException;
+
+  default Optional<CelDocument.Default> loadCelDocument(DocumentReference docRef)
+      throws XWikiException {
+    return loadCelDocument(docRef, DEFAULT_LANG).map(CelDocument.Default.class::cast);
+  }
+
+  Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language)
+      throws XWikiException;
 
   void deleteXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException;
 

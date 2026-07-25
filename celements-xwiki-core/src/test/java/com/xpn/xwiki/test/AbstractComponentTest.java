@@ -84,7 +84,7 @@ public abstract class AbstractComponentTest extends AbstractBaseComponentTest {
     expect(ctxProviderMock.createStubContext(same(execCtx))).andReturn(context).anyTimes();
 
     XWikiProvider xwikiProviderMock = registerComponentMock(XWikiProvider.class);
-    expect(xwikiProviderMock.get()).andReturn(Optional.empty()).anyTimes();
+    expect(xwikiProviderMock.get()).andReturn(Optional.of(getWikiMock())).anyTimes();
     expect(xwikiProviderMock.await(anyObject(Duration.class))).andReturn(getWikiMock()).anyTimes();
 
     // Set a simple application context, as some components fail to start without one.

@@ -3,7 +3,7 @@ package com.celements.rights.publication;
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 
 @ComponentRole
 public interface IPublicationServiceRole {
@@ -22,7 +22,7 @@ public interface IPublicationServiceRole {
 
   public boolean isPublishActive(DocumentReference docRef);
 
-  public boolean isPublished(XWikiDocument doc);
+  public boolean isPublished(CelDocument.Default doc);
 
   public void overridePubUnpub(EPubUnpub value);
 

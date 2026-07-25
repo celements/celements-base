@@ -15,6 +15,8 @@ public final class XWikiConstant {
   public static final String TAG_CLASS_PROP_TAGS = "tags";
   public static final String SHEET_CLASS = XWIKI_SPACE + ".SheetClass";
 
+  public static final String DEFAULT_LANG = "";
+
   private XWikiConstant() {}
 
 }
