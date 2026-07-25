@@ -8,7 +8,6 @@ import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
 import org.xwiki.component.manager.ComponentLookupException;
-import org.xwiki.model.EntityType;
 
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.ClassIdentity;
@@ -18,16 +17,16 @@ import com.google.common.base.Splitter;
 import com.xpn.xwiki.web.Utils;
 
 @Immutable
-public class ClassReference extends EntityReference implements ImmutableReference, ClassIdentity {
+public class ClassReference extends LocalDocumentReference implements ClassIdentity {
 
   private static final long serialVersionUID = 2L;
 
   public ClassReference(EntityReference reference) {
-    super(reference.getName(), reference.getType(), reference.getParent());
+    super(reference);
   }
 
   public ClassReference(String spaceName, String className) {
-    super(className, EntityType.DOCUMENT, new EntityReference(spaceName, EntityType.SPACE));
+    super(spaceName, className);
   }
 
   public ClassReference(String fullName) {
@@ -35,31 +34,8 @@ public class ClassReference extends EntityReference implements ImmutableReferenc
   }
 
   @Override
-  protected void setParent(EntityReference parent) {
-    checkArgument((parent != null) && (parent.getType() == EntityType.SPACE),
-        "Invalid parent reference [" + parent + "] for a class reference");
-    super.setParent(new EntityReference(parent.getName(), EntityType.SPACE));
-  }
-
-  private String getParentName() {
-    return super.getParent().getName();
-  }
-
-  @Override
-  protected void setType(EntityType type) {
-    checkArgument(type == EntityType.DOCUMENT, "Invalid type [" + type + "] for a class reference");
-    super.setType(EntityType.DOCUMENT);
-  }
-
-  @Override
   public ClassReference clone() {
     return this;
-  }
-
-  @Deprecated
-  @Override
-  public EntityReference getMutable() {
-    return new EntityReference(getName(), getType(), getParent());
   }
 
   @Override
@@ -82,18 +58,13 @@ public class ClassReference extends EntityReference implements ImmutableReferenc
   }
 
   @Override
-  public DocumentReference getDocRef(WikiReference wikiRef) {
-    return new DocumentReference(getName(), new SpaceReference(getParentName(), wikiRef));
-  }
-
-  @Override
   public boolean isValidObjectClass() {
-    return !PseudoClassDefinition.CLASS_SPACE.equals(getParentName());
+    return !PseudoClassDefinition.CLASS_SPACE.equals(getSpaceName());
   }
 
   @Override
   public String serialize() {
-    return getParentName() + "." + getName();
+    return getSpaceName() + "." + getName();
   }
 
   // is called in static context, do not use ModelUtils

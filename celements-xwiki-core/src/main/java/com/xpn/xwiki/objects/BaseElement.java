@@ -48,7 +48,7 @@ import com.xpn.xwiki.web.Utils;
  */
 public abstract class BaseElement implements ElementInterface, Serializable {
 
-  protected final transient Logger logger = LoggerFactory.getLogger(this.getClass());
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseElement.class);
 
   /**
    * Used to convert a Document Reference to string (compact form without the wiki part if it
@@ -319,7 +319,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
       }
       clone.setPrettyName(getPrettyName());
     } catch (Exception exc) {
-      logger.error("should not happen", exc);
+      getLogger().error("should not happen", exc);
       clone = null;
     }
     return clone;
@@ -351,7 +351,7 @@ public abstract class BaseElement implements ElementInterface, Serializable {
     try {
       syntaxId = getDocument(context).getSyntaxId();
     } catch (Exception e) {
-      logger.warn("Error while getting the syntax corresponding to object ["
+      getLogger().warn("Error while getting the syntax corresponding to object ["
           + compactWikiEntityRefSerializer.get().serialize(getDocumentReference())
           + "]. Defaulting to using XWiki 1.0 syntax. Internal error [" + e.getMessage() + "]");
       syntaxId = "xwiki/1.0";
@@ -381,6 +381,10 @@ public abstract class BaseElement implements ElementInterface, Serializable {
       ret.append("?");
     }
     return ret.toString();
+  }
+
+  protected Logger getLogger() {
+    return LOGGER;
   }
 
 }

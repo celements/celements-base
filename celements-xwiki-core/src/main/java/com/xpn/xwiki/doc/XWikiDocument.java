@@ -20,7 +20,9 @@
 package com.xpn.xwiki.doc;
 
 import static com.celements.logging.LogUtils.*;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
+import static java.util.stream.Collectors.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,6 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -329,6 +332,10 @@ public class XWikiDocument implements DocumentModelBridge {
    */
   private XWikiDocument originalDocument;
 
+  private CelDocument originalCelDocument;
+
+  private CelDocument.Default xClassCelDocument;
+
   /**
    * Used to resolve a string into a proper Document Reference using the current document's
    * reference to fill the blanks.
@@ -423,13 +430,26 @@ public class XWikiDocument implements DocumentModelBridge {
     init(reference);
   }
 
+  private XWikiDocument(CelDocument celDocument) {
+    this(checkNotNull(celDocument).getDocumentReference());
+    applyCelDocument(celDocument);
+    xClassCelDocument = celDocument instanceof CelDocument.Default defaultDocument
+        ? defaultDocument
+        : null;
+    originalCelDocument = celDocument;
+  }
+
+  public static XWikiDocument from(CelDocument celDocument) {
+    return new XWikiDocument(celDocument);
+  }
+
   /**
    * @deprecated since 2.2M1 use {@link #XWikiDocument(org.xwiki.model.reference.DocumentReference)}
    *             instead
    */
   @Deprecated
   public XWikiDocument() {
-    this(null);
+    this((DocumentReference) null);
   }
 
   /**
@@ -481,6 +501,79 @@ public class XWikiDocument implements DocumentModelBridge {
       reference = currentDocumentReferenceResolver.get().resolve(name);
     }
     init(reference);
+  }
+
+  private void applyCelDocument(CelDocument celDocument) {
+    Optional.ofNullable(celDocument.getIdVersion())
+        .ifPresent(id -> setId(celDocument.getId(), id));
+    setLanguage(celDocument.getLanguage());
+    setDefaultLanguage(celDocument.getDefaultLanguage());
+    setTranslation(celDocument.getTranslation());
+    setContent(celDocument.getContent());
+    setTitle(celDocument.getTitle());
+    setFormat(celDocument.getFormat());
+    setMeta(celDocument.getMeta());
+    setCreator(celDocument.getCreator());
+    setAuthor(celDocument.getAuthor());
+    setContentAuthor(celDocument.getContentAuthor());
+    setCustomClass(celDocument.getCustomClass());
+    setParentReference(celDocument.getParentReference());
+    setTemplateDocumentReference(celDocument.getTemplateDocumentReference());
+    setDate(Optional.ofNullable(celDocument.getDate()).map(Date::from).orElse(null));
+    setContentUpdateDate(Optional.ofNullable(celDocument.getContentUpdateDate())
+        .map(Date::from).orElse(null));
+    setCreationDate(Optional.ofNullable(celDocument.getCreationDate())
+        .map(Date::from).orElse(null));
+    setVersion(celDocument.getVersion());
+    setMostRecent(celDocument.isMostRecent());
+    setNew(celDocument.isNew());
+    setHidden(celDocument.isHidden());
+    setComment(celDocument.getComment());
+    setMinorEdit(celDocument.isMinorEdit());
+    setElements(celDocument.getElements());
+    setDefaultTemplate(celDocument.getDefaultTemplate());
+    setValidationScript(celDocument.getValidationScript());
+    setFromCache(false);
+    if (celDocument instanceof CelDocument.Default defaultDocument) {
+      applyCelDocument(defaultDocument);
+    }
+    setContentDirty(celDocument.isContentDirty());
+    setMetaDataDirty(celDocument.isMetaDataDirty());
+  }
+
+  private void applyCelDocument(CelDocument.Default celDocument) {
+    setXClassXML(celDocument.getXClassXML());
+    celDocument.getXObjects().stream()
+        .map(XWikiDocument::materializeObject)
+        .forEach(object -> setXObject(object.getNumber(), object));
+    setAttachmentList(celDocument.getAttachmentList().stream()
+        .map(this::materializeAttachment)
+        .collect(toCollection(ArrayList::new)));
+  }
+
+  private static BaseObject materializeObject(CelObject celObject) {
+    BaseObject object = new BaseObject();
+    object.setDocumentReference(celObject.getDocumentReference());
+    object.setXClassReference(celObject.getClassReference());
+    object.setNumber(celObject.getNumber());
+    object.setGuid(celObject.getGuid());
+    Optional.ofNullable(celObject.getIdVersion())
+        .ifPresent(idVersion -> object.setId(celObject.getId(), idVersion));
+    celObject.getProperties().stream()
+        .map(BaseProperty::from)
+        .forEach(property -> object.safeput(property.getName(), property));
+    return object;
+  }
+
+  private XWikiAttachment materializeAttachment(CelAttachment celAttachment) {
+    XWikiAttachment attachment = new XWikiAttachment(this, celAttachment.getFilename());
+    attachment.setFilesize(celAttachment.getFilesize());
+    attachment.setAuthor(celAttachment.getAuthor());
+    attachment.setVersion(celAttachment.getVersion());
+    attachment.setComment(celAttachment.getComment());
+    attachment.setDate(Optional.ofNullable(celAttachment.getDate()).map(Date::from).orElse(null));
+    attachment.setMetaDataDirty(false);
+    return attachment;
   }
 
   public XWikiStoreInterface getStore(XWikiContext context) {
@@ -632,6 +725,11 @@ public class XWikiDocument implements DocumentModelBridge {
    */
   @Override
   public XWikiDocument getOriginalDocument() {
+    if ((originalDocument == null) && (originalCelDocument != null)) {
+      originalDocument = new XWikiDocument(originalCelDocument);
+      originalDocument.originalCelDocument = null;
+      originalCelDocument = null;
+    }
     return this.originalDocument;
   }
 
@@ -643,6 +741,7 @@ public class XWikiDocument implements DocumentModelBridge {
    */
   public void setOriginalDocument(XWikiDocument originalDocument) {
     this.originalDocument = originalDocument;
+    originalCelDocument = null;
   }
 
   /**
@@ -1679,11 +1778,14 @@ public class XWikiDocument implements DocumentModelBridge {
    * @since 2.2M1
    */
   public BaseClass getXClass() {
-    if (this.xClass == null) {
-      this.xClass = new BaseClass();
-      this.xClass.setDocumentReference(getDocumentReference());
+    if (xClass == null) {
+      xClass = Optional.ofNullable(xClassCelDocument)
+          .flatMap(CelDocument.Default::getXClass)
+          .orElseGet(BaseClass::new);
+      xClassCelDocument = null;
+      xClass.setDocumentReference(getDocumentReference());
     }
-    return this.xClass;
+    return xClass;
   }
 
   /**
@@ -1700,6 +1802,7 @@ public class XWikiDocument implements DocumentModelBridge {
   public void setXClass(BaseClass xwikiClass) {
     xwikiClass.setDocumentReference(getDocumentReference());
     this.xClass = xwikiClass;
+    xClassCelDocument = null;
     setMetaDataDirty(true);
   }
 
@@ -3025,6 +3128,8 @@ public class XWikiDocument implements DocumentModelBridge {
     this.elements = document.elements;
 
     this.originalDocument = document.originalDocument;
+    this.xClassCelDocument = document.xClassCelDocument;
+    this.originalCelDocument = document.originalCelDocument;
   }
 
   @Override
@@ -3096,6 +3201,8 @@ public class XWikiDocument implements DocumentModelBridge {
       doc.elements = this.elements;
 
       doc.originalDocument = this.originalDocument;
+      doc.xClassCelDocument = this.xClassCelDocument;
+      doc.originalCelDocument = this.originalCelDocument;
     } catch (ReflectiveOperationException exc) {
       throw new IllegalStateException("should not happen", exc);
     }

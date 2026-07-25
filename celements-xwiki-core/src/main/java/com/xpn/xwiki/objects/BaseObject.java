@@ -31,6 +31,8 @@ import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.dom.DOMElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -42,7 +44,14 @@ import com.xpn.xwiki.objects.classes.PropertyClass;
 
 public class BaseObject extends BaseCollection implements ObjectInterface, Serializable, Cloneable {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseObject.class);
+
   private String guid = UUID.randomUUID().toString();
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
+  }
 
   /**
    * Note: This method is overridden to add the deprecation warning so that code using it can see
@@ -368,7 +377,7 @@ public class BaseObject extends BaseCollection implements ObjectInterface, Seria
     if (prop != null) {
       safeput(fieldname, prop);
     }
-    logger.trace("set - fieldname: [{}], value: [{}], bclass: [{}], pclass: [{}], prop: [{}]",
+    getLogger().trace("set - fieldname: [{}], value: [{}], bclass: [{}], pclass: [{}], prop: [{}]",
         fieldname, value, bclass, pclass, prop);
   }
 

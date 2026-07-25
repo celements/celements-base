@@ -17,10 +17,10 @@ import com.celements.model.access.exception.DocumentAlreadyExistsException;
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentNotExistsException;
 import com.celements.model.access.exception.DocumentSaveException;
-import com.google.common.primitives.Ints;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 
 import one.util.streamex.StreamEx;
 
@@ -68,18 +68,15 @@ public class ModelAccessStore extends DelegateStore {
 
   private Optional<XWikiDocument> getDocument(DocumentReference docRef, String lang) {
     try {
-      return Optional.of(disableClone()
-          ? modelAccess.getDocumentReadOnly(docRef, lang)
-          : modelAccess.getDocument(docRef, lang));
+      return Optional.of(modelAccess.getDocument(docRef, lang));
     } catch (DocumentNotExistsException dne1) {
       return Optional.empty();
     }
   }
 
-  private boolean disableClone() {
-    String key = "celements.store." + getName() + ".disableClone";
-    String disable = cfgSrc.getProperty(key, "false").toLowerCase();
-    return "true".equals(disable) || (0 != Optional.ofNullable(Ints.tryParse(disable)).orElse(0));
+  @Override
+  public Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language) {
+    return modelAccess.getCelDocument(docRef, language);
   }
 
   @Override

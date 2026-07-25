@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -69,6 +70,7 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiLink;
 import com.xpn.xwiki.doc.XWikiLock;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseStringProperty;
@@ -330,6 +332,24 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
   @Override
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     throw new UnsupportedOperationException("overwritten by CelHibStore");
+  }
+
+  @Override
+  public Optional<CelDocument.Default> loadCelDocument(DocumentReference docRef)
+      throws XWikiException {
+    return Optional.of(loadXWikiDoc(new XWikiDocument(docRef), getXContext()))
+        .filter(loaded -> !loaded.isNew())
+        .map(CelDocument.Default::from);
+  }
+
+  @Override
+  public Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language)
+      throws XWikiException {
+    XWikiDocument doc = new XWikiDocument(docRef);
+    doc.setLanguage(language);
+    return Optional.of(loadXWikiDoc(doc, getXContext()))
+        .filter(loaded -> !loaded.isNew())
+        .map(CelDocument::from);
   }
 
   @Override

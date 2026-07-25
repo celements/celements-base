@@ -156,11 +156,12 @@ class DocumentSavePreparationCommand {
       bclass.setDocumentReference(doc.getDocumentReference());
       if (!bclass.getFieldList().isEmpty()) {
         doc.setXClassXML(bclass.toXMLString());
+        // Store this XWikiClass in the context in case of recursive usage of classes
+        context.addBaseClass(bclass);
       } else {
         doc.setXClassXML("");
+        context.removeBaseClass(doc.getDocumentReference());
       }
-      // Store this XWikiClass in the context in case of recursive usage of classes
-      context.addBaseClass(bclass);
     }
   }
 
