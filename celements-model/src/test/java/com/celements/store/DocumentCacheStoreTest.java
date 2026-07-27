@@ -51,7 +51,8 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
     XWikiDocument savedDoc = new XWikiDocument(docRef);
     savedDoc.setNew(false);
     savedDoc.setOriginalDocument(savedDoc.clone());
-    expectLoad(savedDoc);
+    expect(mockStore.loadSnapshot(same(docRef), eq("")))
+        .andReturn(Optional.of(CelDocument.from(savedDoc))).once();
     Capture<XWikiDocument> savingDocCapture = newCapture();
     mockStore.saveXWikiDoc(capture(savingDocCapture), same(getContext()), eq(true));
     expectLastCall().once();

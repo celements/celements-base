@@ -220,9 +220,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   String getKey(DocumentReference docRef) {
-    return modelUtils.serializeRef(RefBuilder.from(docRef)
-        .with(modelUtils.normalizeWikiRef(docRef.getWikiReference()))
-        .build(DocumentReference.class));
+    return modelUtils.serializeRef(withWiki(docRef,
+        modelUtils.normalizeWikiRef(docRef.getWikiReference())));
   }
 
   String getKeyWithLang(DocumentReference docRef, String language) {
@@ -333,10 +332,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language)
       throws XWikiException {
-    var ctxWiki = modelContext.getWikiRef();
-    var ref = !ctxWiki.equals(docRef.getWikiReference())
-        ? RefBuilder.from(docRef).with(ctxWiki).build(DocumentReference.class)
-        : docRef;
+    var ref = withWiki(docRef, modelContext.getWikiRef());
     LOGGER.trace("Cache: begin for ref '{}' in cache", ref);
     String key = getKey(ref);
     String keyWithLang = getKeyWithLang(key, language);
@@ -620,6 +616,12 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       LOGGER.warn("getMetaData: illegal docData '{}'", Arrays.asList(docData), iae);
     }
     return Optional.ofNullable(metaData);
+  }
+
+  private static DocumentReference withWiki(DocumentReference docRef, WikiReference wikiRef) {
+    return !wikiRef.equals(docRef.getWikiReference())
+        ? RefBuilder.from(docRef).with(wikiRef).build(DocumentReference.class)
+        : docRef;
   }
 
 }
