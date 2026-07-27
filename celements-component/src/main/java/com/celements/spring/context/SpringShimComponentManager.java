@@ -100,6 +100,7 @@ public class SpringShimComponentManager implements ComponentManager {
   }
 
   private <T> Optional<T> getBean(String name, Class<T> type) {
+    // Missing named candidates are the normal fallback path, avoid allocating exceptions for each
     if (!Strings.isNullOrEmpty(name) && !beanFactory.containsBean(name)) {
       return Optional.empty();
     }

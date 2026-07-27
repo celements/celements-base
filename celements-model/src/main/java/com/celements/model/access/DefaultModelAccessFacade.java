@@ -175,10 +175,11 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
   public Optional<XWikiDocument> getDocumentOpt(DocumentReference docRef, String lang) {
     checkNotNull(docRef);
     String language = modelUtils.normalizeLang(lang);
-    return loadCelDocument(docRef, DEFAULT_LANG)
+    // Missing documents are expected here; avoid the throwing getDocument path on this hot API.
+    return getCelDocument(docRef, DEFAULT_LANG)
         .flatMap(doc -> (language.equals(DEFAULT_LANG) || language.equals(doc.getDefaultLanguage()))
             ? Optional.of(doc)
-            : loadCelDocument(docRef, language))
+            : getCelDocument(docRef, language))
         .map(XWikiDocument::from);
   }
 

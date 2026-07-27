@@ -76,7 +76,7 @@ public class DefaultRightsAccessFacade_SpaceTest extends AbstractComponentTest {
     expect(randomCompleterMock.randomCompleteSpaceRef(eq(spaceRef))).andReturn(docRef);
     XWikiDocument testDoc = new XWikiDocument(docRef);
     expect(xwiki.getDocument(eq(docRef), same(context))).andReturn(testDoc).anyTimes();
-    expect(store.loadCelDocument(eq(docRef), eq("")))
+    expect(store.loadCelDocument(eq(docRef)))
         .andReturn(Optional.empty()).anyTimes();
     String docFN = context.getDatabase() + ":" + spaceName + "." + docName;
     expect(xwiki.getDocument(eq(docFN), same(context))).andReturn(testDoc).anyTimes();
@@ -111,7 +111,7 @@ public class DefaultRightsAccessFacade_SpaceTest extends AbstractComponentTest {
     expect(randomCompleterMock.randomCompleteSpaceRef(eq(spaceRef))).andReturn(docRef);
     XWikiDocument testDoc = new XWikiDocument(docRef);
     expect(xwiki.getDocument(eq(docRef), same(context))).andReturn(testDoc).anyTimes();
-    expect(store.loadCelDocument(eq(docRef), eq("")))
+    expect(store.loadCelDocument(eq(docRef)))
         .andReturn(Optional.empty()).anyTimes();
     String docFN = context.getDatabase() + ":" + spaceName + "." + docName;
     expect(xwiki.getDocument(eq(docFN), same(context))).andReturn(testDoc).anyTimes();
@@ -138,8 +138,8 @@ public class DefaultRightsAccessFacade_SpaceTest extends AbstractComponentTest {
     spacePrefDoc.setNew(false);
     expect(xwiki.getDocument(eq(spaceRef.getName()), eq(webPrefDocName), same(context)))
         .andReturn(spacePrefDoc).anyTimes();
-    expect(store.loadCelDocument(eq(spacePrefDocRef), eq("")))
-        .andAnswer(() -> Optional.of(CelDocument.from(spacePrefDoc))).anyTimes();
+    expect(store.loadCelDocument(eq(spacePrefDocRef)))
+        .andAnswer(() -> Optional.of(CelDocument.Default.from(spacePrefDoc))).anyTimes();
     return spacePrefDoc;
   }
 
@@ -170,16 +170,16 @@ public class DefaultRightsAccessFacade_SpaceTest extends AbstractComponentTest {
         "XWikiPreferences");
     XWikiDocument mainWikiPrefDoc = new XWikiDocument(mainWikiPrefDocRef);
     mainWikiPrefDoc.setNew(false);
-    expect(store.loadCelDocument(eq(mainWikiPrefDocRef), eq("")))
-        .andReturn(Optional.of(CelDocument.from(mainWikiPrefDoc))).anyTimes();
+    expect(store.loadCelDocument(eq(mainWikiPrefDocRef)))
+        .andReturn(Optional.of(CelDocument.Default.from(mainWikiPrefDoc))).anyTimes();
     DocumentReference wikiPrefDocRef = new DocumentReference(context.getDatabase(), "XWiki",
         "XWikiPreferences");
     XWikiDocument wikiPrefDoc = new XWikiDocument(wikiPrefDocRef);
     wikiPrefDoc.setNew(false);
     expect(xwiki.getDocument(eq("XWiki.XWikiPreferences"), same(context)))
         .andReturn(wikiPrefDoc).anyTimes();
-    expect(store.loadCelDocument(eq(wikiPrefDocRef), eq("")))
-        .andReturn(Optional.of(CelDocument.from(wikiPrefDoc))).anyTimes();
+    expect(store.loadCelDocument(eq(wikiPrefDocRef)))
+        .andReturn(Optional.of(CelDocument.Default.from(wikiPrefDoc))).anyTimes();
     expect(xwiki.getXWikiPreference(eq("authenticate_edit"), eq(""), same(context))).andReturn(
         "yes").anyTimes();
     expect(xwiki.getXWikiPreferenceAsInt(eq("authenticate_edit"), eq(0), same(context))).andReturn(

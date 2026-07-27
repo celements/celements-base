@@ -619,6 +619,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   private static DocumentReference withWiki(DocumentReference docRef, WikiReference wikiRef) {
+    // Entity references are immutable; reuse matching references instead of rebuilding cache keys.
     return !wikiRef.equals(docRef.getWikiReference())
         ? RefBuilder.from(docRef).with(wikiRef).build(DocumentReference.class)
         : docRef;
