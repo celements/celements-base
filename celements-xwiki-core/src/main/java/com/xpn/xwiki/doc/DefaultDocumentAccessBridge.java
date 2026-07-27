@@ -415,18 +415,15 @@ public class DefaultDocumentAccessBridge implements DocumentAccessBridge {
   @Override
   public Object getProperty(DocumentReference documentReference, DocumentReference classReference,
       String propertyName) {
-    Object value;
-
     try {
-      XWikiContext xcontext = getContext();
-      XWikiDocument doc = getXWiki().getDocument(documentReference, xcontext);
-      BaseObject object = doc.getXObject(classReference);
-      BaseProperty property = (BaseProperty) object.get(propertyName);
-      value = property.getValue();
+      return getXWiki().loadCelDocument(documentReference)
+          .flatMap(doc -> doc.streamXObjects(classReference).findFirst())
+          .flatMap(obj -> obj.getProperty(propertyName))
+          .map(CelProperty::getValue)
+          .orElse(null);
     } catch (Exception ex) {
-      value = null;
+      return null;
     }
-    return value;
   }
 
   /**

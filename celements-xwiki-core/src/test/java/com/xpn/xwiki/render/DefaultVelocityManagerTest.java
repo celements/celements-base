@@ -7,6 +7,7 @@ import static org.xwiki.velocity.VelocityExecutionProp.*;
 
 import java.util.List;
 import java.util.ListResourceBundle;
+import java.util.Optional;
 
 import org.apache.velocity.VelocityContext;
 import org.junit.Before;
@@ -20,7 +21,6 @@ import org.xwiki.velocity.internal.VelocityExecutionContextInitializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.api.Context;
-import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.internal.XWikiExecutionContextInitializer;
 import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.web.XWikiMessageTool;
@@ -33,8 +33,8 @@ public class DefaultVelocityManagerTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    expect(getWikiMock().getDocument(anyObject(DocumentReference.class),
-        anyObject(XWikiContext.class))).andReturn(new XWikiDocument()).anyTimes();
+    expect(getWikiMock().loadCelDocument(anyObject(DocumentReference.class)))
+        .andReturn(Optional.empty()).anyTimes();
     replayDefault();
     execution = getBeanFactory().getBean(Execution.class);
     VelocityExecutionContextInitializer velocityContextInitializer = getBeanFactory()
