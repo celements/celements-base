@@ -272,6 +272,41 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_getDocumentOpt_notExists() throws Exception {
+    doc.setNew(true);
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getXContext()))).andReturn(doc);
+    replayDefault();
+    assertTrue(modelAccess.getDocumentOpt(doc.getDocumentReference()).isEmpty());
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getDocumentOpt_mainDocByDefaultLang() throws Exception {
+    String lang = "de";
+    doc.setDefaultLanguage(lang);
+    doc.setLanguage("");
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getXContext()))).andReturn(doc);
+    replayDefault();
+    assertTrue(modelAccess.getDocumentOpt(doc.getDocumentReference(), lang).isPresent());
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getDocumentOpt_noTranslation() throws Exception {
+    String lang = "fr";
+    XWikiDocument mainDoc = new XWikiDocument(doc.getDocumentReference());
+    mainDoc.setNew(false);
+    mainDoc.setDefaultLanguage("de");
+    doc.setLanguage(lang);
+    doc.setNew(true);
+    expect(storeMock.loadXWikiDoc(eqRefLang(mainDoc), same(getXContext()))).andReturn(mainDoc);
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getXContext()))).andReturn(doc);
+    replayDefault();
+    assertTrue(modelAccess.getDocumentOpt(doc.getDocumentReference(), lang).isEmpty());
+    verifyDefault();
+  }
+
+  @Test
   public void test_createDocument() throws Exception {
     expect(storeMock.exists(eqRefLang(doc), same(getXContext()))).andReturn(false);
     replayDefault();

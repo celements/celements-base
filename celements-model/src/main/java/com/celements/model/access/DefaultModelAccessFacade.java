@@ -168,20 +168,18 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Override
   public Optional<XWikiDocument> getDocumentOpt(DocumentReference docRef) {
-    try {
-      return Optional.of(getDocument(docRef));
-    } catch (DocumentNotExistsException exc) {
-      return Optional.empty();
-    }
+    return getDocumentOpt(docRef, DEFAULT_LANG);
   }
 
   @Override
   public Optional<XWikiDocument> getDocumentOpt(DocumentReference docRef, String lang) {
-    try {
-      return Optional.of(getDocument(docRef, lang));
-    } catch (DocumentNotExistsException exc) {
-      return Optional.empty();
-    }
+    checkNotNull(docRef);
+    String language = modelUtils.normalizeLang(lang);
+    return loadSnapshot(docRef, DEFAULT_LANG)
+        .flatMap(doc -> (language.equals(DEFAULT_LANG) || language.equals(doc.getDefaultLanguage()))
+            ? Optional.of(doc)
+            : loadSnapshot(docRef, language))
+        .map(XWikiDocument::from);
   }
 
   @Override
