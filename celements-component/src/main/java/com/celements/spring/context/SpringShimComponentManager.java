@@ -100,6 +100,9 @@ public class SpringShimComponentManager implements ComponentManager {
   }
 
   private <T> Optional<T> getBean(String name, Class<T> type) {
+    if (!Strings.isNullOrEmpty(name) && !beanFactory.containsBean(name)) {
+      return Optional.empty();
+    }
     try {
       return (Strings.isNullOrEmpty(name))
           ? Optional.of(beanFactory.getBean(type))
