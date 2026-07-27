@@ -226,11 +226,11 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   String getKeyWithLang(DocumentReference docRef, String language) {
-    if (Strings.isNullOrEmpty(language)) {
-      return getKey(docRef);
-    } else {
-      return getKey(docRef) + ":" + language;
-    }
+    return getKeyWithLang(getKey(docRef), language);
+  }
+
+  private static String getKeyWithLang(String key, String language) {
+    return Strings.isNullOrEmpty(language) ? key : key + ":" + language;
   }
 
   String getKeyWithLang(XWikiDocument doc) {
@@ -339,7 +339,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
         : docRef;
     LOGGER.trace("Cache: begin for ref '{}' in cache", ref);
     String key = getKey(ref);
-    String keyWithLang = getKeyWithLang(ref, language);
+    String keyWithLang = getKeyWithLang(key, language);
     if (doesNotExistsForKey(key) || doesNotExistsForKey(keyWithLang)) {
       LOGGER.debug("Cache: The document '{}' does not exist, return an empty one", keyWithLang);
       return Optional.empty();
