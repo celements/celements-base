@@ -161,6 +161,16 @@ public class XWikiPluginManager {
     }
   }
 
+  public void destroy() {
+    for (XWikiPluginInterface plugin : getPlugins("destroy")) {
+      try {
+        plugin.destroy();
+      } catch (Exception e) {
+        LOG.error("Failed to destroy plugin [" + plugin.getClass() + "]", e);
+      }
+    }
+  }
+
   public void flushCache(XWikiContext context) {
     for (XWikiPluginInterface plugin : getPlugins("flushCache")) {
       try {

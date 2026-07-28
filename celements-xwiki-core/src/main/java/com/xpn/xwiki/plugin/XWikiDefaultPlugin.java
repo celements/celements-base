@@ -39,6 +39,9 @@ public class XWikiDefaultPlugin implements XWikiPluginInterface {
   public void init(XWikiContext context) {}
 
   @Override
+  public void destroy() {}
+
+  @Override
   public void virtualInit(XWikiContext context) {}
 
   @Override

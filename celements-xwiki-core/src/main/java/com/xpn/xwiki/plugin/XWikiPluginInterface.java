@@ -38,6 +38,8 @@ public interface XWikiPluginInterface {
 
   void init(XWikiContext context) throws XWikiException;
 
+  void destroy();
+
   void virtualInit(XWikiContext context);
 
   /*
