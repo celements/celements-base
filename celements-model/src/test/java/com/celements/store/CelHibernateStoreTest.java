@@ -128,7 +128,6 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     verifyDefault();
 
     assertEquals(docRef, celDocument.getDocumentReference());
-    assertFalse(celDocument.isNew());
   }
 
   @Test

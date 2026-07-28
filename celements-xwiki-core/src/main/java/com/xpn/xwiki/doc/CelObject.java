@@ -15,13 +15,21 @@ import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 
 public record CelObject(
+    long id,
+    IdVersion idVersion,
+    String guid,
     DocumentReference documentReference,
     LocalDocumentReference classReference,
     int number,
-    String guid,
-    long id,
-    IdVersion idVersion,
     List<CelProperty> properties) {
+
+  public static CelObject from(BaseObject object) {
+    return new CelObject(object);
+  }
+
+  static CelObject from(BaseObject object, DocumentReference classReference) {
+    return new CelObject(object, classReference);
+  }
 
   public CelObject {
     requireNonNull(documentReference);
@@ -34,18 +42,20 @@ public record CelObject(
   }
 
   private CelObject(BaseObject object, DocumentReference classReference) {
-    this(requireNonNull(object).getDocumentReference(),
-        new LocalDocumentReference(classReference), object.getNumber(), object.getGuid(),
-        object.hasValidId() ? object.getId() : 0,
-        object.hasValidId() ? object.getIdVersion() : null, toCelProperties(object));
+    this(
+        requireNonNull(object).hasValidId() ? object.getId() : 0,
+        requireNonNull(object).hasValidId() ? object.getIdVersion() : null,
+        object.getGuid(),
+        requireNonNull(object).getDocumentReference(),
+        new LocalDocumentReference(classReference), object.getNumber(),
+        toCelProperties(object));
   }
 
-  public static CelObject from(BaseObject object) {
-    return new CelObject(object);
-  }
-
-  static CelObject from(BaseObject object, DocumentReference classReference) {
-    return new CelObject(object, classReference);
+  private static List<CelProperty> toCelProperties(BaseObject object) {
+    return Arrays.stream(object.getProperties())
+        .map(BaseProperty.class::cast)
+        .map(CelProperty::from)
+        .toList();
   }
 
   public DocumentReference getDocumentReference() {
@@ -90,12 +100,5 @@ public record CelObject(
 
   public Instant getDateValue(String name) {
     return getProperty(name).map(CelProperty::getDateValue).orElse(null);
-  }
-
-  private static List<CelProperty> toCelProperties(BaseObject object) {
-    return Arrays.stream(object.getProperties())
-        .map(BaseProperty.class::cast)
-        .map(CelProperty::from)
-        .toList();
   }
 }

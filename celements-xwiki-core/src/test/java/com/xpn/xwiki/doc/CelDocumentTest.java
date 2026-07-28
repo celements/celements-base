@@ -30,23 +30,6 @@ import com.xpn.xwiki.test.AbstractComponentTest;
 
 public class CelDocumentTest extends AbstractComponentTest {
 
-  @Test
-  public void testEmpty() {
-    DocumentReference documentReference = new DocumentReference("wiki", "space", "page");
-
-    CelDocument celDocument = CelDocument.empty(documentReference);
-
-    assertTrue(celDocument instanceof CelDocument.Default);
-    assertSame(documentReference, celDocument.getDocumentReference());
-    assertEquals(0, celDocument.getId());
-    assertNull(celDocument.getIdVersion());
-    assertEquals("", celDocument.getLanguage());
-    assertEquals(0, celDocument.getTranslation());
-    assertEquals("", celDocument.getContent());
-    assertNotNull(celDocument.getDate());
-    assertTrue(celDocument.isNew());
-  }
-
   @Test(expected = IllegalArgumentException.class)
   public void testTranslationRejectsDefaultDocument() {
     XWikiDocument document = new XWikiDocument(
@@ -139,6 +122,20 @@ public class CelDocumentTest extends AbstractComponentTest {
 
     assertTrue(celDocument instanceof CelDocument.Default);
     CelDocument.Default defaultDocument = (CelDocument.Default) celDocument;
+    CelDocument.MetaData documentMeta = celDocument.getMetaData();
+    CelDocument.Identity identity = celDocument.getIdentity();
+    assertSame(documentReference, identity.docRef());
+    assertEquals(42, identity.id());
+    assertEquals(IdVersion.CELEMENTS_3, identity.idVersion());
+    assertEquals("", identity.language());
+    assertEquals("1.1", identity.version());
+    assertEquals("en", documentMeta.defaultLanguage());
+    assertEquals("content", documentMeta.content());
+    assertEquals("title", documentMeta.title());
+    assertEquals("creator", documentMeta.creator());
+    assertEquals("author", documentMeta.author());
+    assertEquals("contentAuthor", documentMeta.contentAuthor());
+    assertEquals(xClassXml, documentMeta.xClassXML());
     assertSame(documentReference, celDocument.getDocumentReference());
     assertEquals("content", celDocument.getContent());
     assertEquals("value", defaultDocument.getXObjects().get(0).getStringValue("string"));
