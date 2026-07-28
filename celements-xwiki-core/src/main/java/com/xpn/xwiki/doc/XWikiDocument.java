@@ -189,8 +189,6 @@ public class XWikiDocument implements DocumentModelBridge {
 
   private String content;
 
-  private String meta;
-
   private String format;
 
   /**
@@ -511,22 +509,19 @@ public class XWikiDocument implements DocumentModelBridge {
     setTranslation(celDocument.getTranslation());
     setContent(celDocument.getContent());
     setTitle(celDocument.getTitle());
-    setFormat(celDocument.getFormat());
-    setMeta(celDocument.getMeta());
     setCreator(celDocument.getCreator());
     setAuthor(celDocument.getAuthor());
     setContentAuthor(celDocument.getContentAuthor());
     setCustomClass(celDocument.getCustomClass());
     setParentReference(celDocument.getParentReference());
-    setTemplateDocumentReference(celDocument.getTemplateDocumentReference());
+    setXClassXML(celDocument.getXClassXML());
     setDate(Optional.ofNullable(celDocument.getDate()).map(Date::from).orElse(null));
     setContentUpdateDate(Optional.ofNullable(celDocument.getContentUpdateDate())
         .map(Date::from).orElse(null));
     setCreationDate(Optional.ofNullable(celDocument.getCreationDate())
         .map(Date::from).orElse(null));
     setVersion(celDocument.getVersion());
-    setMostRecent(celDocument.isMostRecent());
-    setNew(celDocument.isNew());
+    setNew(false);
     setHidden(celDocument.isHidden());
     setComment(celDocument.getComment());
     setMinorEdit(celDocument.isMinorEdit());
@@ -537,12 +532,11 @@ public class XWikiDocument implements DocumentModelBridge {
     if (celDocument instanceof CelDocument.Default defaultDocument) {
       applyCelDocument(defaultDocument);
     }
-    setContentDirty(celDocument.isContentDirty());
-    setMetaDataDirty(celDocument.isMetaDataDirty());
+    setContentDirty(false);
+    setMetaDataDirty(true);
   }
 
   private void applyCelDocument(CelDocument.Default celDocument) {
-    setXClassXML(celDocument.getXClassXML());
     celDocument.getXObjects().stream()
         .map(XWikiDocument::materializeObject)
         .forEach(object -> setXObject(object.getNumber(), object));
@@ -1301,15 +1295,23 @@ public class XWikiDocument implements DocumentModelBridge {
     this.title = title;
   }
 
+  /**
+   * @deprecated since 7.0, no replacement
+   */
+  @Deprecated(since = "7.0", forRemoval = true)
   public String getFormat() {
     return this.format != null ? this.format : "";
   }
 
+  /**
+   * @deprecated since 7.0, no replacement
+   */
+  @Deprecated(since = "7.0", forRemoval = true)
   public void setFormat(String format) {
-    this.format = format;
-    if (!format.equals(this.format)) {
+    if (!getFormat().equals(format)) {
       setMetaDataDirty(true);
     }
+    this.format = format;
   }
 
   public String getAuthor() {
@@ -1402,29 +1404,6 @@ public class XWikiDocument implements DocumentModelBridge {
       date.setTime((date.getTime() / 1000) * 1000);
     }
     this.contentUpdateDate = date;
-  }
-
-  public String getMeta() {
-    return this.meta;
-  }
-
-  public void setMeta(String meta) {
-    if (meta == null) {
-      if (this.meta != null) {
-        setMetaDataDirty(true);
-      }
-    } else if (!meta.equals(this.meta)) {
-      setMetaDataDirty(true);
-    }
-    this.meta = meta;
-  }
-
-  public void appendMeta(String meta) {
-    StringBuffer buf = new StringBuffer(this.meta);
-    buf.append(meta);
-    buf.append("\n");
-    this.meta = buf.toString();
-    setMetaDataDirty(true);
   }
 
   public boolean isContentDirty() {
@@ -3101,7 +3080,6 @@ public class XWikiDocument implements DocumentModelBridge {
     setFormat(document.getFormat());
     setFromCache(document.isFromCache());
     setElements(document.getElements());
-    setMeta(document.getMeta());
     setMostRecent(document.isMostRecent());
     setNew(document.isNew());
     setTemplateDocumentReference(document.getTemplateDocumentReference());
@@ -3168,7 +3146,6 @@ public class XWikiDocument implements DocumentModelBridge {
       doc.setFormat(getFormat());
       doc.setFromCache(isFromCache());
       doc.setElements(getElements());
-      doc.setMeta(getMeta());
       doc.setMostRecent(isMostRecent());
       doc.setNew(!keepsIdentity || isNew());
       doc.setTemplateDocumentReference(getTemplateDocumentReference());
