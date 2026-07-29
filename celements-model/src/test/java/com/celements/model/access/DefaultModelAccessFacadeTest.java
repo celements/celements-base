@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.easymock.Capture;
@@ -58,7 +59,6 @@ import com.celements.store.DelegateStore;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
 import com.celements.store.ModelAccessStore;
 import com.celements.wiki.WikiService;
-import com.google.common.base.Optional;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -113,11 +113,11 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
       }
 
       @Override
-      public java.util.Optional<CelDocument> loadCelDocument(
+      public Optional<CelDocument> loadCelDocument(
           DocumentReference docRef, String language) throws XWikiException {
         XWikiDocument document = new XWikiDocument(docRef);
         document.setLanguage(language);
-        return java.util.Optional.of(storeMock.loadXWikiDoc(document, getXContext()))
+        return Optional.of(storeMock.loadXWikiDoc(document, getXContext()))
             .filter(loadedDocument -> !loadedDocument.isNew())
             .map(CelDocument::from);
       }
@@ -1390,7 +1390,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String val = "val";
     addObj(field.getClassReference().getDocRef(), field.getName(), val);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc, field);
+    var ret = modelAccess.getFieldValue(doc, field);
     verifyDefault();
     assertNotNull(ret);
     assertTrue(ret.isPresent());
@@ -1401,7 +1401,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     ClassField<String> field = new StringField.Builder(CLASS_REF, "name").build();
     addObj(field.getClassReference().getDocRef(), field.getName(), null);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc, field);
+    var ret = modelAccess.getFieldValue(doc, field);
     verifyDefault();
     assertNotNull(ret);
     assertFalse(ret.isPresent());
@@ -1412,7 +1412,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String val = "val";
     addObj(field.getClassReference().getDocRef(), field.getName(), null);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc.getDocumentReference(), field);
+    var ret = modelAccess.getFieldValue(doc.getDocumentReference(), field);
     verifyDefault();
     assertNotNull(ret);
     assertTrue(ret.isPresent());
@@ -1423,7 +1423,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     ClassField<String> field = new StringField.Builder(CLASS_REF, "name").build();
     addObj(field.getClassReference().getDocRef(), field.getName(), null);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc.getDocumentReference(), field);
+    var ret = modelAccess.getFieldValue(doc.getDocumentReference(), field);
     verifyDefault();
     assertNotNull(ret);
     assertFalse(ret.isPresent());
@@ -1434,7 +1434,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String val = "val";
     addObj(field.getClassReference().getDocRef(), field.getName(), val);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc, field, "test");
+    var ret = modelAccess.getFieldValue(doc, field, "test");
     verifyDefault();
     assertNotNull(ret);
     assertTrue(ret.isPresent());
@@ -1445,7 +1445,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     ClassField<String> field = new StringField.Builder(CLASS_REF, "name").build();
     addObj(field.getClassReference().getDocRef(), field.getName(), null);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc, field, "test");
+    var ret = modelAccess.getFieldValue(doc, field, "test");
     verifyDefault();
     assertNotNull(ret);
     assertFalse(ret.isPresent());
@@ -1456,7 +1456,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String val = "test";
     addObj(field.getClassReference().getDocRef(), field.getName(), val);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc, field, "test");
+    var ret = modelAccess.getFieldValue(doc, field, "test");
     verifyDefault();
     assertNotNull(ret);
     assertFalse(ret.isPresent());
@@ -1467,7 +1467,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String val = "val";
     addObj(field.getClassReference().getDocRef(), field.getName(), val);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc.getDocumentReference(), field, "test");
+    var ret = modelAccess.getFieldValue(doc.getDocumentReference(), field, "test");
     verifyDefault();
     assertNotNull(ret);
     assertTrue(ret.isPresent());
@@ -1478,7 +1478,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     ClassField<String> field = new StringField.Builder(CLASS_REF, "name").build();
     addObj(field.getClassReference().getDocRef(), field.getName(), null);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc.getDocumentReference(), field, "test");
+    var ret = modelAccess.getFieldValue(doc.getDocumentReference(), field, "test");
     verifyDefault();
     assertNotNull(ret);
     assertFalse(ret.isPresent());
@@ -1489,7 +1489,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     String val = "test";
     addObj(field.getClassReference().getDocRef(), field.getName(), val);
     replayDefault();
-    Optional<String> ret = modelAccess.getFieldValue(doc.getDocumentReference(), field, "test");
+    var ret = modelAccess.getFieldValue(doc.getDocumentReference(), field, "test");
     verifyDefault();
     assertNotNull(ret);
     assertFalse(ret.isPresent());

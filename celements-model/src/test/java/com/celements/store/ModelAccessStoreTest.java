@@ -3,6 +3,8 @@ package com.celements.store;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
@@ -36,7 +38,7 @@ public class ModelAccessStoreTest extends AbstractComponentTest {
     document.setNew(false);
     CelDocument cachedDoc = CelDocument.from(document);
     expect(modelAccess.getCelDocument(docRef, ""))
-        .andReturn(java.util.Optional.of(cachedDoc));
+        .andReturn(Optional.of(cachedDoc));
 
     replayDefault();
     CelDocument ret = store.loadCelDocument(docRef, "").orElseThrow();

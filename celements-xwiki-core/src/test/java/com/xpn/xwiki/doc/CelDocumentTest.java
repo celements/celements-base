@@ -220,8 +220,7 @@ public class CelDocumentTest extends AbstractComponentTest {
     assertTrue(celDocument instanceof CelDocument.Translation);
   }
 
-  private void put(BaseObject object, String name,
-      com.xpn.xwiki.objects.BaseProperty property, Object value) {
+  private void put(BaseObject object, String name, BaseProperty property, Object value) {
     property.setValue(value);
     object.safeput(name, property);
   }

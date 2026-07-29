@@ -789,7 +789,7 @@ public class XWiki implements EventListener {
     return this.store;
   }
 
-  public Optional<CelDocument.Default> loadCelDocument(DocumentReference docRef)
+  public Optional<CelDocument.Default> getCelDocument(DocumentReference docRef)
       throws XWikiException {
     return getStore().loadCelDocument(docRef);
   }
@@ -4855,7 +4855,7 @@ public class XWiki implements EventListener {
     // Used to avoid recursive loading of documents if there are recursives usage of classes
     BaseClass bclass = context.getBaseClass(documentReference);
     if (bclass == null) {
-      bclass = loadCelDocument(documentReference)
+      bclass = getCelDocument(documentReference)
           .flatMap(CelDocument.Default::getXClass)
           .orElse(null);
       if (bclass != null) {
