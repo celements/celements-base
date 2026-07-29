@@ -56,7 +56,7 @@ public class XWikiVelocityRendererTest extends AbstractComponentTest {
     contentDocument = createDefaultMock(XWikiDocument.class);
     document = createDefaultMock(XWikiDocument.class);
     Document apiDocument = createDefaultMock(Document.class);
-    expect(getWikiMock().loadCelDocument(anyObject(DocumentReference.class)))
+    expect(getWikiMock().getCelDocument(anyObject(DocumentReference.class)))
         .andReturn(Optional.empty()).anyTimes();
     expect(getWikiMock().getSkin(same(getContext()))).andReturn("default").anyTimes();
     expect(getWikiMock().getSkinFile(anyString(), same(getContext()))).andReturn(null).anyTimes();

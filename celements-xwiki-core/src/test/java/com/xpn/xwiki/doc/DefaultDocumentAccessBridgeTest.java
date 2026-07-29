@@ -72,7 +72,7 @@ public class DefaultDocumentAccessBridgeTest extends AbstractComponentTest {
     object.setIntValue("value", 42);
     document.addXObject(classRef, object);
     CelDocument.Default celDocument = CelDocument.Default.from(document);
-    expect(getWikiMock().loadCelDocument(docRef)).andReturn(Optional.of(celDocument));
+    expect(getWikiMock().getCelDocument(docRef)).andReturn(Optional.of(celDocument));
     replayDefault();
 
     assertEquals(42, documentAccessBridge.getProperty(docRef, classRef, "value"));

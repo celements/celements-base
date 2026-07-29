@@ -793,7 +793,7 @@ public class XWiki implements EventListener {
     return this.store;
   }
 
-  public Optional<CelDocument.Default> loadCelDocument(DocumentReference docRef)
+  public Optional<CelDocument.Default> getCelDocument(DocumentReference docRef)
       throws XWikiException {
     return getStore().loadCelDocument(docRef);
   }
@@ -1644,7 +1644,7 @@ public class XWiki implements EventListener {
     try {
       var wikiPrefDocRef = new DocumentReference(XWIKI_PREF_DOC_NAME,
           new SpaceReference(XWIKI_SPACE, context.getWikiRef()));
-      var result = loadCelDocument(wikiPrefDocRef)
+      var result = getCelDocument(wikiPrefDocRef)
           .flatMap(doc -> getPreferenceObject(doc, context.getLanguage())
               .map(object -> object.getStringValue(prefname))
               .filter(not(String::isEmpty))
@@ -1684,7 +1684,7 @@ public class XWiki implements EventListener {
         var spacePrefDocRef = new DocumentReference(WEB_PREF_DOC_NAME,
             new SpaceReference(space, context.getWikiRef()));
         // First we try to get a translated preference object
-        var result = loadCelDocument(spacePrefDocRef)
+        var result = getCelDocument(spacePrefDocRef)
             .flatMap(doc -> getPreferenceObject(doc, context.getLanguage())
                 .map(object -> object.getStringValue(preference))
                 .filter(not(String::isEmpty)));
@@ -4845,7 +4845,7 @@ public class XWiki implements EventListener {
     // Used to avoid recursive loading of documents if there are recursives usage of classes
     BaseClass bclass = context.getBaseClass(documentReference);
     if (bclass == null) {
-      bclass = loadCelDocument(documentReference)
+      bclass = getCelDocument(documentReference)
           .flatMap(CelDocument.Default::getXClass)
           .orElse(null);
       if (bclass != null) {

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -109,7 +110,7 @@ public class XWikiRightServiceImplTest extends AbstractComponentTest {
           if (byName == null) {
             byName = documents.get(reference.getWikiReference().getName() + ":" + localName);
           }
-          return java.util.stream.Stream.concat(java.util.stream.Stream.ofNullable(byName),
+          return Stream.concat(Stream.ofNullable(byName),
               documents.values().stream()
               .filter(document -> document.getDocumentReference().equals(reference))
               .limit(1))

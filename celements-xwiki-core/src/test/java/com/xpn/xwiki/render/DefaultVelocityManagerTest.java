@@ -33,7 +33,7 @@ public class DefaultVelocityManagerTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    expect(getWikiMock().loadCelDocument(anyObject(DocumentReference.class)))
+    expect(getWikiMock().getCelDocument(anyObject(DocumentReference.class)))
         .andReturn(Optional.empty()).anyTimes();
     replayDefault();
     execution = getBeanFactory().getBean(Execution.class);

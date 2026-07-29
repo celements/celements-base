@@ -416,7 +416,7 @@ public class DefaultDocumentAccessBridge implements DocumentAccessBridge {
   public Object getProperty(DocumentReference documentReference, DocumentReference classReference,
       String propertyName) {
     try {
-      return getXWiki().loadCelDocument(documentReference)
+      return getXWiki().getCelDocument(documentReference)
           .flatMap(doc -> doc.streamXObjects(classReference).findFirst())
           .flatMap(obj -> obj.getProperty(propertyName))
           .map(CelProperty::getValue)

@@ -153,7 +153,7 @@ public class XWikiDocumentTest extends AbstractComponentTest {
     expect(getWikiMock().getRenderingEngine()).andReturn(this.mockXWikiRenderingEngine).anyTimes();
     expect(getWikiMock().getVersioningStore()).andReturn(this.mockXWikiVersioningStore).anyTimes();
     expect(getWikiMock().getStore()).andReturn(this.mockXWikiStoreInterface).anyTimes();
-    expect(getWikiMock().loadCelDocument(anyObject(DocumentReference.class)))
+    expect(getWikiMock().getCelDocument(anyObject(DocumentReference.class)))
         .andReturn(Optional.empty()).anyTimes();
     expect(getWikiMock().getDocument(anyObject(DocumentReference.class), same(getContext())))
         .andAnswer(() -> this.wikiDocument).anyTimes();
