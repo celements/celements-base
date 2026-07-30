@@ -71,4 +71,31 @@ public class XWikiTest extends AbstractComponentTest {
     assertFalse(xwiki.checkAccess("file", doc, getContext()));
     verifyDefault();
   }
+
+  @Test
+  public void checkAccess_skinResources_public() throws XWikiException {
+    var doc = new XWikiDocument(new DocumentReference("xwiki", "resources", "WebHome"));
+    expect(authService.checkAuth(same(getContext()))).andReturn(null);
+    replayDefault();
+    assertTrue(xwiki.checkAccess("skin", doc, getContext()));
+    verifyDefault();
+  }
+
+  @Test
+  public void checkAccess_skinSkins_public() throws XWikiException {
+    var doc = new XWikiDocument(new DocumentReference("xwiki", "skins", "WebHome"));
+    expect(authService.checkAuth(same(getContext()))).andReturn(null);
+    replayDefault();
+    assertTrue(xwiki.checkAccess("skin", doc, getContext()));
+    verifyDefault();
+  }
+
+  @Test
+  public void checkAccess_skinNonPublic_delegates() throws XWikiException {
+    var doc = new XWikiDocument(new DocumentReference("xwiki", "Content", "WebHome"));
+    expect(rightService.checkAccess("skin", doc, getContext())).andReturn(false);
+    replayDefault();
+    assertFalse(xwiki.checkAccess("skin", doc, getContext()));
+    verifyDefault();
+  }
 }
