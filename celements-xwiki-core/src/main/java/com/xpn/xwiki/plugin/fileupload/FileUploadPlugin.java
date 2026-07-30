@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
@@ -109,7 +110,6 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
    *          the plugin classname (used in logs for example)
    * @param context
    *          the XWiki Context
-   *
    * @see XWikiDefaultPlugin#XWikiDefaultPlugin(String,String,com.xpn.xwiki.XWikiContext)
    */
   public FileUploadPlugin(String name, String className, XWikiContext context) {
@@ -162,8 +162,8 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
   @Override
   public void endRendering(XWikiContext context) {
     // we used to call cleanFileList here but we should not anymore as endRendering is called to
-    // many times and empties the file upload list. This is handled by XWikiAction and
-    // XWikiPortlet which clean up lists in a finally block
+    // many times and empties the file upload list. This is handled by XWikiAction which clean up
+    // lists in a finally block
   }
 
   /**
@@ -249,7 +249,8 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
               isFormField, fileName);
           // Needed to make sure the File object is created.
           item.getOutputStream();
-          item.getStoreLocation().deleteOnExit();
+          Optional.ofNullable(item.getStoreLocation())
+              .ifPresent(File::deleteOnExit);
           return item;
         } catch (IOException e) {
           String path = System.getProperty("java.io.tmpdir");
@@ -271,7 +272,6 @@ public class FileUploadPlugin extends XWikiDefaultPlugin implements XWikiPluginI
       }
     }
 
-    // TODO: Does this work in portlet mode, or we must use PortletFileUpload?
     FileUpload fileupload = new ServletFileUpload(factory);
     RequestContext reqContext = new ServletRequestContext(
         context.getRequest().getHttpServletRequest());

@@ -20,11 +20,14 @@
 package com.xpn.xwiki.web;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 
+import com.google.common.net.MediaType;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -77,9 +80,16 @@ public class DownloadAction extends XWikiAction {
     XWikiPluginManager plugins = context.getWiki().getPluginManager();
     attachment = plugins.downloadAttachment(attachment, context);
     // Choose the right content type
-    String mimetype = attachment.getMimeType(context);
-    response.setContentType(mimetype);
-    response.setCharacterEncoding("");
+    MediaType mediaType = MediaType.parse(attachment.getMimeType(context));
+    response.setContentType(mediaType.toString());
+    if (Stream.of(
+        MediaType.ANY_TEXT_TYPE,
+        MediaType.JSON_UTF_8,
+        MediaType.JAVASCRIPT_UTF_8,
+        MediaType.APPLICATION_XML_UTF_8)
+        .anyMatch(mediaType::is)) {
+      response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+    }
 
     long lastModifiedOnClient = request.getDateHeader("If-Modified-Since");
     long lastModifiedOnServer = attachment.getDate().getTime();

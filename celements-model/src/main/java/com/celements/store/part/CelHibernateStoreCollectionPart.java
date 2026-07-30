@@ -3,7 +3,6 @@ package com.celements.store.part;
 import static com.xpn.xwiki.XWikiException.*;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +29,6 @@ import com.xpn.xwiki.objects.StringProperty;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.StringClass;
 import com.xpn.xwiki.objects.classes.TextAreaClass;
-import com.xpn.xwiki.stats.impl.XWikiStats;
 
 //TODO CELDEV-626 - CelHibernateStore refactoring
 public class CelHibernateStoreCollectionPart {
@@ -52,8 +50,6 @@ public class CelHibernateStoreCollectionPart {
       throw new XWikiException(MODULE_XWIKI_STORE, ERROR_XWIKI_STORE_HIBERNATE_SAVING_OBJECT,
           "Unable to save object with invalid id: " + object);
     }
-    // We need a slightly different behavior here
-    boolean stats = (object instanceof XWikiStats);
     boolean commit = false;
     try {
       if (bTransaction) {
@@ -63,26 +59,12 @@ public class CelHibernateStoreCollectionPart {
       Session session = store.getSession(context);
 
       // Verify if the property already exists
-      Query query;
-      if (stats) {
-        query = session.createQuery("select obj.id from " + object.getClass().getName()
-            + " as obj where obj.id = :id");
-      } else {
-        query = session.createQuery("select obj.id from BaseObject as obj where obj.id = :id");
-      }
+      Query query = session.createQuery("select obj.id from BaseObject as obj where obj.id = :id");
       query.setLong("id", object.getId());
       if (query.uniqueResult() == null) {
-        if (stats) {
-          session.save(object);
-        } else {
-          session.save("com.xpn.xwiki.objects.BaseObject", object);
-        }
+        session.save("com.xpn.xwiki.objects.BaseObject", object);
       } else {
-        if (stats) {
-          session.update(object);
-        } else {
-          session.update("com.xpn.xwiki.objects.BaseObject", object);
-        }
+        session.update("com.xpn.xwiki.objects.BaseObject", object);
       }
       /*
        * if (stats) session.saveOrUpdate(object); else
@@ -110,8 +92,8 @@ public class CelHibernateStoreCollectionPart {
       if (object.getXClassReference() != null) {
         // Remove all existing properties
         if (object.getFieldsToRemove().size() > 0) {
-          for (int i = 0; i < object.getFieldsToRemove().size(); i++) {
-            BaseProperty prop = (BaseProperty) object.getFieldsToRemove().get(i);
+          for (Object element : object.getFieldsToRemove()) {
+            BaseProperty prop = (BaseProperty) element;
             if (!handledProps.contains(prop.getName())) {
               session.delete(prop);
             }
@@ -119,9 +101,7 @@ public class CelHibernateStoreCollectionPart {
           object.setFieldsToRemove(new ArrayList<BaseProperty>());
         }
 
-        Iterator<String> it = object.getPropertyList().iterator();
-        while (it.hasNext()) {
-          String key = it.next();
+        for (String key : object.getPropertyList()) {
           BaseProperty prop = (BaseProperty) object.getField(key);
           if (!prop.getName().equals(key)) {
             throw new XWikiException(MODULE_XWIKI_CLASSES, ERROR_XWIKI_CLASSES_FIELD_INVALID,
@@ -200,9 +180,7 @@ public class CelHibernateStoreCollectionPart {
             "select prop.name, prop.classType from BaseProperty as prop where prop.id.id = :id");
         query.setLong("id", object.getId());
         List<?> list = query.list();
-        Iterator<?> it = list.iterator();
-        while (it.hasNext()) {
-          Object obj = it.next();
+        for (Object obj : list) {
           Object[] result = (Object[]) obj;
           String name = (String) result[0];
           // No need to load fields already loaded from
@@ -250,7 +228,8 @@ public class CelHibernateStoreCollectionPart {
             } catch (Exception e2) {
               throw new XWikiException(MODULE_XWIKI_STORE,
                   ERROR_XWIKI_STORE_HIBERNATE_LOADING_OBJECT, "Exception while loading property '"
-                      + name + "' for object: " + object, e);
+                      + name + "' for object: " + object,
+                  e);
             }
           }
 
@@ -297,8 +276,8 @@ public class CelHibernateStoreCollectionPart {
       }
 
       if (object.getXClassReference() != null) {
-        for (Iterator<?> it = object.getFieldList().iterator(); it.hasNext();) {
-          BaseElement property = (BaseElement) it.next();
+        for (Object name : object.getFieldList()) {
+          BaseElement property = (BaseElement) name;
           if (!handledProps.contains(property.getName())) {
             if (evict) {
               session.evict(property);

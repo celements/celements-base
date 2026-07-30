@@ -20,6 +20,8 @@
  */
 package org.xwiki.component.descriptor;
 
+import java.util.Arrays;
+
 /**
  * Default implementation of {@link ComponentDependency}.
  *
@@ -60,5 +62,14 @@ public class DefaultComponentDependency<T> extends DefaultComponentRole<T>
   @Override
   public String[] getHints() {
     return this.hints;
+  }
+
+  @Override
+  public String toString() {
+    return "ComponentDependency ["
+        + "name=" + name
+        + ", hints=" + Arrays.toString(hints)
+        + ", mappingType=" + mappingType
+        + "]";
   }
 }

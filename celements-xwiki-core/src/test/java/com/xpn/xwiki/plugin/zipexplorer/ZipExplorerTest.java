@@ -21,21 +21,25 @@
  */
 package com.xpn.xwiki.plugin.zipexplorer;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.jmock.Mock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.classes.ListItem;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.web.XWikiRequest;
 
 /**
@@ -43,17 +47,26 @@ import com.xpn.xwiki.web.XWikiRequest;
  *
  * @version $Id$
  */
-public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
+public class ZipExplorerTest extends AbstractComponentTest {
 
   private ZipExplorerPlugin plugin;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    this.plugin = new ZipExplorerPlugin("zipexplorer", ZipExplorerPlugin.class.getName(), null);
+  private boolean mocksReplayed;
+
+  @Before
+  public void prepareTest() throws Exception {
+    plugin = new ZipExplorerPlugin("zipexplorer", ZipExplorerPlugin.class.getName(), null);
   }
 
-  public void testIsZipFile() throws Exception {
+  @After
+  public void verifyTest() {
+    if (mocksReplayed) {
+      verifyDefault();
+    }
+  }
+
+  @Test
+  public void test_isZipFile() throws Exception {
     byte txtbuf[] = { 0x00, 0x01, 0x02, 0x03, 0x06, 0x07 };
     ByteArrayInputStream txtBais = new ByteArrayInputStream(txtbuf);
     assertFalse(this.plugin.isZipFile(txtBais));
@@ -68,7 +81,8 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
 
   }
 
-  public void testIsValidZipURL() {
+  @Test
+  public void test_isValidZipURL() {
     assertTrue(this.plugin.isValidZipURL(
         "http://server/xwiki/bin/download/Main/Document/zipfile.zip/Directory/File.txt",
         "download"));
@@ -87,9 +101,10 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
         "http://server/xwiki/bin/download/Main/Document/zipfile.zip/Directory/Dir2", "download"));
   }
 
-  public void testDownloadAttachmentWithInvalidZipURL() throws Exception {
+  @Test
+  public void test_downloadAttachment_withInvalidZipURL() throws Exception {
     XWikiAttachment originalAttachment = createAttachment("someFile.txt", "Some text".getBytes(),
-        (XWikiDocument) mock(XWikiDocument.class).proxy());
+        new XWikiDocument());
     XWikiContext context = createXWikiContext(
         "http://server/xwiki/bin/download/Main/Document/someFile.txt");
 
@@ -98,11 +113,12 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
     assertSame(originalAttachment, newAttachment);
   }
 
-  public void testDownloadAttachment() throws Exception {
+  @Test
+  public void test_downloadAttachment() throws Exception {
     String zipFileContent = "File.txt content";
     XWikiAttachment originalAttachment = createAttachment("zipfile.zip",
         createZipFile(zipFileContent),
-        (XWikiDocument) mock(XWikiDocument.class).proxy());
+        new XWikiDocument());
 
     XWikiContext context = createXWikiContext(
         "http://server/xwiki/bin/download/Main/Document/zipfile.zip/Directory/File.txt");
@@ -115,9 +131,10 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals(zipFileContent, new String(newAttachment.getContent(context)));
   }
 
-  public void testDownloadAttachmentWhenURLIsNotZipFile() throws Exception {
+  @Test
+  public void test_downloadAttachment_whenURLIsNotZipFile() throws Exception {
     XWikiAttachment originalAttachment = createAttachment("somefile.whatever", null,
-        (XWikiDocument) mock(XWikiDocument.class).proxy());
+        new XWikiDocument());
 
     XWikiContext context = createXWikiContext(
         "http://server/xwiki/bin/download/Main/Document/somefile.whatever");
@@ -127,9 +144,10 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
     assertSame(originalAttachment, newAttachment);
   }
 
-  public void testDownloadAttachmentWhenURLIsZipButNotPointingInsideZip() throws Exception {
+  @Test
+  public void test_downloadAttachment_whenURLIsZipButNotPointingInsideZip() throws Exception {
     XWikiAttachment originalAttachment = createAttachment("zipfile.zip", null,
-        (XWikiDocument) mock(XWikiDocument.class).proxy());
+        new XWikiDocument());
 
     XWikiContext context = createXWikiContext(
         "http://server/xwiki/bin/download/Main/Document/zipfile.zip");
@@ -139,7 +157,8 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
     assertSame(originalAttachment, newAttachment);
   }
 
-  public void testGetFileList() throws Exception {
+  @Test
+  public void test_getFileList() throws Exception {
     XWikiDocument document = createXWikiDocumentWithZipFileAttachment();
 
     List<String> entries = this.plugin.getFileList(new Document(document, null), "zipfile.zip",
@@ -150,7 +169,8 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("File2.txt", entries.get(1));
   }
 
-  public void testGetFileTreeList() throws Exception {
+  @Test
+  public void test_getFileTreeList() throws Exception {
     XWikiDocument document = createXWikiDocumentWithZipFileAttachment();
 
     List<ListItem> entries = this.plugin.getFileTreeList(new Document(document, null),
@@ -171,18 +191,21 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals("", entries.get(2).getParent());
   }
 
-  public void testGetFileLink() throws Exception {
-    Mock mockDocument = mock(XWikiDocument.class);
-    mockDocument.expects(once()).method("getAttachmentURL").will(
-        returnValue("http://server/xwiki/bin/download/Main/Document/zipfile.zip"));
-    Document document = new Document((XWikiDocument) mockDocument.proxy(), null);
+  @Test
+  public void test_getFileLink() throws Exception {
+    XWikiDocument xdoc = createDefaultMock(XWikiDocument.class);
+    expect(xdoc.getAttachmentURL(anyString(), eq("download"), isNull()))
+        .andReturn("http://server/xwiki/bin/download/Main/Document/zipfile.zip");
+    replayMocks();
+    Document document = new Document(xdoc, null);
 
     String link = this.plugin.getFileLink(document, "zipfile.zip", "filename", null);
 
     assertEquals("http://server/xwiki/bin/download/Main/Document/zipfile.zip/filename", link);
   }
 
-  public void testGetFileLocationFromZipURL() {
+  @Test
+  public void test_getFileLocationFromZipURL() {
     String urlPrefix = "server/xwiki/bin/download/Main/Document/zipfile.zip";
 
     assertEquals("Directory/File.txt",
@@ -195,40 +218,34 @@ public class ZipExplorerTest extends AbstractBridgedXWikiComponentTestCase {
   }
 
   private XWikiDocument createXWikiDocumentWithZipFileAttachment() throws Exception {
-    Mock mockDocument = mock(XWikiDocument.class);
-    XWikiDocument document = (XWikiDocument) mockDocument.proxy();
+    XWikiDocument document = new XWikiDocument();
     XWikiAttachment attachment = createAttachment("zipfile.zip", createZipFile("Some content"),
         document);
-    mockDocument.stubs().method("clone").will(returnValue(mockDocument.proxy()));
-    mockDocument.stubs().method("getAttachment").will(returnValue(attachment));
+    document.getAttachmentList().add(attachment);
     return document;
   }
 
   private XWikiContext createXWikiContext(String url) {
-    Mock mockRequest = mock(XWikiRequest.class);
-    mockRequest.expects(once()).method("getRequestURI").will(returnValue(url));
+    XWikiRequest request = createDefaultMock(XWikiRequest.class);
+    expect(request.getRequestURI()).andReturn(url);
+    replayMocks();
     XWikiContext context = new XWikiContext();
-    context.setRequest((XWikiRequest) mockRequest.proxy());
+    context.setRequest(request);
     context.setAction("download");
     return context;
   }
 
   private XWikiAttachment createAttachment(String filename, byte[] content, XWikiDocument document)
       throws Exception {
-    Mock mockAttachment = mock(XWikiAttachment.class);
-    mockAttachment.stubs().method("getFilename").will(returnValue(filename));
-    mockAttachment.stubs().method("getDoc").will(returnValue(document));
-    mockAttachment.stubs().method("getAuthor").will(returnValue("Vincent"));
-    mockAttachment.stubs().method("getDate").will(returnValue(new Date()));
-    mockAttachment.stubs().method("getFilesize")
-        .will(returnValue((content == null) ? 0 : content.length));
-    mockAttachment.stubs().method("getContentSize")
-        .will(returnValue((content == null) ? 0 : content.length));
-    mockAttachment.stubs().method("getContent")
-        .will(returnValue((content == null) ? new byte[0] : content));
-    mockAttachment.stubs().method("getContentInputStream").will(
-        returnValue(new ByteArrayInputStream((content == null) ? new byte[0] : content)));
-    return (XWikiAttachment) mockAttachment.proxy();
+    XWikiAttachment attachment = new XWikiAttachment(document, filename);
+    attachment.setAuthor("Vincent");
+    attachment.setContent((content == null) ? new byte[0] : content);
+    return attachment;
+  }
+
+  private void replayMocks() {
+    replayDefault();
+    mocksReplayed = true;
   }
 
   private byte[] createZipFile(String content) throws Exception {

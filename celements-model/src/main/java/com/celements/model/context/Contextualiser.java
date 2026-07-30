@@ -1,5 +1,7 @@
 package com.celements.model.context;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.spring.context.SpringContextProvider.*;
 import static java.util.stream.Collectors.*;
 
 import java.util.HashMap;
@@ -14,15 +16,13 @@ import java.util.stream.Stream;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import org.apache.velocity.VelocityContext;
-import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.WikiReference;
 
-import com.celements.common.MoreOptional;
+import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.web.Utils;
 
 /**
  * {@link #execute} code within a modified {@link ExecutionContext}, {@link XWikiContext}
@@ -96,6 +96,10 @@ public class Contextualiser {
     return this;
   }
 
+  public <T> Contextualiser withExecContext(ExecutionContext.Property<T> prop, T val) {
+    return withExecContext(prop.getName(), val);
+  }
+
   public Contextualiser withXWikiContext(String key, Object val) {
     xCtxMod.ifPresent(mod -> mod.with(key, val));
     return this;
@@ -107,11 +111,13 @@ public class Contextualiser {
   }
 
   public Contextualiser withWiki(WikiReference wiki) {
-    return withXWikiContext("wiki", (wiki != null) ? wiki.getName() : null);
+    return withXWikiContext("wiki", (wiki != null) ? wiki.getName() : null)
+        .withExecContext(WIKI, wiki);
   }
 
   public Contextualiser withDoc(XWikiDocument doc) {
-    return withXWikiContext("doc", doc);
+    return withXWikiContext("doc", doc)
+        .withExecContext(DOC, doc);
   }
 
   public void execute(Runnable runnable) {
@@ -121,9 +127,13 @@ public class Contextualiser {
     });
   }
 
+  public Runnable wrap(Runnable runnable) {
+    return () -> execute(runnable);
+  }
+
   public <T> T execute(Supplier<T> supplier) {
     return Stream.of(eCtxMod, xCtxMod, vCtxMod)
-        .flatMap(MoreOptional::stream)
+        .flatMap(Optional::stream)
         .filter(ContextModifier::hasValues)
         .map(ctxMod -> (Function<Supplier<T>, T>) ctxMod::execute)
         .reduce(Supplier::get, (f1, f2) -> (s -> f1.apply(() -> f2.apply(s))))
@@ -135,18 +145,11 @@ public class Contextualiser {
   }
 
   private static Optional<XWikiContext> getXWikiCtx() {
-    return getExecCtx()
-        .map(ctx -> (XWikiContext) ctx.getProperty(XWikiContext.EXECUTIONCONTEXT_KEY));
+    return getExecCtx().flatMap(ctx -> ctx.get(XWIKI_CONTEXT));
   }
 
   private static Optional<ExecutionContext> getExecCtx() {
-    try {
-      return Optional.ofNullable(Utils.getComponentManager()
-          .lookup(Execution.class)
-          .getContext());
-    } catch (ComponentLookupException e) {
-      return Optional.empty();
-    }
+    return Optional.ofNullable(getSpringContext().getBean(Execution.class).getContext());
   }
 
 }

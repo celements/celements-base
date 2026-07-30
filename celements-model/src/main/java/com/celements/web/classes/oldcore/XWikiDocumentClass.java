@@ -20,7 +20,7 @@ import com.celements.model.classes.fields.ref.DocumentReferenceField;
 public class XWikiDocumentClass extends PseudoClassDefinition {
 
   public static final String CLASS_NAME = "XWikiDocumentClass";
-  public static final String CLASS_FN = CLASS_SPACE + "." + CLASS_NAME;
+  public static final String CLASS_FN = PseudoClassDefinition.CLASS_SPACE + "." + CLASS_NAME;
   public static final String CLASS_DEF_HINT = CLASS_FN;
   public static final ClassReference CLASS_REF = new ClassReference(CLASS_SPACE, CLASS_NAME);
 

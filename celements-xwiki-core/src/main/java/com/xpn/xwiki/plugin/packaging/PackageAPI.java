@@ -26,6 +26,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Api;
@@ -34,6 +37,8 @@ import com.xpn.xwiki.util.Util;
 import net.sf.json.JSONObject;
 
 public class PackageAPI extends Api {
+
+  private static final Logger LOG = LoggerFactory.getLogger(PackageAPI.class);
 
   Package plugin;
 
@@ -176,26 +181,19 @@ public class PackageAPI extends Api {
     return apiFiles;
   }
 
-  public boolean add(String docFullName, int DefaultAction) throws XWikiException {
-    return this.plugin.add(docFullName, DefaultAction, getXWikiContext());
+  public boolean add(String docFullName, int defaultAction) throws XWikiException {
+    return this.plugin.add(docFullName, defaultAction, getXWikiContext());
   }
 
   public boolean add(String docFullName) throws XWikiException {
     return this.plugin.add(docFullName, getXWikiContext());
   }
 
-  public void setDocumentAction(String docFullName, int action) {
-    for (DocumentInfo docInfo : this.plugin.getFiles()) {
-      if (docInfo.getFullName().compareTo(docFullName) == 0) {
-        docInfo.setAction(action);
-      }
-    }
-  }
-
   public void setDocumentAction(String docFullName, String language, int action) {
     for (DocumentInfo docInfo : this.plugin.getFiles()) {
       if ((docInfo.getFullName().compareTo(docFullName) == 0)
-          && (language.equals(docInfo.getLanguage()))) {
+          && ((language == null) || language.equals(docInfo.getLanguage()))) {
+        LOG.trace("setDocumentAction - doc [{}:{}], action [{}]", docFullName, language, action);
         docInfo.setAction(action);
       }
     }
@@ -219,12 +217,10 @@ public class PackageAPI extends Api {
    *
    * @param data
    *          the file to create the package from, as a byte array.
-   *
    * @return true if the package creation succeeded, false otherwise. If the package creation
    *         failed,
    *         the error message is placed in the velocity context under the <code>import_error</code>
    *         key,
-   *
    * @since 2.2M1
    */
   public boolean importPackageFromByteArray(byte data[]) {
@@ -290,7 +286,6 @@ public class PackageAPI extends Api {
 
   /**
    * @return a representation of this package under the JSON format
-   *
    * @since 2.2M1
    */
   public JSONObject toJSON() {

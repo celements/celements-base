@@ -19,6 +19,7 @@ import org.xwiki.context.ExecutionContextException;
 import org.xwiki.context.ExecutionContextManager;
 import org.xwiki.velocity.VelocityManager;
 
+import com.celements.execution.XWikiExecutionProp;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -205,35 +206,24 @@ public class HtmlPackager {
       throws XWikiException, IOException {
     ExecutionContextManager ecim = Utils.getComponent(ExecutionContextManager.class);
     Execution execution = Utils.getComponent(Execution.class);
-
-    VelocityContext oldVelocityContext = (VelocityContext) context.get("vcontext");
-
+    ExecutionContext eCtxClone = null;
     try {
-      XWikiContext renderContext = (XWikiContext) context.clone();
-      renderContext.put("action", "view");
-
-      ExecutionContext ec = new ExecutionContext();
-
-      // Bridge with old XWiki Context, required for old code.
-      ec.setProperty("xwikicontext", renderContext);
-
-      ecim.initialize(ec);
-
+      eCtxClone = ecim.clone(execution.getContext());
       // Push a clean new Execution Context since we don't want the main Execution Context to be
       // used for
       // rendering the HTML pages to export. It's cleaner to isolate it as we do. Note that the new
       // Execution Context automatically gets initialized with a new Velocity Context by
       // the VelocityRequestInitializer class.
-      execution.pushContext(ec);
-
-      VelocityManager velocityManager = Utils.getComponent(VelocityManager.class);
-
+      execution.pushContext(eCtxClone);
+      XWikiContext renderContext = eCtxClone.get(XWikiExecutionProp.XWIKI_CONTEXT)
+          .orElseThrow(IllegalStateException::new);
+      renderContext.setAction("view");
+      renderContext.put("action", "view");
       // At this stage we have a clean Velocity Context
-      VelocityContext vcontext = velocityManager.getVelocityContext();
-
+      VelocityContext vcontext = Utils.getComponent(VelocityManager.class)
+          .getVelocityContext();
       urlf.init(this.pages, tempdir, renderContext);
       renderContext.setURLFactory(urlf);
-
       for (String pageName : this.pages) {
         renderDocument(pageName, zos, renderContext, vcontext);
       }
@@ -244,9 +234,9 @@ public class HtmlPackager {
     } finally {
       // We must ensure that the new request we've used is removed so that the current
       // thread can continue to use its original Execution Context.
-      execution.popContext();
-
-      context.put("vcontext", oldVelocityContext);
+      if (eCtxClone != null) {
+        execution.popContext();
+      }
     }
   }
 

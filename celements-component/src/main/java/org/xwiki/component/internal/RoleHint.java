@@ -19,6 +19,8 @@
  */
 package org.xwiki.component.internal;
 
+import org.xwiki.component.descriptor.DefaultComponentRole;
+
 /**
  * Represent the unique identifier of a Component (pair Role/Hint).
  *
@@ -39,7 +41,7 @@ public class RoleHint<T> {
     this.role = role;
     this.hint = hint;
     if (this.hint == null) {
-      this.hint = "default";
+      this.hint = DefaultComponentRole.HINT;
     }
   }
 

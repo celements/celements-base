@@ -30,7 +30,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- *
  * @version $Id$
  */
 public class XWikiRequestProcessor extends org.apache.struts.action.RequestProcessor {
@@ -48,28 +47,8 @@ public class XWikiRequestProcessor extends org.apache.struts.action.RequestProce
       HttpServletResponse httpServletResponse)
       throws IOException {
     String result = super.processPath(httpServletRequest, httpServletResponse);
-
-    // Remove /wikiname part if the struts action is /wiki
-    if ("1".equals(
-        XWikiConfigurationService.getProperty("xwiki.virtual.usepath", "0", getServletContext()))
-        && httpServletRequest.getServletPath().equals(
-            "/"
-                + XWikiConfigurationService.getProperty("xwiki.virtual.usepath.servletpath", "wiki",
-                    getServletContext()))) {
-      int wikiNameIndex = result.indexOf("/", 1);
-      if (wikiNameIndex == -1) {
-        result = "";
-      } else {
-        result = result.substring(wikiNameIndex);
-      }
-    }
-
     if (StringUtils.countMatches(result, "/") <= 2) {
-      if (result.startsWith("/xmlrpc/")) {
-        return "/xmlrpc/";
-      } else {
-        return "/view/";
-      }
+      return "/view/";
     } else {
       return result.substring(0, result.indexOf("/", 1) + 1);
     }

@@ -19,12 +19,13 @@ import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.common.test.AbstractComponentTest;
-import com.celements.common.test.ExceptionAsserter;
 import com.celements.migrations.celSubSystem.ICelementsMigrator;
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.access.exception.DocumentNotExistsException;
+import com.celements.model.reference.ReferenceProvider;
 import com.celements.model.util.ModelUtils;
 import com.celements.query.IQueryExecutionServiceRole;
+import com.celements.wiki.WikiService;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.xpn.xwiki.XWikiException;
@@ -43,8 +44,9 @@ public class DanglingPropertiesMigrationTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     queryExecMock = registerComponentMock(IQueryExecutionServiceRole.class);
-    hibCfgMock = createMockAndAddToDefault(Configuration.class);
-    registerComponentMocks(HibernateSessionFactory.class, IModelAccessFacade.class);
+    hibCfgMock = createDefaultMock(Configuration.class);
+    registerComponentMocks(HibernateSessionFactory.class, IModelAccessFacade.class,
+        ReferenceProvider.class, WikiService.class);
     expect(getMock(HibernateSessionFactory.class).getConfiguration()).andReturn(
         hibCfgMock).anyTimes();
     expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("").anyTimes();
@@ -152,13 +154,7 @@ public class DanglingPropertiesMigrationTest extends AbstractComponentTest {
         className))).andThrow(xwe);
 
     replayDefault();
-    new ExceptionAsserter<XWikiException>(XWikiException.class, xwe) {
-
-      @Override
-      protected void execute() throws Exception {
-        migration.migrate(null, getContext());
-      }
-    }.evaluate();
+    assertThrows(XWikiException.class, () -> migration.migrate(null, getContext()));
     verifyDefault();
   }
 
@@ -195,7 +191,8 @@ public class DanglingPropertiesMigrationTest extends AbstractComponentTest {
     replayDefault();
     assertEquals("select XWO_ID, XWO_NAME, XWO_CLASSNAME, XWO_NUMBER, tbl.* from tbl "
         + "left join xwikiobjects on XWO_ID = TBL_ID where XWO_ID is null "
-        + "or XWO_CLASSNAME <> 'Classes.Class' order by XWO_CLASSNAME, XWO_NAME", getSelectSql(
+        + "or XWO_CLASSNAME <> 'Classes.Class' order by XWO_CLASSNAME, XWO_NAME",
+        getSelectSql(
             "tbl", createIdColumnName("tbl"), "Classes.Class"));
     verifyDefault();
   }
@@ -204,7 +201,8 @@ public class DanglingPropertiesMigrationTest extends AbstractComponentTest {
   public void test_getDeleteSql() throws Exception {
     replayDefault();
     assertEquals("delete tbl from tbl left join xwikiobjects on XWO_ID = TBL_ID "
-        + "where XWO_ID is null or XWO_CLASSNAME <> 'Classes.Class'", getDeleteSql("tbl",
+        + "where XWO_ID is null or XWO_CLASSNAME <> 'Classes.Class'",
+        getDeleteSql("tbl",
             createIdColumnName("tbl"), "Classes.Class"));
     verifyDefault();
   }

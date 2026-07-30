@@ -13,6 +13,7 @@ import org.easymock.LogicalOperator;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
@@ -30,7 +31,9 @@ import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
@@ -43,12 +46,13 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
   private final DocumentReference docRef = new ImmutableDocumentReference(
       "xwikidb", "space", "doc");
   private XWikiDocument doc;
+  private Transaction transactionMock;
 
   @Before
   public void prepareTest() throws Exception {
     registerComponentMock(IModelAccessFacade.class);
-    sessionFactoryMock = createMockAndAddToDefault(SessionFactory.class);
-    primaryStoreMock = createMockAndAddToDefault(XWikiHibernateStore.class);
+    sessionFactoryMock = createDefaultMock(SessionFactory.class);
+    primaryStoreMock = createDefaultMock(XWikiHibernateStore.class);
     expect(getWikiMock().getStore()).andReturn(primaryStoreMock).anyTimes();
     expect(getWikiMock().getConfig()).andReturn(new XWikiConfig()).anyTimes();
     expect(getWikiMock().getPlugin("monitor", getContext())).andReturn(null).anyTimes();
@@ -58,10 +62,15 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     expect(getWikiMock().Param(eq("xwiki.store.hibernate.useclasstables.read"), eq("1"))).andReturn(
         "0").anyTimes();
     doc = new XWikiDocument(docRef);
+    transactionMock = createDefaultMock(Transaction.class);
   }
 
   @Test
   public void test_loadXWikiDoc() throws Exception {
+    BaseClass staleClass = new BaseClass();
+    staleClass.setDocumentReference(docRef);
+    staleClass.addTextField("field", "Field", 30);
+    getContext().addBaseClass(staleClass);
     long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
     Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of(
@@ -75,10 +84,50 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     verifyDefault();
 
     assertSame(doc, ret);
+    assertNull(getContext().getBaseClass(docRef));
     assertFalse(doc.isNew());
     assertFalse(doc.isContentDirty());
     // FIXME can be set to 'assertFalse' after CELDEV-784, see CELDEV-785
     assertTrue(doc.isMetaDataDirty());
+  }
+
+  @Test
+  public void test_loadXWikiDoc_xClassCached() throws Exception {
+    BaseClass xClass = new BaseClass();
+    xClass.setDocumentReference(docRef);
+    xClass.addTextField("field", "Field", 30);
+    doc.setXClassXML(xClass.toXMLString());
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
+    Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
+    expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
+    expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
+    sessionMock.load(same(doc), eq(docId));
+
+    replayDefault();
+    getStore(sessionMock).loadXWikiDoc(doc, getContext());
+    verifyDefault();
+
+    assertNotNull(getContext().getBaseClass(docRef).safeget("field"));
+  }
+
+  @Test
+  public void test_loadCelDocument() throws Exception {
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
+    Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
+    expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
+    expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
+    sessionMock.load(anyObject(XWikiDocument.class), eq(docId));
+
+    replayDefault();
+    CelDocument.Default celDocument = getStore(sessionMock).loadCelDocument(docRef)
+        .orElseThrow();
+    verifyDefault();
+
+    assertEquals(docRef, celDocument.getDocumentReference());
   }
 
   @Test
@@ -132,6 +181,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of());
     expect(sessionMock.save(capture(docCapture))).andReturn(null).once();
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -152,6 +202,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     expectLoadExistingDocs(sessionMock, ImmutableList.of());
     expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
         .andReturn(null);
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -170,7 +221,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     doc.setNew(false);
     Session sessionMock = createSessionMock(doc);
     sessionMock.update(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL));
-    expectLastCall();
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -191,6 +242,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
         new Object[] { computeDocId(START_COLLISION_COUNT_DEFAULT), "space.other", "" }));
     expect(sessionMock.save(cmp(doc, new XWikiDummyDocComparator(), LogicalOperator.EQUAL)))
         .andReturn(null);
+    transactionMock.commit();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -209,6 +261,7 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
         new Object[] { computeDocId(1), "space.other2", "" },
         new Object[] { computeDocId(2), "space.other3", "" },
         new Object[] { computeDocId(3), "space.other4", "" }));
+    transactionMock.rollback();
     expect(sessionMock.close()).andReturn(null);
 
     replayDefault();
@@ -230,41 +283,16 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     verifyDefault();
   }
 
-  @Test
-  public void test_getSchemaFromWikiName_virtual() {
-    expect(getWikiMock().isVirtualMode()).andReturn(true).anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
-    replayDefault();
-    CelHibernateStore store = getStore(null);
-    assertNull(store.getSchemaFromWikiName(null, null, getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("as5df", null, getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("AS5DF", null, getContext()));
-    assertEquals("pref_as5df", store.getSchemaFromWikiName("a$s5(DF)", null, getContext()));
-    assertEquals("pref_as5df_suf", store.getSchemaFromWikiName("AS5DF-SUF", null, getContext()));
-    verifyDefault();
-  }
-
-  @Test
-  public void test_getSchemaFromWikiName_main() {
-    expect(getWikiMock().isVirtualMode()).andReturn(false).anyTimes();
-    expect(getWikiMock().Param("xwiki.db")).andReturn("main").anyTimes();
-    expect(getWikiMock().Param("xwiki.db.prefix", "")).andReturn("pref_").anyTimes();
-    replayDefault();
-    CelHibernateStore store = getStore(null);
-    assertNull(store.getSchemaFromWikiName(null, null, getContext()));
-    assertEquals("pref_main", store.getSchemaFromWikiName("as5df", null, getContext()));
-    verifyDefault();
-  }
-
   private CelHibernateStore getStore(Session session) {
     CelHibernateStore store = (CelHibernateStore) Utils.getComponent(XWikiStoreInterface.class);
     store.setSessionFactory(sessionFactoryMock);
-    store.setSession(session, getContext());
+    store.setTransaction(transactionMock);
+    store.setSession(session);
     return store;
   }
 
   private Session createSessionMock(XWikiDocument doc) {
-    Session sessionMock = createMockAndAddToDefault(Session.class);
+    Session sessionMock = createDefaultMock(Session.class);
     sessionMock.setFlushMode(anyObject(FlushMode.class));
     expectLastCall().anyTimes();
     sessionMock.flush();

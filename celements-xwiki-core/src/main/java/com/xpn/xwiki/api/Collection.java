@@ -20,6 +20,8 @@
  */
 package com.xpn.xwiki.api;
 
+import org.xwiki.model.reference.DocumentReference;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseProperty;
@@ -37,6 +39,10 @@ public abstract class Collection extends Element {
 
   public Class getxWikiClass() {
     return new Class(getCollection().getxWikiClass(getXWikiContext()), getXWikiContext());
+  }
+
+  public DocumentReference getDocumentReference() {
+    return getCollection().getDocumentReference();
   }
 
   @Override

@@ -6,7 +6,6 @@ import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
 
 import com.celements.configuration.CelementsPropertiesConfigurationSource;
-import com.celements.configuration.ConfigSourceUtils;
 import com.celements.model.context.ModelContext;
 
 public abstract class AbstractClassPackage implements ClassPackage {
@@ -35,8 +34,7 @@ public abstract class AbstractClassPackage implements ClassPackage {
   }
 
   private boolean isActivated(ConfigurationSource configSrc) {
-    boolean activated = ConfigSourceUtils.getStringListProperty(configSrc, CFG_SRC_KEY).contains(
-        getName());
+    boolean activated = configSrc.getStringListProperty(CFG_SRC_KEY).contains(getName());
     LOGGER.debug("{}: isActivated '{}' for config source '{}'", getName(), activated,
         configSrc.getClass().getSimpleName());
     return activated;

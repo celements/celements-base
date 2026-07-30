@@ -20,46 +20,52 @@
  */
 package com.xpn.xwiki.web;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
-import org.jmock.Mock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
-public class ExportURLFactoryTest extends AbstractBridgedXWikiComponentTestCase {
-
-  private Mock mockXWiki;
+public class ExportURLFactoryTest extends AbstractComponentTest {
 
   /** Temporary directory where to put exported files. Will be deleted at the end of the test. */
   private File tmpDir;
 
   /** The tested instance. */
-  private ExportURLFactory urlFactory = new ExportURLFactory();
+  private ExportURLFactory urlFactory;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  private XWikiDocument exportedDocument;
 
-    this.mockXWiki = mock(XWiki.class);
-    this.mockXWiki.stubs().method("getWebAppPath").will(returnValue("/xwiki"));
-    this.mockXWiki.stubs().method("Param").will(returnValue(null));
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
+  @Before
+  public void prepareTest() throws Exception {
+    urlFactory = new ExportURLFactory(new XWikiConfig());
+
+    expect(getWikiMock().getWebAppPath(same(getContext()))).andReturn("/xwiki").anyTimes();
+    expect(getWikiMock().Param(anyString())).andReturn(null).anyTimes();
+    expect(getWikiMock().getDocument(anyString(), same(getContext())))
+        .andAnswer(() -> exportedDocument).anyTimes();
     getContext().setURL(new URL("http://www.xwiki.org/"));
 
     // The URLFactory uses a request to determine the values for the context and servlet path.
-    Mock mockXWikiResquest = mock(XWikiRequest.class, new Class[] {}, new Object[] {});
-    mockXWikiResquest.stubs().method("getScheme").will(returnValue("http"));
-    mockXWikiResquest.stubs().method("isSecure").will(returnValue(false));
-    mockXWikiResquest.stubs().method("getServletPath").will(returnValue("/bin"));
-    mockXWikiResquest.stubs().method("getContextPath").will(returnValue("/xwiki"));
-    mockXWikiResquest.stubs().method("getHeader").will(returnValue(null));
-    getContext().setRequest((XWikiRequest) mockXWikiResquest.proxy());
+    XWikiRequest request = createMock(XWikiRequest.class);
+    expect(request.getScheme()).andReturn("http").anyTimes();
+    expect(request.isSecure()).andReturn(false).anyTimes();
+    expect(request.getServletPath()).andReturn("/bin").anyTimes();
+    expect(request.getContextPath()).andReturn("/xwiki").anyTimes();
+    expect(request.getHeader(anyString())).andReturn(null).anyTimes();
+    replay(request);
+    getContext().setRequest(request);
 
     // Since the ExportURLFactory saves requested attachments to the disk, create a temporary folder
     // to hold these
@@ -68,6 +74,7 @@ public class ExportURLFactoryTest extends AbstractBridgedXWikiComponentTestCase 
     this.tmpDir.mkdirs();
     new File(this.tmpDir, "attachment").mkdir();
 
+    replayDefault();
     this.urlFactory.init(null, this.tmpDir, getContext());
   }
 
@@ -76,13 +83,13 @@ public class ExportURLFactoryTest extends AbstractBridgedXWikiComponentTestCase 
    * {@link ExportURLFactory#createAttachmentURL(String, String, String, String, String, com.xpn.xwiki.XWikiContext)}
    * correctly escapes spaces into %20 when the exported document contains spaces in its name.
    */
-  public void testCreateAttachmentURL() throws MalformedURLException {
+  @Test
+  public void test_createAttachmentURL() throws Exception {
     // Prepare the exported document and attachment.
-    XWikiDocument doc = new XWikiDocument(" Space ", "New  Page");
-    XWikiAttachment attachment = new XWikiAttachment(doc, "img .jpg");
+    exportedDocument = new XWikiDocument(" Space ", "New  Page");
+    XWikiAttachment attachment = new XWikiAttachment(exportedDocument, "img .jpg");
     attachment.setContent("test".getBytes());
-    doc.getAttachmentList().add(attachment);
-    this.mockXWiki.stubs().method("getDocument").will(returnValue(doc));
+    exportedDocument.getAttachmentList().add(attachment);
 
     URL url = this.urlFactory.createAttachmentURL("img .jpg", " Space ", "Pa ge", "view", "", "x",
         getContext());
@@ -90,9 +97,9 @@ public class ExportURLFactoryTest extends AbstractBridgedXWikiComponentTestCase 
   }
 
   /** When the test is over, delete the folder where the exported attachments were placed. */
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void cleanUpTest() throws Exception {
+    verifyDefault();
     FileUtils.deleteDirectory(this.tmpDir);
   }
 }

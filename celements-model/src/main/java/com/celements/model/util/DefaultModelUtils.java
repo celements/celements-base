@@ -9,10 +9,12 @@ import static com.google.common.base.Strings.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.stereotype.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -21,32 +23,54 @@ import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
-import org.xwiki.query.Query;
-import org.xwiki.query.QueryException;
-import org.xwiki.query.QueryManager;
 
 import com.celements.model.context.ModelContext;
 import com.celements.model.reference.RefBuilder;
-import com.xpn.xwiki.XWiki;
+import com.celements.model.reference.ReferenceProvider;
+import com.google.common.base.Suppliers;
+import com.xpn.xwiki.XWikiConfigSource;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.util.Util;
-import com.xpn.xwiki.web.Utils;
 
 @Component
 public class DefaultModelUtils implements ModelUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultModelUtils.class);
+  private final Execution exec;
+  private final ModelContext context;
+  private final EntityReferenceResolver<String> resolver;
+  private final EntityReferenceSerializer<String> defaultSerializer;
+  private final EntityReferenceSerializer<String> localSerializer;
+  private final EntityReferenceSerializer<String> compactSerializer;
+  private final EntityReferenceSerializer<String> compactWikiSerializer;
+  private final ReferenceProvider refProvider;
+  private final XWikiConfigSource xwikiCfg;
+  private final Supplier<WikiReference> mainWikiRef;
 
-  @Requirement
-  private Execution exec;
-
-  @Requirement
-  private ModelContext context;
-
-  @Requirement("explicit")
-  private EntityReferenceResolver<String> resolver;
-
-  private final XWiki getXWiki() {
-    return context.getXWikiContext().getWiki();
+  @Inject
+  public DefaultModelUtils(
+      @Named("explicit") EntityReferenceResolver<String> resolver,
+      @Named("default") EntityReferenceSerializer<String> defaultSerializer,
+      @Named("local") EntityReferenceSerializer<String> localSerializer,
+      @Named("compact") EntityReferenceSerializer<String> compactSerializer,
+      @Named("compactwiki") EntityReferenceSerializer<String> compactWikiSerializer,
+      ReferenceProvider refProvider,
+      XWikiConfigSource xwikiCfg,
+      ModelContext context,
+      Execution exec) {
+    this.resolver = resolver;
+    this.defaultSerializer = defaultSerializer;
+    this.localSerializer = localSerializer;
+    this.compactSerializer = compactSerializer;
+    this.compactWikiSerializer = compactWikiSerializer;
+    this.refProvider = refProvider;
+    this.xwikiCfg = xwikiCfg;
+    this.context = context;
+    this.exec = exec;
+    this.mainWikiRef = Suppliers
+        .memoize(() -> RefBuilder.create()
+            .wiki(xwikiCfg.getMainWikiName())
+            .buildOpt(WikiReference.class)
+            .orElse(XWikiConstant.MAIN_WIKI));
   }
 
   @Override
@@ -99,8 +123,9 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  public <T extends EntityReference> T resolveRef(String name, Class<T> token,
-      EntityReference baseRef) {
+  @NotNull
+  public <T extends EntityReference> T resolveRef(@NotNull String name, @NotNull Class<T> token,
+      @Nullable EntityReference baseRef) {
     RefBuilder builder = RefBuilder.create()
         .with(context.getWikiRef())
         .with(baseRef);
@@ -118,102 +143,60 @@ public class DefaultModelUtils implements ModelUtils {
 
   @Override
   public WikiReference getMainWikiRef() {
-    return RefBuilder.create().wiki("xwiki").build(WikiReference.class);
+    return mainWikiRef.get();
+  }
+
+  @Override
+  public boolean isMainWiki(@Nullable WikiReference wikiRef) {
+    return XWikiConstant.MAIN_WIKI.equals(wikiRef)
+        || getMainWikiRef().equals(wikiRef);
+  }
+
+  @Override
+  @Nullable
+  public WikiReference normalizeWikiRef(@Nullable WikiReference wikiRef) {
+    if (isMainWiki(wikiRef)) {
+      return getMainWikiRef();
+    }
+    return wikiRef;
   }
 
   @Override
   public Stream<WikiReference> getAllWikis() {
-    Stream<WikiReference> stream;
-    try {
-      String prefix = "XWikiServer";
-      String xwql = "select distinct doc.name from XWikiDocument as doc, BaseObject as obj "
-          + "where doc.space = 'XWiki' and doc.name <> 'XWikiServerClassTemplate' "
-          + "and obj.name=doc.fullName and obj.className='XWiki.XWikiServerClass'";
-      stream = getQueryManager().createQuery(xwql, Query.XWQL)
-          .setWiki(getMainWikiRef().getName())
-          .<String>execute().stream()
-          .filter(name -> name.startsWith(prefix) && (name.length() > prefix.length()))
-          .map(name -> name.substring(prefix.length()).toLowerCase())
-          .map(name -> RefBuilder.create().wiki(name).build(WikiReference.class));
-    } catch (QueryException exc) {
-      LOGGER.error("getAllWikis - failed", exc);
-      stream = Stream.of(context.getWikiRef());
-    }
-    return Stream.concat(Stream.of(getMainWikiRef()), stream).distinct();
+    return refProvider.getAllWikis().stream();
   }
 
   @Override
   public Stream<SpaceReference> getAllSpaces(WikiReference wikiRef) {
-    RefBuilder builder = RefBuilder.from(wikiRef);
-    try {
-      return getQueryManager().getNamedQuery("getSpaces")
-          .setWiki(wikiRef.getName())
-          .<String>execute().stream()
-          .map(name -> builder.space(name).build(SpaceReference.class))
-          .distinct();
-    } catch (QueryException exc) {
-      LOGGER.error("getAllSpaces - failed for [{}]", wikiRef, exc);
-      return Stream.of();
-    }
+    return refProvider.getAllSpaces(wikiRef).stream();
   }
 
   @Override
   public Stream<DocumentReference> getAllDocsForSpace(SpaceReference spaceRef) {
-    RefBuilder builder = RefBuilder.from(spaceRef);
-    try {
-      return getQueryManager().getNamedQuery("getSpaceDocsName")
-          .setWiki(spaceRef.getParent().getName())
-          .bindValue("space", spaceRef.getName())
-          .<String>execute().stream()
-          .map(name -> builder.doc(name).build(DocumentReference.class));
-    } catch (QueryException exc) {
-      LOGGER.error("getAllDocsForSpace - failed for [{}]", spaceRef, exc);
-      return Stream.of();
-    }
+    return refProvider.getAllDocsForSpace(spaceRef).stream();
   }
 
   @Override
   public String getDatabaseName(WikiReference wikiRef) {
-    checkNotNull(wikiRef);
-    String database = "";
-    if (getMainWikiRef().equals(wikiRef)) {
-      database = getXWiki().Param("xwiki.db", "").trim();
-    }
-    if (database.isEmpty()) {
-      database = wikiRef.getName().replace('-', '_');
-    }
-    return getXWiki().Param("xwiki.db.prefix", "") + database.replace('-', '_');
+    WikiReference normWikiRef = normalizeWikiRef(wikiRef);
+    checkNotNull(normWikiRef);
+    return xwikiCfg.getProperty("xwiki.db.prefix", "")
+        + normWikiRef.getName().replace('-', '_');
   }
 
   @Override
   public String serializeRef(EntityReference ref, ReferenceSerializationMode mode) {
     checkNotNull(ref);
-    // strip child from immutable references by creating relative reference
-    // for reason see DefaultStringEntityReferenceSerializer#L29
-    ref = new RefBuilder().with(ref).buildRelative();
     return getSerializerForMode(mode).serialize(ref);
   }
 
-  @SuppressWarnings("unchecked")
   private EntityReferenceSerializer<String> getSerializerForMode(ReferenceSerializationMode mode) {
-    String hint;
-    switch (mode) {
-      case GLOBAL:
-        hint = "default";
-        break;
-      case LOCAL:
-        hint = "local";
-        break;
-      case COMPACT:
-        hint = "compact";
-        break;
-      case COMPACT_WIKI:
-        hint = "compactwiki";
-        break;
-      default:
-        throw new IllegalArgumentException(String.valueOf(mode));
-    }
-    return Utils.getComponent(EntityReferenceSerializer.class, hint);
+    return switch (mode) {
+      case GLOBAL -> defaultSerializer;
+      case LOCAL -> localSerializer;
+      case COMPACT -> compactSerializer;
+      case COMPACT_WIKI -> compactWikiSerializer;
+    };
   }
 
   @Override
@@ -241,20 +224,9 @@ public class DefaultModelUtils implements ModelUtils {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @Deprecated
   public <T> T computeExecPropIfAbsent(String key, Supplier<T> defaultGetter) {
-    T ret = (T) exec.getContext().getProperty(key);
-    if (ret == null) {
-      exec.getContext().setProperty(key, ret = defaultGetter.get());
-    }
-    return ret;
-  }
-
-  /**
-   * load lazy since it may cause an NPE if a unit tests requires ModelUtils
-   */
-  private QueryManager getQueryManager() {
-    return Utils.getComponent(QueryManager.class);
+    return exec.getContext().computeIfAbsent(key, defaultGetter);
   }
 
 }

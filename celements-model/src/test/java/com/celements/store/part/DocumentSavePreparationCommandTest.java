@@ -28,6 +28,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.web.Utils;
 
 public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
@@ -37,11 +38,11 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    storeMock = createMockAndAddToDefault(CelHibernateStore.class);
+    storeMock = createDefaultMock(CelHibernateStore.class);
     expect(getWikiMock().getStore()).andReturn(storeMock).anyTimes();
     expect(storeMock.getIdComputer()).andReturn(Utils.getComponent(CelementsIdComputer.class,
         UniqueHashIdComputer.NAME)).anyTimes();
-    sessionMock = createMockAndAddToDefault(Session.class);
+    sessionMock = createDefaultMock(Session.class);
     sessionMock.setFlushMode(FlushMode.COMMIT);
     expectLastCall().anyTimes();
     expect(storeMock.getSession(getContext())).andReturn(sessionMock).anyTimes();
@@ -54,17 +55,33 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   @Test
   public void test_execute() throws Exception {
     XWikiDocument doc = createDoc("");
+    BaseClass staleClass = new BaseClass();
+    staleClass.setDocumentReference(doc.getDocumentReference());
+    staleClass.addTextField("field", "Field", 30);
+    getContext().addBaseClass(staleClass);
 
     replayDefault();
     DocumentSavePreparationCommand cmd = newCommand(doc).execute(false);
     verifyDefault();
     assertSame(sessionMock, cmd.getSession());
     assertFalse("doc with id already set must stem from db", doc.isNew());
-    assertSame("store should be set", storeMock, doc.getStore());
     assertEquals("doc should be set to context db", getContext().getDatabase(),
         doc.getDocumentReference().getWikiReference().getName());
+    assertNull(getContext().getBaseClass(doc.getDocumentReference()));
     assertFalse(doc.hasElement(XWikiDocument.HAS_OBJECTS));
     assertFalse(doc.hasElement(XWikiDocument.HAS_ATTACHMENTS));
+  }
+
+  @Test
+  public void test_execute_xClassCached() throws Exception {
+    XWikiDocument doc = createDoc("");
+    doc.getXClass().addTextField("field", "Field", 30);
+
+    replayDefault();
+    newCommand(doc).execute(false);
+    verifyDefault();
+
+    assertSame(doc.getXClass(), getContext().getBaseClass(doc.getDocumentReference()));
   }
 
   @Test
@@ -73,7 +90,7 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
 
     storeMock.checkHibernate(same(getContext()));
     expectLastCall();
-    SessionFactory sfactoryMock = createMockAndAddToDefault(SessionFactory.class);
+    SessionFactory sfactoryMock = createDefaultMock(SessionFactory.class);
     expect(storeMock.injectCustomMappingsInSessionFactory(same(doc), same(getContext()))).andReturn(
         sfactoryMock);
     expect(storeMock.beginTransaction(same(sfactoryMock), same(getContext()))).andReturn(true);

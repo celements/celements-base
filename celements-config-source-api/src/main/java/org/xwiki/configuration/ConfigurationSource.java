@@ -19,7 +19,15 @@
  */
 package org.xwiki.configuration;
 
+import static java.util.function.Predicate.*;
+import static org.xwiki.configuration.SystemEnvUtils.*;
+
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.xwiki.component.annotation.ComponentRole;
 
@@ -82,4 +90,33 @@ public interface ConfigurationSource {
    * @return true if the configuration source doesn't have any key or false otherwise
    */
   boolean isEmpty();
+
+  default <T> Optional<T> getPropertyOpt(String key) {
+    return Optional.ofNullable(getProperty(key));
+  }
+
+  default Optional<String> getStringProperty(String key) {
+    return getPropertyOpt(key)
+        .map(o -> Objects.toString(o, "").trim())
+        .filter(not(String::isEmpty));
+  }
+
+  default List<String> getStringListProperty(String key) {
+    return getEnvList(key)
+        .<Stream<?>>map(x -> x.stream())
+        .orElseGet(() -> toStream(getProperty(key)))
+        .map(o -> Objects.toString(o, "").trim())
+        .filter(not(String::isEmpty))
+        .collect(Collectors.toList());
+  }
+
+  private static Stream<?> toStream(Object value) {
+    if (value instanceof Iterable) {
+      return StreamSupport.stream(((Iterable<?>) value).spliterator(), false);
+    } else if (value != null) {
+      return Stream.of(value);
+    } else {
+      return Stream.of();
+    }
+  }
 }

@@ -20,19 +20,15 @@
 package org.xwiki.model.internal;
 
 import static org.junit.Assert.*;
+import static org.easymock.EasyMock.*;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.integration.junit4.JMock;
-import org.jmock.integration.junit4.JUnit4Mockery;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.xwiki.component.manager.ComponentManager;
-import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.ModelConfiguration;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link DefaultModelConfiguration}.
@@ -40,56 +36,34 @@ import org.xwiki.model.ModelConfiguration;
  * @version $Id: cc01c66f29059826583ab02bfcac83039597b5aa $
  * @since 2.2M1
  */
-@RunWith(JMock.class)
-public class DefaultModelConfigurationTest {
-
-  private Mockery mockery = new JUnit4Mockery();
+public class DefaultModelConfigurationTest extends AbstractBaseComponentTest {
 
   private ModelConfiguration configuration;
 
-  private ConfigurationSource mockSource;
+  private ConfigurationSource source;
 
   @Before
-  public void setUp() throws Exception {
-    this.mockSource = this.mockery.mock(ConfigurationSource.class);
-    this.configuration = new DefaultModelConfiguration();
-
-    final ComponentManager mockCM = this.mockery.mock(ComponentManager.class);
-    ReflectionUtils.setFieldValue(this.configuration, "componentManager", mockCM);
-    this.mockery.checking(new Expectations() {
-
-      {
-        allowing(mockCM).lookup(ConfigurationSource.class, "xwikiproperties");
-        will(returnValue(mockSource));
-      }
-    });
+  public void prepareTest() throws Exception {
+    source = registerComponentMock(ConfigurationSource.class, "xwikiproperties");
+    configuration = getBeanFactory().getBean(DefaultModelConfiguration.class);
   }
 
   @Test
-  public void testGetDefaultReferenceNameWhenDefinedInConfiguration() {
-    this.mockery.checking(new Expectations() {
+  public void test_getDefaultReferenceName_whenDefinedInConfiguration() {
+    expect(source.getProperty(eq("model.reference.default.wiki"), anyString()))
+        .andReturn("defaultWiki");
+    expect(source.getProperty(eq("model.reference.default.document"), anyString()))
+        .andReturn("defaultDocument");
+    expect(source.getProperty(eq("model.reference.default.space"), anyString()))
+        .andReturn("defaultSpace");
+    expect(source.getProperty(eq("model.reference.default.attachment"), anyString()))
+        .andReturn("defaultFilename");
+    expect(source.getProperty(eq("model.reference.default.object"), anyString()))
+        .andReturn("defaultObject");
+    expect(source.getProperty(eq("model.reference.default.object_property"), anyString()))
+        .andReturn("defaultProperty");
 
-      {
-        oneOf(mockSource).getProperty(with(equal("model.reference.default.wiki")),
-            with(any(String.class)));
-        will(returnValue("defaultWiki"));
-        oneOf(mockSource).getProperty(with(equal("model.reference.default.document")),
-            with(any(String.class)));
-        will(returnValue("defaultDocument"));
-        oneOf(mockSource).getProperty(with(equal("model.reference.default.space")),
-            with(any(String.class)));
-        will(returnValue("defaultSpace"));
-        oneOf(mockSource).getProperty(with(equal("model.reference.default.attachment")),
-            with(any(String.class)));
-        will(returnValue("defaultFilename"));
-        oneOf(mockSource).getProperty(with(equal("model.reference.default.object")),
-            with(any(String.class)));
-        will(returnValue("defaultObject"));
-        oneOf(mockSource).getProperty(with(equal("model.reference.default.object_property")),
-            with(any(String.class)));
-        will(returnValue("defaultProperty"));
-      }
-    });
+    replayDefault();
 
     assertEquals("defaultWiki",
         this.configuration.getDefaultReferenceValue(EntityType.WIKI));
@@ -103,27 +77,23 @@ public class DefaultModelConfigurationTest {
         this.configuration.getDefaultReferenceValue(EntityType.OBJECT));
     assertEquals("defaultProperty",
         this.configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
+    verifyDefault();
   }
 
   @Test
-  public void testGetDefaultReferenceNameWhenNotDefinedInConfiguration() {
-    this.mockery.checking(new Expectations() {
+  public void test_getDefaultReferenceName_whenNotDefinedInConfiguration() {
+    expect(source.getProperty("model.reference.default.wiki", "xwiki")).andReturn("xwiki");
+    expect(source.getProperty("model.reference.default.document", "WebHome"))
+        .andReturn("WebHome");
+    expect(source.getProperty("model.reference.default.space", "Main")).andReturn("Main");
+    expect(source.getProperty("model.reference.default.attachment", "filename"))
+        .andReturn("filename");
+    expect(source.getProperty("model.reference.default.object", "object"))
+        .andReturn("Main.WebHome");
+    expect(source.getProperty("model.reference.default.object_property", "property"))
+        .andReturn("property");
 
-      {
-        oneOf(mockSource).getProperty("model.reference.default.wiki", "xwiki");
-        will(returnValue("xwiki"));
-        oneOf(mockSource).getProperty("model.reference.default.document", "WebHome");
-        will(returnValue("WebHome"));
-        oneOf(mockSource).getProperty("model.reference.default.space", "Main");
-        will(returnValue("Main"));
-        oneOf(mockSource).getProperty("model.reference.default.attachment", "filename");
-        will(returnValue("filename"));
-        oneOf(mockSource).getProperty("model.reference.default.object", "object");
-        will(returnValue("Main.WebHome"));
-        oneOf(mockSource).getProperty("model.reference.default.object_property", "property");
-        will(returnValue("property"));
-      }
-    });
+    replayDefault();
 
     assertEquals("xwiki", this.configuration.getDefaultReferenceValue(EntityType.WIKI));
     assertEquals("WebHome",
@@ -134,5 +104,6 @@ public class DefaultModelConfigurationTest {
     assertEquals("Main.WebHome", configuration.getDefaultReferenceValue(EntityType.OBJECT));
     assertEquals("property",
         configuration.getDefaultReferenceValue(EntityType.OBJECT_PROPERTY));
+    verifyDefault();
   }
 }

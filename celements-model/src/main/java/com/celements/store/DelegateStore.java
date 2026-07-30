@@ -2,6 +2,7 @@ package com.celements.store;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -13,14 +14,17 @@ import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
+import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.QueryManager;
 
 import com.celements.configuration.CelementsAllPropertiesConfigurationSource;
 import com.celements.model.metadata.DocumentMetaData;
+import com.celements.wiki.exception.WikiMissingException;
 import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiLink;
 import com.xpn.xwiki.doc.XWikiLock;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -85,6 +89,12 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
+  public Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language)
+      throws XWikiException {
+    return getBackingStore().loadCelDocument(docRef, language);
+  }
+
+  @Override
   public void deleteXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     getBackingStore().deleteXWikiDoc(doc, context);
   }
@@ -92,6 +102,16 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   @Override
   public boolean exists(XWikiDocument doc, XWikiContext context) throws XWikiException {
     return getBackingStore().exists(doc, context);
+  }
+
+  @Override
+  public boolean isWikiEmpty(WikiReference wikiRef) throws WikiMissingException, XWikiException {
+    return getBackingStore().isWikiEmpty(wikiRef);
+  }
+
+  @Override
+  public void initWiki(WikiReference wikiRef) throws XWikiException {
+    getBackingStore().initWiki(wikiRef);
   }
 
   @Override
@@ -350,8 +370,13 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
-  public synchronized void cleanUp(XWikiContext context) {
+  public void cleanUp(XWikiContext context) {
     getBackingStore().cleanUp(context);
+  }
+
+  @Override
+  public boolean existsWiki(WikiReference wikiRef) throws XWikiException {
+    return getBackingStore().existsWiki(wikiRef);
   }
 
   @Override
@@ -360,12 +385,22 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
-  public synchronized void createWiki(String wikiName, XWikiContext context) throws XWikiException {
+  public void createWiki(WikiReference wikiRef) throws XWikiException {
+    getBackingStore().createWiki(wikiRef);
+  }
+
+  @Override
+  public void createWiki(String wikiName, XWikiContext context) throws XWikiException {
     getBackingStore().createWiki(wikiName, context);
   }
 
   @Override
-  public synchronized void deleteWiki(String wikiName, XWikiContext context) throws XWikiException {
+  public void deleteWiki(WikiReference wikiRef) throws XWikiException {
+    getBackingStore().deleteWiki(wikiRef);
+  }
+
+  @Override
+  public void deleteWiki(String wikiName, XWikiContext context) throws XWikiException {
     getBackingStore().deleteWiki(wikiName, context);
   }
 
@@ -375,7 +410,7 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
-  public synchronized void injectCustomMappings(XWikiContext context) throws XWikiException {
+  public void injectCustomMappings(XWikiContext context) throws XWikiException {
     getBackingStore().injectCustomMappings(context);
   }
 

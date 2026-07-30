@@ -20,37 +20,40 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+import static com.celements.spring.context.SpringContextProvider.*;
+import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Strings.*;
+
 import java.io.IOException;
-import java.util.Vector;
+import java.util.Optional;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.MDC;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.velocity.VelocityContext;
-import org.xwiki.container.Container;
-import org.xwiki.container.servlet.ServletContainerException;
-import org.xwiki.container.servlet.ServletContainerInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.csrf.CSRFToken;
 import org.xwiki.observation.ObservationManager;
 import org.xwiki.observation.event.ActionExecutionEvent;
 import org.xwiki.velocity.VelocityManager;
 
+import com.celements.globalredirect.IGlobalRedirect;
+import com.celements.globalredirect.IGlobalRedirectService;
+import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.monitor.api.MonitorPlugin;
-import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
 
 /**
@@ -95,7 +98,7 @@ import com.xpn.xwiki.plugin.fileupload.FileUploadPlugin;
  */
 public abstract class XWikiAction extends Action {
 
-  private static final Log LOG = LogFactory.getLog(XWikiAction.class);
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
   /**
    * Handle server requests.
@@ -116,118 +119,93 @@ public abstract class XWikiAction extends Action {
   @Override
   public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest req,
       HttpServletResponse resp) throws Exception {
-    ActionForward actionForward;
     XWikiContext context = null;
-
     try {
-      // Initialize the XWiki Context which is the main object used to pass information across
-      // classes/methods. It's also wrapping the request, response, and all container objects
-      // in general.
-      context = initializeXWikiContext(mapping, form, req, resp);
-
-      // From this line forward all information can be found in the XWiki Context.
-      actionForward = execute(context);
-    } finally {
-      if (context != null) {
-        cleanupComponents();
+      /**
+       * ExecutionContext AND XWiki Context are already initialized by the ExecutionContextFilter
+       * which is the main object used to pass information across classes/methods.
+       * It's also wrapping the request, response, and all container objects in general.
+       */
+      updateWrapperRequestAndResponse(req, resp);
+      context = getXWikiContext();
+      if (form != null) {
+        form.reset(mapping, context.getRequest());
+        context.setForm((XWikiForm) form);
       }
+      // From this line forward all information can be found in the XWiki Context.
+      return execute(context);
+    } catch (Exception exc) {
+      logger.error("execute - failed", exc);
+      return null;
     }
+  }
 
-    return actionForward;
+  private void updateWrapperRequestAndResponse(HttpServletRequest req, HttpServletResponse resp) {
+    var context = getXWikiContext();
+    if (req != context.getRequest().getHttpServletRequest()) {
+      // update container request object if there is a struts wrapper available
+      logger.debug("update servlet-request in contexts new {} replace {}", req.getClass(),
+          context.getRequest().getHttpServletRequest().getClass());
+      XWikiRequest xRequest = new XWikiServletRequest(req);
+      getExcecutionContext().set(XWIKI_REQUEST, xRequest);
+      context.setRequest(xRequest);
+    }
+    if (resp != context.getResponse().getHttpServletResponse()) {
+      // update container response object if there is a struts wrapper available
+      logger.debug("update servlet-response in contexts new {} replace {}", resp.getClass(),
+          context.getResponse().getHttpServletResponse().getClass());
+      XWikiResponse xResponse = new XWikiServletResponse(resp);
+      getExcecutionContext().set(XWIKI_RESPONSE, xResponse);
+      context.setResponse(xResponse);
+    }
+  }
+
+  private XWikiContext getXWikiContext() {
+    return getExcecutionContext()
+        .get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
+  }
+
+  private ExecutionContext getExcecutionContext() {
+    return getBeanFactory().getBean(Execution.class).getContext();
   }
 
   public ActionForward execute(XWikiContext context) throws Exception {
-    MonitorPlugin monitor = null;
     FileUploadPlugin fileupload = null;
     String docName = "";
-
     try {
-      // Verify that the requested wiki exists
-      XWiki xwiki;
-      try {
-        xwiki = XWiki.getXWiki(context);
-      } catch (XWikiException e) {
-        // We're checking if there are any redirects when the wiki asked by the user doesn't exist
-        // because we want the ability to redirect somewhere when the wiki asked doesn't exist
-        // (like for example going to a special error page).
-        if (e.getCode() == XWikiException.ERROR_XWIKI_DOES_NOT_EXIST) {
-          if (!sendGlobalRedirect(context.getResponse(), context.getURL().toString(), context)) {
-            context.getResponse().sendRedirect(context.getWiki().Param("xwiki.virtual.redirect"));
-          }
-          return null;
-        } else {
-          throw e;
-        }
-      }
-
+      XWiki xwiki = getXWiki();
+      checkNotNull(xwiki);
       // Send global redirection (if any)
       if (sendGlobalRedirect(context.getResponse(), context.getURL().toString(), context)) {
         return null;
       }
-
-      // Start monitoring timer
-      monitor = (MonitorPlugin) xwiki.getPlugin("monitor", context);
-      if (monitor != null) {
-        monitor.startRequest("", context.getAction(), context.getURL());
-        monitor.startTimer("multipart");
-      }
-
       // Parses multipart so that params in multipart are available for all actions
       fileupload = Utils.handleMultipart(context.getRequest().getHttpServletRequest(), context);
-      if (monitor != null) {
-        monitor.endTimer("multipart");
-      }
-
       XWikiURLFactory urlf = xwiki.getURLFactoryService().createURLFactory(context.getMode(),
           context);
       context.setURLFactory(urlf);
-
-      String sajax = context.getRequest().get("ajax");
-      boolean ajax = false;
-      if ((sajax != null) && !sajax.trim().equals("") && !sajax.equals("0")) {
-        ajax = true;
-      }
+      String sajax = nullToEmpty(context.getRequest().get("ajax")).trim();
+      boolean ajax = (!sajax.isEmpty() && !sajax.equals("0"));
       context.put("ajax", ajax);
-
       // Any error before this will be treated using a redirection to an error page
-
-      if (monitor != null) {
-        monitor.startTimer("request");
-      }
-
       VelocityManager velocityManager = Utils.getComponent(VelocityManager.class);
       VelocityContext vcontext = velocityManager.getVelocityContext();
-
       try {
         // Prepare documents and put them in the context
         if (!xwiki.prepareDocuments(context.getRequest(), context, vcontext)) {
           return null;
         }
-
-        if (monitor != null) {
-          monitor.setWikiPage(context.getDoc().getFullName());
-        }
-
-        // Let's handle the notification and make sure it never fails
-        if (monitor != null) {
-          monitor.startTimer("prenotify");
-        }
         try {
           xwiki.getNotificationManager().preverify(context.getDoc(), context.getAction(), context);
-        } catch (Throwable e) {
-          LOG.error("Exception while pre-notifying", e);
+        } catch (Exception exc) {
+          logger.error("execute - failed on notfication preverify", exc);
         }
-        if (monitor != null) {
-          monitor.endTimer("prenotify");
-        }
-
         String renderResult = null;
         XWikiDocument doc = context.getDoc();
         docName = doc.getFullName();
         if (action(context)) {
           renderResult = render(context);
         }
-
         if (renderResult != null) {
           if (doc.isNew() && "view".equals(context.getAction())
               && !"recyclebin".equals(context.getRequest().get("viewer"))) {
@@ -239,54 +217,47 @@ public abstract class XWikiAction extends Action {
           }
         }
         return null;
-      } catch (Throwable e) {
+      } catch (Exception e) {
         if (e instanceof IOException) {
           e = new XWikiException(XWikiException.MODULE_XWIKI_APP,
               XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION,
               "Exception while sending response",
               e);
         }
-
-        if (!(e instanceof XWikiException)) {
-          e = new XWikiException(XWikiException.MODULE_XWIKI_APP,
-              XWikiException.ERROR_XWIKI_UNKNOWN,
-              "Uncaught exception", e);
-        }
-
         try {
-          XWikiException xex = (XWikiException) e;
-          if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
-            // Connection aborted, simply ignore this.
-            LOG.error("Connection aborted");
-            // We don't write any other message, as the connection is broken, anyway.
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_ACCESS_DENIED) {
-            Utils.parseTemplate(context.getWiki().Param("xwiki.access_exception", "accessdenied"),
-                context);
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_USER_INACTIVE) {
-            Utils.parseTemplate(context.getWiki().Param("xwiki.user_exception", "userinactive"),
-                context);
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_ATTACHMENT_NOT_FOUND) {
-            context.put("message", "attachmentdoesnotexist");
-            Utils.parseTemplate(context.getWiki().Param("xwiki.attachment_exception",
-                "attachmentdoesnotexist"), context);
-            return null;
-          } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION) {
-            vcontext.put("message", context.getMessageTool().get("platform.core.invalidUrl"));
-            xwiki.setPhonyDocument(
-                xwiki.getDefaultSpace(context) + "." + xwiki.getDefaultPage(context),
-                context, vcontext);
-            context.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            Utils.parseTemplate(context.getWiki().Param("xwiki.invalid_url_exception", "error"),
-                context);
-            return null;
+          if (e instanceof XWikiException) {
+            XWikiException xex = (XWikiException) e;
+            if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
+              // Connection aborted, simply ignore this.
+              logger.error("Connection aborted");
+              // We don't write any other message, as the connection is broken, anyway.
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_ACCESS_DENIED) {
+              Utils.parseTemplate(getXWiki().Param("xwiki.access_exception", "accessdenied"),
+                  context);
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_USER_INACTIVE) {
+              Utils.parseTemplate(getXWiki().Param("xwiki.user_exception", "userinactive"),
+                  context);
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_ATTACHMENT_NOT_FOUND) {
+              context.put("message", "attachmentdoesnotexist");
+              Utils.parseTemplate(getXWiki().Param("xwiki.attachment_exception",
+                  "attachmentdoesnotexist"), context);
+              return null;
+            } else if (xex.getCode() == XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION) {
+              vcontext.put("message", context.getMessageTool().get("platform.core.invalidUrl"));
+              xwiki.setPhonyDocument(
+                  xwiki.getDefaultSpace(context) + "." + xwiki.getDefaultPage(context),
+                  context, vcontext);
+              context.getResponse().setStatus(HttpServletResponse.SC_BAD_REQUEST);
+              Utils.parseTemplate(getXWiki().Param("xwiki.invalid_url_exception", "error"),
+                  context);
+              return null;
+            }
           }
           vcontext.put("exp", e);
-          if (LOG.isWarnEnabled()) {
-            LOG.warn("Uncaught exception: " + e.getMessage(), e);
-          }
+          logger.error("Uncaught exception: {}", e.getMessage(), e);
           // If the request is an AJAX request, we don't return a whole HTML page, but just the
           // exception inline.
           String exceptionTemplate = ajax ? "exceptioninline" : "exception";
@@ -294,12 +265,15 @@ public abstract class XWikiAction extends Action {
           return null;
         } catch (XWikiException ex) {
           if (ex.getCode() == XWikiException.ERROR_XWIKI_APP_SEND_RESPONSE_EXCEPTION) {
-            LOG.error("Connection aborted");
+            logger.error("Connection aborted");
+          } else {
+            logger.error("Uncaught exceptions (inner): ", e);
+            logger.error("Uncaught exceptions (outer): ", ex);
           }
         } catch (Exception e2) {
           // I hope this never happens
-          LOG.error("Uncaught exceptions (inner): ", e);
-          LOG.error("Uncaught exceptions (outer): ", e2);
+          logger.error("Uncaught exceptions (inner): ", e);
+          logger.error("Uncaught exceptions (outer): ", e2);
         }
         return null;
       } finally {
@@ -310,19 +284,13 @@ public abstract class XWikiAction extends Action {
           // This might happen if the connection was closed, for example.
           // If we can't flush, then there's nothing more we can send to the client.
         }
-
-        if (monitor != null) {
-          monitor.endTimer("request");
-          monitor.startTimer("notify");
-        }
-
         // Let's handle the notification and make sure it never fails
         // This is the old notification mechanism. It is kept here because it is in a
         // deprecation stage. It will be removed later.
         try {
           xwiki.getNotificationManager().verify(context.getDoc(), context.getAction(), context);
-        } catch (Throwable e) {
-          e.printStackTrace();
+        } catch (Exception exc) {
+          logger.error("execute - failed on notfication verify", exc);
         }
         // This is the new notification mechanism, implemented as a Plexus Component.
         // For the moment we're sending the XWiki context as the data, but this will be
@@ -331,15 +299,10 @@ public abstract class XWikiAction extends Action {
         try {
           ObservationManager om = Utils.getComponent(ObservationManager.class);
           om.notify(new ActionExecutionEvent(context.getAction()), context.getDoc(), context);
-        } catch (Throwable ex) {
-          LOG.error("Cannot send action notifications for document [" + docName + " using action ["
-              + context.getAction() + "]", ex);
+        } catch (Exception ex) {
+          logger.error("Cannot send action notifications for document [{}] using action [{}]",
+              docName, context.getAction(), ex);
         }
-
-        if (monitor != null) {
-          monitor.endTimer("notify");
-        }
-
         // Make sure we cleanup database connections
         // There could be cases where we have some
         if ((context != null) && (xwiki != null)) {
@@ -347,81 +310,10 @@ public abstract class XWikiAction extends Action {
         }
       }
     } finally {
-      // End request
-      if (monitor != null) {
-        monitor.endRequest();
-      }
-
       if ((context != null) && (fileupload != null)) {
         fileupload.cleanFileList(context);
       }
-
-      MDC.remove("url");
     }
-  }
-
-  protected XWikiContext initializeXWikiContext(ActionMapping mapping, ActionForm form,
-      HttpServletRequest req,
-      HttpServletResponse resp) throws XWikiException, ServletException {
-    String action = mapping.getName();
-
-    XWikiRequest request = new XWikiServletRequest(req);
-    XWikiResponse response = new XWikiServletResponse(resp);
-    XWikiContext context = Utils.prepareContext(action, request, response,
-        new XWikiServletContext(this.servlet.getServletContext()));
-
-    // This code is already called by struts.
-    // However struts will also set all the parameters of the form data
-    // directly from the request objects.
-    // However because of bug http://jira.xwiki.org/jira/browse/XWIKI-2422
-    // We need to perform encoding of windows-1252 chars in ISO mode
-    // So we need to make sure this code is called
-    // TODO: completely get rid of struts so that we control this part of the code and can reduce
-    // drastically the
-    // number of calls
-    if (form != null) {
-      form.reset(mapping, request);
-    }
-
-    // Add the form to the context
-    context.setForm((XWikiForm) form);
-
-    // Initialize the Container component which is the new way of transporting the Context in the
-    // new
-    // component architecture.
-    initializeContainerComponent(context);
-
-    return context;
-  }
-
-  protected void initializeContainerComponent(XWikiContext context) throws ServletException {
-    // Initialize the Container fields (request, response, session).
-    // Note that this is a bridge between the old core and the component architecture.
-    // In the new component architecture we use ThreadLocal to transport the request,
-    // response and session to components which require them.
-    // In the future this Servlet will be replaced by the XWikiPlexusServlet Servlet.
-    ServletContainerInitializer containerInitializer = Utils
-        .getComponent(ServletContainerInitializer.class);
-
-    try {
-      containerInitializer.initializeRequest(context.getRequest().getHttpServletRequest(), context);
-      containerInitializer.initializeResponse(context.getResponse().getHttpServletResponse());
-      containerInitializer.initializeSession(context.getRequest().getHttpServletRequest());
-    } catch (ServletContainerException e) {
-      throw new ServletException("Failed to initialize Request/Response or Session", e);
-    }
-  }
-
-  protected void cleanupComponents() {
-    Container container = Utils.getComponent(Container.class);
-    Execution execution = Utils.getComponent(Execution.class);
-
-    // We must ensure we clean the ThreadLocal variables located in the Container and Execution
-    // components as otherwise we will have a potential memory leak.
-    container.removeRequest();
-    container.removeResponse();
-    container.removeSession();
-    execution.removeContext();
   }
 
   public String getRealPath(String path) {
@@ -445,11 +337,9 @@ public abstract class XWikiAction extends Action {
       XWikiDocument doc = (XWikiDocument) context.get("doc");
       XWikiDocument tdoc = (XWikiDocument) context.get("tdoc");
       XWikiDocument rdoc = (!doc.getLanguage().equals(tdoc.getLanguage())) ? doc
-          : context.getWiki()
-              .getDocument(doc, rev, context);
+          : getXWiki().getDocument(doc, rev, context);
       XWikiDocument rtdoc = (doc.getLanguage().equals(tdoc.getLanguage())) ? rdoc
-          : context.getWiki().getDocument(tdoc, rev,
-              context);
+          : getXWiki().getDocument(tdoc, rev, context);
       context.put("tdoc", rtdoc);
       context.put("cdoc", rdoc);
       context.put("doc", rdoc);
@@ -473,28 +363,16 @@ public abstract class XWikiAction extends Action {
    *          the XWiki context
    * @return true if a redirection has been sent
    */
-  protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context)
-      throws Exception {
-    if ("1".equals(context.getWiki().Param("xwiki.preferences.redirect"))) {
-      // Note: This implementation is not performant at all and will slow down the wiki as the
-      // number
-      // of redirects increases. A better implementation would use a cache of redirects and would
-      // use
-      // the notification mechanism to update the cache when the XWiki.XWikiPreferences document is
-      // modified.
-      XWikiDocument globalPreferences = context.getWiki()
-          .getDocument("xwiki:XWiki.XWikiPreferences", context);
-      Vector<BaseObject> redirects = globalPreferences.getObjects("XWiki.GlobalRedirect");
-
-      if (redirects != null) {
-        for (BaseObject redir : redirects) {
-          String p = redir.getStringValue("pattern");
-          if (url.matches(p)) {
-            String dest = redir.getStringValue("destination");
-            response.sendRedirect(url.replaceAll(p, dest));
-            return true;
-          }
-        }
+  protected boolean sendGlobalRedirect(XWikiResponse response, String url, XWikiContext context) {
+    IGlobalRedirectService globalRedirSrv = getBeanFactory().getBean(IGlobalRedirectService.class);
+    if (globalRedirSrv.isActivated()) {
+      Optional<? extends IGlobalRedirect> globalRedirect = globalRedirSrv.getGlobalRedirect()
+          .stream()
+          .filter(globRedir -> globRedir.test(url))
+          .findFirst();
+      if (globalRedirect.isPresent()) {
+        globalRedirect.get().sendRedirect(response, url);
+        return true;
       }
     }
     return false;
@@ -579,4 +457,9 @@ public abstract class XWikiAction extends Action {
     }
     return true;
   }
+
+  protected XWiki getXWiki() {
+    return getBeanFactory().getBean(XWikiProvider.class).get().orElseThrow();
+  }
+
 }

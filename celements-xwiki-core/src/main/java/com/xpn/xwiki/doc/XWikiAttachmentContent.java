@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -98,7 +99,8 @@ public class XWikiAttachmentContent implements Cloneable {
       // This causes the temp file to be created.
       dfi.getOutputStream();
       // Make sure this file is marked for deletion on VM exit because DiskFileItem does not.
-      dfi.getStoreLocation().deleteOnExit();
+      Optional.ofNullable(dfi.getStoreLocation())
+          .ifPresent(File::deleteOnExit);
       this.file = dfi;
     } catch (IOException e) {
       throw new RuntimeException("Failed to create new attachment temporary file."

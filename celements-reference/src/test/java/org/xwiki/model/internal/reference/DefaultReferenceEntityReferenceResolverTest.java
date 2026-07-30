@@ -20,17 +20,18 @@
 package org.xwiki.model.internal.reference;
 
 import static org.junit.Assert.*;
+import static org.easymock.EasyMock.*;
 
-import org.jmock.Expectations;
-import org.jmock.Mockery;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.xwiki.component.util.ReflectionUtils;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceValueProvider;
 import org.xwiki.model.reference.InvalidEntityReferenceException;
+
+import com.celements.common.test.AbstractBaseComponentTest;
 
 /**
  * Unit tests for {@link DefaultReferenceEntityReferenceResolver}.
@@ -38,38 +39,31 @@ import org.xwiki.model.reference.InvalidEntityReferenceException;
  * @version $Id: a31e61994a7f28b56395d7c335e63df9437e915a $
  * @since 2.2M1
  */
-public class DefaultReferenceEntityReferenceResolverTest {
+public class DefaultReferenceEntityReferenceResolverTest extends AbstractBaseComponentTest {
 
   private EntityReferenceResolver<EntityReference> resolver;
 
-  private Mockery mockery = new Mockery();
-
   @Before
-  public void setUp() {
-    this.resolver = new DefaultReferenceEntityReferenceResolver();
-    final EntityReferenceValueProvider mockValueProvider = this.mockery
-        .mock(EntityReferenceValueProvider.class);
-    ReflectionUtils.setFieldValue(this.resolver, "provider", mockValueProvider);
+  public void prepareTest() throws Exception {
+    EntityReferenceValueProvider valueProvider = registerComponentMock(
+        EntityReferenceValueProvider.class);
+    resolver = getBeanFactory().getBean(DefaultReferenceEntityReferenceResolver.class);
+    expect(valueProvider.getDefaultValue(EntityType.SPACE)).andReturn("defspace").anyTimes();
+    expect(valueProvider.getDefaultValue(EntityType.WIKI)).andReturn("defwiki").anyTimes();
+    expect(valueProvider.getDefaultValue(EntityType.DOCUMENT)).andReturn("defpage").anyTimes();
+    expect(valueProvider.getDefaultValue(EntityType.OBJECT)).andReturn("defobject").anyTimes();
+    expect(valueProvider.getDefaultValue(EntityType.OBJECT_PROPERTY))
+        .andReturn("defproperty").anyTimes();
+    replayDefault();
+  }
 
-    this.mockery.checking(new Expectations() {
-
-      {
-        allowing(mockValueProvider).getDefaultValue(EntityType.SPACE);
-        will(returnValue("defspace"));
-        allowing(mockValueProvider).getDefaultValue(EntityType.WIKI);
-        will(returnValue("defwiki"));
-        allowing(mockValueProvider).getDefaultValue(EntityType.DOCUMENT);
-        will(returnValue("defpage"));
-        allowing(mockValueProvider).getDefaultValue(EntityType.OBJECT);
-        will(returnValue("defobject"));
-        allowing(mockValueProvider).getDefaultValue(EntityType.OBJECT_PROPERTY);
-        will(returnValue("defproperty"));
-      }
-    });
+  @After
+  public void verifyTest() {
+    verifyDefault();
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenMissingParents() {
+  public void test_resolveDocumentReference_whenMissingParents() {
     EntityReference partialReference = new EntityReference("page", EntityType.DOCUMENT);
 
     EntityReference reference = this.resolver.resolve(partialReference, EntityType.DOCUMENT);
@@ -82,7 +76,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   }
 
   @Test
-  public void testResolveAttachmentReferenceWhenMissingParents() {
+  public void test_resolveAttachmentReference_whenMissingParents() {
     EntityReference reference = this.resolver
         .resolve(new EntityReference("filename", EntityType.ATTACHMENT), EntityType.ATTACHMENT);
 
@@ -95,7 +89,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenMissingParentBetweenReferences() {
+  public void test_resolveDocumentReference_whenMissingParentBetweenReferences() {
     EntityReference partialReference = new EntityReference("page", EntityType.DOCUMENT,
         new EntityReference("wiki", EntityType.WIKI));
 
@@ -111,7 +105,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   }
 
   @Test
-  public void testResolveAttachmentReferenceWhenMissingParentBetweenReferences() {
+  public void test_resolveAttachmentReference_whenMissingParentBetweenReferences() {
     EntityReference reference = this.resolver
         .resolve(new EntityReference("filename", EntityType.ATTACHMENT, new EntityReference(
             "wiki", EntityType.WIKI)), EntityType.ATTACHMENT);
@@ -125,7 +119,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenInvalidReference() {
+  public void test_resolveDocumentReference_whenInvalidReference() {
     try {
       this.resolver
           .resolve(new EntityReference("page", EntityType.DOCUMENT, new EntityReference("filename",
@@ -140,7 +134,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenTypeIsSpace() {
+  public void test_resolveDocumentReference_whenTypeIsSpace() {
     EntityReference reference = this.resolver
         .resolve(new EntityReference("space", EntityType.SPACE), EntityType.DOCUMENT);
 
@@ -153,7 +147,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   }
 
   @Test
-  public void testResolveSpaceReferenceWhenTypeIsDocument() {
+  public void test_resolveSpaceReference_whenTypeIsDocument() {
     EntityReference reference = this.resolver
         .resolve(new EntityReference("page", EntityType.DOCUMENT), EntityType.SPACE);
 
@@ -168,7 +162,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
    * document parent.
    */
   @Test
-  public void testResolveObjectReferenceWhenMissingParents() {
+  public void test_resolveObjectReference_whenMissingParents() {
     EntityReference reference = resolver.resolve(new EntityReference("object", EntityType.OBJECT),
         EntityType.OBJECT);
     assertEquals(EntityType.OBJECT, reference.getType());
@@ -186,7 +180,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
    * object parent.
    */
   @Test
-  public void testResolveObjectPropertyReferenceWhenMissingParents() {
+  public void test_resolveObjectPropertyReference_whenMissingParents() {
     EntityReference reference = resolver.resolve(
         new EntityReference("property", EntityType.OBJECT_PROPERTY), EntityType.OBJECT_PROPERTY);
     assertEquals(EntityType.OBJECT_PROPERTY, reference.getType());
@@ -209,7 +203,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
    * values for object name.
    */
   @Test
-  public void testResolveObjectReferenceWhenTypeIsDocument() {
+  public void test_resolveObjectReference_whenTypeIsDocument() {
     EntityReference reference = resolver
         .resolve(new EntityReference("page", EntityType.DOCUMENT, new EntityReference("space",
             EntityType.SPACE, new EntityReference("wiki", EntityType.WIKI))), EntityType.OBJECT);
@@ -229,7 +223,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
    * values for object and property name.
    */
   @Test
-  public void testResolveObjectPropertyReferenceWhenTypeIsDocument() {
+  public void test_resolveObjectPropertyReference_whenTypeIsDocument() {
     EntityReference reference = resolver.resolve(
         new EntityReference("page", EntityType.DOCUMENT, new EntityReference("space",
             EntityType.SPACE, new EntityReference("wiki", EntityType.WIKI))),
@@ -249,7 +243,7 @@ public class DefaultReferenceEntityReferenceResolverTest {
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenNullReference() {
+  public void test_resolveDocumentReference_whenNullReference() {
     EntityReference reference = this.resolver.resolve(null, EntityType.DOCUMENT);
 
     assertEquals(EntityType.DOCUMENT, reference.getType());

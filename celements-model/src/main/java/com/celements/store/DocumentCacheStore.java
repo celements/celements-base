@@ -20,6 +20,8 @@
  */
 package com.celements.store;
 
+import static com.celements.logging.LogUtils.*;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +62,7 @@ import com.celements.model.util.ModelUtils;
 import com.google.common.base.Strings;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.store.XWikiCacheStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
@@ -99,7 +102,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   /**
    * CAUTION: Lazy initialized of cache thus volatile is needed.
    */
-  private volatile Cache<XWikiDocument> docCache;
+  private volatile Cache<CelDocument> docCache;
 
   /**
    * CAUTION: Lazy initialized of cache thus volatile is needed.
@@ -142,11 +145,12 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
     lru.setMaxEntries(getExistCacheCapacity());
     config.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
+    LOGGER.info("newExistCache - capacity '{}'", lru.getMaxEntries());
     return cacheManager.getCacheFactory().newCache(config);
   }
 
   private int getExistCacheCapacity() {
-    int existCacheCapacity = cfgSrc.getProperty(PARAM_DOC_CACHE_CAPACITY, 10000);
+    int existCacheCapacity = cfgSrc.getProperty(PARAM_EXIST_CACHE_CAPACITY, 10000);
     int docCacheCapacity = getDocCacheCapacity();
     if (existCacheCapacity < docCacheCapacity) {
       LOGGER.warn("WARNING: document exists cache capacity is smaller configured than docCache "
@@ -157,12 +161,14 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     return existCacheCapacity;
   }
 
-  private Cache<XWikiDocument> newDocCache() throws CacheException, ComponentLookupException {
+  private Cache<CelDocument> newDocCache()
+      throws CacheException, ComponentLookupException {
     CacheConfiguration config = new CacheConfiguration();
     config.setConfigurationId("xwiki.store.pagecache");
     LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
     lru.setMaxEntries(getDocCacheCapacity());
     config.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
+    LOGGER.info("newDocCache - capacity '{}'", lru.getMaxEntries());
     return cacheManager.getCacheFactory().newCache(config);
   }
 
@@ -195,6 +201,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public void saveXWikiDoc(final XWikiDocument doc, final XWikiContext context,
       final boolean bTransaction) throws XWikiException {
+    LOGGER.debug("saving document '{}'", defer(doc::getDocRef));
     getBackingStore().saveXWikiDoc(doc, context, bTransaction);
     removeDocFromCache(doc, true);
   }
@@ -213,18 +220,16 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   String getKey(DocumentReference docRef) {
-    DocumentReference cacheDocRef = RefBuilder.from(docRef)
-        .with(modelContext.getWikiRef())
-        .build(DocumentReference.class);
-    return modelUtils.serializeRef(cacheDocRef);
+    return modelUtils.serializeRef(withWiki(docRef,
+        modelUtils.normalizeWikiRef(docRef.getWikiReference())));
   }
 
   String getKeyWithLang(DocumentReference docRef, String language) {
-    if (Strings.isNullOrEmpty(language)) {
-      return getKey(docRef);
-    } else {
-      return getKey(docRef) + ":" + language;
-    }
+    return getKeyWithLang(getKey(docRef), language);
+  }
+
+  private static String getKeyWithLang(String key, String language) {
+    return Strings.isNullOrEmpty(language) ? key : key + ":" + language;
   }
 
   String getKeyWithLang(XWikiDocument doc) {
@@ -282,17 +287,19 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       }
       setExistCache(doc, docExists);
     }
+    LOGGER.debug("removed doc from cache '{}', key '{}', docExists '{}' returning '{}'",
+        defer(doc::getDocRef), key, docExists, returnState);
     return returnState;
   }
 
   InvalidateState invalidateDocCache(String key) {
+    LOGGER.debug("invalidate doc cache for '{}'", key);
     InvalidateState invalidState = InvalidateState.CACHE_MISS;
     final DocumentLoader docLoader = documentLoaderMap.get(key);
-    boolean invalidateDocLoader = (docLoader != null);
-    if (invalidateDocLoader) {
+    if (docLoader != null) {
       invalidState = docLoader.invalidate();
     }
-    XWikiDocument oldCachedDoc = null;
+    CelDocument oldCachedDoc = null;
     if (getDocCache() != null) {
       oldCachedDoc = getDocFromCache(key);
       if (oldCachedDoc != null) {
@@ -317,30 +324,34 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public XWikiDocument loadXWikiDoc(final XWikiDocument doc, final XWikiContext context)
       throws XWikiException {
-    return loadXWikiDocInternal(doc, context);
+    return loadCelDocument(doc.getDocumentReference(), doc.getLanguage())
+        .map(XWikiDocument::from)
+        .orElseGet(() -> createEmptyXWikiDoc(doc));
   }
 
-  private XWikiDocument loadXWikiDocInternal(XWikiDocument doc, XWikiContext context)
+  @Override
+  public Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language)
       throws XWikiException {
-    LOGGER.trace("Cache: begin for docRef '{}' in cache", doc.getDocumentReference());
-    XWikiDocument ret;
-    String key = getKey(doc.getDocumentReference());
-    String keyWithLang = getKeyWithLang(doc);
+    var ref = withWiki(docRef, modelContext.getWikiRef());
+    LOGGER.trace("Cache: begin for ref '{}' in cache", ref);
+    String key = getKey(ref);
+    String keyWithLang = getKeyWithLang(key, language);
     if (doesNotExistsForKey(key) || doesNotExistsForKey(keyWithLang)) {
-      LOGGER.debug("Cache: The document {} does not exist, return an empty one", keyWithLang);
-      ret = createEmptyXWikiDoc(doc);
+      LOGGER.debug("Cache: The document '{}' does not exist, return an empty one", keyWithLang);
+      return Optional.empty();
     } else {
       LOGGER.debug("Cache: Trying to get doc '{}' from cache", keyWithLang);
-      XWikiDocument cachedoc = getDocFromCache(keyWithLang);
-      if (cachedoc != null) {
+      CelDocument cachedDoc = getDocFromCache(keyWithLang);
+      if (cachedDoc != null) {
         LOGGER.debug("Cache: got doc '{}' from cache", keyWithLang);
       } else {
-        cachedoc = getDocumentLoader(keyWithLang).loadDocument(keyWithLang, doc, context);
+        cachedDoc = getDocumentLoader(keyWithLang)
+            .loadDocument(keyWithLang, ref, language)
+            .orElse(null);
       }
       LOGGER.trace("Cache: end for doc '{}' in cache", keyWithLang);
-      ret = cachedoc;
+      return Optional.ofNullable(cachedDoc);
     }
-    return ret;
   }
 
   private boolean doesNotExistsForKey(String key) {
@@ -350,7 +361,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   /**
    * getCache is private, thus for tests we need getDocFromCache to check the cache state
    */
-  XWikiDocument getDocFromCache(String key) {
+  CelDocument getDocFromCache(String key) {
     return getDocCache().get(key);
   }
 
@@ -394,13 +405,13 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     return result;
   }
 
-  private Cache<XWikiDocument> getDocCache() {
+  private Cache<CelDocument> getDocCache() {
     initalize(); // make sure cache is initialized
     return this.docCache;
   }
 
-  private void setDocCache(String key, XWikiDocument doc) {
-    LOGGER.debug("setDocCache - {}{}", key, (doc == null ? " removed" : ""));
+  private void setDocCache(String key, CelDocument doc) {
+    LOGGER.debug("setDocCache - '{}', '{}'", key, (doc == null ? " removed" : ""));
     if (doc == null) {
       getDocCache().remove(key);
     } else {
@@ -414,7 +425,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   private void setExistCache(String key, Boolean exists) {
-    LOGGER.debug("setExistCache - {} to {}", key, exists);
+    LOGGER.debug("setExistCache - '{}' to '{}'", key, exists);
     if (exists == null) {
       getExistCache().remove(key);
     } else {
@@ -437,7 +448,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
 
   private class DocumentLoader {
 
-    private volatile XWikiDocument loadedDoc;
+    private volatile Optional<CelDocument> loadedDoc;
     private final String key;
 
     /**
@@ -458,7 +469,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       int beforeState = loadingState.getAndDecrement();
       if (beforeState < 0) {
         if (loadedDoc != null) {
-          LOGGER_DL.warn("should not happen: possible lifelock! {}", this.key);
+          LOGGER_DL.warn("should not happen: possible lifelock! '{}'", this.key);
         }
         invalidState = InvalidateState.LOADING_MULTI_CANCELED;
       } else if (beforeState == 0) {
@@ -467,7 +478,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
         invalidState = InvalidateState.LOADING_CANCEL_FAILED;
       }
       boolean succInvalidated = beforeState <= 0;
-      LOGGER_DL.debug("invalidated cache during loading document. {}", succInvalidated);
+      LOGGER_DL.debug("invalidated cache during loading document. '{}'", succInvalidated);
       return invalidState;
     }
 
@@ -476,7 +487,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
      * It is a very delicate case and very likely memory visibility breaks in less than 1 out of
      * 100'000 document loads. Thus it is difficult to test for correctness.
      */
-    private XWikiDocument loadDocument(String key, XWikiDocument doc, XWikiContext context)
+    private Optional<CelDocument> loadDocument(String key, DocumentReference docRef, String lang)
         throws XWikiException {
       checkArgument(key);
       if (loadedDoc == null) {
@@ -485,35 +496,35 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
             // if a thread is just between the document cache miss and getting the documentLoader
             // when the documentLoader removes itself from the map, then a new documentLoader is
             // generated. Therefore we double check here that still no document is in cache.
-            XWikiDocument loadingDoc = getDocCache().get(key);
-            if (loadingDoc == null) {
-              XWikiDocument newDoc = null;
+            CelDocument cachedDoc = getDocCache().get(key);
+            Optional<CelDocument> loadingDoc;
+            if (cachedDoc == null) {
+              Optional<CelDocument> newDoc = null;
               do {
                 if ((loadingState.getAndSet(DOCSTATE_LOADING) < DOCSTATE_LOADING)
                     && (newDoc != null)) {
-                  LOGGER_DL.info("DocumentLoader-{}: invalidated docloader '{}' reloading",
+                  LOGGER_DL.info("DocumentLoader-'{}': invalidated docloader '{}' reloading",
                       Thread.currentThread().getId(), key);
                 }
-                // use a further synchronized method call to prevent an unsafe publication of the
-                // new document over the cache
-                newDoc = new DocumentBuilder().buildDocument(key, doc, context);
+                newDoc = getBackingStore().loadCelDocument(docRef, lang);
               } while (!loadingState.compareAndSet(DOCSTATE_LOADING, DOCSTATE_FINISHED));
-              LOGGER_DL.debug("DocumentLoader-{}: put doc '{}' in cache",
+              LOGGER_DL.debug("DocumentLoader-'{}': put doc '{}' in cache",
                   Thread.currentThread().getId(), key);
-              final String keyWithLang = getKeyWithLang(newDoc);
-              if (!newDoc.isNew()) {
-                setDocCache(keyWithLang, newDoc);
-                setExistCache(getKey(newDoc.getDocumentReference()), true);
-                setExistCache(keyWithLang, true);
+              if (newDoc.isPresent()) {
+                CelDocument document = newDoc.get();
+                setDocCache(key, document);
+                setExistCache(getKey(document.getDocumentReference()), true);
+                setExistCache(key, true);
               } else {
-                LOGGER_DL.debug("DocumentLoader-{}: loading '{}' failed. Setting exists"
-                    + " to FALSE for '{}'", Thread.currentThread().getId(), key, keyWithLang);
-                setExistCache(keyWithLang, false);
+                LOGGER_DL.debug("DocumentLoader-'{}': loading '{}' failed. Setting exists"
+                    + " to FALSE for '{}'", Thread.currentThread().getId(), key, key);
+                setExistCache(key, false);
               }
               loadingDoc = newDoc;
             } else {
-              LOGGER_DL.debug("DocumentLoader-{}: found in cache skip loding for '{}'",
+              LOGGER_DL.debug("DocumentLoader-'{}': found in cache skip loding for '{}'",
                   Thread.currentThread().getId(), key);
+              loadingDoc = Optional.of(cachedDoc);
             }
             documentLoaderMap.remove(key);
             // SonarLint Rule squid:S3064 - Assignment of lazy-initialized members should be
@@ -533,21 +544,6 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       }
     }
 
-    private class DocumentBuilder {
-
-      private synchronized XWikiDocument buildDocument(String key, XWikiDocument doc,
-          XWikiContext context) throws XWikiException {
-        LOGGER_DL.trace("DocumentLoader-{}: Trying to get doc '{}' for real",
-            Thread.currentThread().getId(), key);
-        // IMPORTANT: do not clone here. Creating new document is much faster.
-        XWikiDocument buildDoc = createEmptyXWikiDoc(doc);
-        buildDoc.setLanguage(doc.getLanguage());
-        buildDoc = getBackingStore().loadXWikiDoc(buildDoc, context);
-        buildDoc.setFromCache(!buildDoc.isNew());
-        return buildDoc;
-      }
-
-    }
   }
 
   private XWikiDocument createEmptyXWikiDoc(XWikiDocument doc) {
@@ -572,7 +568,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
           ret.add(metaData.get());
         }
       }
-      LOGGER.info("listDocumentMetaData: found {} docs with hql '{}' for filterRef '{}'",
+      LOGGER.info("listDocumentMetaData: found '{}' docs with hql '{}' for filterRef '{}'",
           ret.size(), query.getStatement(), filterRef);
     } catch (QueryException exc) {
       throw new MetaDataLoadException(filterRef, exc);
@@ -620,6 +616,13 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       LOGGER.warn("getMetaData: illegal docData '{}'", Arrays.asList(docData), iae);
     }
     return Optional.ofNullable(metaData);
+  }
+
+  private static DocumentReference withWiki(DocumentReference docRef, WikiReference wikiRef) {
+    // Entity references are immutable; reuse matching references instead of rebuilding cache keys.
+    return !wikiRef.equals(docRef.getWikiReference())
+        ? RefBuilder.from(docRef).with(wikiRef).build(DocumentReference.class)
+        : docRef;
   }
 
 }

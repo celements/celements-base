@@ -36,7 +36,8 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
@@ -75,7 +76,7 @@ public class XWikiMessageTool {
   /**
    * Log4J logger object to log messages in this class.
    */
-  private static final Logger LOG = Logger.getLogger(XWikiMessageTool.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XWikiMessageTool.class);
 
   /**
    * Property name used to defined internationalization document bundles in either XWikiProperties
@@ -100,6 +101,9 @@ public class XWikiMessageTool {
    * loading documents.
    */
   protected XWikiContext context;
+
+  /** Optional language used instead of the current context language. */
+  private final String language;
 
   /**
    * Cache properties loaded from the document bundles for maximum efficiency. The map is of type
@@ -136,8 +140,30 @@ public class XWikiMessageTool {
    *          documents
    */
   public XWikiMessageTool(ResourceBundle bundle, XWikiContext context) {
+    this(bundle, context, null);
+  }
+
+  /**
+   * @param language
+   *          the language used to resolve translated document bundles, or {@code null} to use the
+   *          current context language
+   */
+  public XWikiMessageTool(ResourceBundle bundle, XWikiContext context, String language) {
     this.bundle = bundle;
     this.context = context;
+    this.language = language;
+  }
+
+  /**
+   * @param context
+   *          the context for the returned message tool
+   * @return this message tool if already bound to {@code context}, otherwise an equivalent message
+   *         tool bound to {@code context}
+   */
+  public XWikiMessageTool forContext(XWikiContext context) {
+    return (this.context == context)
+        ? this
+        : new XWikiMessageTool(bundle, context, language);
   }
 
   /**
@@ -234,10 +260,8 @@ public class XWikiMessageTool {
             }
             result.add(docBundle);
           } else {
-            // The document listed as a document bundle doesn't exist. Do nothing
-            // and log.
-            LOG.warn("The document [" + docBundle.getFullName() + "] is listed "
-                + "as an internationalization document bundle but it does not " + "exist.");
+            LOG.debug("The document [{}] is listed as an internationalization document bundle "
+                + "but it does not exist.", docBundle);
           }
         }
       }
@@ -265,7 +289,7 @@ public class XWikiMessageTool {
       try {
         // First, looks for a document suffixed by the language
         docBundle = this.context.getWiki().getDocument(documentName, this.context);
-        docBundle = docBundle.getTranslatedDocument(this.context);
+        docBundle = getTranslatedDocument(docBundle);
       } catch (XWikiException e) {
         // Error while loading the document.
         // TODO: A runtime exception should be thrown that will bubble up till the
@@ -298,7 +322,7 @@ public class XWikiMessageTool {
       try {
         // First, looks for a document suffixed by the language
         XWikiDocument docBundle = this.context.getWiki().getDocument(documentName, this.context);
-        XWikiDocument tdocBundle = docBundle.getTranslatedDocument(this.context);
+        XWikiDocument tdocBundle = getTranslatedDocument(docBundle);
         list.add(tdocBundle);
         if (!tdocBundle.getRealLanguage().equals(defaultLanguage)) {
           XWikiDocument defdocBundle = docBundle.getTranslatedDocument(defaultLanguage,
@@ -317,6 +341,12 @@ public class XWikiMessageTool {
     }
 
     return list;
+  }
+
+  private XWikiDocument getTranslatedDocument(XWikiDocument document) throws XWikiException {
+    return (language != null)
+        ? document.getTranslatedDocument(language, context)
+        : document.getTranslatedDocument(context);
   }
 
   /**

@@ -21,19 +21,30 @@
 
 package com.xpn.xwiki;
 
+import static com.celements.spring.context.SpringContextProvider.*;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang.StringUtils;
-import org.apache.xmlrpc.server.XmlRpcServer;
+import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
+import org.xwiki.model.reference.WikiReference;
 
+import com.celements.execution.XWikiExecutionProp;
+import com.celements.init.XWikiProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiDocumentArchive;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -47,35 +58,48 @@ import com.xpn.xwiki.web.XWikiForm;
 import com.xpn.xwiki.web.XWikiMessageTool;
 import com.xpn.xwiki.web.XWikiRequest;
 import com.xpn.xwiki.web.XWikiResponse;
+import com.xpn.xwiki.web.XWikiServletRequestStub;
 import com.xpn.xwiki.web.XWikiURLFactory;
 
 public class XWikiContext extends Hashtable<Object, Object> {
 
   public static final int MODE_SERVLET = 0;
 
+  @Deprecated
   public static final int MODE_PORTLET = 1;
 
+  @Deprecated
   public static final int MODE_XMLRPC = 2;
 
+  @Deprecated
   public static final int MODE_ATOM = 3;
 
+  @Deprecated
   public static final int MODE_PDF = 4;
 
+  @Deprecated
   public static final int MODE_GWT = 5;
 
+  @Deprecated
   public static final int MODE_GWT_DEBUG = 6;
 
+  /**
+   * @deprecated since 6.0 instead use {@link XWikiExecutionProp#XWIKI_CONTEXT}
+   */
+  @Deprecated
   public static final String EXECUTIONCONTEXT_KEY = "xwikicontext";
 
   private static final String WIKI_KEY = "wiki";
 
   private static final String ORIGINAL_WIKI_KEY = "originalWiki";
 
+  private static final String DOC_KEY = "doc";
+
   private boolean finished = false;
 
   private XWiki wiki;
 
-  private XWikiEngineContext engine_context;
+  private XWikiEngineContext engineContext;
 
   private XWikiRequest request;
 
@@ -87,10 +111,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private String orig_database;
 
-  private String database;
-
-  private XWikiUser user;
-
   private static final String USER_KEY = "user";
 
   private String language;
@@ -99,21 +119,13 @@ public class XWikiContext extends Hashtable<Object, Object> {
 
   private String interfaceLanguage;
 
-  private int mode;
+  private URI uri;
 
-  private URL url;
-
-  private XWikiURLFactory URLFactory;
-
-  private XmlRpcServer xmlRpcServer;
-
-  private String wikiOwner;
-
-  private XWikiDocument wikiServer;
+  private XWikiURLFactory urlFactory;
 
   private int cacheDuration = 0;
 
-  private int classCacheSize = 20;
+  private int classCacheSize = 100;
 
   private int archiveCacheSize = 20;
 
@@ -137,13 +149,23 @@ public class XWikiContext extends Hashtable<Object, Object> {
    * the current wiki is used instead of the current document reference's wiki.
    */
   @SuppressWarnings("unchecked")
-  private DocumentReferenceResolver<String> currentMixedDocumentReferenceResolver = Utils
+  private static final Supplier<DocumentReferenceResolver<String>> currentMixedDocumentReferenceResolver = () -> Utils
       .getComponent(DocumentReferenceResolver.class, "currentmixed");
+
+  private static final Supplier<XWikiProvider> xwikiProvider = () -> Utils
+      .getComponent(XWikiProvider.class);
 
   public XWikiContext() {}
 
+  /**
+   * @deprecated instead use {@link XWikiProvider}
+   */
+  @Deprecated
   public XWiki getWiki() {
-    return this.wiki;
+    if (wiki == null) {
+      wiki = xwikiProvider.get().get().orElse(null);
+    }
+    return wiki;
   }
 
   public Util getUtil() {
@@ -160,15 +182,21 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public XWikiEngineContext getEngineContext() {
-    return this.engine_context;
+    return this.engineContext;
   }
 
-  public void setEngineContext(XWikiEngineContext engine_context) {
-    this.engine_context = engine_context;
+  public void setEngineContext(XWikiEngineContext engineContext) {
+    this.engineContext = engineContext;
   }
 
   public XWikiRequest getRequest() {
     return this.request;
+  }
+
+  public boolean hasRequest() {
+    return (request != null) && !(request instanceof XWikiServletRequestStub)
+        && (request.getHttpServletRequest() != null)
+        && !(request.getHttpServletRequest() instanceof XWikiServletRequestStub);
   }
 
   public void setRequest(XWikiRequest request) {
@@ -191,19 +219,24 @@ public class XWikiContext extends Hashtable<Object, Object> {
     this.response = response;
   }
 
+  public WikiReference getWikiRef() {
+    return getExecutionContext().get(XWikiExecutionProp.WIKI).orElse(null);
+  }
+
   public String getDatabase() {
-    return this.database;
+    return Optional.ofNullable(getWikiRef()).map(WikiReference::getName).orElse(null);
   }
 
   public void setDatabase(String database) {
-    this.database = database;
     if (database == null) {
+      getExecutionContext().removeProperty(XWikiExecutionProp.WIKI.getName());
       super.remove(WIKI_KEY);
     } else {
+      getExecutionContext().set(XWikiExecutionProp.WIKI, new WikiReference(database));
       super.put(WIKI_KEY, database);
     }
-    if (this.orig_database == null) {
-      this.orig_database = database;
+    if (orig_database == null) {
+      orig_database = database;
       if (database == null) {
         super.remove(ORIGINAL_WIKI_KEY);
       } else {
@@ -212,45 +245,52 @@ public class XWikiContext extends Hashtable<Object, Object> {
     }
   }
 
-  /**
-   * {@inheritDoc}
-   * <p>
-   * Make sure to keep {@link #database} field and map synchronized.
-   *
-   * @see java.util.Hashtable#put(java.lang.Object, java.lang.Object)
-   */
+  @Override
+  public synchronized Object get(Object key) {
+    if (WIKI_KEY.equals(key)) {
+      return getDatabase();
+    } else if (DOC_KEY.equals(key)) {
+      return getDoc();
+    } else if (USER_KEY.equals(key)) {
+      return (getXWikiUser() != null) ? getUser() : null;
+    } else {
+      return super.get(key);
+    }
+  }
+
   @Override
   public synchronized Object put(Object key, Object value) {
     Object previous;
-
     if (WIKI_KEY.equals(key)) {
       previous = get(WIKI_KEY);
       setDatabase((String) value);
+    } else if (DOC_KEY.equals(key)) {
+      previous = get(DOC_KEY);
+      setDoc((XWikiDocument) value);
+    } else if (USER_KEY.equals(key)) {
+      previous = get(USER_KEY);
+      setUser((String) value);
     } else {
       previous = super.put(key, value);
     }
-
     return previous;
   }
 
-  /**
-   * {@inheritDoc}
-   * <p>
-   * Make sure to keep {@link #database} field and map synchronized.
-   *
-   * @see java.util.Hashtable#remove(java.lang.Object)
-   */
   @Override
   public synchronized Object remove(Object key) {
     Object previous;
-
     if (WIKI_KEY.equals(key)) {
       previous = get(WIKI_KEY);
       setDatabase(null);
+    } else if (DOC_KEY.equals(key)) {
+      previous = get(DOC_KEY);
+      setDoc(null);
+    } else if (USER_KEY.equals(key)) {
+      previous = get(USER_KEY);
+      setUser(null);
     } else {
       previous = super.remove(key);
     }
-
     return previous;
   }
 
@@ -280,29 +320,31 @@ public class XWikiContext extends Hashtable<Object, Object> {
    * @return true it's main wiki's context, false otherwise.
    */
   public boolean isMainWiki(String wikiName) {
-    return !getWiki().isVirtualMode()
-        || (wikiName == null ? getMainXWiki() == null : wikiName.equalsIgnoreCase(getMainXWiki()));
+    return XWikiConstant.MAIN_WIKI.getName().equalsIgnoreCase(wikiName)
+        || getXWikiCfg().getMainWikiName().equalsIgnoreCase(wikiName);
   }
 
   public XWikiDocument getDoc() {
-    return (XWikiDocument) get("doc");
+    return getExecutionContext().get(XWikiExecutionProp.DOC).orElse(null);
   }
 
   public void setDoc(XWikiDocument doc) {
     if (doc == null) {
-      remove("doc");
+      getExecutionContext().removeProperty(XWikiExecutionProp.DOC.getName());
+      super.remove(DOC_KEY);
     } else {
-      put("doc", doc);
+      getExecutionContext().set(XWikiExecutionProp.DOC, doc);
+      super.put(DOC_KEY, doc);
     }
   }
 
   public void setUser(String user, boolean main) {
     if (user == null) {
-      this.user = null;
-      remove(USER_KEY);
+      getExecutionContext().removeProperty(XWikiExecutionProp.XWIKI_USER.getName());
+      super.remove(USER_KEY);
     } else {
-      this.user = new XWikiUser(user, main);
-      put(USER_KEY, user);
+      getExecutionContext().set(XWikiExecutionProp.XWIKI_USER, new XWikiUser(user, main));
+      super.put(USER_KEY, user);
     }
   }
 
@@ -311,8 +353,8 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public String getUser() {
-    if (this.user != null) {
-      return this.user.getUser();
+    if (getXWikiUser() != null) {
+      return getXWikiUser().getUser();
     } else {
       return XWikiRightService.GUEST_USER_FULLNAME;
     }
@@ -324,7 +366,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public XWikiUser getXWikiUser() {
-    return this.user;
+    return getExecutionContext().get(XWikiExecutionProp.XWIKI_USER).orElse(null);
   }
 
   public String getLanguage() {
@@ -349,27 +391,47 @@ public class XWikiContext extends Hashtable<Object, Object> {
   }
 
   public int getMode() {
-    return this.mode;
+    return MODE_SERVLET;
   }
 
-  public void setMode(int mode) {
-    this.mode = mode;
-  }
-
+  /**
+   * @deprecated since 6.0 instead use {@link #getUri()}
+   */
+  @Deprecated
   public URL getURL() {
-    return this.url;
+    try {
+      return getUri().toURL();
+    } catch (MalformedURLException exc) {
+      throw new IllegalArgumentException(exc);
+    }
   }
 
+  public URI getUri() {
+    return this.uri;
+  }
+
+  /**
+   * @deprecated since 6.0 instead use {@link #getUri()}
+   */
+  @Deprecated
   public void setURL(URL url) {
-    this.url = url;
+    try {
+      setUri(url.toURI());
+    } catch (URISyntaxException exc) {
+      throw new IllegalArgumentException(exc);
+    }
+  }
+
+  public void setUri(URI uri) {
+    this.uri = uri;
   }
 
   public XWikiURLFactory getURLFactory() {
-    return this.URLFactory;
+    return this.urlFactory;
   }
 
-  public void setURLFactory(XWikiURLFactory URLFactory) {
-    this.URLFactory = URLFactory;
+  public void setURLFactory(XWikiURLFactory urlFactory) {
+    this.urlFactory = urlFactory;
   }
 
   public XWikiForm getForm() {
@@ -388,30 +450,6 @@ public class XWikiContext extends Hashtable<Object, Object> {
     this.finished = finished;
   }
 
-  public XmlRpcServer getXMLRPCServer() {
-    return this.xmlRpcServer;
-  }
-
-  public void setXMLRPCServer(XmlRpcServer xmlRpcServer) {
-    this.xmlRpcServer = xmlRpcServer;
-  }
-
-  public void setWikiOwner(String wikiOwner) {
-    this.wikiOwner = wikiOwner;
-  }
-
-  public String getWikiOwner() {
-    return this.wikiOwner;
-  }
-
-  public void setWikiServer(XWikiDocument doc) {
-    this.wikiServer = doc;
-  }
-
-  public XWikiDocument getWikiServer() {
-    return this.wikiServer;
-  }
-
   public int getCacheDuration() {
     return this.cacheDuration;
   }
@@ -420,17 +458,24 @@ public class XWikiContext extends Hashtable<Object, Object> {
     this.cacheDuration = cacheDuration;
   }
 
+  /**
+   * @deprecated instead use {@link XWikiConstant.MAIN_WIKI}
+   */
+  @Deprecated(since = "6.5")
   public String getMainXWiki() {
-    return (String) get("mainxwiki");
+    return XWikiConstant.MAIN_WIKI.getName();
   }
 
-  public void setMainXWiki(String str) {
-    put("mainxwiki", str);
-  }
+  @Deprecated(since = "6.5")
+  public void setMainXWiki(String str) {}
 
   // Used to avoid recursive loading of documents if there are recursives usage of classes
   public void addBaseClass(BaseClass bclass) {
     this.classCache.put(bclass.getDocumentReference(), bclass);
+  }
+
+  public void removeBaseClass(DocumentReference documentReference) {
+    this.classCache.remove(documentReference);
   }
 
   /**
@@ -449,7 +494,7 @@ public class XWikiContext extends Hashtable<Object, Object> {
   public BaseClass getBaseClass(String name) {
     BaseClass baseClass = null;
     if (!StringUtils.isEmpty(name)) {
-      baseClass = this.classCache.get(this.currentMixedDocumentReferenceResolver.resolve(name));
+      baseClass = this.classCache.get(currentMixedDocumentReferenceResolver.get().resolve(name));
     }
     return baseClass;
   }
@@ -549,9 +594,24 @@ public class XWikiContext extends Hashtable<Object, Object> {
    *             {@link XWikiContext#getMainXWiki()} since 1.4M1.
    */
   @Deprecated
-  public void setVirtual(boolean virtual) {
-    // this.virtual = virtual;
-  }
+  public void setVirtual(boolean virtual) {}
   // END XWikiContextCompatibilityAspect
+
+  private XWikiConfigSource getXWikiCfg() {
+    return Utils.getComponent(XWikiConfigSource.class);
+  }
+
+  private ExecutionContext getExecutionContext() {
+    try {
+      return getBeanFactory().getBean(Execution.class).getContext();
+    } catch (IllegalStateException exc) {
+      return Utils.getComponent(Execution.class).getContext();
+    }
+  }
+
+  @Override
+  public XWikiContext clone() {
+    return (XWikiContext) super.clone();
+  }
 
 }

@@ -19,22 +19,26 @@
  */
 package com.celements.xwikiPatches;
 
+import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
+
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.celements.common.test.AbstractBridgedComponentTestCase;
+import com.celements.common.test.AbstractComponentTest;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
 
-public class SpacePreferencesConfigurationSourceTest extends AbstractBridgedComponentTestCase {
+public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTest {
 
   private XWikiContext context;
   private SpacePreferencesConfigurationSource spacePrefConfig;
@@ -64,7 +68,8 @@ public class SpacePreferencesConfigurationSourceTest extends AbstractBridgedComp
     webPrefObj.setXClassReference(xwikiPrefClassRef);
     webPrefObj.setStringValue("default_language", "en");
     webPrefDoc.addXObject(webPrefObj);
-    expect(xwiki.getDocument(eq(webPrefRef), same(context))).andReturn(webPrefDoc);
+    expect(xwiki.getCelDocument(webPrefRef))
+        .andReturn(Optional.of(CelDocument.Default.from(webPrefDoc)));
 
     replayDefault();
     String defLang = spacePrefConfig.getProperty("default_language", "");

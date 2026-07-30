@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.xwiki.bridge.event.DocumentCreatedEvent;
 import org.xwiki.bridge.event.DocumentDeletedEvent;
@@ -670,7 +669,6 @@ public class XWikiGroupServiceImpl implements XWikiGroupService, EventListener {
       boolean withdetails, int nb,
       int start, Object[][] order, XWikiContext context) throws XWikiException {
     List<?> groups = null;
-
     if (context.getWiki().getHibernateStore() != null) {
       List<Object> parameterValues = new ArrayList<>();
       String where = createMatchUserOrGroupWhereClause(user, matchFields, order, parameterValues);
@@ -682,27 +680,7 @@ public class XWikiGroupServiceImpl implements XWikiGroupService, EventListener {
         groups = context.getWiki().getStore().searchDocumentsNames(where, nb, start,
             parameterValues, context);
       }
-    } else if (context.getWiki().getStore().getQueryManager().hasLanguage(Query.XPATH)) {
-      // TODO : fully implement this methods for XPATH platform
-      if (((matchFields != null) && (matchFields.length > 0)) || withdetails) {
-        throw new NotImplementedException();
-      }
-
-      try {
-        groups = context
-            .getWiki()
-            .getStore()
-            .getQueryManager()
-            .createQuery(
-                "/*/*[obj/XWiki/" + (user ? CLASS_SUFFIX_XWIKIUSERS : CLASS_SUFFIX_XWIKIGROUPS)
-                    + "]/@fullName",
-                Query.XPATH)
-            .setLimit(nb).setOffset(start).execute();
-      } catch (QueryException ex) {
-        throw new XWikiException(0, 0, ex.getMessage(), ex);
-      }
     }
-
     return groups;
   }
 

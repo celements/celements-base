@@ -21,7 +21,6 @@ package com.xpn.xwiki.objects.classes;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.ecs.xhtml.input;
 import org.apache.velocity.VelocityContext;
@@ -34,14 +33,11 @@ import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.objects.BaseCollection;
-import com.xpn.xwiki.objects.BaseElement;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.PropertyInterface;
 import com.xpn.xwiki.objects.meta.MetaClass;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
-import com.xpn.xwiki.plugin.query.XWikiCriteria;
-import com.xpn.xwiki.plugin.query.XWikiQuery;
 import com.xpn.xwiki.validation.XWikiValidationStatus;
 import com.xpn.xwiki.web.Utils;
 
@@ -101,8 +97,7 @@ public class PropertyClass extends BaseCollection
 
   @Override
   public long getId() {
-    BaseElement element = getObject() != null ? getObject() : this;
-    return element.getId();
+    return (getObject() != null) ? getObject().getId() : super.getId();
   }
 
   // needed for properties because access=field not possible (composite id)
@@ -141,22 +136,6 @@ public class PropertyClass extends BaseCollection
   }
 
   @Override
-  public void displaySearch(StringBuffer buffer, String name, String prefix, XWikiCriteria criteria,
-      XWikiContext context) {
-    input input = new input();
-    input.setType("text");
-    input.setName(prefix + name);
-    input.setID(prefix + name);
-    input.setSize(20);
-    String fieldFullName = getFieldFullName();
-    Object value = criteria.getParameter(fieldFullName);
-    if (value != null) {
-      input.setValue(value.toString());
-    }
-    buffer.append(input.toString());
-  }
-
-  @Override
   public void displayView(StringBuffer buffer, String name, String prefix, BaseCollection object,
       XWikiContext context) {
     BaseProperty prop = (BaseProperty) object.safeget(name);
@@ -191,17 +170,6 @@ public class PropertyClass extends BaseCollection
 
   public String displayHidden(String name, BaseCollection object, XWikiContext context) {
     return displayHidden(name, "", object, context);
-  }
-
-  public String displaySearch(String name, String prefix, XWikiCriteria criteria,
-      XWikiContext context) {
-    StringBuffer buffer = new StringBuffer();
-    displaySearch(buffer, name, prefix, criteria, context);
-    return buffer.toString();
-  }
-
-  public String displaySearch(String name, XWikiCriteria criteria, XWikiContext context) {
-    return displaySearch(name, "", criteria, context);
   }
 
   public String displayView(String name, String prefix, BaseCollection object,
@@ -481,11 +449,6 @@ public class PropertyClass extends BaseCollection
   public BaseProperty newProperty() {
     return new BaseProperty();
   }
-
-  public void makeQuery(Map<String, Object> map, String prefix, XWikiCriteria query,
-      List<String> criteriaList) {}
-
-  public void fromSearchMap(XWikiQuery query, Map<String, String[]> map) {}
 
   public void setValidationRegExp(String validationRegExp) {
     setStringValue("validationRegExp", validationRegExp);

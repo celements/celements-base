@@ -1,6 +1,5 @@
 package com.celements.configuration;
 
-import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
@@ -18,20 +17,21 @@ public class CelementsAllConfigurationSourceTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
+    String hint = CelementsAllConfigurationSource.NAME;
     Utils.getComponentManager().unregisterComponent(ConfigurationSource.class, "default");
     CelementsAllConfigurationSource instance = new CelementsAllConfigurationSource();
-    instance.userPreferencesSource = createMockAndAddToDefault(ConfigurationSource.class);
-    instance.spacePreferencesSource = createMockAndAddToDefault(ConfigurationSource.class);
-    instance.wikiPreferencesSource = createMockAndAddToDefault(ConfigurationSource.class);
-    instance.celementsPropertiesSource = createMockAndAddToDefault(ConfigurationSource.class);
-    instance.xwikiPropertiesSource = createMockAndAddToDefault(ConfigurationSource.class);
+    instance.userPreferencesSource = createDefaultMock(ConfigurationSource.class);
+    instance.spacePreferencesSource = createDefaultMock(ConfigurationSource.class);
+    instance.wikiPreferencesSource = createDefaultMock(ConfigurationSource.class);
+    instance.celementsPropertiesSource = createDefaultMock(ConfigurationSource.class);
+    instance.xwikiPropertiesSource = createDefaultMock(ConfigurationSource.class);
     instance.initialize();
     DefaultComponentDescriptor<ConfigurationSource> descriptor = new DefaultComponentDescriptor<>();
     descriptor.setRole(ConfigurationSource.class);
-    descriptor.setRoleHint("default");
+    descriptor.setRoleHint(hint);
+    descriptor.setImplementation(instance.getClass());
     Utils.getComponentManager().registerComponent(descriptor, instance);
-
-    cfgSrc = (CelementsAllConfigurationSource) Utils.getComponent(ConfigurationSource.class);
+    cfgSrc = (CelementsAllConfigurationSource) Utils.getComponent(ConfigurationSource.class, hint);
   }
 
   @Test

@@ -70,7 +70,6 @@ public class EmbeddableComponentManager implements ComponentManager {
    */
   public void initialize(ClassLoader classLoader) {
     ComponentAnnotationLoader loader = new ComponentAnnotationLoader();
-    loader.enableLogging(new CommonsLoggingLogger(loader.getClass()));
     loader.initialize(this, classLoader);
 
     // Extension point to allow component to manipulate ComponentManager initialized state.

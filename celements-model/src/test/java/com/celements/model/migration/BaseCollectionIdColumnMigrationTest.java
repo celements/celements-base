@@ -45,7 +45,7 @@ public class BaseCollectionIdColumnMigrationTest extends AbstractComponentTest {
   @Before
   public void prepareTest() throws Exception {
     queryExecMock = registerComponentMock(IQueryExecutionServiceRole.class);
-    hibCfgMock = createMockAndAddToDefault(Configuration.class);
+    hibCfgMock = createDefaultMock(Configuration.class);
     registerComponentMocks(HibernateSessionFactory.class, ModelUtils.class);
     expect(getMock(HibernateSessionFactory.class).getConfiguration()).andReturn(
         hibCfgMock).anyTimes();

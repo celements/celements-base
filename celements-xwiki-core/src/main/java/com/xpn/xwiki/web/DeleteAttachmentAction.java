@@ -58,7 +58,6 @@ public class DeleteAttachmentAction extends XWikiAction {
     XWikiDocument doc = context.getDoc();
     XWikiAttachment attachment = null;
     XWiki xwiki = context.getWiki();
-    String filename;
 
     // Delete from the trash
     if (request.getParameter("trashId") != null) {
@@ -89,14 +88,11 @@ public class DeleteAttachmentAction extends XWikiAction {
       return false;
     }
 
-    if (context.getMode() == XWikiContext.MODE_PORTLET) {
-      filename = request.getParameter("filename");
-    } else {
-      // Note: We use getRequestURI() because the spec says the server doesn't decode it, as
-      // we want to use our own decoding.
-      String requestUri = request.getRequestURI();
-      filename = Util.decodeURI(requestUri.substring(requestUri.lastIndexOf("/") + 1), context);
-    }
+    // Note: We use getRequestURI() because the spec says the server doesn't decode it, as
+    // we want to use our own decoding.
+    String requestUri = request.getRequestURI();
+    String filename = Util.decodeURI(requestUri.substring(requestUri.lastIndexOf("/") + 1),
+        context);
 
     XWikiDocument newdoc = doc.clone();
 

@@ -23,12 +23,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.validation.constraints.NotNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 
 /**
  * Common features for all Document sources (ie configuration data coming from wiki pages).
@@ -76,7 +81,20 @@ public abstract class AbstractDocumentConfigurationSource implements Configurati
     DocumentReference documentReference = getFailsafeDocumentReference();
     DocumentReference classReference = getFailsafeClassReference();
     return ((documentReference != null) && (classReference != null))
-        && (getDocumentAccessBridge().getProperty(documentReference, classReference, key) != null);
+        && (getObjectProperty(key, documentReference, classReference) != null);
+  }
+
+  private Object getObjectProperty(@NotNull String key,
+      @NotNull DocumentReference documentReference,
+      @NotNull DocumentReference classReference) {
+    Preconditions.checkNotNull(documentReference);
+    Preconditions.checkNotNull(classReference);
+    Preconditions.checkNotNull(key);
+    Object value = getDocumentAccessBridge().getProperty(documentReference, classReference, key);
+    if (value instanceof String) {
+      value = Strings.emptyToNull((String) value);
+    }
+    return value;
   }
 
   /**
@@ -112,7 +130,7 @@ public abstract class AbstractDocumentConfigurationSource implements Configurati
     DocumentReference documentReference = getFailsafeDocumentReference();
     DocumentReference classReference = getFailsafeClassReference();
     if ((documentReference != null) && (classReference != null)) {
-      result = (T) getDocumentAccessBridge().getProperty(documentReference, classReference, key);
+      result = (T) getObjectProperty(key, documentReference, classReference);
 
       // Make sure we don't return null values for List and Properties (they must return empty
       // elements
@@ -140,7 +158,7 @@ public abstract class AbstractDocumentConfigurationSource implements Configurati
     DocumentReference documentReference = getFailsafeDocumentReference();
     DocumentReference classReference = getFailsafeClassReference();
     if ((documentReference != null) && (classReference != null)) {
-      result = (T) getDocumentAccessBridge().getProperty(documentReference, classReference, key);
+      result = (T) getObjectProperty(key, documentReference, classReference);
     }
 
     return result;

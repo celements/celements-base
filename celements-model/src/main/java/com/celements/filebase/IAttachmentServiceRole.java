@@ -22,6 +22,8 @@ package com.celements.filebase;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.AttachmentReference;
 
@@ -47,11 +49,11 @@ public interface IAttachmentServiceRole {
       XWikiDocument doc) throws XWikiException;
 
   public XWikiAttachment addAttachment(XWikiDocument doc, byte[] data, String filename,
-      String username, String comment) throws AttachmentToBigException,
+      @Nullable String username, String comment) throws AttachmentToBigException,
       AddingAttachmentContentFailedException, DocumentSaveException;
 
   public XWikiAttachment addAttachment(XWikiDocument doc, InputStream in, String filename,
-      String username, String comment) throws AttachmentToBigException,
+      @Nullable String username, String comment) throws AttachmentToBigException,
       AddingAttachmentContentFailedException, DocumentSaveException;
 
   public String clearFileName(String fileName);

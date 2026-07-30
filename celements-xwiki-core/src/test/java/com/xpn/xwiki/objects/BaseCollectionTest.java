@@ -24,7 +24,7 @@ import org.dom4j.Element;
 import org.junit.Test;
 
 import com.xpn.xwiki.objects.classes.BaseClass;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 import junit.framework.Assert;
 
@@ -33,10 +33,10 @@ import junit.framework.Assert;
  *
  * @version $Id$
  */
-public class BaseCollectionTest extends AbstractBridgedComponentTestCase {
+public class BaseCollectionTest extends AbstractComponentTest {
 
   @Test
-  public void testGetXClassWithNullReference() throws Exception {
+  public void test_getXClass_withNullReference() throws Exception {
     BaseCollection collection = new BaseCollection() {
 
       @Override

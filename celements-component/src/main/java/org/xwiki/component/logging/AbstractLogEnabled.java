@@ -28,6 +28,7 @@ import org.xwiki.component.phase.LogEnabled;
  *
  * @version $Id$
  */
+@Deprecated
 public class AbstractLogEnabled implements LogEnabled {
 
   private static final Logger VOID_LOGGER = new VoidLogger();

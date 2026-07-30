@@ -31,17 +31,10 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.export.html.HtmlPackager;
-import com.xpn.xwiki.internal.export.OfficeExporter;
-import com.xpn.xwiki.internal.export.OfficeExporterURLFactory;
-import com.xpn.xwiki.pdf.api.PdfExport;
-import com.xpn.xwiki.pdf.api.PdfExport.ExportType;
-import com.xpn.xwiki.pdf.impl.PdfExportImpl;
-import com.xpn.xwiki.pdf.impl.PdfURLFactory;
 import com.xpn.xwiki.plugin.packaging.PackageAPI;
-import com.xpn.xwiki.util.Util;
 
 /**
- * Exports in XAR, PDF, RTF or HTML formats.
+ * Exports in XAR or HTML formats.
  *
  * @version $Id$
  */
@@ -65,7 +58,7 @@ public class ExportAction extends XWikiAction {
       } else if (format.equals("html")) {
         defaultPage = exportHTML(context);
       } else {
-        defaultPage = export(format, context);
+        throw new UnsupportedOperationException("PDF/RTF export not supported anymore");
       }
     } catch (Exception e) {
       throw new XWikiException(XWikiException.MODULE_XWIKI_APP,
@@ -176,41 +169,6 @@ public class ExportAction extends XWikiAction {
     packager.addPages(pageList);
 
     packager.export(context);
-
-    return null;
-  }
-
-  private String export(String format, XWikiContext context) throws XWikiException, IOException {
-    // We currently use the PDF export infrastructure but we have to redesign the export code.
-    XWikiURLFactory urlFactory = new OfficeExporterURLFactory();
-    PdfExport exporter = new OfficeExporter();
-    // Check if the office exporter supports the specified format.
-    ExportType exportType = ((OfficeExporter) exporter).getExportType(format);
-    if ("pdf".equalsIgnoreCase(format) || (exportType == null)) {
-      // The export format is PDF or the office converter can't be used (either it doesn't support
-      // the specified
-      // format or the office server is not started).
-      urlFactory = new PdfURLFactory();
-      exporter = new PdfExportImpl();
-      exportType = ExportType.PDF;
-      if ("rtf".equalsIgnoreCase(format)) {
-        exportType = ExportType.RTF;
-      }
-    }
-
-    urlFactory.init(context);
-    context.setURLFactory(urlFactory);
-    handleRevision(context);
-
-    XWikiDocument doc = context.getDoc();
-    context.getResponse().setContentType(exportType.getMimeType());
-    context.getResponse().addHeader(
-        "Content-disposition",
-        String.format("inline; filename=%s_%s.%s",
-            Util.encodeURI(doc.getDocumentReference().getLastSpaceReference().getName(), context),
-            Util.encodeURI(doc.getDocumentReference().getName(), context),
-            exportType.getExtension()));
-    exporter.export(doc, context.getResponse().getOutputStream(), exportType, context);
 
     return null;
   }

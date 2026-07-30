@@ -1,0 +1,2 @@
+org.xwiki.observation.remote.internal.converter.DefaultEventConverterManager
+org.xwiki.observation.remote.internal.converter.SerializableEventConverter

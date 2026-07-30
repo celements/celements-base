@@ -6,21 +6,54 @@ import static com.google.common.base.Preconditions.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import org.xwiki.component.annotation.Component;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import org.xwiki.component.manager.ComponentRepositoryException;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentSaveException;
+import com.celements.model.context.ModelContext;
+import com.celements.model.field.FieldAccessor;
+import com.celements.model.field.StringFieldAccessor;
+import com.celements.model.field.XObjectFieldAccessor;
+import com.celements.model.field.XObjectStringFieldAccessor;
+import com.celements.model.util.ModelUtils;
+import com.celements.rights.access.IRightsAccessFacadeRole;
+import com.celements.wiki.WikiService;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
 
-@Component(ModelMock.NAME)
+@Component
 public class ModelMock extends DefaultModelAccessFacade {
+
+  @Inject
+  public ModelMock(
+      XWikiDocumentCreator docCreator,
+      IRightsAccessFacadeRole rightsAccess,
+      ModelUtils modelUtils,
+      ModelContext context,
+      @Lazy WikiService wikiService,
+      @Named(XObjectFieldAccessor.NAME) FieldAccessor<BaseObject> xObjFieldAccessor,
+      @Named(XObjectStringFieldAccessor.NAME) StringFieldAccessor<BaseObject> xObjStrFieldAccessor) {
+    super(docCreator,
+        rightsAccess,
+        modelUtils,
+        context,
+        wikiService,
+        xObjFieldAccessor,
+        xObjStrFieldAccessor);
+  }
 
   public static final String NAME = "modelMock";
 
@@ -35,7 +68,7 @@ public class ModelMock extends DefaultModelAccessFacade {
 
   public static ModelMock init() {
     try {
-      ModelMock modelAccess = (ModelMock) Utils.getComponent(IModelAccessFacade.class, NAME);
+      ModelMock modelAccess = Utils.getComponent(ModelMock.class);
       registerComponentMock(IModelAccessFacade.class, "default", modelAccess);
       return modelAccess;
     } catch (ComponentRepositoryException exc) {
@@ -47,7 +80,7 @@ public class ModelMock extends DefaultModelAccessFacade {
 
   private Map<String, DocRecord> getDocs(DocumentReference docRef) {
     if (!docs.containsKey(docRef)) {
-      docs.put(docRef, new HashMap<String, DocRecord>());
+      docs.put(docRef, new HashMap<>());
     }
     return docs.get(docRef);
   }
@@ -129,6 +162,13 @@ public class ModelMock extends DefaultModelAccessFacade {
   @Override
   public XWikiDocument getDocument(DocumentReference docRef, String lang) {
     return getDocRecord(docRef, lang).doc();
+  }
+
+  @Override
+  public Optional<CelDocument> getCelDocument(DocumentReference docRef, String lang) {
+    return Optional.ofNullable(getDocs(docRef).get(modelUtils.normalizeLang(lang)))
+        .map(DocRecord::doc)
+        .map(CelDocument::from);
   }
 
   @Override

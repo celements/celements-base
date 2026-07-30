@@ -19,46 +19,64 @@
  */
 package com.xpn.xwiki.doc;
 
-import org.jmock.Mock;
-import org.xwiki.bridge.DocumentAccessBridge;
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
-import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
-import com.xpn.xwiki.web.XWikiURLFactory;
+import java.util.Optional;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.xwiki.bridge.DocumentAccessBridge;
+import org.xwiki.model.reference.DocumentReference;
+
+import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link DefaultDocumentAccessBridge}.
  *
  * @version $Id$
  */
-public class DefaultDocumentAccessBridgeTest extends AbstractBridgedXWikiComponentTestCase {
+public class DefaultDocumentAccessBridgeTest extends AbstractComponentTest {
 
   private DocumentAccessBridge documentAccessBridge;
 
-  private Mock mockXWiki;
-
-  private Mock mockURLFactory;
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
-    this.mockXWiki = mock(XWiki.class);
-    this.mockURLFactory = mock(XWikiURLFactory.class);
-
-    getContext().setURLFactory((XWikiURLFactory) mockURLFactory.proxy());
-    getContext().setWiki((XWiki) mockXWiki.proxy());
-
-    this.documentAccessBridge = getComponentManager().lookup(DocumentAccessBridge.class);
+  @Before
+  public void prepareTest() throws Exception {
+    documentAccessBridge = getBeanFactory().getBean(DocumentAccessBridge.class);
   }
 
-  public void testGetUrlEmptyDocument() {
+  @Test
+  public void test_getUrl_emptyDocument() {
     getContext().setDoc(new XWikiDocument("Space", "Page"));
-    this.mockXWiki.stubs().method("getURL").will(returnValue("/xwiki/bin/view/Main/WebHome"));
+    expect(getWikiMock().getURL(eq("Space.Page"), eq("view"), eq(""), eq(""),
+        same(getContext()))).andReturn("/xwiki/bin/view/Main/WebHome").times(2);
+    replayDefault();
 
     assertEquals("/xwiki/bin/view/Main/WebHome",
         this.documentAccessBridge.getURL("", "view", "", ""));
     assertEquals("/xwiki/bin/view/Main/WebHome",
         this.documentAccessBridge.getURL(null, "view", "", ""));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getProperty_fromCelDocument() throws Exception {
+    DocumentReference docRef = new DocumentReference("wiki", "space", "page");
+    DocumentReference classRef = new DocumentReference("wiki", "space", "class");
+    XWikiDocument document = new XWikiDocument(docRef);
+    BaseObject object = new BaseObject();
+    object.setDocumentReference(docRef);
+    object.setXClassReference(classRef);
+    object.setIntValue("value", 42);
+    document.addXObject(classRef, object);
+    CelDocument.Default celDocument = CelDocument.Default.from(document);
+    expect(getWikiMock().getCelDocument(docRef)).andReturn(Optional.of(celDocument));
+    replayDefault();
+
+    assertEquals(42, documentAccessBridge.getProperty(docRef, classRef, "value"));
+
+    verifyDefault();
   }
 }

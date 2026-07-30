@@ -22,9 +22,9 @@ package com.xpn.xwiki.user.impl.xwiki;
 import java.security.Principal;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.securityfilter.realm.SimplePrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
@@ -40,10 +40,7 @@ import com.xpn.xwiki.web.Utils;
  */
 public abstract class AbstractXWikiAuthService implements XWikiAuthService {
 
-  /**
-   * Logging tool.
-   */
-  private static final Log LOG = LogFactory.getLog(AbstractXWikiAuthService.class);
+  protected final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   /**
    * The XWiki config property for storing the superadmin password.
@@ -82,12 +79,7 @@ public abstract class AbstractXWikiAuthService implements XWikiAuthService {
    *         Principal otherwise
    */
   protected Principal authenticateSuperAdmin(String password, XWikiContext context) {
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Authenticate superadmin");
-    }
-
-    Principal principal;
-
+    Principal principal = null;
     // Security check: only decide that the passed user is the super admin if the
     // super admin password is configured in XWiki's configuration.
     String superadminpassword = context.getWiki().Param(SUPERADMIN_PASSWORD_CONFIG);
@@ -99,10 +91,9 @@ public abstract class AbstractXWikiAuthService implements XWikiAuthService {
             context.getMainXWiki() + ":" + XWikiRightService.SUPERADMIN_USER_FULLNAME);
       }
     } else {
-      principal = null;
       context.put("message", "invalidcredentials");
     }
-
+    LOGGER.debug("Superadmin authentication: {}", principal);
     return principal;
   }
 }

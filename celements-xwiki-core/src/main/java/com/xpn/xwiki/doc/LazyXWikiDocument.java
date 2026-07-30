@@ -268,16 +268,6 @@ public class LazyXWikiDocument extends XWikiDocument {
   /**
    * {@inheritDoc}
    *
-   * @see com.xpn.xwiki.doc.XWikiDocument#getMeta()
-   */
-  @Override
-  public String getMeta() {
-    return getDocument().getMeta();
-  }
-
-  /**
-   * {@inheritDoc}
-   *
    * @see com.xpn.xwiki.doc.XWikiDocument#getTitle()
    */
   @Override
@@ -287,10 +277,9 @@ public class LazyXWikiDocument extends XWikiDocument {
 
   /**
    * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.doc.XWikiDocument#getFormat()
    */
   @Override
+  @Deprecated(since = "7.0", forRemoval = true)
   public String getFormat() {
     return getDocument().getFormat();
   }

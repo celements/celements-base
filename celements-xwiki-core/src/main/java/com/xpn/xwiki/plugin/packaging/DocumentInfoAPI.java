@@ -58,7 +58,6 @@ public class DocumentInfoAPI extends Api {
 
   /**
    * @return the language of the described document
-   *
    * @since 2.2M1
    */
   public String getLanguage() {

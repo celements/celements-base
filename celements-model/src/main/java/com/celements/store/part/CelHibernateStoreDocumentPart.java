@@ -120,7 +120,7 @@ public class CelHibernateStoreDocumentPart {
         deleteAndSaveXObjects(doc, context);
       }
       if (context.getWiki().hasBacklinks(context)) {
-        store.saveLinks(doc, context, true);
+        store.saveLinks(doc, context, false);
       }
       commit = true;
       doc.setNew(false);
@@ -139,7 +139,7 @@ public class CelHibernateStoreDocumentPart {
       for (BaseObject removedObject : doc.getXObjectsToRemove()) {
         store.deleteXWikiObject(removedObject, context, false);
       }
-      doc.setXObjectsToRemove(new ArrayList<BaseObject>());
+      doc.setXObjectsToRemove(new ArrayList<>());
     }
     if (doc.hasElement(XWikiDocument.HAS_OBJECTS)) {
       for (BaseObject obj : XWikiObjectEditor.on(doc).fetch().iter()) {
@@ -157,7 +157,7 @@ public class CelHibernateStoreDocumentPart {
     try {
       store.checkHibernate(context);
       SessionFactory sfactory = store.injectCustomMappingsInSessionFactory(doc, context);
-      bTransaction = bTransaction && store.beginTransaction(sfactory, false, context);
+      bTransaction = store.beginTransaction(sfactory, false, context);
       Session session = store.getSession(context);
       session.setFlushMode(FlushMode.MANUAL);
 
@@ -183,9 +183,13 @@ public class CelHibernateStoreDocumentPart {
         bclass.setDocumentReference(docRefToLoad);
         doc.setXClass(bclass);
       }
-      // Store this XWikiClass in the context so that we can use it in case of recursive usage
-      // of classes
-      context.addBaseClass(bclass);
+      if (!bclass.getFieldList().isEmpty()) {
+        // Store this XWikiClass in the context so that we can use it in case of recursive usage
+        // of classes
+        context.addBaseClass(bclass);
+      } else {
+        context.removeBaseClass(docRefToLoad);
+      }
 
       if (doc.hasElement(XWikiDocument.HAS_OBJECTS)) {
         Iterator<BaseObject> objIter = loadXObjects(doc, context);

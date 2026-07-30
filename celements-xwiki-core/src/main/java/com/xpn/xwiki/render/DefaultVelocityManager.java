@@ -20,6 +20,9 @@
  */
 package com.xpn.xwiki.render;
 
+import static com.celements.execution.XWikiExecutionProp.*;
+import static org.xwiki.velocity.VelocityExecutionProp.*;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -30,17 +33,18 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.rendering.syntax.SyntaxFactory;
 import org.xwiki.velocity.VelocityEngine;
 import org.xwiki.velocity.VelocityFactory;
 import org.xwiki.velocity.VelocityManager;
 import org.xwiki.velocity.XWikiVelocityException;
-import org.xwiki.velocity.internal.VelocityExecutionContextInitializer;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.api.Context;
 import com.xpn.xwiki.api.XWiki;
 import com.xpn.xwiki.web.Utils;
+import com.xpn.xwiki.web.XWikiMessageTool;
 
 /**
  * Note: This class should be moved to the Velocity module. However this is not possible right now
@@ -66,23 +70,20 @@ public class DefaultVelocityManager implements VelocityManager {
 
   @Override
   public VelocityContext getVelocityContext() {
+    ExecutionContext econtext = execution.getContext();
     // The Velocity Context is set in VelocityRequestInterceptor, when the XWiki Request is
-    // initialized so we are
-    // guaranteed it is defined when this method is called.
-    VelocityContext vcontext = (VelocityContext) this.execution.getContext().getProperty(
-        VelocityExecutionContextInitializer.VELOCITY_CONTEXT_ID);
+    // initialized so we are guaranteed it is defined when this method is called.
+    VelocityContext vcontext = econtext.get(VELOCITY_CONTEXT).orElseThrow();
+    XWikiContext xcontext = econtext.get(XWIKI_CONTEXT).orElseThrow();
 
-    // Bridge. To be removed later.
-    if (vcontext.get("util") == null) {
-      XWikiContext xcontext = (XWikiContext) this.execution.getContext()
-          .getProperty("xwikicontext");
-
+    // Initialize the legacy XWiki Velocity bindings when the active XWikiContext is not yet
+    // associated with the active VelocityContext, notably after cloning an ExecutionContext.
+    if (xcontext.get("vcontext") != vcontext) {
       // Put the Util API in the Velocity context.
       vcontext.put("util", new com.xpn.xwiki.api.Util(xcontext.getWiki(), xcontext));
 
       // We put the com.xpn.xwiki.api.XWiki object into the context and not the com.xpn.xwiki.XWiki
-      // one which is
-      // for internal use only. In this manner we control what the user can access.
+      // one which is for internal use only. In this manner we control what the user can access.
       vcontext.put("xwiki", new XWiki(xcontext.getWiki(), xcontext));
 
       vcontext.put("request", xcontext.getRequest());
@@ -98,23 +99,22 @@ public class DefaultVelocityManager implements VelocityManager {
 
       // Make the Syntax Factory component available from Velocity.
       // TODO: We need to decide how we want to expose components in general and how to protect
-      // users from
-      // "dangerous" apis.
+      // users from "dangerous" apis.
       vcontext.put("syntaxFactory", Utils.getComponent(SyntaxFactory.class));
 
-      // Ugly hack. The MessageTool object is created in xwiki.prepareResources(). It's also put in
-      // the
-      // Velocity context there. However if we create a new Velocity context we need to populate it
-      // with
-      // the message tool. This needs to be refactored to be made clean.
+      // XWikiMessageTool retains its XWikiContext. A cloned XWikiContext initially shares the
+      // parent's tool, so expose an equivalent tool bound to the active context.
       Object msg = xcontext.get("msg");
-      if ((msg != null) && (vcontext.get("msg") == null)) {
+      if (msg instanceof XWikiMessageTool xwikiMsg) {
+        msg = xwikiMsg.forContext(xcontext);
+        xcontext.put("msg", msg);
+      }
+      if (msg != null) {
         vcontext.put("msg", msg);
       }
 
       // Save the Velocity Context in the XWiki context so that users can access the objects we've
-      // put in it
-      // (xwiki, request, response, etc).
+      // put in it (xwiki, request, response, etc).
       xcontext.put("vcontext", vcontext);
     }
 

@@ -21,6 +21,7 @@ package com.xpn.xwiki.internal.model.reference;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.context.Execution;
 import org.xwiki.model.EntityType;
@@ -29,7 +30,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for
@@ -37,7 +38,7 @@ import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
  *
  * @version $Id: e135812a0379f9d76b66d4b00c07bf5fcff654a8 $
  */
-public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedComponentTestCase {
+public class CurrentStringEntityReferenceResolverTest extends AbstractComponentTest {
 
   private static final String CURRENT_WIKI = "currentwiki";
 
@@ -51,16 +52,15 @@ public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedCom
 
   private EntityReferenceResolver<String> resolver;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void prepareTest() throws Exception {
     getContext().setDatabase(CURRENT_WIKI);
-    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "current");
+    resolver = getBeanFactory().getBean("current", EntityReferenceResolver.class);
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenNoContext() throws Exception {
-    getComponentManager().lookup(Execution.class).setContext(null);
+  public void test_resolveDocumentReference_whenNoContext() throws Exception {
+    getBeanFactory().getBean(Execution.class).removeContext();
 
     EntityReference reference = resolver.resolve("", EntityType.DOCUMENT);
 
@@ -70,7 +70,7 @@ public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedCom
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenNoContextDocument() throws Exception {
+  public void test_resolveDocumentReference_whenNoContextDocument() throws Exception {
     getContext().setDatabase(null);
     getContext().setDoc(null);
 
@@ -82,7 +82,7 @@ public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedCom
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenContextDocument() throws Exception {
+  public void test_resolveDocumentReference_whenContextDocument() throws Exception {
     getContext().setDoc(new XWikiDocument(new DocumentReference(
         CURRENT_WIKI, CURRENTDOC_SPACE, CURRENTDOC_PAGE)));
 
@@ -94,7 +94,7 @@ public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedCom
   }
 
   @Test
-  public void testResolveAttachmentReference() throws Exception {
+  public void test_resolveAttachmentReference() throws Exception {
     getContext().setDoc(new XWikiDocument(new DocumentReference(
         CURRENT_WIKI, CURRENTDOC_SPACE, CURRENTDOC_PAGE)));
 
@@ -107,7 +107,7 @@ public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedCom
   }
 
   @Test
-  public void testResolveAttachmentReferenceWhenMissingParentsAndNoContextDocument() {
+  public void test_resolveAttachmentReference_whenMissingParentsAndNoContextDocument() {
     EntityReference reference = resolver.resolve("filename", EntityType.ATTACHMENT);
 
     assertEquals("WebHome", reference.getParent().getName());
@@ -119,7 +119,7 @@ public class CurrentStringEntityReferenceResolverTest extends AbstractBridgedCom
   }
 
   @Test
-  public void testResolveAttachmentReferenceWhenMissingParentsAndContextDocument() {
+  public void test_resolveAttachmentReference_whenMissingParentsAndContextDocument() {
     getContext().setDatabase(CURRENT_WIKI);
     getContext().setDoc(new XWikiDocument(new DocumentReference(
         "docwiki", CURRENT_SPACE, CURRENT_PAGE)));

@@ -178,13 +178,17 @@ public interface ComponentManager {
   /**
    * @return the manager to use to send events when a component descriptor is registered
    * @since 2.1RC1
+   * @deprecated since 6.0
    */
+  @Deprecated
   ComponentEventManager getComponentEventManager();
 
   /**
    * @param eventManager
    *          the manager to use to send events when a component descriptor is registered
+   * @deprecated since 6.0
    */
+  @Deprecated
   void setComponentEventManager(ComponentEventManager eventManager);
 
   /**

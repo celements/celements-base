@@ -19,15 +19,18 @@
  */
 package com.xpn.xwiki.doc;
 
+import static org.easymock.EasyMock.*;
+
 import java.util.Date;
 
-import org.jmock.Mock;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.user.api.XWikiRightService;
 
 /**
@@ -35,22 +38,21 @@ import com.xpn.xwiki.user.api.XWikiRightService;
  *
  * @version $Id$
  */
-public class XWikiDocumentArchiveTest extends AbstractBridgedXWikiComponentTestCase {
+public class XWikiDocumentArchiveTest extends AbstractComponentTest {
 
   private XWikiContext context;
 
-  private Mock mockXWiki;
+  @Before
+  public void prepareTest() throws Exception {
+    context = getContext();
+    expect(getWikiMock().getEncoding()).andReturn("iso-8859-1").anyTimes();
+    expect(getWikiMock().getConfig()).andReturn(new XWikiConfig()).anyTimes();
+    replayDefault();
+  }
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
-    this.mockXWiki = mock(XWiki.class);
-    this.mockXWiki.stubs().method("getEncoding").will(returnValue("iso-8859-1"));
-    this.mockXWiki.stubs().method("getConfig").will(returnValue(new XWikiConfig()));
-
-    this.context = new XWikiContext();
-    this.context.setWiki((XWiki) this.mockXWiki.proxy());
+  @After
+  public void verifyTest() {
+    verifyDefault();
   }
 
   /**
@@ -60,7 +62,8 @@ public class XWikiDocumentArchiveTest extends AbstractBridgedXWikiComponentTestC
    *
    * @todo simplify this test. Not sure how to do it. I guess we could create a real document.
    */
-  public void testUpdateArchiveWhenSpaceInUsername() throws Exception {
+  @Test
+  public void test_updateArchive_whenSpaceInUsername() throws Exception {
     String originalArchive = "head\t1.1;\n" +
         "access;\n" +
         "symbols;\n" +

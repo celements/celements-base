@@ -21,6 +21,8 @@
 
 package com.xpn.xwiki.objects;
 
+import static java.util.Objects.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -31,8 +33,11 @@ import org.dom4j.dom.DOMDocument;
 import org.dom4j.dom.DOMElement;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.celements.store.id.IdVersion;
+import com.xpn.xwiki.doc.CelProperty;
 import com.xpn.xwiki.web.Utils;
 
 /**
@@ -43,7 +48,30 @@ import com.xpn.xwiki.web.Utils;
 public class BaseProperty extends BaseElement
     implements PropertyInterface, Serializable, Cloneable {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseProperty.class);
+
   private BaseCollection object;
+
+  public static BaseProperty from(CelProperty celProperty) {
+    requireNonNull(celProperty);
+    BaseProperty property = switch (celProperty.getType()) {
+      case BASE -> new BaseProperty();
+      case BASE_STRING -> new BaseStringProperty();
+      case STRING -> new StringProperty();
+      case LARGE_STRING -> new LargeStringProperty();
+      case INTEGER -> new IntegerProperty();
+      case LONG -> new LongProperty();
+      case FLOAT -> new FloatProperty();
+      case DOUBLE -> new DoubleProperty();
+      case DATE -> new DateProperty();
+      case LIST -> new ListProperty();
+      case STRING_LIST -> new StringListProperty();
+      case DB_STRING_LIST -> new DBStringListProperty();
+    };
+    property.setName(celProperty.getName());
+    property.setValue(celProperty.getValue());
+    return property;
+  }
 
   /**
    * {@inheritDoc}
@@ -72,11 +100,12 @@ public class BaseProperty extends BaseElement
    */
   @Override
   public boolean equals(Object el) {
-    // Same Java object, they sure are equal
     if (this == el) {
       return true;
     }
-
+    if (el == null) {
+      return false;
+    }
     // I hate this.. needed for hibernate to find the object
     // when loading the collections..
     if ((this.object == null) || (((BaseProperty) el).getObject() == null)) {
@@ -204,5 +233,10 @@ public class BaseProperty extends BaseElement
 
   public Object getCustomMappingValue() {
     return getValue();
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
   }
 }

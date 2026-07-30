@@ -29,23 +29,28 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.ecs.xhtml.input;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xwiki.query.Query;
+import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryExecutor;
+import org.xwiki.query.QueryManager;
 
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseCollection;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.ListProperty;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
-import com.xpn.xwiki.plugin.query.QueryPlugin;
+import com.xpn.xwiki.web.Utils;
 
 public class DBListClass extends ListClass {
 
-  protected static final String DEFAULT_QUERY = "select doc.name from XWikiDocument doc where 1 = 0";
+  private static final Logger LOGGER = LoggerFactory.getLogger(DBListClass.class);
 
-  private static final Log LOG = LogFactory.getLog(DBListClass.class);
+  protected static final String DEFAULT_QUERY = "select doc.name from XWikiDocument doc where 1 = 0";
 
   private List<ListItem> cachedDBList;
 
@@ -59,6 +64,11 @@ public class DBListClass extends ListClass {
 
   public DBListClass() {
     this(null);
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
   }
 
   public List<ListItem> makeList(List<Object> list) {
@@ -89,20 +99,15 @@ public class DBListClass extends ListClass {
   public List<ListItem> getDBList(XWikiContext context) {
     List<ListItem> list = getCachedDBList(context);
     if (list == null) {
-      XWiki xwiki = context.getWiki();
-      String query = getQuery(context);
-
-      if (query == null) {
+      String queryStr = getQuery(context);
+      if (Strings.isNullOrEmpty(queryStr)) {
         list = new ArrayList<>();
       } else {
         try {
-          if ((xwiki.getHibernateStore() != null) && (!query.startsWith("/"))) {
-            list = makeList(xwiki.search(query, context));
-          } else {
-            list = makeList(((QueryPlugin) xwiki.getPlugin("query", context)).xpath(query).list());
-          }
-        } catch (Exception e) {
-          e.printStackTrace();
+          Query query = getQueryManager().createQuery(queryStr, Query.HQL);
+          list = makeList(getQueryExecutor().execute(query));
+        } catch (QueryException exc) {
+          LOGGER.warn("getDBList - failed for {}", getFieldFullName(), exc);
           list = new ArrayList<>();
         }
       }
@@ -290,7 +295,7 @@ public class DBListClass extends ListClass {
     try {
       sql = context.getWiki().parseContent(sql, context);
     } catch (Exception e) {
-      LOG.error("Failed to parse SQL script [" + sql + "]. Continuing with non-rendered script.",
+      LOGGER.error("Failed to parse SQL script [" + sql + "]. Continuing with non-rendered script.",
           e);
     }
     return sql;
@@ -552,4 +557,13 @@ public class DBListClass extends ListClass {
       buffer.append(getDisplayValue(prop.getValue(), name, map, context));
     }
   }
+
+  protected QueryManager getQueryManager() {
+    return Utils.getComponent(QueryManager.class);
+  }
+
+  protected QueryExecutor getQueryExecutor() {
+    return Utils.getComponent(QueryExecutor.class);
+  }
+
 }

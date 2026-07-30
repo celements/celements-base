@@ -21,13 +21,14 @@ package com.xpn.xwiki.internal.model.reference;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link XClassRelativeStringEntityReferenceResolver}.
@@ -35,18 +36,17 @@ import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
  * @version $Id: 43cf7bd137750685f87480e50f93e6dbc542aa4c $
  */
 public class XClassRelativeStringEntityReferenceResolverTest
-    extends AbstractBridgedComponentTestCase {
+    extends AbstractComponentTest {
 
   private EntityReferenceResolver<String> resolver;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "xclass");
+  @Before
+  public void prepareTest() throws Exception {
+    resolver = getBeanFactory().getBean("xclass", EntityReferenceResolver.class);
   }
 
   @Test
-  public void testResolve() {
+  public void test_resolve() {
     EntityReference reference = this.resolver.resolve("page", EntityType.DOCUMENT);
     assertEquals("page", reference.extractReference(EntityType.DOCUMENT).getName());
     assertEquals("XWiki", reference.extractReference(EntityType.SPACE).getName());
@@ -54,7 +54,7 @@ public class XClassRelativeStringEntityReferenceResolverTest
   }
 
   @Test
-  public void testResolveWhenExplicitParameterAndNoPageInStringRepresentation() {
+  public void test_resolve_whenExplicitParameterAndNoPageInStringRepresentation() {
     EntityReference reference = this.resolver.resolve("", EntityType.DOCUMENT,
         new DocumentReference("dummy", "dummy", "page"));
     assertEquals("page", reference.extractReference(EntityType.DOCUMENT).getName());
@@ -63,7 +63,7 @@ public class XClassRelativeStringEntityReferenceResolverTest
   }
 
   @Test
-  public void testResolveWhenNoPageReferenceSpecified() {
+  public void test_resolve_whenNoPageReferenceSpecified() {
     try {
       this.resolver.resolve("", EntityType.DOCUMENT);
       fail("Should have thrown an exception here");

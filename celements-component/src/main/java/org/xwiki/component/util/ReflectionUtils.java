@@ -32,6 +32,8 @@ import java.util.Map;
  */
 public class ReflectionUtils {
 
+  private ReflectionUtils() {}
+
   /**
    * @param componentClass
    *          the class for which to return all fields
@@ -69,7 +71,7 @@ public class ReflectionUtils {
           try {
             boolean isAccessible = field.isAccessible();
             try {
-              field.setAccessible(true);
+              org.springframework.util.ReflectionUtils.makeAccessible(field);
               field.set(instanceContainingField, fieldValue);
             } finally {
               field.setAccessible(isAccessible);

@@ -36,6 +36,8 @@ import com.xpn.xwiki.user.api.XWikiUser;
 
 public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRole {
 
+  static final String CFG_KEY_ENABLED = "celements.mandatory.enabled.%s";
+
   @Requirement
   protected IModelAccessFacade modelAccess;
 
@@ -48,6 +50,9 @@ public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRol
   @Requirement("xwikiproperties")
   protected ConfigurationSource xwikiPropConfigSource;
 
+  @Requirement("allproperties")
+  protected ConfigurationSource configSource;
+
   @Deprecated
   protected XWikiContext getContext() {
     return modelContext.getXWikiContext();
@@ -58,25 +63,20 @@ public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRol
   @Override
   public void checkDocuments() throws XWikiException {
     getLogger().debug("starting mandatory '{}' for db '{}'", getName(), getWiki());
-    if (!skip()) {
+    if (!isEnabled() || skip()) {
+      getLogger().debug("skipping mandatory '{}' for db '{}' (skip {}, enabled {})",
+          getName(), getWiki(), skip(), isEnabled());
+    } else {
       XWikiDocument doc = getDoc();
       boolean dirty;
-      if (notMainWiki()) {
+      if (!modelUtils.isMainWiki(modelContext.getWikiRef())) {
         dirty = checkDocuments(doc);
       } else {
         dirty = checkDocumentsMain(doc);
       }
       saveDoc(doc, dirty);
-    } else {
-      getLogger().debug("skipping mandatory '{}' for db '{}'", getName(), getWiki());
     }
     getLogger().debug("end mandatory '{}' for db '{}'", getName(), getWiki());
-  }
-
-  boolean notMainWiki() {
-    boolean notMainWiki = (getWiki() != null) && !getWiki().equals(getContext().getMainXWiki());
-    getLogger().debug("not main wiki '{}': {}", getWiki(), notMainWiki);
-    return notMainWiki;
   }
 
   private XWikiDocument getDoc() throws XWikiException {
@@ -95,16 +95,27 @@ public abstract class AbstractMandatoryDocument implements IMandatoryDocumentRol
     if (dirty) {
       try {
         modelAccess.saveDocument(doc, "autocreate mandatory " + getName());
-        getLogger().info("updated doc '{}' for '{}'", doc, getName());
+        getLogger().info("updated doc '{}' for '{}'", doc.getDocRef(), getName());
       } catch (DocumentSaveException exc) {
         throw new XWikiException(0, 0, "failed to save doc", exc);
       }
     } else {
-      getLogger().debug("is uptodate '{}' for '{}'", doc, getName());
+      getLogger().debug("is uptodate '{}' for '{}'", doc.getDocRef(), getName());
     }
   }
 
   protected abstract DocumentReference getDocRef();
+
+  protected boolean isEnabled() {
+    String value = configSource.getProperty(
+        String.format(CFG_KEY_ENABLED, getName()),
+        Boolean.toString(isEnabledByDefault()));
+    return "1".equals(value) || "true".equalsIgnoreCase(value);
+  }
+
+  protected boolean isEnabledByDefault() {
+    return true;
+  }
 
   protected abstract boolean skip();
 

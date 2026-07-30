@@ -21,6 +21,7 @@ package com.xpn.xwiki.internal.model.reference;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
@@ -28,7 +29,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link CurrentMixedReferenceEntityReferenceResolver}.
@@ -36,7 +37,7 @@ import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
  * @version $Id: ed8099512c314069c3279b9768632128ebdafd90 $
  */
 public class CurrentMixedReferenceEntityReferenceResolverTest
-    extends AbstractBridgedComponentTestCase {
+    extends AbstractComponentTest {
 
   private static final String CURRENT_WIKI = "currentwiki";
 
@@ -46,16 +47,13 @@ public class CurrentMixedReferenceEntityReferenceResolverTest
 
   private EntityReferenceResolver<EntityReference> resolver;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-
-    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class,
-        "currentmixed/reference");
+  @Before
+  public void prepareTest() throws Exception {
+    resolver = getBeanFactory().getBean("currentmixed/reference", EntityReferenceResolver.class);
   }
 
   @Test
-  public void testResolveAttachmentReferenceWhenMissingParentsAndContextDocument() {
+  public void test_resolveAttachmentReference_whenMissingParentsAndContextDocument() {
     getContext().setDatabase(CURRENT_WIKI);
     getContext().setDoc(
         new XWikiDocument(new DocumentReference(CURRENT_WIKI, CURRENT_SPACE, CURRENT_PAGE)));

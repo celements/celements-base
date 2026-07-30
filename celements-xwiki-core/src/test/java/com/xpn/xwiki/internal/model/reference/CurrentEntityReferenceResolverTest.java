@@ -28,7 +28,7 @@ import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceResolver;
 
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 import junit.framework.Assert;
 
@@ -39,7 +39,7 @@ import junit.framework.Assert;
  * @version $Id$
  * @since 2.2M1
  */
-public class CurrentEntityReferenceResolverTest extends AbstractBridgedXWikiComponentTestCase {
+public class CurrentEntityReferenceResolverTest extends AbstractComponentTest {
 
   private static final String CURRENT_WIKI = "currentwiki";
 
@@ -49,19 +49,15 @@ public class CurrentEntityReferenceResolverTest extends AbstractBridgedXWikiComp
 
   private EntityReferenceResolver<String> resolver;
 
-  @Override
   @Before
-  public void setUp() throws Exception {
-    super.setUp();
-
+  public void prepareTest() throws Exception {
     getContext().setDatabase(CURRENT_WIKI);
-
-    this.resolver = getComponentManager().lookup(EntityReferenceResolver.class, "current");
+    resolver = getBeanFactory().getBean("current", EntityReferenceResolver.class);
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenNoContext() throws Exception {
-    getComponentManager().lookup(Execution.class).setContext(null);
+  public void test_resolveDocumentReference_whenNoContext() throws Exception {
+    getBeanFactory().getBean(Execution.class).removeContext();
 
     EntityReference reference = resolver.resolve("", EntityType.DOCUMENT);
 
@@ -71,7 +67,7 @@ public class CurrentEntityReferenceResolverTest extends AbstractBridgedXWikiComp
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenNoContextDocument() throws Exception {
+  public void test_resolveDocumentReference_whenNoContextDocument() throws Exception {
     getContext().setDatabase(null);
     getContext().setDoc(null);
 
@@ -83,7 +79,7 @@ public class CurrentEntityReferenceResolverTest extends AbstractBridgedXWikiComp
   }
 
   @Test
-  public void testResolveDocumentReferenceWhenContextDocument() throws Exception {
+  public void test_resolveDocumentReference_whenContextDocument() throws Exception {
     getContext().setDoc(
         new XWikiDocument(new DocumentReference(CURRENT_WIKI, CURRENTDOC_SPACE, CURRENTDOC_PAGE)));
 
@@ -95,7 +91,7 @@ public class CurrentEntityReferenceResolverTest extends AbstractBridgedXWikiComp
   }
 
   @Test
-  public void testResolveAttachmentReference() throws Exception {
+  public void test_resolveAttachmentReference() throws Exception {
     getContext().setDoc(
         new XWikiDocument(new DocumentReference(CURRENT_WIKI, CURRENTDOC_SPACE, CURRENTDOC_PAGE)));
 

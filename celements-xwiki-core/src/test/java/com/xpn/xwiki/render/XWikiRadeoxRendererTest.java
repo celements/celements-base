@@ -19,15 +19,18 @@
  */
 package com.xpn.xwiki.render;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.net.URL;
 
-import org.jmock.Mock;
-import org.jmock.core.Constraint;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.web.XWikiURLFactory;
 
 /**
@@ -35,44 +38,33 @@ import com.xpn.xwiki.web.XWikiURLFactory;
  *
  * @version $Id$
  */
-public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCase {
+public class XWikiRadeoxRendererTest extends AbstractComponentTest {
 
   private XWikiRadeoxRenderer renderer;
-
-  private Mock mockXWiki;
-
-  private Mock mockDocument;
-
-  private Mock mockContentDocument;
 
   private XWikiDocument document;
 
   private XWikiDocument contentDocument;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-    this.renderer = new XWikiRadeoxRenderer();
-
-    this.mockXWiki = mock(XWiki.class, new Class[] {}, new Object[] {});
-    this.mockXWiki.stubs().method("Param").will(returnValue(""));
-    getContext().setWiki((XWiki) this.mockXWiki.proxy());
-
-    this.mockContentDocument = mock(XWikiDocument.class);
-    this.contentDocument = (XWikiDocument) this.mockContentDocument.proxy();
-
-    this.mockDocument = mock(XWikiDocument.class);
-    this.document = (XWikiDocument) this.mockDocument.proxy();
-
-    // This is required just to return the current space...
-    Mock mockCurrentDocument = mock(XWikiDocument.class);
-    mockCurrentDocument.stubs().method("getDocumentReference").will(returnValue(
-        new DocumentReference("xwiki", "Main", "WebHome")));
-    mockCurrentDocument.stubs().method("getFullName").will(returnValue("Main.WebHome"));
-    getContext().setDoc((XWikiDocument) mockCurrentDocument.proxy());
+  @Before
+  public void prepareTest() throws Exception {
+    renderer = new XWikiRadeoxRenderer();
+    contentDocument = new XWikiDocument();
+    document = new XWikiDocument();
+    expect(getWikiMock().Param(anyString())).andReturn("").anyTimes();
+    expect(getWikiMock().Param(anyString(), anyString())).andReturn("").anyTimes();
+    expect(getWikiMock().exists(anyString(), same(getContext()))).andReturn(false).anyTimes();
+    getContext().setDoc(new XWikiDocument(new DocumentReference("xwiki", "Main", "WebHome")));
+    replayDefault();
   }
 
-  public void testRenderWithSimpleText() {
+  @After
+  public void verifyTest() {
+    verifyDefault();
+  }
+
+  @Test
+  public void test_render_withSimpleText() {
     String result = this.renderer.render("Simple content", this.contentDocument, this.document,
         getContext());
 
@@ -82,19 +74,16 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
   /**
    * @todo this test is too complex and show that the rendering API is not right...
    */
-  public void testRenderLinkToNewPage() throws Exception {
-    this.mockXWiki.expects(once()).method("exists").with(eq("Main.newlink"), ANYTHING)
-        .will(returnValue(false));
-    this.mockXWiki.expects(once()).method("exists").with(eq("Main.new link"), ANYTHING)
-        .will(returnValue(false));
-
-    Mock mockUrlFactory = mock(XWikiURLFactory.class);
-    mockUrlFactory.expects(once()).method("createURL").with(
-        new Constraint[] { eq("Main"), eq("new link"), eq("edit"), eq("parent=Main.WebHome"),
-            ANYTHING, ANYTHING })
-        .will(returnValue(new URL("http://server.com/Main/new link")));
-    mockUrlFactory.expects(atLeastOnce()).method("getURL").will(returnValue("/Main/new link"));
-    getContext().setURLFactory((XWikiURLFactory) mockUrlFactory.proxy());
+  @Test
+  public void test_render_linkToNewPage() throws Exception {
+    XWikiURLFactory urlFactory = createMock(XWikiURLFactory.class);
+    expect(urlFactory.createURL(eq("Main"), eq("new link"), eq("edit"),
+        eq("parent=Main.WebHome"), anyObject(String.class), same(getContext())))
+        .andReturn(new URL("http://server.com/Main/new link"));
+    expect(urlFactory.getURL(anyObject(URL.class), same(getContext())))
+        .andReturn("/Main/new link").anyTimes();
+    replay(urlFactory);
+    getContext().setURLFactory(urlFactory);
 
     String result = this.renderer.render("This is a [new link]", this.contentDocument,
         this.document, getContext());
@@ -103,32 +92,26 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         + "<span class=\"wikicreatelinktext\">new link</span>"
         + "<span class=\"wikicreatelinkqm\">?</span></a>",
         result);
+    verify(urlFactory);
   }
 
   /**
    * Test that the parent is correctly escaped for links to non-existing documents.
    */
-  public void testEscapedParentForLinkToNewPage() throws Exception {
-    this.mockXWiki.expects(once()).method("exists").with(eq("A+ B.newlink"), ANYTHING)
-        .will(returnValue(false));
-    this.mockXWiki.expects(once()).method("exists").with(eq("A+ B.new link"), ANYTHING)
-        .will(returnValue(false));
+  @Test
+  public void test_escapedParent_forLinkToNewPage() throws Exception {
+    XWikiURLFactory urlFactory = createMock(XWikiURLFactory.class);
+    expect(urlFactory.createURL(eq("A+ B"), eq("new link"), eq("edit"),
+        eq("parent=A%2B+B.C%23+Examples+%26+Libs%3F+No%2C+I+prefer+C%2B%2B"),
+        anyObject(String.class), same(getContext())))
+        .andReturn(new URL("http://server.com/A%2B%20B/new link"));
+    expect(urlFactory.getURL(anyObject(URL.class), same(getContext())))
+        .andReturn("/A%2B+B/new link").anyTimes();
+    replay(urlFactory);
+    getContext().setURLFactory(urlFactory);
 
-    Mock mockUrlFactory = mock(XWikiURLFactory.class);
-    mockUrlFactory.expects(once()).method("createURL").with(
-        new Constraint[] { eq("A+ B"), eq("new link"), eq("edit"),
-            eq("parent=A%2B+B.C%23+Examples+%26+Libs%3F+No%2C+I+prefer+C%2B%2B"), ANYTHING,
-            ANYTHING })
-        .will(returnValue(new URL("http://server.com/A%2B%20B/new link")));
-    mockUrlFactory.expects(atLeastOnce()).method("getURL").will(returnValue("/A%2B+B/new link"));
-    getContext().setURLFactory((XWikiURLFactory) mockUrlFactory.proxy());
-
-    Mock mockCurrentDocument = mock(XWikiDocument.class);
-    mockCurrentDocument.stubs().method("getDocumentReference").will(returnValue(
-        new DocumentReference("xwiki", "A+ B", "C# Examples & Libs? No, I prefer C++")));
-    mockCurrentDocument.stubs().method("getFullName")
-        .will(returnValue("A+ B.C# Examples & Libs? No, I prefer C++"));
-    getContext().setDoc((XWikiDocument) mockCurrentDocument.proxy());
+    getContext().setDoc(new XWikiDocument(new DocumentReference("xwiki", "A+ B",
+        "C# Examples & Libs? No, I prefer C++")));
 
     String result = this.renderer.render("This is a [new link]", this.contentDocument,
         this.document, getContext());
@@ -137,16 +120,19 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         + "<span class=\"wikicreatelinktext\">new link</span>"
         + "<span class=\"wikicreatelinkqm\">?</span></a>",
         result);
+    verify(urlFactory);
   }
 
-  public void testRenderStyleMacro() throws Exception {
+  @Test
+  public void test_renderStyleMacro() throws Exception {
     String result = this.renderer.render("{style:type=div|align=justify}Hello{style}",
         this.contentDocument, this.document,
         getContext());
     assertEquals("<div align=\"justify\" style=\"\" >Hello</div>", result);
   }
 
-  public void testRenderStyleMacroNotImbricated() throws Exception {
+  @Test
+  public void test_renderStyleMacro_notImbricated() throws Exception {
     String result = this.renderer
         .render(
             "{style:type=span|font-size=24px}One font{style} and {style:type=span|font-size=22px}another font size{style}. How fun.",
@@ -156,7 +142,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testRenderStyleMacroNotImbricatedInImbricated() throws Exception {
+  @Test
+  public void test_renderStyleMacro_notImbricatedInImbricated() throws Exception {
     String result = this.renderer
         .render(
             "{style:type=div|align=justify}{style:type=span|font-size=24px}One font{style} and {style:type=span|font-size=22px}another font size{style}.{style} How fun.",
@@ -166,7 +153,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testRenderStyleMacroImbricated() throws Exception {
+  @Test
+  public void test_renderStyleMacro_imbricated() throws Exception {
     String result = this.renderer
         .render(
             "{style:type=div|align=justify}Hello with {style:type=span|font-size=24px}style inside{style} the paragraph.{style}",
@@ -176,7 +164,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testRenderStyleMacroImbricated2() throws Exception {
+  @Test
+  public void test_renderStyleMacro_imbricated2() throws Exception {
     String result = this.renderer
         .render(
             "{style:type=div|align=justify}Hello with {style:type=span|font-size=24px}style inside{style} the paragraph.{style} and this is very fun {style}",
@@ -186,73 +175,85 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testRenderParagraph() throws Exception {
+  @Test
+  public void test_renderParagraph() throws Exception {
     String result = this.renderer.render("a\n\nb", this.contentDocument, this.document,
         getContext());
     assertEquals("a<p/>\nb", result);
   }
 
-  public void testRenderOneParagraphForSeveralNewlines() throws Exception {
+  @Test
+  public void test_renderOneParagraph_forSeveralNewlines() throws Exception {
     String result = this.renderer.render("a\n\n\n\n\nb", this.contentDocument, this.document,
         getContext());
     assertEquals("a<p/>\nb", result);
   }
 
-  public void testRenderParagraphIgnoresSpaces() throws Exception {
+  @Test
+  public void test_renderParagraph_ignoresSpaces() throws Exception {
     String result = this.renderer.render("a\n  \t\n  b", this.contentDocument, this.document,
         getContext());
     assertEquals("a<p/>\n  b", result);
   }
 
-  public void testRenderParagraphWithBr() throws Exception {
+  @Test
+  public void test_renderParagraph_withBr() throws Exception {
     String result = this.renderer.render("a\\\\\n\n\nb", this.contentDocument, this.document,
         getContext());
     assertEquals("a<br/><p/>\nb", result);
   }
 
-  public void testRenderNewline() throws Exception {
+  @Test
+  public void test_renderNewline() throws Exception {
     String result = this.renderer.render("a\\\\b", this.contentDocument, this.document,
         getContext());
     assertEquals("a<br/>b", result);
   }
 
-  public void testRenderNewlineWithCarriageReturn() throws Exception {
+  @Test
+  public void test_renderNewline_withCarriageReturn() throws Exception {
     String result = this.renderer.render("a\\\\\nb", this.contentDocument, this.document,
         getContext());
     assertEquals("a<br/>b", result);
   }
 
-  public void testRenderTwoNewline() throws Exception {
+  @Test
+  public void test_renderTwoNewline() throws Exception {
     String result = this.renderer.render("a\\\\\\\\b", this.contentDocument, this.document,
         getContext());
     assertEquals("a<br/><br/>b", result);
   }
 
-  public void testRenderTwoNewlineWithCarriageReturn() throws Exception {
+  @Test
+  public void test_renderTwoNewline_withCarriageReturn() throws Exception {
     String result = this.renderer.render("a\\\\\\\\\nb", this.contentDocument, this.document,
         getContext());
     assertEquals("a<br/><br/>b", result);
   }
 
-  public void testRenderThreeNewline() throws Exception {
+  @Test
+  public void test_renderThreeNewline() throws Exception {
     String result = this.renderer.render("a\\\\\\\\\\\\b", this.contentDocument, this.document,
         getContext());
     assertEquals("a<br/><br/><br/>b", result);
   }
 
-  public void testRenderEncodedBackslash() throws Exception {
+  @Test
+  public void test_renderEncodedBackslash() throws Exception {
     String result = this.renderer.render("\\\\\\", this.contentDocument, this.document,
         getContext());
     assertEquals("&#92;", result);
   }
 
-  public void testRenderEscapedCharacters() throws Exception {
+  @Test
+  public void test_renderEscapedCharacters() throws Exception {
     String result = this.renderer.render("\\[NotALink\\]", this.contentDocument, this.document,
         getContext());
     assertEquals("&#91;NotALink&#93;", result);
   }
 
-  public void testTable() throws Exception {
+  @Test
+  public void test_table() throws Exception {
     String result = this.renderer.render("{table}\nA\n{table}", this.contentDocument, this.document,
         getContext());
     assertEquals(
@@ -260,7 +261,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testTableEmptyTable() throws Exception {
+  @Test
+  public void test_table_emptyTable() throws Exception {
     String result = this.renderer.render("{table}\n{table}", this.contentDocument, this.document,
         getContext());
     assertEquals(
@@ -268,7 +270,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testTableWithCR() throws Exception {
+  @Test
+  public void test_table_withCR() throws Exception {
     String result = this.renderer.render("{table}\nA\\\\B\n{table}", this.contentDocument,
         this.document, getContext());
     assertEquals(
@@ -276,7 +279,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testTableWithCRWithSpace() throws Exception {
+  @Test
+  public void test_table_withCRWithSpace() throws Exception {
     String result = this.renderer.render("{table}\nA\\\\ \n{table}", this.contentDocument,
         this.document, getContext());
     assertEquals(
@@ -284,7 +288,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testTableWithCRWithoutSpace() throws Exception {
+  @Test
+  public void test_table_withCRWithoutSpace() throws Exception {
     String result = this.renderer.render("{table}\nA\\\\\n{table}", this.contentDocument,
         this.document, getContext());
     assertEquals(
@@ -292,7 +297,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
         result);
   }
 
-  public void testMacrosWithWikiMarkupInUrl() throws Exception {
+  @Test
+  public void test_macros_withWikiMarkupInUrl() throws Exception {
     String result = this.renderer.render("{image:http://www.some.server/__not__underlined.png}",
         this.contentDocument,
         this.document, getContext());
@@ -307,7 +313,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
     assertTrue(result.indexOf("<strong>is</strong>") != -1);
   }
 
-  public void testUrlsWithWikiMarkup() throws Exception {
+  @Test
+  public void test_urls_withWikiMarkup() throws Exception {
     String result = this.renderer
         .render("http://www.xwiki.org/__some__URL~~with~~markup\n"
             + "[http://www.xwiki.org/__some__URL~~with~~markup]", this.contentDocument,
@@ -322,7 +329,8 @@ public class XWikiRadeoxRendererTest extends AbstractBridgedXWikiComponentTestCa
    * an unclosed quote:
    * no stack overflow, reasonable rendering time, no thrown exceptions.
    */
-  public void testJavaCodeFilterWithUnclosedQuote() {
+  @Test
+  public void test_javaCodeFilter_withUnclosedQuote() {
     StringBuffer source = new StringBuffer(
         "{code}private static final String S = \"This is a valid string\";\n");
     source.append("Unclosed quote: \"\n");

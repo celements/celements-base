@@ -1,0 +1,118 @@
+$services.css.includeCSSPage(':skins/albatross/screenlayout.css')##
+<h1>$adminMsg.get("wikimanager.wikimanager")</h1>
+##
+#############################################################################
+##
+#set($jsService = $services.javascript)
+#set($extJsParam = $jsService.createExtJSParam().setAction('file'))
+#set($extJsParam = $extJsParam.setLazyLoad(true))
+$!jsService.includeExtJsFile($extJsParam.setJsFile(':js/xwiki/table/tablefilterNsort.js'))##
+$services.css.includeCSSPage(':js/xwiki/table/table.css')##
+#set($WikiManager = $xwiki.wikimanager)
+#if(!$WikiManager)
+  #error($adminMsg.get("wikimanager.pluginnotenabled"))
+#end
+#if(!$xwiki.applicationmanager)
+  #error($adminMsg.get("xapp.pluginnotenabled"))
+#end
+##
+#set($Exception = $WikiManager.DefaultException)
+##
+#set($action = $request.getParameter("action"))
+#set($confirm = $request.getParameter("confirm"))
+##
+#set($wikiname = $request.getParameter("wikiname"))
+#if ($request.getParameter("wikitemplate") && $request.getParameter("wikitemplate") == "1")
+  #set ($wikitemplate = true)
+#else
+  #set ($wikitemplate = false)
+#end
+##
+#############################################################################
+##
+#macro(printLink $linkContent)
+  #if($!linkContent.length() > 0) [$linkContent] #end
+#end
+##
+#############################################################################
+##
+#if($action)
+  #if($action == "delete")
+    #includeInContext("WikiCode.DeleteWikiCode")
+  #elseif($action == "settemplate")
+    #includeInContext("WikiCode.SetWikiTemplateCode")
+  #end
+#end
+##
+#############################################################################
+##
+#set($wikiList = $WikiManager.getAllWikis())
+$adminMsg.get("wikimanager.totalnumberofwiki") : $wikiList.size()
+#############################################################################
+#if(!$xwiki.isVirtualMode())
+  #warning($adminMsg.get("wikimanager.notinvirtualmode"))
+#else
+<br/>
+    <a href="/WikiManager/CreateNewWiki?stepbystep=0&amp;doc=1">$adminMsg.get("wikimanager.createwiki")</a>    
+#end
+#############################################################################
+##
+#if($wikiList.size()!=0)
+  <table id="wikiTable" class="grid sortable filterable doOddEven">
+      <tr class="sortHeader">
+        <th>count</th>
+        <th>$adminMsg.get("wikimanager.listwikiname")</th>
+        <th>$adminMsg.get("wikimanager.listwikidomains")</th>
+        <th>$adminMsg.get("wikimanager.listwikiadmin")</th>
+        <th>$adminMsg.get("wikimanager.listwikicreation")</th>
+        <th>$adminMsg.get("wikimanager.listwikitemplate")</th>
+        <th class="unsortable noFilter">$adminMsg.get("more")</th>
+      </tr>
+#set($countCMS = 0)
+    #foreach($wiki in $wikiList)
+      #set($wikiAliasList = $wiki.wikiAliasList)
+      #set($firstalias = $wikiAliasList.get(0))
+      <tr>
+#if(("$!wiki.wikiName" != 'celements2web') && !$!wiki.wikiName.startsWith('main') && !$!wiki.wikiName.startsWith('master') && !$!wiki.wikiName.endsWith('demo') && !$!wiki.wikiName.equals('nocelements'))
+#set($countCMS = $countCMS + 1)
+        <td>$countCMS</td>
+#else
+        <td>-</td>
+#end
+        <td>#if($firstalias.wikiPrettyName && $firstalias.wikiPrettyName.trim().length() > 0) $firstalias.wikiPrettyName ($wiki.wikiName) #else $wiki.wikiName #end</td>
+        <td>
+<ul>
+          #set($urlBuilder = $services.url.createURIBuilder())
+          #set($stfu = $urlBuilder.replacePath('/'))
+          #set($stfu = $urlBuilder.replaceQuery(''))
+          #foreach ($wikialias in $wikiAliasList)
+            #if ($wikialias.server && $wikialias.server.trim().length() > 0)
+              #set($stfu = $urlBuilder.host($wikialias.server))
+              #set($stfu = $urlBuilder.scheme('https'))
+              #if (!$wikialias.secure) #set($stfu = $urlBuilder.scheme('http')) #end
+              <li> <a href="$urlBuilder.build()">$wikialias.server</a>
+            #end
+          #end
+</ul>
+        </td>
+        <td>#printLink($firstalias.owner)</td>
+        <td>$xwiki.formatDate($wiki.creationDate,"dd/MM/yyyy")</td>
+        <td>
+          #if($firstalias.isWikiTemplate())
+            $adminMsg.yes#if ($WikiManager.canEditWiki()) <a href="?action=settemplate&amp;wikiname=$wiki.wikiName&amp;wikitemplate=0">$adminMsg.get("wikimanager.action.settemplate.false")</a>#end
+          #else
+            $adminMsg.no#if ($WikiManager.canEditWiki()) <a href="?action=settemplate&amp;wikiname=$wiki.wikiName&amp;wikitemplate=1">$adminMsg.get("wikimanager.action.settemplate.true")</a>#end
+          #end
+        </td>
+        <td>
+          #if(($WikiManager.canDeleteWiki()) && ($wiki.WikiName != $context.mainWikiName) && ("$request.confirmwikidel" == '1'))
+            <a href="?action=delete&amp;wikiname=$wiki.WikiName">$adminMsg.get("delete")</a>
+          #end
+          <a href="$services.url.getURL($wiki.documentReference)">$adminMsg.get("wikimanager.action.settings")</a>
+        </td>
+      </tr>
+    #end
+  </table>
+#else
+  $adminMsg.get("wikimanager.listwikiempty")
+#end

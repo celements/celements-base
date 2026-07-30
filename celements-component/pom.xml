@@ -1,32 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <groupId>com.celements</groupId>
-    <artifactId>base-pom</artifactId>
-    <version>5.7</version>
+    <artifactId>celements-parent</artifactId>
+    <version>7.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-component</artifactId>
-  <version>5.3-SNAPSHOT</version>
+  <version>7.1-SNAPSHOT</version>
   <description>Celements Component Manager</description>
   <dependencies>
 
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-commons</artifactId>
-      <version>5.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-config-source-api</artifactId>
-      <version>5.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-reference</artifactId>
-      <version>5.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -39,6 +28,45 @@
       <artifactId>xwiki-core-script</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-core-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Spring -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Commons -->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>one.util</groupId>
+      <artifactId>streamex</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- Logging -->
     <dependency>
@@ -49,30 +77,28 @@
 
     <!-- Testing -->
     <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-core-shared-tests</artifactId>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <!-- This dependency introduces a cycle:
             ->{celements-common-test, celements-xwiki-core, celements-component}
     <dependency>
       <groupId>com.celements</groupId>
       <artifactId>celements-shared-tests</artifactId>
-      <version>5.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     -->
   </dependencies>
   <scm>
-    <connection>scm:git:git@github.com:celements/celements-xwiki.git</connection>
-    <developerConnection>scm:git:git@github.com:celements/celements-xwiki.git</developerConnection>
-    <url>https://github.com/celements/celements-xwiki</url>
+    <connection>scm:git:git@github.com:celements/celements-base.git</connection>
+    <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
+    <url>https://github.com/celements/celements-base/celements-component</url>
     <tag>HEAD</tag>
   </scm>
 </project>

@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -67,10 +68,14 @@ public class ExportURLFactory extends XWikiServletURLFactory {
 
   Set<String> exporteSkinFiles = new HashSet<>();
 
-  /**
-   * ExportURLFactory constructor.
-   */
-  public ExportURLFactory() {}
+  public ExportURLFactory() {
+    super();
+  }
+
+  // Used by tests
+  ExportURLFactory(XWikiConfig cfg) {
+    super(null, null, null, cfg);
+  }
 
   /**
    * @return the list skins names used.

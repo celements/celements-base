@@ -1,6 +1,5 @@
 package com.xpn.xwiki.store;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -9,7 +8,6 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.xwiki.component.annotation.Component;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
@@ -21,40 +19,6 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
     implements XWikiAttachmentStoreInterface {
 
   private static final Log log = LogFactory.getLog(XWikiHibernateAttachmentStore.class);
-
-  /**
-   * This allows to initialize our storage engine. The hibernate config file path is taken from
-   * xwiki.cfg or directly
-   * in the WEB-INF directory.
-   *
-   * @param xwiki
-   * @param context
-   * @deprecated 1.6M1. Use ComponentManager.lookup(XWikiAttachmentStoreInterface.class) instead.
-   */
-  @Deprecated
-  public XWikiHibernateAttachmentStore(XWiki xwiki, XWikiContext context) {
-    super(xwiki, context);
-  }
-
-  /**
-   * @see #XWikiHibernateAttachmentStore(XWiki, XWikiContext)
-   * @deprecated 1.6M1. Use ComponentManager.lookup(XWikiAttachmentStoreInterface.class) instead.
-   */
-  @Deprecated
-  public XWikiHibernateAttachmentStore(XWikiContext context) {
-    this(context.getWiki(), context);
-  }
-
-  /**
-   * Initialize the storage engine with a specific path This is used for tests.
-   *
-   * @param hibpath
-   * @deprecated 1.6M1. Use ComponentManager.lookup(XWikiAttachmentStoreInterface.class) instead.
-   */
-  @Deprecated
-  public XWikiHibernateAttachmentStore(String hibpath) {
-    super(hibpath);
-  }
 
   /**
    * Empty constructor needed for component manager.
@@ -144,9 +108,7 @@ public class XWikiHibernateAttachmentStore extends XWikiHibernateBaseStore
         checkHibernate(context);
         bTransaction = beginTransaction(context);
       }
-      Iterator<XWikiAttachment> it = attachments.iterator();
-      while (it.hasNext()) {
-        XWikiAttachment att = it.next();
+      for (XWikiAttachment att : attachments) {
         saveAttachmentContent(att, false, context, false);
       }
       if (bParentUpdate) {

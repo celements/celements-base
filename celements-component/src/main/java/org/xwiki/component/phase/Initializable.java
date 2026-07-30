@@ -20,9 +20,15 @@
  */
 package org.xwiki.component.phase;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.InitializingBean;
+
 /**
  * @see #initialize()
+ * @deprecated since 6.0 instead use {@link PostConstruct} or {@link InitializingBean}
  */
+@Deprecated
 public interface Initializable {
 
   /**

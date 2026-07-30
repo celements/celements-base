@@ -20,18 +20,23 @@
  */
 package com.xpn.xwiki.objects.classes;
 
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import com.xpn.xwiki.objects.BaseProperty;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for the {@link NumberClass} class.
  *
  * @version $Id$
  */
-public class NumberClassTest extends AbstractBridgedXWikiComponentTestCase {
+public class NumberClassTest extends AbstractComponentTest {
 
   /** Test the fromString method. */
-  public void testFromString() {
+  @Test
+  public void test_fromString() {
     // Create a default Number property
     NumberClass nc = new NumberClass();
     BaseClass bc = new BaseClass();

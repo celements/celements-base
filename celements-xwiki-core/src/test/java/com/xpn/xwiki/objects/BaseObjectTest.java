@@ -26,17 +26,17 @@ import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.store.id.IdVersion;
-import com.xpn.xwiki.test.AbstractBridgedComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for the {@link BaseElement} class.
  *
  * @version $Id$
  */
-public class BaseObjectTest extends AbstractBridgedComponentTestCase {
+public class BaseObjectTest extends AbstractComponentTest {
 
   @Test
-  public void testSetWikiSetName() throws Exception {
+  public void test_setWiki_setName() throws Exception {
     BaseObject baseObject = new BaseObject();
 
     baseObject.setWiki("otherwiki");
@@ -55,7 +55,7 @@ public class BaseObjectTest extends AbstractBridgedComponentTestCase {
   }
 
   @Test
-  public void testSetNameSetWiki() throws Exception {
+  public void test_setName_setWiki() throws Exception {
     String database = getContext().getDatabase();
     BaseObject baseObject = new BaseObject();
 
@@ -75,7 +75,7 @@ public class BaseObjectTest extends AbstractBridgedComponentTestCase {
   }
 
   @Test
-  public void testSetNameAloneWithChangingContext() throws Exception {
+  public void test_setNameAlone_withChangingContext() throws Exception {
     String database = getContext().getDatabase();
     BaseObject baseObject = new BaseObject();
 

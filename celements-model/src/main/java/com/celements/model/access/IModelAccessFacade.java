@@ -25,15 +25,17 @@ import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.object.xwiki.XWikiObjectFetcher;
 import com.celements.model.util.ClassFieldValue;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 @ComponentRole
 public interface IModelAccessFacade {
 
-  String DEFAULT_LANG = "";
+  String DEFAULT_LANG = XWikiConstant.DEFAULT_LANG;
 
   @NotNull
   XWikiDocument getDocument(@NotNull DocumentReference docRef)
@@ -48,6 +50,10 @@ public interface IModelAccessFacade {
 
   @NotNull
   Optional<XWikiDocument> getDocumentOpt(@NotNull DocumentReference docRef, @Nullable String lang);
+
+  @NotNull
+  Optional<CelDocument> getCelDocument(@NotNull DocumentReference docRef,
+      @Nullable String lang);
 
   @NotNull
   XWikiDocument createDocument(@NotNull DocumentReference docRef)

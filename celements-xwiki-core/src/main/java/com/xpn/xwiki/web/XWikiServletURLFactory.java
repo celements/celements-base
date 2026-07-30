@@ -20,7 +20,10 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.celements.common.lambda.LambdaExceptionUtil.*;
+
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -28,8 +31,13 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.xwiki.model.reference.WikiReference;
 
+import com.celements.wiki.WikiService;
+import com.google.common.base.Strings;
 import com.xpn.xwiki.XWiki;
+import com.xpn.xwiki.XWikiConfig;
+import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.DeletedAttachment;
@@ -43,14 +51,28 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
 
   protected URL serverURL;
 
-  protected String contextPath;
+  protected String contextPath = "/"; // Celements must always be the ROOT app
 
-  public XWikiServletURLFactory() {}
+  private final XWikiConfig xwikiCfg;
+  private final WikiService wikiService;
+
+  protected XWikiServletURLFactory() {
+    xwikiCfg = Utils.getComponent(XWikiConfigSource.class).getXWikiConfig();
+    wikiService = Utils.getComponent(WikiService.class);
+  }
 
   // Used by tests
   public XWikiServletURLFactory(URL serverURL, String contextPath, String actionPath) {
+    this(serverURL, contextPath, actionPath, new XWikiConfig());
+  }
+
+  // Used by tests
+  public XWikiServletURLFactory(URL serverURL, String contextPath, String actionPath,
+      XWikiConfig xwikiCfg) {
     this.serverURL = serverURL;
     this.contextPath = contextPath;
+    this.xwikiCfg = xwikiCfg;
+    this.wikiService = null;
   }
 
   /**
@@ -63,21 +85,16 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
    * @param context
    */
   public XWikiServletURLFactory(XWikiContext context) {
+    this();
     init(context);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#init(com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public void init(XWikiContext context) {
-    this.contextPath = context.getWiki().getWebAppPath(context);
     try {
       this.serverURL = new URL(getProtocol(context) + "://" + getHost(context));
-    } catch (MalformedURLException e) {
-      // This can't happen.
+    } catch (MalformedURLException exc) {
+      throw new IllegalArgumentException("should not happen ;)", exc);
     }
   }
 
@@ -107,13 +124,13 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
       protocol = context.getRequest().getScheme();
       if ("http".equalsIgnoreCase(protocol) && context.getRequest().isSecure()) {
         // This can happen in reverse proxy mode, if the proxy server receives HTTPS requests and
-        // forwards them
-        // as HTTP to the internal web server running XWiki.
+        // forwards them as HTTP to the internal web server running XWiki.
         protocol = "https";
       }
+    } else {
+      protocol = xwikiCfg.getProperty("xwiki.url.protocol", protocol);
     }
-    // Detected protocol can be overwritten by configuration.
-    return context.getWiki().Param("xwiki.url.protocol", protocol);
+    return protocol;
   }
 
   /**
@@ -136,56 +153,35 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
     return url.getHost() + (url.getPort() < 0 ? "" : (":" + url.getPort()));
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#getServerURL(com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL getServerURL(XWikiContext context) throws MalformedURLException {
     return getServerURL(context.getDatabase(), context);
   }
 
   public URL getServerURL(String xwikidb, XWikiContext context) throws MalformedURLException {
-    if ((xwikidb == null) || xwikidb.equals(context.getOriginalDatabase())) {
-      return this.serverURL;
+    if (Strings.isNullOrEmpty(xwikidb) || xwikidb.equals(context.getOriginalDatabase())) {
+      return this.serverURL; // serverURL is the request URL, see #init
     }
-
     if (context.isMainWiki(xwikidb)) {
-      String surl = context.getWiki().Param("xwiki.home", null);
+      String surl = xwikiCfg.getProperty("xwiki.home", null);
       if (!StringUtils.isEmpty(surl)) {
         return new URL(surl);
       }
     }
-
-    URL url = context.getWiki().getServerURL(xwikidb, context);
-    return url == null ? this.serverURL : url;
+    return wikiService.streamUrisForWiki(new WikiReference(xwikidb))
+        .map(rethrowFunction(URI::toURL))
+        .findFirst().orElse(serverURL);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#createURL(java.lang.String, java.lang.String,
-   *      java.lang.String, boolean,
-   *      com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL createURL(String web, String name, String action, boolean redirect,
       XWikiContext context) {
     return createURL(web, name, action, context);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @see com.xpn.xwiki.web.XWikiURLFactory#createURL(java.lang.String, java.lang.String,
-   *      java.lang.String,
-   *      java.lang.String, java.lang.String, java.lang.String, com.xpn.xwiki.XWikiContext)
-   */
   @Override
   public URL createURL(String web, String name, String action, String querystring, String anchor,
-      String xwikidb,
-      XWikiContext context) {
+      String xwikidb, XWikiContext context) {
     // Action and Query String transformers
     if (("view".equals(action)) && (context.getLinksAction() != null)) {
       action = context.getLinksAction();
@@ -219,7 +215,7 @@ public class XWikiServletURLFactory extends XWikiDefaultURLFactory {
       return new URL(getServerURL(xwikidb, context), newpath.toString());
     } catch (MalformedURLException e) {
       // This should not happen
-      return null;
+      throw new IllegalArgumentException(e);
     }
   }
 

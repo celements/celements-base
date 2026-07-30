@@ -88,7 +88,6 @@ public class LinkParser implements ContentParser {
 
   /**
    * Find out the alias part of the full link.
-   *
    * <p>
    * Note: As it's possible to specify a target we need a way to differentiate the following
    * 2 links:
@@ -131,7 +130,6 @@ public class LinkParser implements ContentParser {
 
   /**
    * Find out the target part of the full link.
-   *
    * <p>
    * Note: The target element must start with an underscore ("_"). See
    * {@link #parseAlias(StringBuffer, Link)} for more details as to why.

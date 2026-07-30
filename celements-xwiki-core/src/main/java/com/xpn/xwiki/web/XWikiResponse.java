@@ -21,11 +21,11 @@
 
 package com.xpn.xwiki.web;
 
-import javax.portlet.ActionResponse;
-import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletResponse;
 
-public interface XWikiResponse extends HttpServletResponse, RenderResponse, ActionResponse {
+public interface XWikiResponse extends HttpServletResponse {
+
+  String EXEC_CONTEXT_KEY = "xwiki.response";
 
   HttpServletResponse getHttpServletResponse();
 
@@ -33,4 +33,5 @@ public interface XWikiResponse extends HttpServletResponse, RenderResponse, Acti
   void setCharacterEncoding(String s);
 
   void removeCookie(String cookieName, XWikiRequest request);
+
 }

@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -94,13 +93,15 @@ class DocumentSavePreparationCommand {
       store.beginTransaction(sfactory, context);
     }
     session = store.getSession(context);
-    session.setFlushMode(FlushMode.COMMIT);
   }
 
   private void ensureDatabaseConsistency() {
     if (!doc.getDocumentReference().getWikiReference().getName().equals(getDatabase())) {
       LOGGER.warn("saveXWikiDoc - [{}] not matching database, adjusting from doc [{}]",
-          getDatabase(), docKey, new Throwable());
+          getDatabase(), docKey);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("saveXWikiDoc - [{}] [{}]", getDatabase(), docKey, new Throwable());
+      }
       boolean isMetaDataDirty = doc.isMetaDataDirty();
       doc.setDocumentReference(RefBuilder.from(doc.getDocumentReference()).wiki(getDatabase())
           .build(DocumentReference.class));
@@ -119,7 +120,10 @@ class DocumentSavePreparationCommand {
       if (doc.isNew() ^ !existingDocKeys.containsKey(docKey)) {
         doc.setNew(!doc.isNew());
         LOGGER.warn("saveXWikiDoc - [{}] corrected new flag to [{}] for document [{}]",
-            getDatabase(), doc.isNew(), docKey, new Throwable());
+            getDatabase(), doc.isNew(), docKey);
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("saveXWikiDoc - [{}] [{}]", getDatabase(), docKey, new Throwable());
+        }
       }
     }
   }
@@ -152,11 +156,12 @@ class DocumentSavePreparationCommand {
       bclass.setDocumentReference(doc.getDocumentReference());
       if (!bclass.getFieldList().isEmpty()) {
         doc.setXClassXML(bclass.toXMLString());
+        // Store this XWikiClass in the context in case of recursive usage of classes
+        context.addBaseClass(bclass);
       } else {
         doc.setXClassXML("");
+        context.removeBaseClass(doc.getDocumentReference());
       }
-      // Store this XWikiClass in the context in case of recursive usage of classes
-      context.addBaseClass(bclass);
     }
   }
 

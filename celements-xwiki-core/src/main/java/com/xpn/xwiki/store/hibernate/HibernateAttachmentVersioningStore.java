@@ -45,16 +45,6 @@ public class HibernateAttachmentVersioningStore extends XWikiHibernateBaseStore
   private static final Log LOG = LogFactory.getLog(HibernateAttachmentVersioningStore.class);
 
   /**
-   * @param context
-   *          the current context.
-   * @deprecated 1.6M1. Use ComponentManager.lookup(AttachmentVersioningStore.class) instead.
-   */
-  @Deprecated
-  public HibernateAttachmentVersioningStore(XWikiContext context) {
-    super(context.getWiki(), context);
-  }
-
-  /**
    * Empty constructor needed for component manager.
    */
   public HibernateAttachmentVersioningStore() {}

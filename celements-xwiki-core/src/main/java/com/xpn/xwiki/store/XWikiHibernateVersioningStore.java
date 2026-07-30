@@ -32,7 +32,6 @@ import org.hibernate.criterion.Restrictions;
 import org.suigeneris.jrcs.rcs.Version;
 import org.xwiki.component.annotation.Component;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -55,45 +54,6 @@ public class XWikiHibernateVersioningStore extends XWikiHibernateBaseStore
 
   /** Colon symbol. */
   private static final String COLON = ":";
-
-  /**
-   * This allows to initialize our storage engine. The hibernate config file path is taken from
-   * xwiki.cfg or directly
-   * in the WEB-INF directory.
-   *
-   * @param xwiki
-   *          The xwiki object
-   * @param context
-   *          The current context
-   * @deprecated 1.6M1. use ComponentManager.lookup(XWikiVersioningStoreInterface.class) instead.
-   */
-  @Deprecated
-  public XWikiHibernateVersioningStore(XWiki xwiki, XWikiContext context) {
-    super(xwiki, context);
-  }
-
-  /**
-   * Initialize the storage engine with a specific path This is used for tests.
-   *
-   * @param hibpath
-   *          path to hibernate.hbm.xml file
-   * @deprecated 1.6M1. use ComponentManager.lookup(XWikiVersioningStoreInterface.class) instead.
-   */
-  @Deprecated
-  public XWikiHibernateVersioningStore(String hibpath) {
-    super(hibpath);
-  }
-
-  /**
-   * @see #XWikiHibernateVersioningStore(XWiki, XWikiContext)
-   * @param context
-   *          The current context
-   * @deprecated 1.6M1. use ComponentManager.lookup(XWikiVersioningStoreInterface.class) instead.
-   */
-  @Deprecated
-  public XWikiHibernateVersioningStore(XWikiContext context) {
-    this(context.getWiki(), context);
-  }
 
   /**
    * Empty constructor needed for component manager.

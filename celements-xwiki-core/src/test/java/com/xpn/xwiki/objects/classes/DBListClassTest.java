@@ -20,63 +20,65 @@
  */
 package com.xpn.xwiki.objects.classes;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jmock.Mock;
-import org.jmock.core.Invocation;
-import org.jmock.core.stub.CustomStub;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.xpn.xwiki.XWiki;
-import com.xpn.xwiki.XWikiContext;
+import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.render.XWikiRenderingEngine;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiStoreInterface;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
  * Unit tests for {@link DBListClass}.
  *
  * @version $Id$
  */
-public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
+public class DBListClassTest extends AbstractComponentTest {
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
+  @Before
+  public void prepareTest() throws Exception {
     getContext().setDoc(new XWikiDocument());
 
-    XWiki xwiki = new XWiki();
+    XWiki xwiki = new XWiki(false);
+    xwiki.setConfig(new XWikiConfig());
 
-    Mock mockXWikiStore = mock(XWikiHibernateStore.class,
-        new Class[] { XWiki.class, XWikiContext.class }, new Object[] { xwiki,
-            getContext() });
-    xwiki.setStore((XWikiStoreInterface) mockXWikiStore.proxy());
+    XWikiStoreInterface store = createDefaultMock(XWikiHibernateStore.class);
+    registerComponentMock(XWikiStoreInterface.class, "hibernate", store);
+    xwiki.setStore(store);
 
-    Mock mockXWikiRenderingEngine = mock(XWikiRenderingEngine.class);
-    mockXWikiRenderingEngine.stubs().method("interpretText").will(
-        new CustomStub("Implements XWikiRenderingEngine.interpretText") {
-
-          @Override
-          public Object invoke(Invocation invocation) throws Throwable {
-            return invocation.parameterValues.get(0);
-          }
-        });
-
-    xwiki.setRenderingEngine((XWikiRenderingEngine) mockXWikiRenderingEngine.proxy());
+    XWikiRenderingEngine renderingEngine = createDefaultMock(XWikiRenderingEngine.class);
+    expect(renderingEngine.interpretText(anyString(), same(getContext().getDoc()),
+        same(getContext()))).andAnswer(() -> getCurrentArgument(0)).anyTimes();
+    xwiki.setRenderingEngine(renderingEngine);
 
     getContext().setWiki(xwiki);
+    replayDefault();
   }
 
-  public void testGetDefaultQueryWhenNoSqlSCriptSpecified() {
+  @After
+  public void verifyTest() {
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getDefaultQuery_whenNoSqlScriptSpecified() {
     DBListClass dblc = new DBListClass();
     assertEquals("", dblc.getSql());
     assertEquals("select doc.name from XWikiDocument doc where 1 = 0", dblc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithSqlScriptSpecified() {
+  @Test
+  public void test_getQuery_withSqlScriptSpecified() {
     DBListClass dblc = new DBListClass();
     assertEquals("", dblc.getSql());
     String sql = "select doc.creator from XWikiDocument as doc";
@@ -84,7 +86,8 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals(sql, dblc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithClassSpecified() {
+  @Test
+  public void test_getQuery_withClassSpecified() {
     DBListClass dblc = new DBListClass();
     dblc.setClassname("XWiki.XWikiUsers");
     assertEquals("select distinct doc.fullName from XWikiDocument as doc, BaseObject as obj where "
@@ -92,7 +95,8 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dblc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdSpecified() {
+  @Test
+  public void test_getQuery_withIdSpecified() {
     DBListClass dblc = new DBListClass();
     dblc.setIdField("doc.name");
     assertEquals("select distinct doc.name from XWikiDocument as doc", dblc.getQuery(getContext()));
@@ -104,7 +108,8 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dblc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithValueSpecified() {
+  @Test
+  public void test_getQuery_withValueSpecified() {
     DBListClass dblc = new DBListClass();
     dblc.setValueField("doc.name");
     assertEquals("select distinct doc.name from XWikiDocument as doc", dblc.getQuery(getContext()));
@@ -116,7 +121,8 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dblc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdAndClassnameSpecified() {
+  @Test
+  public void test_getQuery_withIdAndClassnameSpecified() {
     DBListClass dblc = new DBListClass();
     dblc.setClassname("XWiki.XWikiUsers");
     dblc.setIdField("doc.name");
@@ -136,7 +142,8 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
         dblc.getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdAndValueSpecified() {
+  @Test
+  public void test_getQuery_withIdAndValueSpecified() {
     DBListClass dblc = new DBListClass();
     dblc.setIdField("doc.name");
     dblc.setValueField("doc.name");
@@ -185,7 +192,8 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
         .getQuery(getContext()));
   }
 
-  public void testGetQueryWithIdValueAndClassSpecified() {
+  @Test
+  public void test_getQuery_withIdValueAndClassSpecified() {
     DBListClass dblc = new DBListClass();
     dblc.setClassname("XWiki.XWikiUsers");
     dblc.setIdField("doc.name");
@@ -262,7 +270,8 @@ public class DBListClassTest extends AbstractBridgedXWikiComponentTestCase {
    * Tests that {@link DBListClass#getList} returns values sorted according to the property's sort
    * option.
    */
-  public void testGetListIsSorted() {
+  @Test
+  public void test_getList_isSorted() {
     List<ListItem> values = new ArrayList<>(4);
     values.add(new ListItem("a", "A"));
     values.add(new ListItem("c", "D"));

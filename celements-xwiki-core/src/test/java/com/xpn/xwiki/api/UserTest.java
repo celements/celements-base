@@ -1,13 +1,18 @@
 package com.xpn.xwiki.api;
 
-import org.jmock.Mock;
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
-import com.xpn.xwiki.XWiki;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.xwiki.model.reference.DocumentReference;
+
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.user.api.XWikiUser;
 
 /**
@@ -15,29 +20,33 @@ import com.xpn.xwiki.user.api.XWikiUser;
  *
  * @version $Id$
  */
-public class UserTest extends AbstractBridgedXWikiComponentTestCase {
+public class UserTest extends AbstractComponentTest {
 
-  private Mock mockXWiki;
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
-    this.mockXWiki = mock(XWiki.class);
-    getContext().setWiki((XWiki) mockXWiki.proxy());
+  @Before
+  public void prepareTest() throws Exception {
     XWikiDocument doc = new XWikiDocument("XWiki", "Admin");
     BaseClass userClass = new BaseClass();
     userClass.addTextField("email", "email address", 20);
-    mockXWiki.stubs().method("getXClass").will(returnValue(userClass));
-    BaseObject userObj = doc.newObject("XWiki.XWikiUsers", getContext());
+    expect(getWikiMock().getXClass(anyObject(DocumentReference.class), same(getContext())))
+        .andReturn(userClass).anyTimes();
+    BaseObject userObj = userClass.newCustomClassInstance(getContext());
+    userObj.setClassName("XWiki.XWikiUsers");
+    doc.addObject("XWiki.XWikiUsers", userObj);
     userObj.setStringValue("email", "admin@mail.com");
-    mockXWiki.stubs().method("getDocument").will(returnValue(doc));
+    expect(getWikiMock().getDocument(anyString(), same(getContext()))).andReturn(doc).anyTimes();
+    replayDefault();
+  }
+
+  @After
+  public void verifyTest() {
+    verifyDefault();
   }
 
   /**
    * Checks that XWIKI-2040 remains fixed.
    */
-  public void testIsUserInGroupDoesNotThrowNPE() {
+  @Test
+  public void test_isUserInGroup_doesNotThrowNPE() {
     User u = new User(null, null);
     assertFalse(u.isUserInGroup("XWiki.InexistentGroupName"));
 
@@ -50,7 +59,8 @@ public class UserTest extends AbstractBridgedXWikiComponentTestCase {
     assertFalse(u.isUserInGroup("XWiki.InexistentGroupName"));
   }
 
-  public void testGetEmail() {
+  @Test
+  public void test_getEmail() {
     User u = new User(null, null);
     assertNull(u.getEmail());
 

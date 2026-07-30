@@ -1,31 +1,35 @@
 package com.xpn.xwiki.api;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 import java.util.List;
 
-import org.jmock.Mock;
+import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
-import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 import com.xpn.xwiki.objects.classes.BaseClass;
-import com.xpn.xwiki.test.AbstractBridgedXWikiComponentTestCase;
+import com.xpn.xwiki.test.AbstractComponentTest;
 
 import junit.framework.Assert;
 
-public class DocumentTest extends AbstractBridgedXWikiComponentTestCase {
+public class DocumentTest extends AbstractComponentTest {
 
-  public void testToStringReturnsFullName() {
+  @Test
+  public void test_toString_returnsFullName() {
     XWikiDocument doc = new XWikiDocument("Space", "Page");
     assertEquals("Space.Page", new Document(doc, new XWikiContext()).toString());
     assertEquals("Main.WebHome", new Document(new XWikiDocument(), new XWikiContext())
         .toString());
   }
 
-  public void testGetObjects() throws XWikiException {
+  @Test
+  public void test_getObjects() throws XWikiException {
     XWikiContext context = new XWikiContext();
     XWikiDocument doc = new XWikiDocument("Wiki", "Space", "Page");
 
@@ -49,13 +53,14 @@ public class DocumentTest extends AbstractBridgedXWikiComponentTestCase {
     assertEquals(1, lst.size());
   }
 
-  public void testRemoveObjectDoesntCauseDataLoss() throws XWikiException {
-    Mock mockXWiki = mock(XWiki.class);
+  @Test
+  public void test_removeObject_doesntCauseDataLoss() throws XWikiException {
     BaseClass c = new BaseClass();
     c.setDocumentReference(new DocumentReference("xwiki", "XWiki", "XWikiComments"));
     c.addTextAreaField("comment", "comment", 60, 20);
-    mockXWiki.stubs().method("getXClass").will(returnValue(c));
-    getContext().setWiki((XWiki) mockXWiki.proxy());
+    expect(getWikiMock().getXClass(anyObject(DocumentReference.class), same(getContext())))
+        .andReturn(c).anyTimes();
+    replayDefault();
 
     XWikiDocument doc = new XWikiDocument("Wiki", "Space", "Page");
 
@@ -83,5 +88,6 @@ public class DocumentTest extends AbstractBridgedXWikiComponentTestCase {
         Assert.assertEquals("Comment", ((BaseProperty) obj.get("comment")).getValue());
       }
     }
+    verifyDefault();
   }
 }

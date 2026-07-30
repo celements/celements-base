@@ -20,16 +20,18 @@
  */
 package com.xpn.xwiki.web;
 
+import static com.google.common.base.Preconditions.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,7 +42,6 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.MDC;
 import org.apache.struts.upload.MultipartRequestWrapper;
 import org.xwiki.component.manager.ComponentLookupException;
 import org.xwiki.component.manager.ComponentManager;
@@ -69,7 +70,7 @@ public class Utils {
    * {@link #getComponent(Class, String)}. It is useful
    * for any non component code that need to initialize/access components.
    */
-  private static ComponentManager componentManager;
+  private static final AtomicReference<ComponentManager> COMPONENT_MANAGER = new AtomicReference<>();
 
   /**
    * Generate the response by parsing a velocity template and printing the result to the
@@ -122,11 +123,7 @@ public class Utils {
     XWikiResponse response = context.getResponse();
 
     // Set content-type and encoding (this can be changed later by pages themselves)
-    if (context.getResponse() instanceof XWikiPortletResponse) {
-      response.setContentType("text/html");
-    } else {
-      response.setContentType("text/html; charset=" + context.getWiki().getEncoding());
-    }
+    response.setContentType("text/html; charset=" + context.getWiki().getEncoding());
 
     String action = context.getAction();
     if (((!"download".equals(action)) && (!"skin".equals(action)))
@@ -376,36 +373,6 @@ public class Utils {
     return null;
   }
 
-  public static XWikiContext prepareContext(String action, XWikiRequest request,
-      XWikiResponse response,
-      XWikiEngineContext engine_context) throws XWikiException {
-    XWikiContext context = new XWikiContext();
-    String dbname = "xwiki";
-    URL url = XWiki.getRequestURL(request);
-    context.setURL(url);
-
-    // Push the URL into the Log4j MDC context so that we can display it in the generated logs using
-    // the
-    // %X{url} syntax.
-    MDC.put("url", url);
-
-    context.setEngineContext(engine_context);
-    context.setRequest(request);
-    context.setResponse(response);
-    context.setAction(action);
-    context.setDatabase(dbname);
-
-    int mode = 0;
-    if (request instanceof XWikiServletRequest) {
-      mode = XWikiContext.MODE_SERVLET;
-    } else if (request instanceof XWikiPortletRequest) {
-      mode = XWikiContext.MODE_PORTLET;
-    }
-    context.setMode(mode);
-
-    return context;
-  }
-
   /**
    * Parse the request parameters from the specified String using the specified encoding.
    * <strong>IMPLEMENTATION
@@ -651,7 +618,7 @@ public class Utils {
    *          {@link #getComponent(Class, String)}
    */
   public static void setComponentManager(ComponentManager componentManager) {
-    Utils.componentManager = componentManager;
+    COMPONENT_MANAGER.set(componentManager);
   }
 
   /**
@@ -659,6 +626,8 @@ public class Utils {
    *         {@link #getComponent(Class, String)}
    */
   public static ComponentManager getComponentManager() {
+    ComponentManager componentManager = COMPONENT_MANAGER.get();
+    checkState(componentManager != null);
     return componentManager;
   }
 
@@ -675,21 +644,13 @@ public class Utils {
    *           initialized
    */
   public static <T> T getComponent(Class<T> role, String hint) {
-    T component = null;
-    if (componentManager != null) {
-      try {
-        component = componentManager.lookup(role, hint);
-      } catch (ComponentLookupException e) {
-        throw new RuntimeException(
-            "Failed to load component [" + role.getName() + "] for hint [" + hint + "]",
-            e);
-      }
-    } else {
-      throw new RuntimeException("Component manager has not been initialized before lookup for ["
-          + role.getName() + "] for hint [" + hint + "]");
+    try {
+      return getComponentManager().lookup(role, hint);
+    } catch (ComponentLookupException e) {
+      throw new RuntimeException(
+          "Failed to load component [" + role.getName() + "] for hint [" + hint + "]",
+          e);
     }
-
-    return component;
   }
 
   /**
@@ -718,21 +679,12 @@ public class Utils {
    * @since 2.0M3
    */
   public static <T> List<T> getComponentList(Class<T> role) {
-    List<T> components;
-    if (componentManager != null) {
-      try {
-        components = componentManager.lookupList(role);
-      } catch (ComponentLookupException e) {
-        throw new RuntimeException("Failed to load components with role [" + role.getName() + "]",
-            e);
-      }
-    } else {
-      throw new RuntimeException(
-          "Component manager has not been initialized before lookup for role ["
-              + role.getName() + "]");
+    try {
+      return getComponentManager().lookupList(role);
+    } catch (ComponentLookupException e) {
+      throw new RuntimeException("Failed to load components with role [" + role.getName() + "]",
+          e);
     }
-
-    return components;
   }
 
   /**
@@ -843,7 +795,6 @@ public class Utils {
    * @param hint
    *          a value to differentiate different component implementations for the same role
    * @return the component's instance
-   *
    * @deprecated instead use {@link #getComponent(Class, String)}
    */
   @Deprecated
@@ -862,7 +813,6 @@ public class Utils {
    * @param role
    *          the class (aka role) that the component implements
    * @return the component's instance
-   *
    * @deprecated instead use {@link #getComponent(Class)}
    */
   @Deprecated

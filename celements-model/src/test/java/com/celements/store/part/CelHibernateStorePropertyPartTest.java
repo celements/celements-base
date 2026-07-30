@@ -28,9 +28,9 @@ public class CelHibernateStorePropertyPartTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    storeMock = createMockAndAddToDefault(CelHibernateStore.class);
+    storeMock = createDefaultMock(CelHibernateStore.class);
     expect(getWikiMock().getStore()).andReturn(storeMock).anyTimes();
-    sessionMock = createMockAndAddToDefault(Session.class);
+    sessionMock = createDefaultMock(Session.class);
     storePart = new CelHibernateStorePropertyPart(storeMock);
   }
 
@@ -94,7 +94,7 @@ public class CelHibernateStorePropertyPartTest extends AbstractComponentTest {
 
   @Test
   public void test_loadXWikiProperty_ListProperty() throws Exception {
-    ListProperty property = createMockAndAddToDefault(ListProperty.class);
+    ListProperty property = createDefaultMock(ListProperty.class);
 
     expect(storeMock.getSession(same(getContext()))).andReturn(sessionMock);
     sessionMock.load(same(property), same(property));

@@ -22,6 +22,8 @@ package com.xpn.xwiki.api;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -32,6 +34,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.web.Utils;
@@ -220,7 +224,7 @@ public class Util extends Api {
    * @since 1.3 Milestone 2
    */
   public String[] split(String text, String separator) {
-    return this.xwiki.split(text, separator);
+    return StringUtils.split(text, separator);
   }
 
   /**
@@ -249,7 +253,10 @@ public class Util extends Api {
    * @since 1.3 Milestone 2
    */
   public String printStrackTrace(Throwable e) {
-    return this.xwiki.printStrackTrace(e);
+    StringWriter strwriter = new StringWriter();
+    PrintWriter writer = new PrintWriter(strwriter);
+    e.printStackTrace(writer);
+    return strwriter.toString();
   }
 
   /**

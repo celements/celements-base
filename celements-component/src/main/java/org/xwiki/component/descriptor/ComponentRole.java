@@ -20,9 +20,41 @@
  */
 package org.xwiki.component.descriptor;
 
+import java.util.List;
+import java.util.Optional;
+
+import com.google.common.base.Splitter;
+
 public interface ComponentRole<T> {
+
+  String DEFAULT_HINT = "default";
+  String BEAN_NAME_SEPARATOR = "|||";
 
   Class<T> getRole();
 
   String getRoleHint();
+
+  default boolean isDefault() {
+    return DEFAULT_HINT.equals(getRoleHint());
+  }
+
+  default String getBeanName() {
+    return getRole().getName() + BEAN_NAME_SEPARATOR + getRoleHint();
+  }
+
+  @SuppressWarnings("unchecked")
+  static <T> Optional<ComponentRole<T>> fromBeanName(String beanName) {
+    try {
+      List<String> parts = Splitter.on(ComponentRole.BEAN_NAME_SEPARATOR).omitEmptyStrings()
+          .splitToList(beanName);
+      if (parts.size() > 1) {
+        Class<T> role = (Class<T>) Class.forName(parts.get(0));
+        return Optional.of(new DefaultComponentRole<>(role, parts.get(1)));
+      }
+      return Optional.empty();
+    } catch (ClassNotFoundException exc) {
+      throw new IllegalArgumentException(exc);
+    }
+  }
+
 }
