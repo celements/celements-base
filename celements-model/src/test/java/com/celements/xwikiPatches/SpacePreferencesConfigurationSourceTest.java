@@ -68,7 +68,7 @@ public class SpacePreferencesConfigurationSourceTest extends AbstractComponentTe
     webPrefObj.setXClassReference(xwikiPrefClassRef);
     webPrefObj.setStringValue("default_language", "en");
     webPrefDoc.addXObject(webPrefObj);
-    expect(xwiki.loadCelDocument(webPrefRef))
+    expect(xwiki.getCelDocument(webPrefRef))
         .andReturn(Optional.of(CelDocument.Default.from(webPrefDoc)));
 
     replayDefault();
