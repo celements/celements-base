@@ -220,17 +220,16 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   String getKey(DocumentReference docRef) {
-    return modelUtils.serializeRef(RefBuilder.from(docRef)
-        .with(modelUtils.normalizeWikiRef(docRef.getWikiReference()))
-        .build(DocumentReference.class));
+    return modelUtils.serializeRef(withWiki(docRef,
+        modelUtils.normalizeWikiRef(docRef.getWikiReference())));
   }
 
   String getKeyWithLang(DocumentReference docRef, String language) {
-    if (Strings.isNullOrEmpty(language)) {
-      return getKey(docRef);
-    } else {
-      return getKey(docRef) + ":" + language;
-    }
+    return getKeyWithLang(getKey(docRef), language);
+  }
+
+  private static String getKeyWithLang(String key, String language) {
+    return Strings.isNullOrEmpty(language) ? key : key + ":" + language;
   }
 
   String getKeyWithLang(XWikiDocument doc) {
@@ -333,13 +332,10 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   @Override
   public Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language)
       throws XWikiException {
-    var ctxWiki = modelContext.getWikiRef();
-    var ref = !ctxWiki.equals(docRef.getWikiReference())
-        ? RefBuilder.from(docRef).with(ctxWiki).build(DocumentReference.class)
-        : docRef;
+    var ref = withWiki(docRef, modelContext.getWikiRef());
     LOGGER.trace("Cache: begin for ref '{}' in cache", ref);
     String key = getKey(ref);
-    String keyWithLang = getKeyWithLang(ref, language);
+    String keyWithLang = getKeyWithLang(key, language);
     if (doesNotExistsForKey(key) || doesNotExistsForKey(keyWithLang)) {
       LOGGER.debug("Cache: The document '{}' does not exist, return an empty one", keyWithLang);
       return Optional.empty();
@@ -620,6 +616,13 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       LOGGER.warn("getMetaData: illegal docData '{}'", Arrays.asList(docData), iae);
     }
     return Optional.ofNullable(metaData);
+  }
+
+  private static DocumentReference withWiki(DocumentReference docRef, WikiReference wikiRef) {
+    // Entity references are immutable; reuse matching references instead of rebuilding cache keys.
+    return !wikiRef.equals(docRef.getWikiReference())
+        ? RefBuilder.from(docRef).with(wikiRef).build(DocumentReference.class)
+        : docRef;
   }
 
 }

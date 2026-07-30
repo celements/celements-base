@@ -22,11 +22,15 @@ package com.xpn.xwiki.doc;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
+import java.util.Optional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.bridge.DocumentAccessBridge;
+import org.xwiki.model.reference.DocumentReference;
 
+import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.test.AbstractComponentTest;
 
 /**
@@ -57,4 +61,22 @@ public class DefaultDocumentAccessBridgeTest extends AbstractComponentTest {
     verifyDefault();
   }
 
+  @Test
+  public void test_getProperty_fromCelDocument() throws Exception {
+    DocumentReference docRef = new DocumentReference("wiki", "space", "page");
+    DocumentReference classRef = new DocumentReference("wiki", "space", "class");
+    XWikiDocument document = new XWikiDocument(docRef);
+    BaseObject object = new BaseObject();
+    object.setDocumentReference(docRef);
+    object.setXClassReference(classRef);
+    object.setIntValue("value", 42);
+    document.addXObject(classRef, object);
+    CelDocument.Default celDocument = CelDocument.Default.from(document);
+    expect(getWikiMock().getCelDocument(docRef)).andReturn(Optional.of(celDocument));
+    replayDefault();
+
+    assertEquals(42, documentAccessBridge.getProperty(docRef, classRef, "value"));
+
+    verifyDefault();
+  }
 }

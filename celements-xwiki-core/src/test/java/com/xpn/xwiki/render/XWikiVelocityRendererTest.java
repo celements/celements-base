@@ -23,6 +23,7 @@ import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import org.apache.velocity.VelocityContext;
 import org.junit.After;
@@ -55,6 +56,8 @@ public class XWikiVelocityRendererTest extends AbstractComponentTest {
     contentDocument = createDefaultMock(XWikiDocument.class);
     document = createDefaultMock(XWikiDocument.class);
     Document apiDocument = createDefaultMock(Document.class);
+    expect(getWikiMock().getCelDocument(anyObject(DocumentReference.class)))
+        .andReturn(Optional.empty()).anyTimes();
     expect(getWikiMock().getSkin(same(getContext()))).andReturn("default").anyTimes();
     expect(getWikiMock().getSkinFile(anyString(), same(getContext()))).andReturn(null).anyTimes();
     expect(getWikiMock().getSkinFile(anyString(), anyString(), same(getContext())))
@@ -65,8 +68,6 @@ public class XWikiVelocityRendererTest extends AbstractComponentTest {
     expect(getWikiMock().Param(anyString())).andReturn("").anyTimes();
     expect(getWikiMock().getIncludedMacros(anyString(), anyString(), same(getContext())))
         .andReturn(Collections.emptyList()).anyTimes();
-    expect(getWikiMock().getDocument(anyObject(DocumentReference.class), same(getContext())))
-        .andReturn(new XWikiDocument()).anyTimes();
     expect(contentDocument.getSpace()).andReturn("Space1").anyTimes();
     expect(document.getPrefixedFullName()).andReturn("xwiki:Space2.Document").anyTimes();
     expect(document.newDocument(same(getContext()))).andReturn(apiDocument).anyTimes();
