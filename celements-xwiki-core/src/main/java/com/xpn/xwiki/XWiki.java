@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -106,7 +107,6 @@ import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
 import com.celements.init.wiki.MainXClassInitializer;
-import com.celements.logging.LogUtils;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.StoreFactory;
 import com.celements.wiki.WikiService;
@@ -123,6 +123,7 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDeletedDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiDocumentArchive;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.internal.event.AttachmentAddedEvent;
 import com.xpn.xwiki.internal.event.AttachmentDeletedEvent;
 import com.xpn.xwiki.internal.event.AttachmentUpdatedEvent;
@@ -786,6 +787,11 @@ public class XWiki implements EventListener {
 
   public XWikiStoreInterface getStore() {
     return this.store;
+  }
+
+  public Optional<CelDocument.Default> getCelDocument(DocumentReference docRef)
+      throws XWikiException {
+    return getStore().loadCelDocument(docRef);
   }
 
   public XWikiAttachmentStoreInterface getAttachmentStore() {
@@ -4848,12 +4854,18 @@ public class XWiki implements EventListener {
       throws XWikiException {
     // Used to avoid recursive loading of documents if there are recursives usage of classes
     BaseClass bclass = context.getBaseClass(documentReference);
-    if (bclass != null) {
-      return bclass;
+    if (bclass == null) {
+      bclass = getCelDocument(documentReference)
+          .flatMap(CelDocument.Default::getXClass)
+          .orElse(null);
+      if (bclass != null) {
+        context.addBaseClass(bclass);
+      } else {
+        bclass = new BaseClass();
+        bclass.setDocumentReference(documentReference);
+      }
     }
-    LOGGER.debug("getXClass - doc [{}] exists [{}]", documentReference,
-        LogUtils.defer(rethrowSupplier(() -> exists(documentReference, context))));
-    return getDocument(documentReference, context).getXClass();
+    return bclass;
   }
 
   /**

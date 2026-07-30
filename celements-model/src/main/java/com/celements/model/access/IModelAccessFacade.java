@@ -25,15 +25,17 @@ import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.celements.model.object.xwiki.XWikiObjectFetcher;
 import com.celements.model.util.ClassFieldValue;
 import com.celements.rights.access.exceptions.NoAccessRightsException;
+import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
 @ComponentRole
 public interface IModelAccessFacade {
 
-  String DEFAULT_LANG = "";
+  String DEFAULT_LANG = XWikiConstant.DEFAULT_LANG;
 
   @NotNull
   XWikiDocument getDocument(@NotNull DocumentReference docRef)
@@ -49,21 +51,9 @@ public interface IModelAccessFacade {
   @NotNull
   Optional<XWikiDocument> getDocumentOpt(@NotNull DocumentReference docRef, @Nullable String lang);
 
-  /**
-   * CAUTION: never ever change anything on the returned XWikiDocument, because it is the object in
-   * cache. Thus the same object will be returned for the following requests. If you change this
-   * object, concurrent request might get a partially modified object, or worse, if an error occurs
-   * during the save (or no save call happens), the cached object will not reflect the actual
-   * document at all.
-   *
-   * @param docRef
-   * @param lang
-   * @return an xwiki document for readonly usage
-   * @throws DocumentNotExistsException
-   */
   @NotNull
-  XWikiDocument getDocumentReadOnly(@NotNull DocumentReference docRef, @Nullable String lang)
-      throws DocumentNotExistsException;
+  Optional<CelDocument> getCelDocument(@NotNull DocumentReference docRef,
+      @Nullable String lang);
 
   @NotNull
   XWikiDocument createDocument(@NotNull DocumentReference docRef)

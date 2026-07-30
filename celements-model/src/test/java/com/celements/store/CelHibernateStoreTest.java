@@ -31,7 +31,9 @@ import com.xpn.xwiki.XWikiConfig;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.store.XWikiHibernateStore;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
@@ -65,6 +67,10 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_loadXWikiDoc() throws Exception {
+    BaseClass staleClass = new BaseClass();
+    staleClass.setDocumentReference(docRef);
+    staleClass.addTextField("field", "Field", 30);
+    getContext().addBaseClass(staleClass);
     long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
     Session sessionMock = createSessionMock(doc);
     expectLoadExistingDocs(sessionMock, ImmutableList.of(
@@ -78,10 +84,50 @@ public class CelHibernateStoreTest extends AbstractComponentTest {
     verifyDefault();
 
     assertSame(doc, ret);
+    assertNull(getContext().getBaseClass(docRef));
     assertFalse(doc.isNew());
     assertFalse(doc.isContentDirty());
     // FIXME can be set to 'assertFalse' after CELDEV-784, see CELDEV-785
     assertTrue(doc.isMetaDataDirty());
+  }
+
+  @Test
+  public void test_loadXWikiDoc_xClassCached() throws Exception {
+    BaseClass xClass = new BaseClass();
+    xClass.setDocumentReference(docRef);
+    xClass.addTextField("field", "Field", 30);
+    doc.setXClassXML(xClass.toXMLString());
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
+    Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
+    expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
+    expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
+    sessionMock.load(same(doc), eq(docId));
+
+    replayDefault();
+    getStore(sessionMock).loadXWikiDoc(doc, getContext());
+    verifyDefault();
+
+    assertNotNull(getContext().getBaseClass(docRef).safeget("field"));
+  }
+
+  @Test
+  public void test_loadCelDocument() throws Exception {
+    long docId = computeDocId(START_COLLISION_COUNT_DEFAULT);
+    Session sessionMock = createSessionMock(doc);
+    expectLoadExistingDocs(sessionMock, ImmutableList.of(
+        new Object[] { docId, doc.getFullName(), doc.getLanguage() }));
+    expectLoadAttachments(sessionMock, Collections.<XWikiAttachment>emptyList());
+    expectLoadObjects(sessionMock, Collections.<BaseObject>emptyList());
+    sessionMock.load(anyObject(XWikiDocument.class), eq(docId));
+
+    replayDefault();
+    CelDocument.Default celDocument = getStore(sessionMock).loadCelDocument(docRef)
+        .orElseThrow();
+    verifyDefault();
+
+    assertEquals(docRef, celDocument.getDocumentReference());
   }
 
   @Test

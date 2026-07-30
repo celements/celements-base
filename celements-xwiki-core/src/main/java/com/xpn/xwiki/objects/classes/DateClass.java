@@ -29,6 +29,8 @@ import java.util.Locale;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ecs.xhtml.input;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseCollection;
@@ -37,6 +39,8 @@ import com.xpn.xwiki.objects.DateProperty;
 import com.xpn.xwiki.objects.meta.PropertyMetaClass;
 
 public class DateClass extends PropertyClass {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DateClass.class);
 
   public DateClass(PropertyMetaClass wclass) {
     super("date", "Date", wclass);
@@ -48,6 +52,11 @@ public class DateClass extends PropertyClass {
 
   public DateClass() {
     this(null);
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
   }
 
   public int getPicker() {
@@ -132,15 +141,15 @@ public class DateClass extends PropertyClass {
     } catch (ParseException e) {
       SimpleDateFormat sdf2 = new SimpleDateFormat("EEE MMM d HH:mm:ss z yyyy", Locale.US);
       try {
-        if (logger.isWarnEnabled()) {
-          logger.warn("Failed to parse date [" + value + "] using format ["
+        if (LOGGER.isWarnEnabled()) {
+          LOGGER.warn("Failed to parse date [" + value + "] using format ["
               + sdf.toString() + "]. Trying again with format ["
               + sdf2.toString() + "]");
         }
         property.setValue(sdf2.parse(value));
       } catch (ParseException e2) {
-        if (logger.isWarnEnabled()) {
-          logger.warn("Failed to parse date [" + value + "] using format ["
+        if (LOGGER.isWarnEnabled()) {
+          LOGGER.warn("Failed to parse date [" + value + "] using format ["
               + sdf2.toString() + "]. Defaulting to the current date.");
         }
         property.setValue(new Date());

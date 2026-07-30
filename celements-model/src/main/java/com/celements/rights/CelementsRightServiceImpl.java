@@ -7,6 +7,7 @@ import com.celements.rights.publication.IPublicationServiceRole;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.user.api.XWikiRightNotFoundException;
 import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
 import com.xpn.xwiki.web.Utils;
@@ -20,13 +21,13 @@ public class CelementsRightServiceImpl extends XWikiRightServiceImpl {
    * page can be viewed.
    */
   @Override
-  public boolean checkRight(String userOrGroupName, XWikiDocument doc, String accessLevel,
+  public boolean checkRight(String userOrGroupName, CelDocument.Default doc, String accessLevel,
       boolean user, boolean allow, boolean global, XWikiContext context)
       throws XWikiRightNotFoundException, XWikiException {
     if (getPubSrv().isPublishActive() && getPubSrv().isRestrictedRightsAction(accessLevel)) {
       // default behaviour: no object -> published
-      if (!getPubSrv().isPubOverride() && (getPubSrv().isUnpubOverride() || getPubSrv().isPublished(
-          doc))) {
+      if (!getPubSrv().isPubOverride() && (getPubSrv().isUnpubOverride()
+          || getPubSrv().isPublished(doc))) {
         LOGGER.info("Document published or not publish controlled.");
         return super.checkRight(userOrGroupName, doc, accessLevel, user, allow, global, context);
       } else {

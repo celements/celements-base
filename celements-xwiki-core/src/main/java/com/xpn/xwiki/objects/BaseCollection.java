@@ -40,6 +40,8 @@ import org.dom4j.Element;
 import org.dom4j.dom.DOMDocument;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
@@ -59,6 +61,8 @@ import com.xpn.xwiki.objects.classes.PropertyClass;
  * @version $Id$
  */
 public abstract class BaseCollection extends BaseElement implements ObjectInterface, Cloneable {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseCollection.class);
 
   /**
    * The meaning of this reference fields depends on the element represented. Examples:
@@ -97,6 +101,11 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
    * </ul>
    */
   protected int number;
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
+  }
 
   /**
    * {@inheritDoc}
@@ -263,7 +272,7 @@ public abstract class BaseCollection extends BaseElement implements ObjectInterf
       try {
         baseClass = context.getWiki().getXClass(classReference, context);
       } catch (Exception e) {
-        logger.error("getXClass - failed to get class [{}]", classReference, e);
+        getLogger().error("getXClass - failed to get class [{}]", classReference, e);
       }
     }
 

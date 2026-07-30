@@ -10,6 +10,7 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.access.ModelMock.DocRecord;
 import com.celements.model.access.exception.DocumentDeleteException;
 import com.celements.model.access.exception.DocumentSaveException;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.web.Utils;
 
 public class ModelAccessMockTest extends AbstractComponentTest {
@@ -39,6 +40,18 @@ public class ModelAccessMockTest extends AbstractComponentTest {
     } catch (IllegalStateException exc) {
       // expected
     }
+  }
+
+  @Test
+  public void test_getCelDocument() {
+    assertTrue(modelAccess.getCelDocument(docRef, IModelAccessFacade.DEFAULT_LANG).isEmpty());
+    DocRecord record = modelAccess.registerDoc(docRef);
+    record.doc().setContent("content");
+
+    CelDocument doc = modelAccess.getCelDocument(docRef, null).orElseThrow();
+
+    assertEquals(record.doc().getDocumentReference(), doc.getDocumentReference());
+    assertEquals(record.doc().getContent(), doc.getContent());
   }
 
   @Test

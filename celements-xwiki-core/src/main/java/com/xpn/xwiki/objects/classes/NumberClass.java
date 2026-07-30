@@ -22,6 +22,8 @@
 package com.xpn.xwiki.objects.classes;
 
 import org.apache.ecs.xhtml.input;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseCollection;
@@ -34,6 +36,8 @@ import com.xpn.xwiki.objects.meta.PropertyMetaClass;
 
 public class NumberClass extends PropertyClass {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(NumberClass.class);
+
   public NumberClass(PropertyMetaClass wclass) {
     super("number", "Number", wclass);
     setSize(30);
@@ -42,6 +46,11 @@ public class NumberClass extends PropertyClass {
 
   public NumberClass() {
     this(null);
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
   }
 
   public int getSize() {
@@ -102,7 +111,7 @@ public class NumberClass extends PropertyClass {
         }
       }
     } catch (NumberFormatException e) {
-      logger.warn("Invalid number entered for property " + getName() + " of class "
+      LOGGER.warn("Invalid number entered for property " + getName() + " of class "
           + getObject().getName() + ": "
           + value);
       // Returning null makes sure that the old value (if one exists) will not be discarded/replaced
