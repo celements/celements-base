@@ -31,7 +31,6 @@ import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiConfigSource;
 import com.xpn.xwiki.XWikiConstant;
 import com.xpn.xwiki.util.Util;
-import com.xpn.xwiki.web.Utils;
 
 @Component
 public class DefaultModelUtils implements ModelUtils {
@@ -39,6 +38,10 @@ public class DefaultModelUtils implements ModelUtils {
   private final Execution exec;
   private final ModelContext context;
   private final EntityReferenceResolver<String> resolver;
+  private final EntityReferenceSerializer<String> defaultSerializer;
+  private final EntityReferenceSerializer<String> localSerializer;
+  private final EntityReferenceSerializer<String> compactSerializer;
+  private final EntityReferenceSerializer<String> compactWikiSerializer;
   private final ReferenceProvider refProvider;
   private final XWikiConfigSource xwikiCfg;
   private final Supplier<WikiReference> mainWikiRef;
@@ -46,11 +49,19 @@ public class DefaultModelUtils implements ModelUtils {
   @Inject
   public DefaultModelUtils(
       @Named("explicit") EntityReferenceResolver<String> resolver,
+      @Named("default") EntityReferenceSerializer<String> defaultSerializer,
+      @Named("local") EntityReferenceSerializer<String> localSerializer,
+      @Named("compact") EntityReferenceSerializer<String> compactSerializer,
+      @Named("compactwiki") EntityReferenceSerializer<String> compactWikiSerializer,
       ReferenceProvider refProvider,
       XWikiConfigSource xwikiCfg,
       ModelContext context,
       Execution exec) {
     this.resolver = resolver;
+    this.defaultSerializer = defaultSerializer;
+    this.localSerializer = localSerializer;
+    this.compactSerializer = compactSerializer;
+    this.compactWikiSerializer = compactWikiSerializer;
     this.refProvider = refProvider;
     this.xwikiCfg = xwikiCfg;
     this.context = context;
@@ -176,32 +187,16 @@ public class DefaultModelUtils implements ModelUtils {
   @Override
   public String serializeRef(EntityReference ref, ReferenceSerializationMode mode) {
     checkNotNull(ref);
-    // strip child from immutable references by creating relative reference
-    // for reason see DefaultStringEntityReferenceSerializer#L29
-    ref = new RefBuilder().with(ref).buildRelative();
     return getSerializerForMode(mode).serialize(ref);
   }
 
-  @SuppressWarnings("unchecked")
   private EntityReferenceSerializer<String> getSerializerForMode(ReferenceSerializationMode mode) {
-    String hint;
-    switch (mode) {
-      case GLOBAL:
-        hint = "default";
-        break;
-      case LOCAL:
-        hint = "local";
-        break;
-      case COMPACT:
-        hint = "compact";
-        break;
-      case COMPACT_WIKI:
-        hint = "compactwiki";
-        break;
-      default:
-        throw new IllegalArgumentException(String.valueOf(mode));
-    }
-    return Utils.getComponent(EntityReferenceSerializer.class, hint);
+    return switch (mode) {
+      case GLOBAL -> defaultSerializer;
+      case LOCAL -> localSerializer;
+      case COMPACT -> compactSerializer;
+      case COMPACT_WIKI -> compactWikiSerializer;
+    };
   }
 
   @Override

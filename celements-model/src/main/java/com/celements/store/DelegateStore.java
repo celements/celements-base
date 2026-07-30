@@ -2,6 +2,7 @@ package com.celements.store;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import com.google.common.base.Suppliers;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiLink;
 import com.xpn.xwiki.doc.XWikiLock;
 import com.xpn.xwiki.objects.classes.BaseClass;
@@ -84,6 +86,12 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   @Override
   public XWikiDocument loadXWikiDoc(XWikiDocument doc, XWikiContext context) throws XWikiException {
     return getBackingStore().loadXWikiDoc(doc, context);
+  }
+
+  @Override
+  public Optional<CelDocument> loadCelDocument(DocumentReference docRef, String language)
+      throws XWikiException {
+    return getBackingStore().loadCelDocument(docRef, language);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package com.xpn.xwiki.store;
 
+import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.logging.LogUtils.*;
 import static com.google.common.base.Preconditions.*;
 
@@ -974,6 +975,10 @@ public class XWikiHibernateBaseStore implements Initializable {
    */
   private void setCurrentWiki(WikiReference wikiRef) {
     getEContext().setProperty(KEY_CURRENT_DATABASE, wikiRef);
+  }
+
+  protected final XWikiContext getXContext() {
+    return getEContext().get(XWIKI_CONTEXT).orElseThrow(IllegalStateException::new);
   }
 
   protected final ExecutionContext getEContext() {

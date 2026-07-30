@@ -28,6 +28,7 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.web.Utils;
 
 public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
@@ -54,6 +55,10 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
   @Test
   public void test_execute() throws Exception {
     XWikiDocument doc = createDoc("");
+    BaseClass staleClass = new BaseClass();
+    staleClass.setDocumentReference(doc.getDocumentReference());
+    staleClass.addTextField("field", "Field", 30);
+    getContext().addBaseClass(staleClass);
 
     replayDefault();
     DocumentSavePreparationCommand cmd = newCommand(doc).execute(false);
@@ -62,8 +67,21 @@ public class DocumentSavePreparationCommandTest extends AbstractComponentTest {
     assertFalse("doc with id already set must stem from db", doc.isNew());
     assertEquals("doc should be set to context db", getContext().getDatabase(),
         doc.getDocumentReference().getWikiReference().getName());
+    assertNull(getContext().getBaseClass(doc.getDocumentReference()));
     assertFalse(doc.hasElement(XWikiDocument.HAS_OBJECTS));
     assertFalse(doc.hasElement(XWikiDocument.HAS_ATTACHMENTS));
+  }
+
+  @Test
+  public void test_execute_xClassCached() throws Exception {
+    XWikiDocument doc = createDoc("");
+    doc.getXClass().addTextField("field", "Field", 30);
+
+    replayDefault();
+    newCommand(doc).execute(false);
+    verifyDefault();
+
+    assertSame(doc.getXClass(), getContext().getBaseClass(doc.getDocumentReference()));
   }
 
   @Test

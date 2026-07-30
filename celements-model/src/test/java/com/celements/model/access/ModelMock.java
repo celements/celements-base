@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,6 +29,7 @@ import com.celements.wiki.WikiService;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.web.Utils;
@@ -37,7 +39,6 @@ public class ModelMock extends DefaultModelAccessFacade {
 
   @Inject
   public ModelMock(
-      ModelAccessStrategy strategy,
       XWikiDocumentCreator docCreator,
       IRightsAccessFacadeRole rightsAccess,
       ModelUtils modelUtils,
@@ -45,8 +46,7 @@ public class ModelMock extends DefaultModelAccessFacade {
       @Lazy WikiService wikiService,
       @Named(XObjectFieldAccessor.NAME) FieldAccessor<BaseObject> xObjFieldAccessor,
       @Named(XObjectStringFieldAccessor.NAME) StringFieldAccessor<BaseObject> xObjStrFieldAccessor) {
-    super(strategy,
-        docCreator,
+    super(docCreator,
         rightsAccess,
         modelUtils,
         context,
@@ -162,6 +162,13 @@ public class ModelMock extends DefaultModelAccessFacade {
   @Override
   public XWikiDocument getDocument(DocumentReference docRef, String lang) {
     return getDocRecord(docRef, lang).doc();
+  }
+
+  @Override
+  public Optional<CelDocument> getCelDocument(DocumentReference docRef, String lang) {
+    return Optional.ofNullable(getDocs(docRef).get(modelUtils.normalizeLang(lang)))
+        .map(DocRecord::doc)
+        .map(CelDocument::from);
   }
 
   @Override

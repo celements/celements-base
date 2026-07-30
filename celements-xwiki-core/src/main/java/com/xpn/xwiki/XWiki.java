@@ -23,6 +23,8 @@ import static com.celements.common.MoreObjectsCel.*;
 import static com.celements.common.lambda.LambdaExceptionUtil.*;
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.spring.context.SpringContextProvider.*;
+import static com.google.common.base.Predicates.*;
+import static com.xpn.xwiki.XWikiConstant.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
@@ -93,6 +96,7 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.observation.EventListener;
@@ -106,7 +110,6 @@ import org.xwiki.url.standard.XWikiURLBuilder;
 import org.xwiki.xml.internal.XMLScriptService;
 
 import com.celements.init.wiki.MainXClassInitializer;
-import com.celements.logging.LogUtils;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.StoreFactory;
 import com.celements.wiki.WikiService;
@@ -123,6 +126,8 @@ import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDeletedDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.doc.XWikiDocumentArchive;
+import com.xpn.xwiki.doc.CelDocument;
+import com.xpn.xwiki.doc.CelObject;
 import com.xpn.xwiki.internal.event.AttachmentAddedEvent;
 import com.xpn.xwiki.internal.event.AttachmentDeletedEvent;
 import com.xpn.xwiki.internal.event.AttachmentUpdatedEvent;
@@ -786,6 +791,11 @@ public class XWiki implements EventListener {
 
   public XWikiStoreInterface getStore() {
     return this.store;
+  }
+
+  public Optional<CelDocument.Default> getCelDocument(DocumentReference docRef)
+      throws XWikiException {
+    return getStore().loadCelDocument(docRef);
   }
 
   public XWikiAttachmentStoreInterface getAttachmentStore() {
@@ -1632,31 +1642,18 @@ public class XWiki implements EventListener {
   public String getXWikiPreference(String prefname, String fallback_param, String default_value,
       XWikiContext context) {
     try {
-      DocumentReference xwikiPreferencesReference = new DocumentReference("XWikiPreferences",
-          new SpaceReference("XWiki", new WikiReference(context.getDatabase())));
-      XWikiDocument doc = getDocument(xwikiPreferencesReference, context);
-      // First we try to get a translated preference object
-      BaseObject object = doc.getXObject(xwikiPreferencesReference, "default_language",
-          context.getLanguage(), true);
-      String result = "";
-
-      if (object != null) {
-        try {
-          result = object.getStringValue(prefname);
-        } catch (Exception e) {
-          LOGGER.warn("Exception while getting wiki preference [" + prefname + "]", e);
-        }
-      }
-      // If empty we take it from the default pref object
-      if (result.equals("")) {
-        object = doc.getXObject();
-        if (object != null) {
-          result = object.getStringValue(prefname);
-        }
-      }
-
-      if (!result.equals("")) {
-        return result;
+      var wikiPrefDocRef = new DocumentReference(XWIKI_PREF_DOC_NAME,
+          new SpaceReference(XWIKI_SPACE, context.getWikiRef()));
+      var result = getCelDocument(wikiPrefDocRef)
+          .flatMap(doc -> getPreferenceObject(doc, context.getLanguage())
+              .map(object -> object.getStringValue(prefname))
+              .filter(not(String::isEmpty))
+              .or(() -> doc.streamXObjects(doc.getDocumentReference())
+                  .findFirst()
+                  .map(object -> object.getStringValue(prefname))
+                  .filter(not(String::isEmpty))));
+      if (result.isPresent()) {
+        return result.get();
       }
     } catch (Exception e) {
       LOGGER.warn("Exception while getting wiki preference [" + prefname + "]", e);
@@ -1681,34 +1678,33 @@ public class XWiki implements EventListener {
   public String getSpacePreference(String preference, String space, String defaultValue,
       XWikiContext context) {
     // If there's no space defined then don't return space preferences (since it'll usually mean
-    // that the current
-    // doc is not set).
+    // that the current doc is not set).
     if (space != null) {
       try {
-        XWikiDocument doc = getDocument(space + ".WebPreferences", context);
-
+        var spacePrefDocRef = new DocumentReference(WEB_PREF_DOC_NAME,
+            new SpaceReference(space, context.getWikiRef()));
         // First we try to get a translated preference object
-        DocumentReference xwikiPreferencesReference = new DocumentReference("XWikiPreferences",
-            new SpaceReference("XWiki", new WikiReference(context.getDatabase())));
-        BaseObject object = doc.getXObject(xwikiPreferencesReference, "default_language",
-            context.getLanguage(), true);
-        String result = "";
-        if (object != null) {
-          try {
-            result = object.getStringValue(preference);
-          } catch (Exception e) {
-            LOGGER.warn("Exception while getting space preference [" + preference + "]", e);
-          }
-        }
-
-        if (!result.equals("")) {
-          return result;
+        var result = getCelDocument(spacePrefDocRef)
+            .flatMap(doc -> getPreferenceObject(doc, context.getLanguage())
+                .map(object -> object.getStringValue(preference))
+                .filter(not(String::isEmpty)));
+        if (result.isPresent()) {
+          return result.get();
         }
       } catch (Exception e) {
         LOGGER.warn("Exception while getting space preference [" + preference + "]", e);
       }
     }
     return getXWikiPreference(preference, defaultValue, context);
+  }
+
+  private static Optional<CelObject> getPreferenceObject(
+      CelDocument.Default doc, String language) {
+    var classRef = new LocalDocumentReference(XWIKI_SPACE, XWIKI_PREF_DOC_NAME);
+    return doc.streamXObjects(classRef)
+        .filter(obj -> obj.getStringValue("default_language").equals(language))
+        .findFirst()
+        .or(() -> doc.streamXObjects(classRef).findFirst());
   }
 
   public String getUserPreference(String prefname, XWikiContext context) {
@@ -4848,12 +4844,18 @@ public class XWiki implements EventListener {
       throws XWikiException {
     // Used to avoid recursive loading of documents if there are recursives usage of classes
     BaseClass bclass = context.getBaseClass(documentReference);
-    if (bclass != null) {
-      return bclass;
+    if (bclass == null) {
+      bclass = getCelDocument(documentReference)
+          .flatMap(CelDocument.Default::getXClass)
+          .orElse(null);
+      if (bclass != null) {
+        context.addBaseClass(bclass);
+      } else {
+        bclass = new BaseClass();
+        bclass.setDocumentReference(documentReference);
+      }
     }
-    LOGGER.debug("getXClass - doc [{}] exists [{}]", documentReference,
-        LogUtils.defer(rethrowSupplier(() -> exists(documentReference, context))));
-    return getDocument(documentReference, context).getXClass();
+    return bclass;
   }
 
   /**

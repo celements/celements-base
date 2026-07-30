@@ -24,7 +24,9 @@ import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,8 +34,10 @@ import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
+import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.test.AbstractComponentTest;
 import com.xpn.xwiki.user.api.XWikiGroupService;
 import com.xpn.xwiki.user.api.XWikiRightNotFoundException;
@@ -62,6 +66,7 @@ public class XWikiRightServiceImplTest extends AbstractComponentTest {
   public void prepareTest() throws Exception {
     rightService = new XWikiRightServiceImpl();
     XWikiGroupService groupService = createDefaultMock(XWikiGroupService.class);
+    XWikiStoreInterface store = createDefaultMock(XWikiStoreInterface.class);
 
     user = new XWikiDocument(new DocumentReference("wiki", "XWiki", "user"));
     this.user.setNew(false);
@@ -95,18 +100,23 @@ public class XWikiRightServiceImplTest extends AbstractComponentTest {
     expect(getWikiMock().getWikiOwner(anyString(), same(getContext()))).andAnswer(() ->
         wikiOwnerEnabled ? user.getPrefixedFullName() : null).anyTimes();
     expect(getWikiMock().getMaxRecursiveSpaceChecks(same(getContext()))).andReturn(0).anyTimes();
-    expect(getWikiMock().getDocument(anyString(), eq("WebPreferences"), same(getContext())))
+    expect(getWikiMock().getStore()).andReturn(store).anyTimes();
+    expect(store.loadCelDocument(anyObject(DocumentReference.class)))
         .andAnswer(() -> {
-          String space = getCurrentArgument(0);
-          return documents.getOrDefault(space + ".WebPreferences",
-              new XWikiDocument(new DocumentReference(getContext().getDatabase(), space,
-                  "WebPreferences")));
+          DocumentReference reference = getCurrentArgument(0);
+          String localName = reference.getLastSpaceReference().getName() + "."
+              + reference.getName();
+          XWikiDocument byName = documents.get(localName);
+          if (byName == null) {
+            byName = documents.get(reference.getWikiReference().getName() + ":" + localName);
+          }
+          return Stream.concat(Stream.ofNullable(byName),
+              documents.values().stream()
+              .filter(document -> document.getDocumentReference().equals(reference))
+              .limit(1))
+              .findFirst()
+              .map(CelDocument.Default::from);
         }).anyTimes();
-    expect(getWikiMock().getDocument(anyString(), same(getContext()))).andAnswer(() -> {
-      String name = getCurrentArgument(0);
-      return documents.getOrDefault(name,
-          new XWikiDocument(new DocumentReference(getContext().getDatabase(), "XWiki", name)));
-    }).anyTimes();
     expect(getWikiMock().getXWikiPreference(anyString(), anyString(), same(getContext())))
         .andReturn("false").anyTimes();
     expect(getWikiMock().getXWikiPreferenceAsInt(anyString(), anyInt(), same(getContext())))
@@ -136,6 +146,20 @@ public class XWikiRightServiceImplTest extends AbstractComponentTest {
     verifyDefault();
   }
 
+  @Test
+  public void test_hasProgrammingRights_doesNotCreateCelDocument() {
+    XWikiDocument doc = new XWikiDocument(new DocumentReference("wiki", "Space", "Page")) {
+
+      @Override
+      public Map<DocumentReference, List<BaseObject>> getXObjects() {
+        throw new AssertionError("Mutable document must not be converted to a CelDocument");
+      }
+    };
+    doc.setContentAuthor(null);
+
+    assertFalse(rightService.hasProgrammingRights(doc, getContext()));
+  }
+
   /**
    * Test if checkRight() take care of users's groups from other wikis.
    */
@@ -152,11 +176,9 @@ public class XWikiRightServiceImplTest extends AbstractComponentTest {
 
     getContext().setDatabase("wiki2");
 
-    boolean result = this.rightService.checkRight(this.user.getPrefixedFullName(), doc, "view",
-        true, true, true, getContext());
-
     assertTrue(this.user.getPrefixedFullName() + " does not have global view right on wiki2",
-        result);
+        this.rightService.checkRight(this.user.getPrefixedFullName(),
+            CelDocument.Default.from(doc), "view", true, true, true, getContext()));
   }
 
   @Test

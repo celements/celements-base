@@ -324,7 +324,10 @@ public class Document extends Api {
     }
   }
 
-  // TODO: document this.
+  /**
+   * @deprecated since 7.0, no replacement
+   */
+  @Deprecated(since = "7.0", forRemoval = true)
   public String getFormat() {
     return this.doc.getFormat();
   }

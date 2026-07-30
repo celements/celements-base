@@ -29,6 +29,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ecs.xhtml.option;
 import org.apache.ecs.xhtml.select;
 import org.apache.velocity.VelocityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.objects.BaseCollection;
@@ -41,6 +43,8 @@ import com.xpn.xwiki.objects.meta.PropertyMetaClass;
  */
 public class DBTreeListClass extends DBListClass {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DBTreeListClass.class);
+
   /** In-memory cache of the ordered tree values, to be used in case it is supposed to be cached. */
   private List<ListItem> cachedDBTreeList;
 
@@ -50,6 +54,11 @@ public class DBTreeListClass extends DBListClass {
 
   public DBTreeListClass() {
     this(null);
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return LOGGER;
   }
 
   public String getParentField() {
@@ -533,7 +542,7 @@ public class DBTreeListClass extends DBListClass {
     try {
       sql = context.getWiki().parseContent(sql, context);
     } catch (Exception e) {
-      logger.error("Failed to parse SQL script [" + sql + "]. Continuing with non-rendered script.",
+      LOGGER.error("Failed to parse SQL script [" + sql + "]. Continuing with non-rendered script.",
           e);
     }
     return sql;

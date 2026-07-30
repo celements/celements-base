@@ -19,7 +19,6 @@
  */
 package com.xpn.xwiki.store.hibernate;
 
-import static com.celements.common.MoreObjectsCel.*;
 import static org.xwiki.configuration.SystemEnvUtils.*;
 
 import java.io.File;
@@ -32,8 +31,6 @@ import java.util.function.Supplier;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.connection.ConnectionProvider;
-import org.hibernate.impl.SessionFactoryImpl;
 import org.springframework.context.ApplicationListener;
 import org.xwiki.component.annotation.Component;
 
@@ -139,9 +136,8 @@ public class DefaultHibernateSessionFactory implements HibernateSessionFactory,
 
   @Override
   public void onApplicationEvent(CelementsStoppedEvent event) {
-    tryCast(getSessionFactory(), SessionFactoryImpl.class)
-        .map(SessionFactoryImpl::getConnectionProvider)
-        .ifPresent(ConnectionProvider::close);
+    Optional.ofNullable(getSessionFactory()).ifPresent(SessionFactory::close);
+    setSessionFactory(null);
   }
 
 }

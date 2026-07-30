@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Vector;
 
@@ -152,6 +153,8 @@ public class XWikiDocumentTest extends AbstractComponentTest {
     expect(getWikiMock().getRenderingEngine()).andReturn(this.mockXWikiRenderingEngine).anyTimes();
     expect(getWikiMock().getVersioningStore()).andReturn(this.mockXWikiVersioningStore).anyTimes();
     expect(getWikiMock().getStore()).andReturn(this.mockXWikiStoreInterface).anyTimes();
+    expect(getWikiMock().getCelDocument(anyObject(DocumentReference.class)))
+        .andReturn(Optional.empty()).anyTimes();
     expect(getWikiMock().getDocument(anyObject(DocumentReference.class), same(getContext())))
         .andAnswer(() -> this.wikiDocument).anyTimes();
     expect(getWikiMock().getLanguagePreference(same(getContext()))).andReturn("en").anyTimes();
