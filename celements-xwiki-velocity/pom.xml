@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>celements-parent</artifactId>
-    <version>7.1-SNAPSHOT</version>
+    <version>7.1-RC1</version>
   </parent>
   <artifactId>celements-xwiki-velocity</artifactId>
   <version>7.1-SNAPSHOT</version>
