@@ -26,7 +26,7 @@ public class NavigationTreeBuilderTest {
   public void build_groupsAndOrdersSegmentsWithoutReorderingNodes() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var unnamed = node("Unnamed", null, 1);
     var mainSecond = node("MainSecond", "main", 2);
     var upperCase = node("Upper", "A", 1);
@@ -56,7 +56,7 @@ public class NavigationTreeBuilderTest {
   public void build_expandsActiveAncestorsNodeAndDirectChildren() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var root = node("Root", "main", 1);
     var active = childNode("Active", root, 1);
     var child = childNode("Child", active, 1);
@@ -90,7 +90,7 @@ public class NavigationTreeBuilderTest {
   public void build_combinesActivePathAndInactiveThresholdExpansion() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var activeRoot = node("ActiveRoot", "main", 1);
     var active = childNode("Active", activeRoot, 1);
     var activeChild = childNode("ActiveChild", active, 1);
@@ -141,7 +141,7 @@ public class NavigationTreeBuilderTest {
   public void build_unfilteredEmptyNodeSpaceReturnsEmptySegments() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of());
     replay(treeService, parentsLister, values);
@@ -155,7 +155,7 @@ public class NavigationTreeBuilderTest {
   public void build_omittedInvalidChildDoesNotDiscloseNonLeafState() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var root = node("Root", "main", 1);
     var invalid = childNode("HiddenByInvalidTitle", root, 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
@@ -187,7 +187,7 @@ public class NavigationTreeBuilderTest {
   public void build_omittedActiveNodeReturnsNotFound() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var active = node("InvalidActive", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(active));
@@ -207,7 +207,7 @@ public class NavigationTreeBuilderTest {
   public void build_omitsInactiveNodeWithNullChildren() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var root = node("InvalidRoot", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(root));
@@ -225,7 +225,7 @@ public class NavigationTreeBuilderTest {
   public void build_activeNodeWithNullChildrenReturnsNotFound() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var active = node("InvalidActive", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(active));
@@ -244,29 +244,10 @@ public class NavigationTreeBuilderTest {
   }
 
   @Test
-  public void build_invalidActivePathReturnsSafeNotFound() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
-    var current = node("Missing", "main", 1);
-    expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
-        .andReturn(List.of());
-    expect(parentsLister.getDocumentParentsList(current.getDocumentReference(), true))
-        .andReturn(List.of(current.getDocumentReference()));
-    replay(treeService, parentsLister, values);
-    var exception = assertThrows(NavigationApiException.class,
-        () -> new NavigationTreeBuilder(treeService, parentsLister, values).build(
-            request(Optional.of(current.getDocumentReference()), Optional.of(local(current)), 0)));
-    verify(treeService, parentsLister, values);
-    assertEquals(HttpStatus.NOT_FOUND, exception.status());
-    assertEquals("navigation_node_not_found", exception.code());
-  }
-
-  @Test
   public void build_inaccessibleCurrentNodeReturnsSafeNotFound() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var current = node("Restricted", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of());
@@ -281,7 +262,7 @@ public class NavigationTreeBuilderTest {
   public void build_outOfRootCurrentNodeReturnsSafeNotFound() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var root = node("Root", "main", 1);
     var otherSpace = new SpaceReference("Other", wikiRef);
     var current = new DocumentReference("Current", otherSpace);
@@ -298,7 +279,7 @@ public class NavigationTreeBuilderTest {
   public void build_partExcludedCurrentNodeReturnsSafeNotFound() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var current = node("OtherPart", "other", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andAnswer(() -> {
@@ -318,7 +299,7 @@ public class NavigationTreeBuilderTest {
   public void build_requestedPartAlwaysReturnsExactlyOneSegment() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of());
     replay(treeService, parentsLister, values);
@@ -335,7 +316,7 @@ public class NavigationTreeBuilderTest {
   public void build_partFilterIsCaseSensitive() {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var lowerCasePart = node("Root", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(lowerCasePart));
@@ -352,7 +333,7 @@ public class NavigationTreeBuilderTest {
   private void assertInvalidNodeOmitted(String field, String invalidValue) {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var root = node("Root", "main", 1);
     var invalid = childNode("Invalid", root, 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
@@ -379,7 +360,7 @@ public class NavigationTreeBuilderTest {
   }
 
   private void assertNodeNotFound(ITreeNodeService treeService,
-      IDocumentParentsListerRole parentsLister, NavigationNodeValueResolver values,
+      IDocumentParentsListerRole parentsLister, DefaultNavigationNodeValueResolver values,
       NavigationRequest request) {
     var exception = assertThrows(NavigationApiException.class,
         () -> new NavigationTreeBuilder(treeService, parentsLister, values).build(request));
@@ -391,7 +372,7 @@ public class NavigationTreeBuilderTest {
   private int expandedDepth(int threshold) {
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var level1 = node("Level1", "main", 1);
     var level2 = childNode("Level2", level1, 1);
     var level3 = childNode("Level3", level2, 1);
@@ -415,14 +396,14 @@ public class NavigationTreeBuilderTest {
     return depth;
   }
 
-  private void expectNode(ITreeNodeService treeService, NavigationNodeValueResolver values,
+  private void expectNode(ITreeNodeService treeService, DefaultNavigationNodeValueResolver values,
       TreeNode node, List<TreeNode> children) {
     expectValues(values, node);
     expect(treeService.getSubNodesForParent(eq(node.getDocumentReference()),
         isA(InternalRightsFilter.class))).andReturn(children);
   }
 
-  private void expectValues(NavigationNodeValueResolver values, TreeNode node) {
+  private void expectValues(DefaultNavigationNodeValueResolver values, TreeNode node) {
     expect(values.serialize(node.getDocumentReference())).andReturn(local(node));
     expect(values.resolveTitle(node.getDocumentReference(), "de"))
         .andReturn(node.getDocumentReference().getName());

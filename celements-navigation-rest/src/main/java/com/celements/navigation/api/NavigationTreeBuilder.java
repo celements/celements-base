@@ -35,11 +35,11 @@ class NavigationTreeBuilder {
 
   private final ITreeNodeService treeNodeService;
   private final IDocumentParentsListerRole parentsLister;
-  private final NavigationNodeValueResolver valueResolver;
+  private final DefaultNavigationNodeValueResolver valueResolver;
 
   @Inject
   NavigationTreeBuilder(ITreeNodeService treeNodeService, IDocumentParentsListerRole parentsLister,
-      NavigationNodeValueResolver valueResolver) {
+      DefaultNavigationNodeValueResolver valueResolver) {
     this.treeNodeService = treeNodeService;
     this.parentsLister = parentsLister;
     this.valueResolver = valueResolver;

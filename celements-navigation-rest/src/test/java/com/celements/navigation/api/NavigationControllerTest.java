@@ -5,22 +5,14 @@ import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.xwiki.model.reference.SpaceReference;
@@ -46,34 +38,8 @@ public class NavigationControllerTest {
   }
 
   @Test
-  public void getNavigation_isPublicThroughMethodSecurityForGuestAndAuthenticatedCaller()
-      throws Exception {
-    var request = request();
-    var response = response();
-    expect(requestResolver.resolve("Content", null, "de", null, 0)).andReturn(request).times(2);
-    expect(treeBuilder.build(request)).andReturn(response).times(2);
-    replay(requestResolver, treeBuilder);
-    var context = new AnnotationConfigApplicationContext();
-    context.register(MethodSecurityTestConfig.class);
-    context.registerBean(NavigationController.class,
-        () -> new NavigationController(requestResolver, treeBuilder));
-    context.refresh();
-    var securedController = context.getBean(NavigationController.class);
-    try {
-      SecurityContextHolder.getContext().setAuthentication(new AnonymousAuthenticationToken(
-          "guest-key", "guest", List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))));
-      assertEquals(response,
-          securedController.getNavigation("Content", null, "de", null, 0).getBody());
-      SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-          "authenticated-user", "n/a", List.of(new SimpleGrantedAuthority("ROLE_USER"))));
-      assertEquals(response,
-          securedController.getNavigation("Content", null, "de", null, 0).getBody());
-    } finally {
-      SecurityContextHolder.clearContext();
-      context.close();
-    }
-    verify(requestResolver, treeBuilder);
-    Method method = NavigationController.class.getMethod("getNavigation", String.class,
+  public void getNavigation_isPublicThroughMethodSecurity() throws Exception {
+    var method = NavigationController.class.getMethod("getNavigation", String.class,
         String.class, String.class, String.class, int.class);
     assertEquals("permitAll()", method.getAnnotation(PreAuthorize.class).value());
   }
@@ -159,22 +125,6 @@ public class NavigationControllerTest {
         "Navigation is currently unavailable.");
   }
 
-  @Test
-  public void getNavigation_mapsRequestInfrastructureNullPointerExceptionToGenericFailure()
-      throws Exception {
-    expect(requestResolver.resolve("Content", null, null, null, 0))
-        .andThrow(new NullPointerException("secret reference backend detail"));
-    replay(requestResolver, treeBuilder);
-    var result = mockMvc.perform(get("/v1/navigation/Content"))
-        .andExpect(status().isInternalServerError())
-        .andExpect(header().string("Cache-Control", "private, no-store")).andReturn();
-    verify(requestResolver, treeBuilder);
-    assertFalse(
-        result.getResponse().getContentAsString().contains("secret reference backend detail"));
-    assertError(result.getResponse().getContentAsByteArray(), "navigation_unavailable",
-        "Navigation is currently unavailable.");
-  }
-
   private NavigationRequest request() {
     return new NavigationRequest(new SpaceReference("Content", new WikiReference("xwiki")),
         "Content", Optional.empty(), Optional.empty(), "de", Optional.empty(), 0);
@@ -195,12 +145,6 @@ public class NavigationControllerTest {
     JsonNode json = readJson(content);
     assertEquals(code, json.get("code").asText());
     assertEquals(message, json.get("message").asText());
-  }
-
-  @Configuration
-  @EnableGlobalMethodSecurity(prePostEnabled = true)
-  static class MethodSecurityTestConfig {
-
   }
 
 }

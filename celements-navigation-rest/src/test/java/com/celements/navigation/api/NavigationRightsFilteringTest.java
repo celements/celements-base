@@ -61,7 +61,7 @@ public class NavigationRightsFilteringTest {
         rootNode.getDocumentReference(), 1, "main");
     ITreeNodeService treeService = createMock(ITreeNodeService.class);
     IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    NavigationNodeValueResolver values = createMock(NavigationNodeValueResolver.class);
+    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     IRightsAccessFacadeRole rightsAccess = createMock(IRightsAccessFacadeRole.class);
     ComponentManager componentManager = createMock(ComponentManager.class);
     XWikiContext xwikiContext = createMock(XWikiContext.class);
@@ -115,7 +115,7 @@ public class NavigationRightsFilteringTest {
     };
   }
 
-  private void expectValues(NavigationNodeValueResolver values, TreeNode node) {
+  private void expectValues(DefaultNavigationNodeValueResolver values, TreeNode node) {
     String localRef = "Content." + node.getDocumentReference().getName();
     expect(values.serialize(node.getDocumentReference())).andReturn(localRef);
     expect(values.resolveTitle(node.getDocumentReference(), "de"))
