@@ -111,7 +111,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     return CacheBuilder.newBuilder().maximumSize(capacity).recordStats().build();
   }
 
-  public int getExistCacheCapacity() {
+  private int getExistCacheCapacity() {
     int existCacheCapacity = cfgSrc.getProperty(PARAM_EXIST_CACHE_CAPACITY, 10000);
     int docCacheCapacity = getDocCacheCapacity();
     if (existCacheCapacity < docCacheCapacity) {
@@ -123,7 +123,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     return existCacheCapacity;
   }
 
-  public int getDocCacheCapacity() {
+  private int getDocCacheCapacity() {
     return Math.max(0, cfgSrc.getProperty(PARAM_DOC_CACHE_CAPACITY, 100));
   }
 
