@@ -33,18 +33,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.cache.Cache;
-import org.xwiki.cache.CacheException;
-import org.xwiki.cache.CacheManager;
-import org.xwiki.cache.config.CacheConfiguration;
-import org.xwiki.cache.eviction.EntryEvictionConfiguration;
-import org.xwiki.cache.eviction.LRUEvictionConfiguration;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.component.manager.ComponentLookupException;
+import org.springframework.stereotype.Component;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReference;
 import org.xwiki.model.reference.SpaceReference;
@@ -60,6 +55,9 @@ import com.celements.model.metadata.ImmutableDocumentMetaData;
 import com.celements.model.reference.RefBuilder;
 import com.celements.model.util.ModelUtils;
 import com.google.common.base.Strings;
+import com.google.common.base.Suppliers;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.CelDocument;
@@ -68,12 +66,9 @@ import com.xpn.xwiki.store.XWikiCacheStoreInterface;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 
 /**
- * A proxy store implementation that caches Documents when they are first fetched and subsequently
- * return them from a
- * cache. It delegates all write and search operations to an underlying store without doing any
- * caching on them.
- *
- * @version $Id$
+ * A {@link DelegateStore} implementation that caches Documents when they are first fetched and
+ * subsequently return them from a cache. It delegates all write and search operations to an
+ * underlying store without doing any caching on them.
  */
 @Component(DocumentCacheStore.COMPONENT_NAME)
 public class DocumentCacheStore extends DelegateStore implements XWikiCacheStoreInterface {
@@ -87,66 +82,33 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   public static final String PARAM_DOC_CACHE_CAPACITY = PARAM_PREFIX + ".capacityDoc";
   public static final String PARAM_EXIST_CACHE_CAPACITY = PARAM_PREFIX + ".capacityExists";
 
-  @Requirement
-  private CacheManager cacheManager;
-
-  @Requirement
-  private XWikiDocumentCreator docCreator;
-
-  @Requirement
-  private ModelContext modelContext;
-
-  @Requirement
-  private ModelUtils modelUtils;
-
-  /**
-   * CAUTION: Lazy initialized of cache thus volatile is needed.
-   */
-  private volatile Cache<CelDocument> docCache;
-
-  /**
-   * CAUTION: Lazy initialized of cache thus volatile is needed.
-   */
-  private volatile Cache<Boolean> existCache;
-
+  private final XWikiDocumentCreator docCreator;
+  private final ModelContext modelContext;
+  private final ModelUtils modelUtils;
+  private final Supplier<Cache<String, CelDocument>> docCache = Suppliers
+      .memoize(() -> buildCache(CelDocument.class, getDocCacheCapacity()));
+  private final Supplier<Cache<String, Boolean>> existCache = Suppliers
+      .memoize(() -> buildCache(Boolean.class, getExistCacheCapacity()));
   private final ConcurrentMap<String, DocumentLoader> documentLoaderMap = new ConcurrentHashMap<>();
+
+  @Inject
+  public DocumentCacheStore(
+      XWikiDocumentCreator docCreator,
+      ModelContext modelContext,
+      ModelUtils modelUtils) {
+    this.docCreator = docCreator;
+    this.modelContext = modelContext;
+    this.modelUtils = modelUtils;
+  }
 
   @Override
   protected String getName() {
     return COMPONENT_NAME;
   }
 
-  // SonarLint Rule squid:S3064 - Assignment of lazy-initialized members should be
-  // the last step with double-checked locking
-  void initalize() {
-    try {
-      if (this.docCache == null) {
-        synchronized (this) {
-          if (this.docCache == null) {
-            this.docCache = newDocCache();
-          }
-        }
-      }
-      if (this.existCache == null) {
-        synchronized (this) {
-          if (this.existCache == null) {
-            this.existCache = newExistCache();
-          }
-        }
-      }
-    } catch (CacheException | ComponentLookupException exc) {
-      throw new IllegalStateException("FATAL: Failed to initialize document cache.", exc);
-    }
-  }
-
-  private Cache<Boolean> newExistCache() throws CacheException, ComponentLookupException {
-    CacheConfiguration config = new CacheConfiguration();
-    config.setConfigurationId("xwiki.store.pageexistcache");
-    LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
-    lru.setMaxEntries(getExistCacheCapacity());
-    config.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
-    LOGGER.info("newExistCache - capacity '{}'", lru.getMaxEntries());
-    return cacheManager.getCacheFactory().newCache(config);
+  private static <T> Cache<String, T> buildCache(Class<T> type, int capacity) {
+    LOGGER.info("buildCache - typ '{}', capacity '{}'", type.getSimpleName(), capacity);
+    return CacheBuilder.newBuilder().maximumSize(capacity).recordStats().build();
   }
 
   private int getExistCacheCapacity() {
@@ -159,17 +121,6 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
       existCacheCapacity = docCacheCapacity;
     }
     return existCacheCapacity;
-  }
-
-  private Cache<CelDocument> newDocCache()
-      throws CacheException, ComponentLookupException {
-    CacheConfiguration config = new CacheConfiguration();
-    config.setConfigurationId("xwiki.store.pagecache");
-    LRUEvictionConfiguration lru = new LRUEvictionConfiguration();
-    lru.setMaxEntries(getDocCacheCapacity());
-    config.put(EntryEvictionConfiguration.CONFIGURATIONID, lru);
-    LOGGER.info("newDocCache - capacity '{}'", lru.getMaxEntries());
-    return cacheManager.getCacheFactory().newCache(config);
   }
 
   private int getDocCacheCapacity() {
@@ -208,15 +159,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
 
   @Override
   public synchronized void flushCache() {
-    LOGGER.warn("flushCache may lead to serious memory visibility problems.");
-    if (this.docCache != null) {
-      this.docCache.dispose();
-      this.docCache = null;
-    }
-    if (this.existCache != null) {
-      this.existCache.dispose();
-      this.existCache = null;
-    }
+    getDocCache().invalidateAll();
+    getExistCache().invalidateAll();
   }
 
   String getKey(DocumentReference docRef) {
@@ -244,13 +188,13 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     DocumentLoader docLoader = documentLoaderMap.get(key);
     if (docLoader == null) {
       LOGGER.debug("create document loader for '{}' in thread '{}'", key,
-          Thread.currentThread().getId());
+          Thread.currentThread().threadId());
       docLoader = new DocumentLoader(key);
       DocumentLoader setDocLoader = documentLoaderMap.putIfAbsent(key, docLoader);
       if (setDocLoader != null) {
         docLoader = setDocLoader;
         LOGGER.info("replace with existing from map for key '{}' in thread '{}'", key,
-            Thread.currentThread().getId());
+            Thread.currentThread().threadId());
       }
     }
     return docLoader;
@@ -316,8 +260,8 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   public synchronized void clearCache() {
-    getDocCache().removeAll();
-    getExistCache().removeAll();
+    getDocCache().invalidateAll();
+    getExistCache().invalidateAll();
     LOGGER.warn("cleared doc cache", new RuntimeException());
   }
 
@@ -355,21 +299,21 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   }
 
   private boolean doesNotExistsForKey(String key) {
-    return Boolean.FALSE.equals(getExistCache().get(key));
+    return Boolean.FALSE.equals(getExistCache().getIfPresent(key));
   }
 
   /**
    * getCache is private, thus for tests we need getDocFromCache to check the cache state
    */
   CelDocument getDocFromCache(String key) {
-    return getDocCache().get(key);
+    return getDocCache().getIfPresent(key);
   }
 
   /**
    * getCache is private, thus for tests we need getExistFromCache to check the cache state
    */
   Boolean getExistFromCache(String key) {
-    return getExistCache().get(key);
+    return getExistCache().getIfPresent(key);
   }
 
   @Override
@@ -393,48 +337,53 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
   // FIXME [CELDEV-924] Store add lang support for exists check and cache
   private boolean existsInternal(XWikiDocument doc, XWikiContext context) throws XWikiException {
     String key = getKey(doc.getDocumentReference());
-    Boolean result = getExistCache().get(key);
+    Boolean result = getExistCache().getIfPresent(key);
     if (result == null) {
-      result = (getDocCache().get(key) != null);
+      result = (getDocCache().getIfPresent(key) != null);
       if (!result) {
         result = getBackingStore().exists(doc, context);
       }
-      getExistCache().set(key, result);
+      getExistCache().put(key, result);
     }
     LOGGER.trace("exists return '{}' for '{}'", result, key);
     return result;
   }
 
-  private Cache<CelDocument> getDocCache() {
-    initalize(); // make sure cache is initialized
-    return this.docCache;
+  private Cache<String, CelDocument> getDocCache() {
+    return this.docCache.get();
   }
 
   private void setDocCache(String key, CelDocument doc) {
     LOGGER.debug("setDocCache - '{}', '{}'", key, (doc == null ? " removed" : ""));
     if (doc == null) {
-      getDocCache().remove(key);
+      getDocCache().invalidate(key);
     } else {
-      getDocCache().set(key, doc);
+      getDocCache().put(key, doc);
     }
   }
 
-  private Cache<Boolean> getExistCache() {
-    initalize(); // make sure cache is initialized
-    return this.existCache;
+  private Cache<String, Boolean> getExistCache() {
+    return this.existCache.get();
   }
 
   private void setExistCache(String key, Boolean exists) {
     LOGGER.debug("setExistCache - '{}' to '{}'", key, exists);
     if (exists == null) {
-      getExistCache().remove(key);
+      getExistCache().invalidate(key);
     } else {
-      getExistCache().set(key, exists);
+      getExistCache().put(key, exists);
     }
   }
 
   private void setExistCache(XWikiDocument doc, Boolean exists) {
     setExistCache(getKeyWithLang(doc), exists);
+  }
+
+  public Metrics getMetrics() {
+    return new Metrics(
+        CacheStats.from(getDocCache(), getDocCacheCapacity()),
+        CacheStats.from(getExistCache(), getExistCacheCapacity()),
+        documentLoaderMap.size());
   }
 
   enum InvalidateState {
@@ -496,7 +445,7 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
             // if a thread is just between the document cache miss and getting the documentLoader
             // when the documentLoader removes itself from the map, then a new documentLoader is
             // generated. Therefore we double check here that still no document is in cache.
-            CelDocument cachedDoc = getDocCache().get(key);
+            CelDocument cachedDoc = getDocCache().getIfPresent(key);
             Optional<CelDocument> loadingDoc;
             if (cachedDoc == null) {
               Optional<CelDocument> newDoc = null;
@@ -504,12 +453,12 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
                 if ((loadingState.getAndSet(DOCSTATE_LOADING) < DOCSTATE_LOADING)
                     && (newDoc != null)) {
                   LOGGER_DL.info("DocumentLoader-'{}': invalidated docloader '{}' reloading",
-                      Thread.currentThread().getId(), key);
+                      Thread.currentThread().threadId(), key);
                 }
                 newDoc = getBackingStore().loadCelDocument(docRef, lang);
               } while (!loadingState.compareAndSet(DOCSTATE_LOADING, DOCSTATE_FINISHED));
               LOGGER_DL.debug("DocumentLoader-'{}': put doc '{}' in cache",
-                  Thread.currentThread().getId(), key);
+                  Thread.currentThread().threadId(), key);
               if (newDoc.isPresent()) {
                 CelDocument document = newDoc.get();
                 setDocCache(key, document);
@@ -517,13 +466,13 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
                 setExistCache(key, true);
               } else {
                 LOGGER_DL.debug("DocumentLoader-'{}': loading '{}' failed. Setting exists"
-                    + " to FALSE for '{}'", Thread.currentThread().getId(), key, key);
+                    + " to FALSE for '{}'", Thread.currentThread().threadId(), key, key);
                 setExistCache(key, false);
               }
               loadingDoc = newDoc;
             } else {
               LOGGER_DL.debug("DocumentLoader-'{}': found in cache skip loding for '{}'",
-                  Thread.currentThread().getId(), key);
+                  Thread.currentThread().threadId(), key);
               loadingDoc = Optional.of(cachedDoc);
             }
             documentLoaderMap.remove(key);
@@ -623,6 +572,23 @@ public class DocumentCacheStore extends DelegateStore implements XWikiCacheStore
     return !wikiRef.equals(docRef.getWikiReference())
         ? RefBuilder.from(docRef).with(wikiRef).build(DocumentReference.class)
         : docRef;
+  }
+
+  public record Metrics(CacheStats documents, CacheStats exists, int activeLoads) {}
+
+  public record CacheStats(
+      long size,
+      int capacity,
+      long hitCount,
+      long missCount,
+      double hitRate,
+      long evictionCount) {
+
+    static CacheStats from(Cache<?, ?> cache, int capacity) {
+      var stats = cache.stats();
+      return new CacheStats(cache.size(), capacity, stats.hitCount(), stats.missCount(),
+          stats.hitRate(), stats.evictionCount());
+    }
   }
 
 }
