@@ -17,10 +17,6 @@ import com.celements.web.service.IWebUtilsService;
 @Component
 class NavigationRequestResolver {
 
-  private static final String INVALID_REFERENCE_MESSAGE = "The reference is invalid.";
-  private static final String INVALID_PARAMETER_MESSAGE = "The parameter is invalid.";
-  private static final String UNSUPPORTED_LANGUAGE_MESSAGE = "The language is not supported.";
-
   private final ModelUtils modelUtils;
   private final ModelContext modelContext;
   private final IWebUtilsService webUtilsService;
@@ -89,17 +85,17 @@ class NavigationRequestResolver {
 
   private NavigationApiException invalidReference() {
     return new NavigationApiException(HttpStatus.BAD_REQUEST, "invalid_reference",
-        INVALID_REFERENCE_MESSAGE);
+        "The reference is invalid.");
   }
 
   private NavigationApiException invalidParameter() {
     return new NavigationApiException(HttpStatus.BAD_REQUEST, "invalid_parameter",
-        INVALID_PARAMETER_MESSAGE);
+        "The parameter is invalid.");
   }
 
   private NavigationApiException unsupportedLanguage() {
     return new NavigationApiException(HttpStatus.BAD_REQUEST, "unsupported_language",
-        UNSUPPORTED_LANGUAGE_MESSAGE);
+        "The language is not supported.");
   }
 
 }

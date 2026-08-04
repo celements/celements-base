@@ -21,15 +21,10 @@ class DefaultNavigationNodeValueResolver {
   @Inject
   DefaultNavigationNodeValueResolver(ModelUtils modelUtils, ModelContext modelContext,
       UrlService urlService) {
-    this(modelUtils, modelContext, urlService, new MultilingualMenuNameCommand());
-  }
-
-  DefaultNavigationNodeValueResolver(ModelUtils modelUtils, ModelContext modelContext,
-      UrlService urlService, MultilingualMenuNameCommand menuNameCommand) {
     this.modelUtils = modelUtils;
     this.modelContext = modelContext;
     this.urlService = urlService;
-    this.menuNameCommand = menuNameCommand;
+    this.menuNameCommand = new MultilingualMenuNameCommand();
   }
 
   public String serialize(DocumentReference docRef) {

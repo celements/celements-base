@@ -74,11 +74,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>io.swagger.core.v3</groupId>
       <artifactId>swagger-annotations</artifactId>
       <scope>provided</scope>
@@ -102,11 +97,6 @@
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-component</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.celements</groupId>
@@ -158,11 +148,6 @@
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-common</artifactId>
       <version>1.8.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-config</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- Springdoc's ModelResolver loads XmlRootElement reflectively on Java 21. -->
