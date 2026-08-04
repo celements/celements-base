@@ -6,27 +6,47 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.http.HttpStatus;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.test.AbstractComponentTest;
 import com.celements.navigation.TreeNode;
 import com.celements.navigation.filter.InternalRightsFilter;
 import com.celements.navigation.service.ITreeNodeService;
 import com.celements.parents.IDocumentParentsListerRole;
 
-public class NavigationTreeBuilderTest {
+public class NavigationTreeBuilderTest extends AbstractComponentTest {
 
   private final WikiReference wikiRef = new WikiReference("xwiki");
   private final SpaceReference spaceRef = new SpaceReference("Content", wikiRef);
+  private ITreeNodeService treeService;
+  private IDocumentParentsListerRole parentsLister;
+  private DefaultNavigationNodeValueResolver values;
+  private NavigationTreeBuilder builder;
+
+  @Before
+  public void prepareTest() throws Exception {
+    registerComponentMocks(ITreeNodeService.class, IDocumentParentsListerRole.class,
+        DefaultNavigationNodeValueResolver.class);
+    treeService = getMock(ITreeNodeService.class);
+    parentsLister = getMock(IDocumentParentsListerRole.class);
+    values = getMock(DefaultNavigationNodeValueResolver.class);
+    var beanFactory = (DefaultListableBeanFactory) getBeanFactory();
+    beanFactory.destroySingleton(NavigationTreeBuilder.class.getName());
+    beanFactory.registerResolvableDependency(ITreeNodeService.class, treeService);
+    beanFactory.registerResolvableDependency(IDocumentParentsListerRole.class, parentsLister);
+    beanFactory.registerResolvableDependency(DefaultNavigationNodeValueResolver.class, values);
+    builder = getBeanFactory().getBean(NavigationTreeBuilder.class.getName(),
+        NavigationTreeBuilder.class);
+  }
 
   @Test
-  public void build_groupsAndOrdersSegmentsWithoutReorderingNodes() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_groupsAndOrdersSegmentsWithoutReorderingNodes() {
     var unnamed = node("Unnamed", null, 1);
     var mainSecond = node("MainSecond", "main", 2);
     var upperCase = node("Upper", "A", 1);
@@ -35,12 +55,11 @@ public class NavigationTreeBuilderTest {
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(unnamed, mainSecond, upperCase, lowerCase, mainFirst));
     for (var node : List.of(unnamed, mainSecond, upperCase, lowerCase, mainFirst)) {
-      expectNode(treeService, values, node, List.of());
+      expectNode(node, List.of());
     }
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.empty(), Optional.empty(), 0));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(request(Optional.empty(), Optional.empty(), 0));
+    verifyDefault();
     assertEquals(4, response.segments().size());
     assertNull(response.segments().get(0).partName());
     assertEquals("A", response.segments().get(1).partName());
@@ -53,26 +72,23 @@ public class NavigationTreeBuilderTest {
   }
 
   @Test
-  public void build_expandsActiveAncestorsNodeAndDirectChildren() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_expandsActiveAncestorsNodeAndDirectChildren() {
     var root = node("Root", "main", 1);
     var active = childNode("Active", root, 1);
     var child = childNode("Child", active, 1);
     var grandchild = childNode("Grandchild", child, 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(root));
-    expectNode(treeService, values, root, List.of(active));
-    expectNode(treeService, values, active, List.of(child));
-    expectNode(treeService, values, child, List.of(grandchild));
-    expectNode(treeService, values, grandchild, List.of());
+    expectNode(root, List.of(active));
+    expectNode(active, List.of(child));
+    expectNode(child, List.of(grandchild));
+    expectNode(grandchild, List.of());
     expect(parentsLister.getDocumentParentsList(active.getDocumentReference(), true))
         .andReturn(List.of(active.getDocumentReference(), root.getDocumentReference()));
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.of(active.getDocumentReference()), Optional.of(local(active)), 0));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(
+        request(Optional.of(active.getDocumentReference()), Optional.of(local(active)), 0));
+    verifyDefault();
     var rootDto = response.segments().get(0).nodes().get(0);
     var activeDto = rootDto.children().get(0);
     var childDto = activeDto.children().get(0);
@@ -87,10 +103,7 @@ public class NavigationTreeBuilderTest {
   }
 
   @Test
-  public void build_combinesActivePathAndInactiveThresholdExpansion() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_combinesActivePathAndInactiveThresholdExpansion() {
     var activeRoot = node("ActiveRoot", "main", 1);
     var active = childNode("Active", activeRoot, 1);
     var activeChild = childNode("ActiveChild", active, 1);
@@ -100,19 +113,19 @@ public class NavigationTreeBuilderTest {
     var inactiveGrandchild = childNode("InactiveGrandchild", inactiveChild, 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(activeRoot, inactiveRoot));
-    expectNode(treeService, values, activeRoot, List.of(active));
-    expectNode(treeService, values, active, List.of(activeChild));
-    expectNode(treeService, values, activeChild, List.of(activeGrandchild));
-    expectNode(treeService, values, activeGrandchild, List.of());
-    expectNode(treeService, values, inactiveRoot, List.of(inactiveChild));
-    expectNode(treeService, values, inactiveChild, List.of(inactiveGrandchild));
-    expectNode(treeService, values, inactiveGrandchild, List.of());
+    expectNode(activeRoot, List.of(active));
+    expectNode(active, List.of(activeChild));
+    expectNode(activeChild, List.of(activeGrandchild));
+    expectNode(activeGrandchild, List.of());
+    expectNode(inactiveRoot, List.of(inactiveChild));
+    expectNode(inactiveChild, List.of(inactiveGrandchild));
+    expectNode(inactiveGrandchild, List.of());
     expect(parentsLister.getDocumentParentsList(active.getDocumentReference(), true))
         .andReturn(List.of(active.getDocumentReference(), activeRoot.getDocumentReference()));
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.of(active.getDocumentReference()), Optional.of(local(active)), 2));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(
+        request(Optional.of(active.getDocumentReference()), Optional.of(local(active)), 2));
+    verifyDefault();
     var activeRootDto = response.segments().get(0).nodes().get(0);
     var activeDto = activeRootDto.children().get(0);
     var activeChildDto = activeDto.children().get(0);
@@ -129,7 +142,7 @@ public class NavigationTreeBuilderTest {
   }
 
   @Test
-  public void build_appliesInactiveExpansionThresholds() {
+  public void test_build_appliesInactiveExpansionThresholds() {
     assertEquals(1, expandedDepth(0));
     assertEquals(1, expandedDepth(1));
     assertEquals(2, expandedDepth(2));
@@ -138,37 +151,29 @@ public class NavigationTreeBuilderTest {
   }
 
   @Test
-  public void build_unfilteredEmptyNodeSpaceReturnsEmptySegments() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_unfilteredEmptyNodeSpaceReturnsEmptySegments() {
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of());
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.empty(), Optional.empty(), 0));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(request(Optional.empty(), Optional.empty(), 0));
+    verifyDefault();
     assertTrue(response.segments().isEmpty());
   }
 
   @Test
-  public void build_omittedInvalidChildDoesNotDiscloseNonLeafState() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_omittedInvalidChildDoesNotDiscloseNonLeafState() {
     var root = node("Root", "main", 1);
     var invalid = childNode("HiddenByInvalidTitle", root, 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(root));
-    expectValues(values, root);
+    expectValues(root);
     expect(treeService.getSubNodesForParent(eq(root.getDocumentReference()),
         isA(InternalRightsFilter.class))).andReturn(List.of(invalid));
     expect(values.serialize(invalid.getDocumentReference())).andReturn(local(invalid));
     expect(values.resolveTitle(invalid.getDocumentReference(), "de")).andReturn(" ");
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.empty(), Optional.empty(), 100));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(request(Optional.empty(), Optional.empty(), 100));
+    verifyDefault();
     var rootDto = response.segments().get(0).nodes().get(0);
     assertTrue(rootDto.isLeaf());
     assertFalse(rootDto.isOpen());
@@ -176,7 +181,7 @@ public class NavigationTreeBuilderTest {
   }
 
   @Test
-  public void build_omitsNullAndBlankMandatoryNodeValues() {
+  public void test_build_omitsNullAndBlankMandatoryNodeValues() {
     for (String field : List.of("docRef", "title", "url")) {
       assertInvalidNodeOmitted(field, null);
       assertInvalidNodeOmitted(field, " ");
@@ -184,10 +189,7 @@ public class NavigationTreeBuilderTest {
   }
 
   @Test
-  public void build_omittedActiveNodeReturnsNotFound() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_omittedActiveNodeReturnsNotFound() {
     var active = node("InvalidActive", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(active));
@@ -195,91 +197,74 @@ public class NavigationTreeBuilderTest {
     expect(values.resolveTitle(active.getDocumentReference(), "de")).andReturn(null);
     expect(parentsLister.getDocumentParentsList(active.getDocumentReference(), true))
         .andReturn(List.of(active.getDocumentReference()));
-    replay(treeService, parentsLister, values);
+    replayDefault();
     var exception = assertThrows(NavigationApiException.class,
-        () -> new NavigationTreeBuilder(treeService, parentsLister, values).build(
+        () -> builder.build(
             request(Optional.of(active.getDocumentReference()), Optional.of(local(active)), 0)));
-    verify(treeService, parentsLister, values);
+    verifyDefault();
     assertEquals("navigation_node_not_found", exception.code());
   }
 
   @Test
-  public void build_omitsInactiveNodeWithNullChildren() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_omitsInactiveNodeWithNullChildren() {
     var root = node("InvalidRoot", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(root));
-    expectValues(values, root);
+    expectValues(root);
     expect(treeService.getSubNodesForParent(eq(root.getDocumentReference()),
         isA(InternalRightsFilter.class))).andReturn(null);
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.empty(), Optional.empty(), 100));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(request(Optional.empty(), Optional.empty(), 100));
+    verifyDefault();
     assertTrue(response.segments().isEmpty());
   }
 
   @Test
-  public void build_activeNodeWithNullChildrenReturnsNotFound() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_activeNodeWithNullChildrenReturnsNotFound() {
     var active = node("InvalidActive", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(active));
-    expectValues(values, active);
+    expectValues(active);
     expect(treeService.getSubNodesForParent(eq(active.getDocumentReference()),
         isA(InternalRightsFilter.class))).andReturn(null);
     expect(parentsLister.getDocumentParentsList(active.getDocumentReference(), true))
         .andReturn(List.of(active.getDocumentReference()));
-    replay(treeService, parentsLister, values);
+    replayDefault();
     var exception = assertThrows(NavigationApiException.class,
-        () -> new NavigationTreeBuilder(treeService, parentsLister, values).build(
+        () -> builder.build(
             request(Optional.of(active.getDocumentReference()), Optional.of(local(active)), 0)));
-    verify(treeService, parentsLister, values);
+    verifyDefault();
     assertEquals(HttpStatus.NOT_FOUND, exception.status());
     assertEquals("navigation_node_not_found", exception.code());
   }
 
   @Test
-  public void build_inaccessibleCurrentNodeReturnsSafeNotFound() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_inaccessibleCurrentNodeReturnsSafeNotFound() {
     var current = node("Restricted", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of());
     expect(parentsLister.getDocumentParentsList(current.getDocumentReference(), true))
         .andReturn(List.of(current.getDocumentReference()));
-    replay(treeService, parentsLister, values);
-    assertNodeNotFound(treeService, parentsLister, values,
-        request(Optional.of(current.getDocumentReference()), Optional.of(local(current)), 0));
+    replayDefault();
+    assertNodeNotFound(request(Optional.of(current.getDocumentReference()),
+        Optional.of(local(current)), 0));
   }
 
   @Test
-  public void build_outOfRootCurrentNodeReturnsSafeNotFound() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_outOfRootCurrentNodeReturnsSafeNotFound() {
     var root = node("Root", "main", 1);
     var otherSpace = new SpaceReference("Other", wikiRef);
     var current = new DocumentReference("Current", otherSpace);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(root));
-    expectNode(treeService, values, root, List.of());
+    expectNode(root, List.of());
     expect(parentsLister.getDocumentParentsList(current, true)).andReturn(List.of(current));
-    replay(treeService, parentsLister, values);
-    assertNodeNotFound(treeService, parentsLister, values,
-        request(Optional.of(current), Optional.of("Other.Current"), 0));
+    replayDefault();
+    assertNodeNotFound(request(Optional.of(current), Optional.of("Other.Current"), 0));
   }
 
   @Test
-  public void build_partExcludedCurrentNodeReturnsSafeNotFound() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_partExcludedCurrentNodeReturnsSafeNotFound() {
     var current = node("OtherPart", "other", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andAnswer(() -> {
@@ -288,57 +273,46 @@ public class NavigationTreeBuilderTest {
         });
     expect(parentsLister.getDocumentParentsList(current.getDocumentReference(), true))
         .andReturn(List.of(current.getDocumentReference()));
-    replay(treeService, parentsLister, values);
+    replayDefault();
     var request = new NavigationRequest(spaceRef, "Content",
         Optional.of(current.getDocumentReference()), Optional.of(local(current)), "de",
         Optional.of("main"), 0);
-    assertNodeNotFound(treeService, parentsLister, values, request);
+    assertNodeNotFound(request);
   }
 
   @Test
-  public void build_requestedPartAlwaysReturnsExactlyOneSegment() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_requestedPartAlwaysReturnsExactlyOneSegment() {
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of());
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(new NavigationRequest(spaceRef, "Content", Optional.empty(), Optional.empty(), "de",
-            Optional.of("Main"), 0));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(new NavigationRequest(spaceRef, "Content", Optional.empty(),
+        Optional.empty(), "de", Optional.of("Main"), 0));
+    verifyDefault();
     assertEquals(1, response.segments().size());
     assertEquals("Main", response.segments().get(0).partName());
     assertTrue(response.segments().get(0).nodes().isEmpty());
   }
 
   @Test
-  public void build_partFilterIsCaseSensitive() {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
+  public void test_build_partFilterIsCaseSensitive() {
     var lowerCasePart = node("Root", "main", 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(lowerCasePart));
-    expectNode(treeService, values, lowerCasePart, List.of());
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(new NavigationRequest(spaceRef, "Content", Optional.empty(), Optional.empty(), "de",
-            Optional.of("Main"), 0));
-    verify(treeService, parentsLister, values);
+    expectNode(lowerCasePart, List.of());
+    replayDefault();
+    var response = builder.build(new NavigationRequest(spaceRef, "Content", Optional.empty(),
+        Optional.empty(), "de", Optional.of("Main"), 0));
+    verifyDefault();
     assertEquals("Main", response.segments().get(0).partName());
     assertTrue(response.segments().get(0).nodes().isEmpty());
   }
 
   private void assertInvalidNodeOmitted(String field, String invalidValue) {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var root = node("Root", "main", 1);
     var invalid = childNode("Invalid", root, 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(root));
-    expectValues(values, root);
+    expectValues(root);
     expect(treeService.getSubNodesForParent(eq(root.getDocumentReference()),
         isA(InternalRightsFilter.class))).andReturn(List.of(invalid));
     expect(values.serialize(invalid.getDocumentReference()))
@@ -350,60 +324,54 @@ public class NavigationTreeBuilderTest {
     if ("url".equals(field)) {
       expect(values.resolveUrl(invalid.getDocumentReference(), "de")).andReturn(invalidValue);
     }
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.empty(), Optional.empty(), 100));
-    verify(treeService, parentsLister, values);
+    replayDefault();
+    var response = builder.build(request(Optional.empty(), Optional.empty(), 100));
+    verifyDefault();
     var rootDto = response.segments().get(0).nodes().get(0);
     assertTrue(rootDto.isLeaf());
     assertTrue(rootDto.children().isEmpty());
+    resetDefault();
   }
 
-  private void assertNodeNotFound(ITreeNodeService treeService,
-      IDocumentParentsListerRole parentsLister, DefaultNavigationNodeValueResolver values,
-      NavigationRequest request) {
+  private void assertNodeNotFound(NavigationRequest request) {
     var exception = assertThrows(NavigationApiException.class,
-        () -> new NavigationTreeBuilder(treeService, parentsLister, values).build(request));
-    verify(treeService, parentsLister, values);
+        () -> builder.build(request));
+    verifyDefault();
     assertEquals(HttpStatus.NOT_FOUND, exception.status());
     assertEquals("navigation_node_not_found", exception.code());
   }
 
   private int expandedDepth(int threshold) {
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
     var level1 = node("Level1", "main", 1);
     var level2 = childNode("Level2", level1, 1);
     var level3 = childNode("Level3", level2, 1);
     var level4 = childNode("Level4", level3, 1);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
         .andReturn(List.of(level1));
-    expectNode(treeService, values, level1, List.of(level2));
-    expectNode(treeService, values, level2, List.of(level3));
-    expectNode(treeService, values, level3, List.of(level4));
-    expectNode(treeService, values, level4, List.of());
-    replay(treeService, parentsLister, values);
-    var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-        .build(request(Optional.empty(), Optional.empty(), threshold));
-    verify(treeService, parentsLister, values);
+    expectNode(level1, List.of(level2));
+    expectNode(level2, List.of(level3));
+    expectNode(level3, List.of(level4));
+    expectNode(level4, List.of());
+    replayDefault();
+    var response = builder.build(request(Optional.empty(), Optional.empty(), threshold));
+    verifyDefault();
     int depth = 1;
     var current = response.segments().get(0).nodes().get(0);
     while (!current.children().isEmpty()) {
       current = current.children().get(0);
       depth++;
     }
+    resetDefault();
     return depth;
   }
 
-  private void expectNode(ITreeNodeService treeService, DefaultNavigationNodeValueResolver values,
-      TreeNode node, List<TreeNode> children) {
-    expectValues(values, node);
+  private void expectNode(TreeNode node, List<TreeNode> children) {
+    expectValues(node);
     expect(treeService.getSubNodesForParent(eq(node.getDocumentReference()),
         isA(InternalRightsFilter.class))).andReturn(children);
   }
 
-  private void expectValues(DefaultNavigationNodeValueResolver values, TreeNode node) {
+  private void expectValues(TreeNode node) {
     expect(values.serialize(node.getDocumentReference())).andReturn(local(node));
     expect(values.resolveTitle(node.getDocumentReference(), "de"))
         .andReturn(node.getDocumentReference().getName());

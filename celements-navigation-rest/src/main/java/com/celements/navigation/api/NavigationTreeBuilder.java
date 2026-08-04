@@ -31,7 +31,8 @@ class NavigationTreeBuilder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NavigationTreeBuilder.class);
   private static final Comparator<String> PART_NAME_COMPARATOR = comparing(
-      (String value) -> value.toLowerCase(Locale.ROOT)).thenComparing(naturalOrder());
+      (String value) -> value.toLowerCase(Locale.ROOT))
+          .thenComparing(naturalOrder());
 
   private final ITreeNodeService treeNodeService;
   private final IDocumentParentsListerRole parentsLister;
@@ -53,8 +54,8 @@ class NavigationTreeBuilder {
     List<InternalNode> roots = readNodes(
         treeNodeService.getSubNodesForParent(request.nodeSpace(), rootFilter), descendantFilter,
         request.language(), new HashSet<>());
-    if (request.currentNode().isPresent()
-        && roots.stream().noneMatch(root -> root.contains(request.currentNode().orElseThrow()))) {
+    if (request.currentNode().isPresent() && roots.stream()
+        .noneMatch(root -> root.contains(request.currentNode().orElseThrow()))) {
       throw nodeNotFound();
     }
     return new NavigationTreeResponse(request.serializedNodeSpace(),
@@ -64,12 +65,14 @@ class NavigationTreeBuilder {
   }
 
   private Set<DocumentReference> resolveActivePath(NavigationRequest request) {
-    return request.currentNode().map(currentNode -> {
-      var path = new HashSet<>(
-          Objects.requireNonNull(parentsLister.getDocumentParentsList(currentNode, true)));
-      path.add(currentNode);
-      return Set.copyOf(path);
-    }).orElseGet(Set::of);
+    return request.currentNode()
+        .map(currentNode -> {
+          var path = new HashSet<>(
+              Objects.requireNonNull(parentsLister.getDocumentParentsList(currentNode, true)));
+          path.add(currentNode);
+          return Set.copyOf(path);
+        })
+        .orElseGet(Set::of);
   }
 
   private List<NavigationSegmentDto> buildSegments(List<InternalNode> roots,
@@ -77,15 +80,23 @@ class NavigationTreeBuilder {
     if (request.partName().isPresent()) {
       String partName = request.partName().orElseThrow();
       return List.of(new NavigationSegmentDto(partName,
-          roots.stream().filter(root -> partName.equals(root.partName()))
-              .map(root -> toDto(root, 1, activePath, request)).toList()));
+          roots.stream()
+              .filter(root -> partName.equals(root.partName()))
+              .map(root -> toDto(root, 1, activePath, request))
+              .toList()));
     }
     Map<String, List<InternalNode>> groupedRoots = new LinkedHashMap<>();
-    roots.forEach(root -> groupedRoots
-        .computeIfAbsent(root.partName(), ignored -> new ArrayList<>()).add(root));
-    return groupedRoots.entrySet().stream().sorted(Map.Entry.comparingByKey(PART_NAME_COMPARATOR))
+    roots.forEach(root -> groupedRoots.computeIfAbsent(root.partName(),
+        ignored -> new ArrayList<>())
+        .add(root));
+    return groupedRoots.entrySet()
+        .stream()
+        .sorted(Map.Entry.comparingByKey(PART_NAME_COMPARATOR))
         .map(entry -> new NavigationSegmentDto(emptyToNull(entry.getKey()),
-            entry.getValue().stream().map(root -> toDto(root, 1, activePath, request)).toList()))
+            entry.getValue()
+                .stream()
+                .map(root -> toDto(root, 1, activePath, request))
+                .toList()))
         .toList();
   }
 
@@ -96,7 +107,9 @@ class NavigationTreeBuilder {
     boolean expandForInactiveLevel = level < request.showInactiveToLevel();
     boolean isOpen = onActivePath || (expandForInactiveLevel && !node.children().isEmpty());
     List<NavigationNodeDto> children = isOpen
-        ? node.children().stream().map(child -> toDto(child, level + 1, activePath, request))
+        ? node.children()
+            .stream()
+            .map(child -> toDto(child, level + 1, activePath, request))
             .toList()
         : List.of();
     return new NavigationNodeDto(node.serializedDocRef(), node.url(), node.title(),
@@ -105,8 +118,10 @@ class NavigationTreeBuilder {
 
   private List<InternalNode> readNodes(List<TreeNode> sourceNodes, InternalRightsFilter filter,
       String language, Set<DocumentReference> ancestors) {
-    return Objects.requireNonNull(sourceNodes).stream()
-        .map(node -> readNode(node, filter, language, ancestors)).flatMap(Optional::stream)
+    return Objects.requireNonNull(sourceNodes)
+        .stream()
+        .map(node -> readNode(node, filter, language, ancestors))
+        .flatMap(Optional::stream)
         .toList();
   }
 
@@ -169,8 +184,8 @@ class NavigationTreeBuilder {
     }
 
     boolean contains(DocumentReference reference) {
-      return docRef.equals(reference)
-          || children.stream().anyMatch(child -> child.contains(reference));
+      return docRef.equals(reference) || children.stream()
+          .anyMatch(child -> child.contains(reference));
     }
 
   }

@@ -13,11 +13,12 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.context.ModelContext;
 import com.celements.model.util.ModelUtils;
 import com.celements.web.service.IWebUtilsService;
 
-public class NavigationRequestResolverTest {
+public class NavigationRequestResolverTest extends AbstractComponentTest {
 
   private final WikiReference wikiRef = new WikiReference("xwiki");
   private final SpaceReference spaceRef = new SpaceReference("Content", wikiRef);
@@ -27,23 +28,24 @@ public class NavigationRequestResolverTest {
   private NavigationRequestResolver resolver;
 
   @Before
-  public void prepare() {
-    modelUtils = createMock(ModelUtils.class);
-    modelContext = createMock(ModelContext.class);
-    webUtilsService = createMock(IWebUtilsService.class);
-    resolver = new NavigationRequestResolver(modelUtils, modelContext, webUtilsService);
+  public void prepareTest() throws Exception {
+    registerComponentMocks(ModelUtils.class, ModelContext.class, IWebUtilsService.class);
+    modelUtils = getMock(ModelUtils.class);
+    modelContext = getMock(ModelContext.class);
+    webUtilsService = getMock(IWebUtilsService.class);
+    resolver = getBeanFactory().getBean(NavigationRequestResolver.class);
   }
 
   @Test
-  public void resolve_acceptsCanonicalLocalReferencesAndRequestedLanguage() {
+  public void test_resolve_acceptsCanonicalLocalReferencesAndRequestedLanguage() {
     var currentRef = new DocumentReference("MyPage", spaceRef);
     expectCanonicalSpace("Content");
     expectCanonicalDocument("Content.MyPage", currentRef);
     expect(modelUtils.normalizeLang("DE")).andReturn("de");
     expect(webUtilsService.getAllowedLanguages(spaceRef)).andReturn(List.of("en", "de"));
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     var request = resolver.resolve("Content", "Content.MyPage", "DE", "main", 2);
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
     assertEquals(spaceRef, request.nodeSpace());
     assertEquals(Optional.of(currentRef), request.currentNode());
     assertEquals("de", request.language());
@@ -52,41 +54,41 @@ public class NavigationRequestResolverTest {
   }
 
   @Test
-  public void resolve_defaultsLanguageFromCurrentRequestAndNormalizesBlankPart() {
+  public void test_resolve_defaultsLanguageFromCurrentRequestAndNormalizesBlankPart() {
     expectCanonicalSpace("Content");
     expect(modelContext.getLanguage()).andReturn(Optional.of("fr"));
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     var request = resolver.resolve("Content", null, null, "  ", 0);
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
     assertEquals("fr", request.language());
     assertEquals(Optional.empty(), request.partName());
     assertEquals(Optional.empty(), request.serializedCurrentNode());
   }
 
   @Test
-  public void resolve_defaultsLanguageFromWikiWhenRequestLanguageIsAbsent() {
+  public void test_resolve_defaultsLanguageFromWikiWhenRequestLanguageIsAbsent() {
     expectCanonicalSpace("Content");
     expect(modelContext.getLanguage()).andReturn(Optional.empty());
     expect(modelContext.getDefaultLanguage()).andReturn("en");
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertEquals("en", resolver.resolve("Content", null, null, null, 0).language());
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsCurrentWikiQualifiedSpace() {
+  public void test_resolve_rejectsCurrentWikiQualifiedSpace() {
     expect(modelContext.getWikiRef()).andReturn(wikiRef);
     expect(modelUtils.resolveRef("xwiki:Content", SpaceReference.class, wikiRef))
         .andReturn(spaceRef);
     expect(modelUtils.serializeRefLocal(spaceRef)).andReturn("Content");
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("invalid_reference",
         () -> resolver.resolve("xwiki:Content", null, null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsOtherWikiQualifiedCurrentNode() {
+  public void test_resolve_rejectsOtherWikiQualifiedCurrentNode() {
     var otherRef = new DocumentReference("MyPage",
         new SpaceReference("Content", new WikiReference("other")));
     expectCanonicalSpace("Content");
@@ -94,113 +96,113 @@ public class NavigationRequestResolverTest {
     expect(modelUtils.resolveRef("other:Content.MyPage", DocumentReference.class, wikiRef))
         .andReturn(otherRef);
     expect(modelUtils.serializeRefLocal(otherRef)).andReturn("Content.MyPage");
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("invalid_reference",
         () -> resolver.resolve("Content", "other:Content.MyPage", null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsCurrentWikiQualifiedCurrentNode() {
+  public void test_resolve_rejectsCurrentWikiQualifiedCurrentNode() {
     var currentRef = new DocumentReference("MyPage", spaceRef);
     expectCanonicalSpace("Content");
     expect(modelContext.getWikiRef()).andReturn(wikiRef);
     expect(modelUtils.resolveRef("xwiki:Content.MyPage", DocumentReference.class, wikiRef))
         .andReturn(currentRef);
     expect(modelUtils.serializeRefLocal(currentRef)).andReturn("Content.MyPage");
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("invalid_reference",
         () -> resolver.resolve("Content", "xwiki:Content.MyPage", null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsBlankAndNoncanonicalCurrentNode() {
+  public void test_resolve_rejectsBlankAndNoncanonicalCurrentNode() {
     expectCanonicalSpace("Content");
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("invalid_reference", () -> resolver.resolve("Content", " ", null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
-    reset(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
+    resetDefault();
     expectCanonicalSpace("Content");
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("invalid_reference",
         () -> resolver.resolve("Content", " Content.MyPage ", null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsNoncanonicalNodeSpace() {
-    replay(modelUtils, modelContext, webUtilsService);
+  public void test_resolve_rejectsNoncanonicalNodeSpace() {
+    replayDefault();
     assertApiError("invalid_reference", () -> resolver.resolve(" Content ", null, null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsMalformedReference() {
+  public void test_resolve_rejectsMalformedReference() {
     expect(modelContext.getWikiRef()).andReturn(wikiRef);
     expect(modelUtils.resolveRef("[", SpaceReference.class, wikiRef))
         .andThrow(new IllegalArgumentException("malformed"));
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("invalid_reference", () -> resolver.resolve("[", null, null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_doesNotMisclassifyUnexpectedNullPointerException() {
+  public void test_resolve_doesNotMisclassifyUnexpectedNullPointerException() {
     expect(modelContext.getWikiRef()).andThrow(new NullPointerException("backend failure"));
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     var exception = assertThrows(NullPointerException.class,
         () -> resolver.resolve("Content", null, null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
     assertEquals("backend failure", exception.getMessage());
   }
 
   @Test
-  public void resolve_doesNotMisclassifyModelUtilsNullPointerException() {
+  public void test_resolve_doesNotMisclassifyModelUtilsNullPointerException() {
     expect(modelContext.getWikiRef()).andReturn(wikiRef);
     expect(modelUtils.resolveRef("Content", SpaceReference.class, wikiRef)).andReturn(spaceRef);
     expect(modelUtils.serializeRefLocal(spaceRef))
         .andThrow(new NullPointerException("serialization failure"));
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     var exception = assertThrows(NullPointerException.class,
         () -> resolver.resolve("Content", null, null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
     assertEquals("serialization failure", exception.getMessage());
   }
 
   @Test
-  public void resolve_rejectsNullParseResult() {
+  public void test_resolve_rejectsNullParseResult() {
     expect(modelContext.getWikiRef()).andReturn(wikiRef);
     expect(modelUtils.resolveRef("Content", SpaceReference.class, wikiRef)).andReturn(null);
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("invalid_reference", () -> resolver.resolve("Content", null, null, null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsUnsupportedAndInvalidLanguage() {
+  public void test_resolve_rejectsUnsupportedAndInvalidLanguage() {
     expectCanonicalSpace("Content");
     expect(modelUtils.normalizeLang("it")).andReturn("it");
     expect(webUtilsService.getAllowedLanguages(spaceRef)).andReturn(List.of("en", "de"));
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("unsupported_language", () -> resolver.resolve("Content", null, "it", null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
-    reset(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
+    resetDefault();
     expectCanonicalSpace("Content");
     expect(modelUtils.normalizeLang("invalid"))
         .andThrow(new IllegalArgumentException("invalid language"));
-    replay(modelUtils, modelContext, webUtilsService);
+    replayDefault();
     assertApiError("unsupported_language",
         () -> resolver.resolve("Content", null, "invalid", null, 0));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   @Test
-  public void resolve_rejectsInactiveLevelsOutsideRange() {
-    replay(modelUtils, modelContext, webUtilsService);
+  public void test_resolve_rejectsInactiveLevelsOutsideRange() {
+    replayDefault();
     assertApiError("invalid_parameter", () -> resolver.resolve("Content", null, null, null, -1));
     assertApiError("invalid_parameter", () -> resolver.resolve("Content", null, null, null, 101));
-    verify(modelUtils, modelContext, webUtilsService);
+    verifyDefault();
   }
 
   private void expectCanonicalSpace(String serialized) {

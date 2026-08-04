@@ -9,29 +9,52 @@ import java.util.List;
 import java.util.Optional;
 
 import org.easymock.IAnswer;
+import org.junit.Before;
 import org.junit.Test;
-import org.xwiki.component.manager.ComponentManager;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
 import org.xwiki.model.reference.WikiReference;
 
+import com.celements.common.test.AbstractComponentTest;
 import com.celements.navigation.TreeNode;
 import com.celements.navigation.filter.InternalRightsFilter;
 import com.celements.navigation.service.ITreeNodeService;
 import com.celements.parents.IDocumentParentsListerRole;
 import com.celements.rights.access.IRightsAccessFacadeRole;
-import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.user.api.XWikiUser;
-import com.xpn.xwiki.web.Utils;
 
-public class NavigationRightsFilteringTest {
+public class NavigationRightsFilteringTest extends AbstractComponentTest {
 
   private final WikiReference wikiRef = new WikiReference("xwiki");
   private final SpaceReference spaceRef = new SpaceReference("Content", wikiRef);
   private final List<InternalRightsFilter> observedFilters = new ArrayList<>();
+  private ITreeNodeService treeService;
+  private IDocumentParentsListerRole parentsLister;
+  private DefaultNavigationNodeValueResolver values;
+  private IRightsAccessFacadeRole rightsAccess;
+  private NavigationTreeBuilder builder;
+
+  @Before
+  public void prepareTest() throws Exception {
+    registerComponentMocks(ITreeNodeService.class, IDocumentParentsListerRole.class,
+        DefaultNavigationNodeValueResolver.class, IRightsAccessFacadeRole.class);
+    treeService = getMock(ITreeNodeService.class);
+    parentsLister = getMock(IDocumentParentsListerRole.class);
+    values = getMock(DefaultNavigationNodeValueResolver.class);
+    rightsAccess = getMock(IRightsAccessFacadeRole.class);
+    var beanFactory = (DefaultListableBeanFactory) getBeanFactory();
+    beanFactory.destroySingleton(NavigationTreeBuilder.class.getName());
+    beanFactory.registerResolvableDependency(ITreeNodeService.class, treeService);
+    beanFactory.registerResolvableDependency(IDocumentParentsListerRole.class, parentsLister);
+    beanFactory.registerResolvableDependency(DefaultNavigationNodeValueResolver.class, values);
+    builder = getBeanFactory().getBean(NavigationTreeBuilder.class.getName(),
+        NavigationTreeBuilder.class);
+  }
 
   @Test
-  public void guestRightsAreAppliedAtRootAndNestedLevelsWithoutLeafDisclosure() throws Exception {
+  public void test_guestRightsAreAppliedAtRootAndNestedLevelsWithoutLeafDisclosure()
+      throws Exception {
     var response = buildForCaller("XWiki.XWikiGuest", false);
     var root = response.segments().get(0).nodes().get(0);
     assertTrue(root.isLeaf());
@@ -42,7 +65,8 @@ public class NavigationRightsFilteringTest {
   }
 
   @Test
-  public void authenticatedRightsAreAppliedAtRootAndEveryReturnedNestedLevel() throws Exception {
+  public void test_authenticatedRightsAreAppliedAtRootAndEveryReturnedNestedLevel()
+      throws Exception {
     var response = buildForCaller("XWiki.Authenticated", true);
     var root = response.segments().get(0).nodes().get(0);
     assertFalse(root.isLeaf());
@@ -59,63 +83,40 @@ public class NavigationRightsFilteringTest {
     var rootNode = new TreeNode(new DocumentReference("Root", spaceRef), null, 1, "main");
     var childNode = new TreeNode(new DocumentReference("Restricted", spaceRef),
         rootNode.getDocumentReference(), 1, "main");
-    ITreeNodeService treeService = createMock(ITreeNodeService.class);
-    IDocumentParentsListerRole parentsLister = createMock(IDocumentParentsListerRole.class);
-    DefaultNavigationNodeValueResolver values = createMock(DefaultNavigationNodeValueResolver.class);
-    IRightsAccessFacadeRole rightsAccess = createMock(IRightsAccessFacadeRole.class);
-    ComponentManager componentManager = createMock(ComponentManager.class);
-    XWikiContext xwikiContext = createMock(XWikiContext.class);
-    var xwikiUser = new XWikiUser(userName);
-    expect(componentManager.lookup(IRightsAccessFacadeRole.class, "default"))
-        .andReturn(rightsAccess).anyTimes();
-    expect(xwikiContext.getXWikiUser()).andReturn(xwikiUser).anyTimes();
+    getXContext().setUser(userName);
     expect(
-        rightsAccess.hasAccessLevel(eq(rootNode.getDocumentReference()), eq(VIEW), same(xwikiUser)))
+        rightsAccess.hasAccessLevel(eq(rootNode.getDocumentReference()), eq(VIEW),
+            isA(XWikiUser.class)))
         .andReturn(true);
     expect(rightsAccess.hasAccessLevel(eq(childNode.getDocumentReference()), eq(VIEW),
-        same(xwikiUser))).andReturn(childVisible);
+        isA(XWikiUser.class))).andReturn(childVisible);
     expect(treeService.getSubNodesForParent(eq(spaceRef), isA(InternalRightsFilter.class)))
-        .andAnswer(rightsFiltered(List.of(rootNode), xwikiContext));
-    expectValues(values, rootNode);
+        .andAnswer(rightsFiltered(List.of(rootNode)));
+    expectValues(rootNode);
     expect(treeService.getSubNodesForParent(eq(rootNode.getDocumentReference()),
         isA(InternalRightsFilter.class)))
-        .andAnswer(rightsFiltered(List.of(childNode), xwikiContext));
+        .andAnswer(rightsFiltered(List.of(childNode)));
     if (childVisible) {
-      expectValues(values, childNode);
+      expectValues(childNode);
       expect(treeService.getSubNodesForParent(eq(childNode.getDocumentReference()),
-          isA(InternalRightsFilter.class))).andAnswer(rightsFiltered(List.of(), xwikiContext));
+          isA(InternalRightsFilter.class))).andAnswer(rightsFiltered(List.of()));
     }
-    replay(treeService, parentsLister, values, rightsAccess, componentManager, xwikiContext);
-    ComponentManager previousComponentManager = previousComponentManager();
-    Utils.setComponentManager(componentManager);
-    try {
-      var response = new NavigationTreeBuilder(treeService, parentsLister, values)
-          .build(new NavigationRequest(spaceRef, "Content", Optional.empty(), Optional.empty(),
-              "de", Optional.of("main"), 100));
-      verify(treeService, parentsLister, values, rightsAccess, componentManager, xwikiContext);
-      return response;
-    } finally {
-      Utils.setComponentManager(previousComponentManager);
-    }
+    replayDefault();
+    var response = builder.build(new NavigationRequest(spaceRef, "Content", Optional.empty(),
+        Optional.empty(), "de", Optional.of("main"), 100));
+    verifyDefault();
+    return response;
   }
 
-  private ComponentManager previousComponentManager() {
-    try {
-      return Utils.getComponentManager();
-    } catch (IllegalStateException exception) {
-      return null;
-    }
-  }
-
-  private IAnswer<List<TreeNode>> rightsFiltered(List<TreeNode> nodes, XWikiContext xwikiContext) {
+  private IAnswer<List<TreeNode>> rightsFiltered(List<TreeNode> nodes) {
     return () -> {
       var filter = (InternalRightsFilter) getCurrentArguments()[1];
       observedFilters.add(filter);
-      return nodes.stream().filter(node -> filter.includeTreeNode(node, xwikiContext)).toList();
+      return nodes.stream().filter(node -> filter.includeTreeNode(node, getXContext())).toList();
     };
   }
 
-  private void expectValues(DefaultNavigationNodeValueResolver values, TreeNode node) {
+  private void expectValues(TreeNode node) {
     String localRef = "Content." + node.getDocumentReference().getName();
     expect(values.serialize(node.getDocumentReference())).andReturn(localRef);
     expect(values.resolveTitle(node.getDocumentReference(), "de"))

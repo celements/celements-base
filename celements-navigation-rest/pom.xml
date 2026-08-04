@@ -34,6 +34,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-servlet</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-core-model</artifactId>
       <scope>provided</scope>
@@ -120,6 +125,21 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-shared-tests</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-subsystem-migration-manager</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.celements</groupId>
+      <artifactId>celements-xwiki-velocity</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
       <scope>test</scope>
@@ -170,10 +190,12 @@
         <configuration>
           <!-- Runtime/component and reflective uses are invisible to bytecode analysis. -->
           <usedDependencies>
-            <usedDependency>com.celements:celements-spring-security</usedDependency>
+            <usedDependency>com.celements:celements-servlet</usedDependency>
             <usedDependency>com.celements:celements-commons</usedDependency>
             <usedDependency>com.celements:celements-reference</usedDependency>
             <usedDependency>com.celements:celements-observation</usedDependency>
+            <usedDependency>com.celements:celements-subsystem-migration-manager</usedDependency>
+            <usedDependency>com.celements:celements-xwiki-velocity</usedDependency>
             <usedDependency>javax.xml.bind:jaxb-api</usedDependency>
           </usedDependencies>
         </configuration>
