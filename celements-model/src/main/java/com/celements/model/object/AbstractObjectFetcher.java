@@ -17,6 +17,7 @@ import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.classes.ClassIdentity;
 import com.celements.model.classes.fields.ClassField;
@@ -31,6 +32,8 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
     AbstractObjectHandler<R, D, O> implements ObjectFetcher<D, O> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ObjectFetcher.class);
+
+  protected static final DocumentReference EMPTY_DOC_REF = new DocumentReference("$", "$", "$");
 
   private boolean clone;
 

@@ -1,11 +1,12 @@
 package com.celements.convert.classes;
 
+import java.util.function.Supplier;
+
 import org.xwiki.component.annotation.Requirement;
 
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.field.XObjectFieldAccessor;
 import com.celements.model.object.xwiki.XWikiObjectSupplier;
-import com.google.common.base.Supplier;
 import com.xpn.xwiki.objects.BaseObject;
 
 public abstract class XObjectDeconverter<T> extends AbstractClassDefConverter<T, BaseObject> {

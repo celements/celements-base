@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.model.EntityType;
+import org.xwiki.model.internal.reference.LocalizedStringEntityReferenceSerializer;
 
 import com.celements.model.reference.RefBuilder;
 import com.google.common.base.Strings;
@@ -53,6 +54,8 @@ import one.util.streamex.EntryStream;
  * @since XWiki 2.2M1
  */
 public class EntityReference implements Serializable, Comparable<EntityReference> {
+
+  protected static final LocalizedStringEntityReferenceSerializer SERIALIZER = new LocalizedStringEntityReferenceSerializer();
 
   private static final long serialVersionUID = 2L;
 
@@ -101,12 +104,12 @@ public class EntityReference implements Serializable, Comparable<EntityReference
   }
 
   /**
-   * Clone an EntityReference, but add the specified parameters.
+   * Clone an EntityReference, but override the specified parameters.
    *
    * @param reference
    *          the reference to clone
    * @param parameters
-   *          additional parameters
+   *          replacement parameters, a null value removes the parameter
    * @since 3.3M2
    */
   protected EntityReference(EntityReference reference, Map<String, Serializable> parameters) {
@@ -197,9 +200,7 @@ public class EntityReference implements Serializable, Comparable<EntityReference
     setName(name);
     setType(type);
     setParent(parent);
-    this.parameters = (parameters != null)
-        ? ImmutableMap.copyOf(parameters)
-        : ImmutableMap.of();
+    this.parameters = (parameters != null) ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
   }
 
   /**
@@ -361,7 +362,7 @@ public class EntityReference implements Serializable, Comparable<EntityReference
         .flatMap(this::extractRef)
         .map(ref -> tryCast(ref, token)
             .orElseGet(() -> new RefBuilder().with(ref).buildOpt(token)
-            .orElse(null)));
+                .orElse(null)));
   }
 
   /**
@@ -391,37 +392,12 @@ public class EntityReference implements Serializable, Comparable<EntityReference
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(64);
-    sb.append("name = [")
-        .append(getName())
-        .append("], type = [")
-        .append(getType())
-        .append("], parent = [")
-        .append(getParent())
-        .append(']');
-    if (parameters.size() > 0) {
-      sb.append(" parameters = {");
-      boolean first = true;
-      for (Map.Entry<String, Serializable> entry : parameters.entrySet()) {
-        if (first) {
-          first = false;
-        } else {
-          sb.append(", ");
-        }
-        sb.append(entry.getKey())
-            .append(" = [")
-            .append(entry.getValue().toString())
-            .append(']');
-      }
-      sb.append('}');
-    }
-    return sb.toString();
+    return SERIALIZER.serialize(this);
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof EntityReference) {
-      EntityReference other = (EntityReference) obj;
+    if (obj instanceof EntityReference other) {
       return Objects.equals(this.name, other.name)
           && Objects.equals(this.type, other.type)
           && Objects.equals(this.parent, other.parent)
@@ -501,9 +477,11 @@ public class EntityReference implements Serializable, Comparable<EntityReference
     if ((map1 == null) || (map1.size() == 0)) {
       return map2;
     } else if ((map2 == null) || (map2.size() == 0)) {
-      return map1;
+      return asMap(EntryStream.of(map1));
     } else {
-      return asMap(EntryStream.of(map1).append(EntryStream.of(map2)));
+      return asMap(EntryStream.of(map1)
+          .append(EntryStream.of(map2)
+              .filterKeys(key -> !map1.containsKey(key))));
     }
   }
 

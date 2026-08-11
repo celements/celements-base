@@ -9,9 +9,9 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
+import javax.inject.Inject;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.stereotype.Component;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
@@ -35,16 +35,21 @@ import com.xpn.xwiki.objects.BaseObject;
 @Component(XWikiObjectBridge.NAME)
 public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject> {
 
-  public static final String NAME = "xwiki";
+  public static final String NAME = "XWikiObjectBridge";
 
-  @Requirement(XDocumentFieldAccessor.NAME)
-  private FieldAccessor<XWikiDocument> xDocAccessor;
+  private final FieldAccessor<XWikiDocument> xDocAccessor;
+  private final FieldAccessor<BaseObject> xObjAccessor;
+  private final ModelContext context;
 
-  @Requirement(XObjectFieldAccessor.NAME)
-  private FieldAccessor<BaseObject> xObjAccessor;
-
-  @Requirement
-  private ModelContext context;
+  @Inject
+  public XWikiObjectBridge(
+      XDocumentFieldAccessor xDocAccessor,
+      XObjectFieldAccessor xObjAccessor,
+      ModelContext context) {
+    this.xDocAccessor = xDocAccessor;
+    this.xObjAccessor = xObjAccessor;
+    this.context = context;
+  }
 
   @Override
   public Class<XWikiDocument> getDocumentType() {

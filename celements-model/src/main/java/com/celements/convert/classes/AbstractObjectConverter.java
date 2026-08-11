@@ -6,24 +6,13 @@ import org.xwiki.component.annotation.Requirement;
 
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.fields.ClassField;
-import com.celements.model.field.FieldAccessor;
-import com.celements.model.field.XObjectFieldAccessor;
 import com.celements.web.classes.oldcore.XWikiObjectClass;
 import com.google.common.collect.ImmutableList;
-import com.xpn.xwiki.objects.BaseObject;
 
-public abstract class XObjectConverter<T> extends AbstractClassDefConverter<BaseObject, T> {
+public abstract class AbstractObjectConverter<O, T> extends AbstractClassDefConverter<O, T> {
 
   @Requirement(XWikiObjectClass.CLASS_DEF_HINT)
   private ClassDefinition xObjClassDef;
-
-  @Requirement(XObjectFieldAccessor.NAME)
-  private FieldAccessor<BaseObject> xObjAccessor;
-
-  @Override
-  public FieldAccessor<BaseObject> getFromFieldAccessor() {
-    return xObjAccessor;
-  }
 
   @Override
   protected ImmutableList.Builder<ClassField<?>> aggregateClassFields(

@@ -52,6 +52,9 @@ public interface IModelAccessFacade {
   Optional<XWikiDocument> getDocumentOpt(@NotNull DocumentReference docRef, @Nullable String lang);
 
   @NotNull
+  Optional<CelDocument> getCelDocument(@NotNull DocumentReference docRef);
+
+  @NotNull
   Optional<CelDocument> getCelDocument(@NotNull DocumentReference docRef,
       @Nullable String lang);
 
@@ -130,6 +133,9 @@ public interface IModelAccessFacade {
 
   @NotNull
   Stream<XWikiDocument> streamParents(@NotNull XWikiDocument doc);
+
+  @NotNull
+  Stream<CelDocument> streamParents(@NotNull CelDocument doc);
 
   /**
    * @deprecated instead use {@link XWikiObjectFetcher}

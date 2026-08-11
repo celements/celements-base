@@ -16,7 +16,6 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.common.test.ExceptionAsserter;
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.fields.ClassField;
-import com.celements.model.object.ObjectBridge;
 import com.celements.model.object.restriction.ClassRestriction;
 import com.celements.model.object.restriction.FieldAbsentRestriction;
 import com.celements.model.object.restriction.ObjectQuery;
@@ -25,7 +24,6 @@ import com.celements.model.object.xwiki.XWikiObjectBridge;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.web.Utils;
 
 public class QueryBuilderTest extends AbstractComponentTest {
 
@@ -38,7 +36,7 @@ public class QueryBuilderTest extends AbstractComponentTest {
   public void prepareTest() throws Exception {
     wikiRef = new WikiReference("db");
     doc = new XWikiDocument(new DocumentReference(wikiRef.getName(), "space", "doc"));
-    classRef = Utils.getComponent(ClassDefinition.class, NAME).getClassReference();
+    classRef = getBeanFactory().getBean(NAME, ClassDefinition.class).getClassReference();
     classRef2 = new ClassReference("class", "other");
   }
 
@@ -140,7 +138,7 @@ public class QueryBuilderTest extends AbstractComponentTest {
   }
 
   private XWikiObjectBridge getBridge() {
-    return (XWikiObjectBridge) Utils.getComponent(ObjectBridge.class, XWikiObjectBridge.NAME);
+    return getBeanFactory().getBean(XWikiObjectBridge.NAME, XWikiObjectBridge.class);
   }
 
 }
