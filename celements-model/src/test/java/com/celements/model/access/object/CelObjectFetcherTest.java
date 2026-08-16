@@ -84,8 +84,9 @@ public class CelObjectFetcherTest extends AbstractComponentTest {
     obj.setStringValue(FIELD_MY_DOCREF.getName(), "db:target.doc");
     CelDocument.Default celDoc = CelDocument.Default.from(doc);
     CelObjectFetcher fetcher = CelObjectFetcher.on(celDoc).filter(CLASS_REF);
-    CelObject celObj = fetcher.firstAssert();
-    var objAccessor = getBeanFactory().getBean(CelObjectBridge.class).getObjectFieldAccessor();
+    var fields = fetcher.streamFields()
+        .filter(values -> values.get(XWikiObjectClass.FIELD_DOC_REF).isPresent())
+        .findFirst().orElseThrow();
 
     assertEquals(Integer.valueOf(42), fetcher.fetchField(FIELD_MY_INT).findFirst().orElseThrow());
     assertEquals(date, fetcher.fetchField(FIELD_DATE).findFirst().orElseThrow());
@@ -93,11 +94,11 @@ public class CelObjectFetcherTest extends AbstractComponentTest {
         fetcher.fetchField(FIELD_MY_LIST_MS).findFirst().orElseThrow());
     assertEquals(valueRef, fetcher.fetchField(FIELD_MY_DOCREF).findFirst().orElseThrow());
     assertEquals(doc.getDocumentReference(),
-        objAccessor.get(celObj, XWikiObjectClass.FIELD_DOC_REF).orElseThrow());
+        fields.get(XWikiObjectClass.FIELD_DOC_REF).orElseThrow());
     assertEquals(CLASS_REF,
-        objAccessor.get(celObj, XWikiObjectClass.FIELD_CLASS_REF).orElseThrow());
+        fields.get(XWikiObjectClass.FIELD_CLASS_REF).orElseThrow());
     assertEquals(Integer.valueOf(0),
-        objAccessor.get(celObj, XWikiObjectClass.FIELD_NUMBER).orElseThrow());
+        fields.get(XWikiObjectClass.FIELD_NUMBER).orElseThrow());
   }
 
   @Test

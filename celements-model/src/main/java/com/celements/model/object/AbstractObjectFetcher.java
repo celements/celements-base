@@ -17,13 +17,16 @@ import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 
 import com.celements.model.classes.ClassIdentity;
 import com.celements.model.classes.fields.ClassField;
-import com.celements.model.field.FieldAccessor;
+import com.celements.web.classes.oldcore.XWikiDocumentClass;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import one.util.streamex.StreamEx;
 
@@ -91,39 +94,36 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
 
   @Override
   public FluentIterable<O> iter() {
-    return FluentIterable.from(stream()::iterator);
+    return FluentIterable.from(stream());
   }
 
   @Override
-  public Stream<O> stream() {
-    return getObjectClasses().stream().flatMap(this::getObjects);
+  public StreamEx<O> stream() {
+    return streamClassRefs().flatMap(this::getObjects);
   }
 
   @Override
   public Map<ClassIdentity, List<O>> map() {
     ImmutableMap.Builder<ClassIdentity, List<O>> builder = ImmutableMap.builder();
-    for (ClassIdentity classId : getObjectClasses()) {
-      builder.put(classId, getObjects(classId).collect(toImmutableList()));
+    for (ClassReference classRef : streamClassRefs().map(ClassReference::new)) {
+      builder.put(classRef, getObjects(classRef).collect(toImmutableList()));
     }
     return builder.build();
   }
 
-  protected Set<? extends ClassIdentity> getObjectClasses() {
-    Set<? extends ClassIdentity> classes = getQuery().getObjectClasses();
-    if (classes.isEmpty()) {
-      classes = getBridge().getDocClasses(getDocument()).toSet();
-    }
-    return classes;
+  protected StreamEx<LocalDocumentReference> streamClassRefs() {
+    return getQuery().streamClassRefs()
+      .ifEmpty(getBridge().getDocClasses(getDocument()));
   }
 
-  protected Stream<O> getObjects(ClassIdentity classId) {
-    Stream<O> objects = getBridge().getObjects(getDocument(), classId).stream()
-        .filter(getQuery().predicate(classId));
+  protected Stream<O> getObjects(LocalDocumentReference classRef) {
+    Stream<O> objects = getBridge().getObjects(getDocument(), classRef)
+        .filter(getQuery().predicate(classRef));
     if (clone) {
       LOGGER.debug("{} clone objects", this);
       objects = objects.map(getBridge()::cloneObject);
     }
-    LOGGER.info("{} fetching for {}", this, classId);
+    LOGGER.info("{} fetching for {}", this, classRef);
     return objects.peek(o -> LOGGER.trace("fetched: {}", o));
   }
 
@@ -136,6 +136,7 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
   }
 
   @Override
+  @Deprecated
   public <T> FieldFetcher<T> fetchField(final ClassField<T> field) {
     final AbstractObjectFetcher<?, D, O> fetcher = clone().filter(field.getClassReference());
     return new FieldFetcher<T>() {
@@ -180,20 +181,70 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
 
       @Override
       public @NotNull Stream<T> streamNullable() {
-        Stream<T> stream;
         if (field.getClassReference().isValidObjectClass()) {
-          FieldAccessor<O> accessor = getBridge().getObjectFieldAccessor();
-          stream = fetcher.stream().map(obj -> accessor.get(obj, field).orElse(null));
+          return fetcher.stream()
+              .map(ObjectFieldView::new)
+              .map(x -> x.get(field).orElse(null));
         } else {
-          FieldAccessor<D> accessor = getBridge().getDocumentFieldAccessor();
-          return StreamEx.of(getTranslationDoc())
-              .append(getDocument())
-              .mapPartial(doc -> accessor.get(doc, field))
-              .limit(1);
+          return new DocumentFieldView().get(field).stream();
         }
-        return stream;
       }
     };
+  }
+
+  @Override
+  public StreamEx<FieldView> streamFields() {
+    StreamEx<FieldView> fields = stream().map(ObjectFieldView::new);
+    var classRefs = getQuery().streamClassRefs().toImmutableSet();
+    if (classRefs.isEmpty() || classRefs.contains(XWikiDocumentClass.CLASS_REF)) {
+      fields = fields.prepend(new DocumentFieldView());
+    }
+    return fields;
+  }
+
+  private final class ObjectFieldView implements FieldView {
+
+    private final O object;
+
+    private ObjectFieldView(O object) {
+      this.object = object;
+    }
+
+    @Override
+    public LocalDocumentReference getClassRef() {
+      return getBridge().getObjectClass(object);
+    }
+
+    @Override
+    public <T> Optional<T> get(ClassField<T> field) {
+      if (XWikiDocumentClass.CLASS_REF.equals(field.getClassReference())) {
+        return Optional.empty();
+      }
+      if (field.getClassReference().isValidObjectClass()
+          && !getBridge().getObjectClass(object).equals(field.getClassReference())) {
+        return Optional.empty();
+      }
+      return getBridge().getObjectFieldAccessor().get(object, field);
+    }
+  }
+
+  private final class DocumentFieldView implements FieldView {
+
+    @Override
+    public LocalDocumentReference getClassRef() {
+      return XWikiDocumentClass.CLASS_REF;
+    }
+
+    @Override
+    public <T> Optional<T> get(ClassField<T> field) {
+      if (!XWikiDocumentClass.CLASS_REF.equals(field.getClassReference())) {
+        return Optional.empty();
+      }
+      return StreamEx.of(getTranslationDoc())
+          .append(getDocument())
+          .mapPartial(doc -> getBridge().getDocumentFieldAccessor().get(doc, field))
+          .findFirst();
+    }
   }
 
 }

@@ -5,11 +5,13 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
@@ -97,6 +99,16 @@ public class QueryBuilderTest extends AbstractComponentTest {
     assertEquals(3, builder.getQuery().streamRestrictions().count());
     builder.with(builder.getQuery());
     assertEquals(3, builder.getQuery().streamRestrictions().count());
+  }
+
+  @Test
+  public void test_filter_classReferenceNormalization() {
+    assertEquals(Set.of(classRef), newBuilder()
+        .filter(new LocalDocumentReference(classRef))
+        .getQuery().getObjectClasses());
+    assertEquals(Set.of(classRef), newBuilder()
+        .filter(getBeanFactory().getBean(NAME, ClassDefinition.class))
+        .getQuery().getObjectClasses());
   }
 
   @Test

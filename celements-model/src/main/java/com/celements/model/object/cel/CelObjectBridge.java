@@ -9,18 +9,18 @@ import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
-import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 
-import com.celements.model.classes.ClassIdentity;
 import com.celements.model.field.CelDocumentFieldAccessor;
 import com.celements.model.field.CelObjectFieldAccessor;
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.object.ObjectBridge;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
 import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.CelObject;
+
+import one.util.streamex.StreamEx;
 
 @Immutable
 @Component
@@ -73,17 +73,16 @@ public class CelObjectBridge implements ObjectBridge<CelDocument, CelObject> {
   }
 
   @Override
-  public FluentIterable<? extends ClassIdentity> getDocClasses(CelDocument doc) {
-    var classes = FluentIterable.from(assertDefaultDoc(doc).getXObjects())
-        .transform(obj -> new ClassReference(obj.getClassReference()))
-        .toSet();
-    return FluentIterable.from(classes);
+  public StreamEx<LocalDocumentReference> getDocClasses(CelDocument doc) {
+    return StreamEx.of(assertDefaultDoc(doc).getXObjects())
+        .map(CelObject::getClassReference)
+        .distinct();
   }
 
   @Override
-  public FluentIterable<CelObject> getObjects(CelDocument doc, ClassIdentity classId) {
-    return FluentIterable.from(assertDefaultDoc(doc).getXObjects())
-        .filter(obj -> classId.getClassReference().equals(obj.getClassReference()));
+  public StreamEx<CelObject> getObjects(CelDocument doc, LocalDocumentReference classRef) {
+    return StreamEx.of(assertDefaultDoc(doc).getXObjects())
+        .filter(obj -> classRef.equals(obj.getClassReference()));
   }
 
   private CelDocument.Default assertDefaultDoc(CelDocument doc) {
@@ -99,8 +98,8 @@ public class CelObjectBridge implements ObjectBridge<CelDocument, CelObject> {
   }
 
   @Override
-  public ClassIdentity getObjectClass(CelObject obj) {
-    return new ClassReference(obj.getClassReference());
+  public LocalDocumentReference getObjectClass(CelObject obj) {
+    return obj.getClassReference();
   }
 
   @Override
@@ -109,7 +108,7 @@ public class CelObjectBridge implements ObjectBridge<CelDocument, CelObject> {
   }
 
   @Override
-  public CelObject createObject(CelDocument doc, ClassIdentity classId) {
+  public CelObject createObject(CelDocument doc, LocalDocumentReference classRef) {
     throw new UnsupportedOperationException("CelDocument is immutable");
   }
 

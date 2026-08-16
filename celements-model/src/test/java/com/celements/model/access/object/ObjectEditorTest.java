@@ -150,6 +150,17 @@ public class ObjectEditorTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_create_fieldFilterOrder() throws Exception {
+    replayDefault();
+    BaseObject ret = newEditor()
+        .filter(FIELD_MY_STRING, "first")
+        .filter(FIELD_MY_STRING, "last")
+        .createFirst();
+    verifyDefault();
+    assertEquals("last", ret.getStringValue(FIELD_MY_STRING.getName()));
+  }
+
+  @Test
   public void test_create_none() throws Exception {
     replayDefault();
     Map<ClassIdentity, BaseObject> ret = newEditor().create();
@@ -246,11 +257,11 @@ public class ObjectEditorTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_createFirst() throws Exception {
+  public void test_createFirst_filterOrder() throws Exception {
     replayDefault();
-    BaseObject ret = newEditor().filter(classRef).createFirst();
+    BaseObject ret = newEditor().filter(classRef2).filter(classRef).createFirst();
     verifyDefault();
-    assertEquals(classRef.getDocRef(wikiRef), ret.getXClassReference());
+    assertEquals(classRef2.getDocRef(wikiRef), ret.getXClassReference());
     assertObjs(newEditor(), ret);
   }
 

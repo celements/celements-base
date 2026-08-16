@@ -8,9 +8,13 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import org.xwiki.model.reference.LocalDocumentReference;
+
 import com.celements.model.classes.ClassIdentity;
 import com.celements.model.classes.fields.ClassField;
 import com.google.common.collect.FluentIterable;
+
+import one.util.streamex.StreamEx;
 
 /**
  * Fetches objects O on a document D for the defined query. Returned objects are intended for
@@ -83,7 +87,7 @@ public interface ObjectFetcher<D, O> extends ObjectHandler<D, O> {
    * @return streams all fetched objects
    */
   @NotNull
-  Stream<O> stream();
+  StreamEx<O> stream();
 
   /**
    * @return a {@link Map} of all fetched objects indexed by their {@link ClassIdentity}
@@ -92,12 +96,47 @@ public interface ObjectFetcher<D, O> extends ObjectHandler<D, O> {
   Map<ClassIdentity, List<O>> map();
 
   /**
+   * Streams one field view for the document, followed by one for each object matching the current
+   * query. The document view is included if the query has no class restriction or explicitly
+   * includes {@code XWikiDocumentClass}. Each matching entity produces exactly one view; absent
+   * fields do not affect stream cardinality.
+   *
+   * @return document and object field views
+  */
+  @NotNull
+  StreamEx<FieldView> streamFields();
+
+  /**
+   * Read-only field view of one document or object entity.
+   */
+  interface FieldView {
+
+    /**
+     * @return the entity's class reference
+     */
+    @NotNull
+    LocalDocumentReference getClassRef();
+
+    /**
+     * @return the value denoted by {@code field}, or empty if the field is unsupported or absent
+     */
+    @NotNull
+    <T> Optional<T> get(@NotNull ClassField<T> field);
+
+  }
+
+  /**
+   * @deprecated use {@link #streamFields()} and {@link FieldView#get(ClassField)}. Unlike this
+   *             method, {@code streamFields()} has entity cardinality and retains views whose
+   *             requested field is absent.
    * @param field
    * @return {@link FieldFetcher} which gets values for {@code field} from the queried objects
    */
   @NotNull
+  @Deprecated
   <T> FieldFetcher<T> fetchField(@NotNull ClassField<T> field);
 
+  @Deprecated
   interface FieldFetcher<T> {
 
     /**
