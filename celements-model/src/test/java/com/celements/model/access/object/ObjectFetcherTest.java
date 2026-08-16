@@ -2,6 +2,7 @@ package com.celements.model.access.object;
 
 import static com.celements.model.classes.TestClassDefinition.*;
 import static com.google.common.base.MoreObjects.*;
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class ObjectFetcherTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws IllegalArgumentException {
-        newFetcher().stream();
+        newFetcher().stream().count();
       }
     }.evaluate();
     assertTrue("wrong message: " + iae.getMessage(), iae.getMessage().contains("[en]"));
@@ -113,6 +114,18 @@ public class ObjectFetcherTest extends AbstractComponentTest {
     assertObjs(newFetcher().filter(classRef), obj1);
     assertObjs(newFetcher().filter(classRef2), obj2);
     assertObjs(newFetcher().filter(classRef).filter(classRef2), obj1, obj2);
+  }
+
+  @Test
+  public void test_fetch_class_doesNotEnumerateDocClasses() {
+    XWikiDocument docMock = createDefaultMock(XWikiDocument.class);
+    expect(docMock.getTranslation()).andReturn(0);
+    expect(docMock.getDocumentReference()).andReturn(doc.getDocumentReference());
+    expect(docMock.getXObjects(classRef.getDocRef(wikiRef))).andReturn(List.of());
+
+    replayDefault();
+    assertEquals(0, XWikiObjectFetcher.on(docMock).filter(classRef).count());
+    verifyDefault();
   }
 
   @Test

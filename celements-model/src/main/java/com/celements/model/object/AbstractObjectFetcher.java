@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -112,8 +113,10 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
   }
 
   protected StreamEx<LocalDocumentReference> streamClassRefs() {
+    Supplier<Stream<LocalDocumentReference>> getDocClasses =
+        () -> getBridge().getDocClasses(getDocument());
     return getQuery().streamClassRefs()
-      .ifEmpty(getBridge().getDocClasses(getDocument()));
+        .ifEmpty(StreamEx.of(getDocClasses).flatMap(Supplier::get));
   }
 
   protected Stream<O> getObjects(LocalDocumentReference classRef) {

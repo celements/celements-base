@@ -92,7 +92,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws IllegalArgumentException {
-        newEditor().fetch().stream();
+        newEditor().fetch().stream().count();
       }
     }.evaluate();
     assertTrue("wrong message: " + iae.getMessage(), iae.getMessage().contains("[en]"));
