@@ -87,7 +87,7 @@ public interface ObjectFetcher<D, O> extends ObjectHandler<D, O> {
    * @return streams all fetched objects
    */
   @NotNull
-  StreamEx<O> stream();
+  Stream<O> stream();
 
   /**
    * @return a {@link Map} of all fetched objects indexed by their {@link ClassIdentity}

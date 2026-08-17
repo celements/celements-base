@@ -95,11 +95,11 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
 
   @Override
   public FluentIterable<O> iter() {
-    return FluentIterable.from(stream());
+    return FluentIterable.from(stream()::iterator);
   }
 
   @Override
-  public StreamEx<O> stream() {
+  public Stream<O> stream() {
     return streamClassRefs().flatMap(this::getObjects);
   }
 
@@ -197,7 +197,7 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
 
   @Override
   public StreamEx<FieldView> streamFields() {
-    StreamEx<FieldView> fields = stream().map(ObjectFieldView::new);
+    StreamEx<FieldView> fields = StreamEx.of(stream()).map(ObjectFieldView::new);
     var classRefs = getQuery().streamClassRefs().toImmutableSet();
     if (classRefs.isEmpty() || classRefs.contains(XWikiDocumentClass.CLASS_REF)) {
       fields = fields.prepend(new DocumentFieldView());
