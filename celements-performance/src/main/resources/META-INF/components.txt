@@ -1,0 +1,2 @@
+com.celements.performance.BenchmarkService
+com.celements.performance.BenchmarkScriptService
