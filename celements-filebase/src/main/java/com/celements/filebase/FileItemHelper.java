@@ -39,6 +39,7 @@ public class FileItemHelper {
         dirPath.endsWith("/") ? (dirPath + name) : (dirPath + "/" + name),
         urlService.getURL(attachmentRef, "download"),
         urlService.getURL(attachmentRef, "download", query),
+        urlService.getURL(attachmentRef, "viewattachrev"),
         storage,
         "file",
         (long) att.getFilesize(),

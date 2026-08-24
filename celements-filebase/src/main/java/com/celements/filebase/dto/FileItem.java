@@ -7,6 +7,7 @@ public record FileItem(
     String path,
     String url,
     String previewUrl,
+    String historyUrl,
     String storage,
     String type,
     long file_size,
