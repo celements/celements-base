@@ -7,7 +7,7 @@
     <version>7.2</version>
   </parent>
   <artifactId>celements-xwiki-velocity</artifactId>
-  <version>7.2</version>
+  <version>7.3-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
@@ -141,6 +141,6 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-xwiki-velocity</url>
-    <tag>celements-xwiki-velocity-7.2</tag>
+    <tag>HEAD</tag>
   </scm>
 </project>
