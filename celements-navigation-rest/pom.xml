@@ -5,11 +5,11 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>celements-parent</artifactId>
-    <version>7.1-SNAPSHOT</version>
+    <version>7.2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-navigation-rest</artifactId>
-  <version>7.1-SNAPSHOT</version>
+  <version>7.2-SNAPSHOT</version>
   <description>Celements Navigation REST API</description>
   <dependencies>
     <dependency>
