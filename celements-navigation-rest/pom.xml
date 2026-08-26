@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-navigation-rest</artifactId>
-  <version>7.2</version>
+  <version>7.3-SNAPSHOT</version>
   <description>Celements Navigation REST API</description>
   <dependencies>
     <dependency>
@@ -189,6 +189,6 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-navigation-rest</url>
-    <tag>celements-navigation-rest-7.2</tag>
+    <tag>HEAD</tag>
   </scm>
 </project>
