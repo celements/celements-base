@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>celements-filebase</artifactId>
-  <version>7.2-SNAPSHOT</version>
+  <version>7.2</version>
   <description>Open-Celements Filebase</description>
   <dependencies>
     <dependency>
@@ -130,6 +130,6 @@
     <connection>scm:git:git@github.com:celements/celements-base.git</connection>
     <developerConnection>scm:git:git@github.com:celements/celements-base.git</developerConnection>
     <url>https://github.com/celements/celements-base/celements-filebase</url>
-    <tag>HEAD</tag>
+    <tag>celements-filebase-7.2</tag>
   </scm>
 </project>
