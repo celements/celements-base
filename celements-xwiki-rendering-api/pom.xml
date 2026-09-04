@@ -4,10 +4,10 @@
   <parent>
     <groupId>com.celements</groupId>
     <artifactId>celements-parent</artifactId>
-    <version>7.2-SNAPSHOT</version>
+    <version>7.3-SNAPSHOT</version>
   </parent>
   <artifactId>celements-xwiki-rendering-api</artifactId>
-  <version>7.2-SNAPSHOT</version>
+  <version>7.3-SNAPSHOT</version>
   <dependencies>
     <dependency>
       <groupId>com.celements</groupId>
