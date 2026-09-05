@@ -75,7 +75,7 @@ public class XDocBeanConversionLoader<T> implements XDocBeanLoader<T> {
   @Override
   public T load(XWikiDocument doc, Iterable<ObjectRestriction<BaseObject>> restrictions)
       throws BeanLoadException {
-    XWikiObjectFetcher fetcher = XWikiObjectFetcher.on(doc).filter(getClassId());
+    XWikiObjectFetcher fetcher = XWikiObjectFetcher.on(doc).filter(getClassId().getLocalClassRef());
     if (restrictions != null) {
       fetcher.filter(restrictions);
     }

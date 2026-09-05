@@ -52,6 +52,9 @@ public interface IModelAccessFacade {
   Optional<XWikiDocument> getDocumentOpt(@NotNull DocumentReference docRef, @Nullable String lang);
 
   @NotNull
+  Optional<CelDocument> getCelDocument(@NotNull DocumentReference docRef);
+
+  @NotNull
   Optional<CelDocument> getCelDocument(@NotNull DocumentReference docRef,
       @Nullable String lang);
 
@@ -130,6 +133,9 @@ public interface IModelAccessFacade {
 
   @NotNull
   Stream<XWikiDocument> streamParents(@NotNull XWikiDocument doc);
+
+  @NotNull
+  Stream<CelDocument> streamParents(@NotNull CelDocument doc);
 
   /**
    * @deprecated instead use {@link XWikiObjectFetcher}
@@ -426,14 +432,14 @@ public interface IModelAccessFacade {
 
   /**
    * @deprecated instead use {@link #getDocument(DocumentReference)} with
-   *             {@link XWikiObjectFetcher#fetchField(ClassField)}
+   *             {@link XWikiObjectFetcher#streamFields()}
    */
   @Deprecated
   Object getProperty(DocumentReference docRef, DocumentReference classRef, String name)
       throws DocumentNotExistsException;
 
   /**
-   * @deprecated instead use {@link XWikiObjectFetcher#fetchField(ClassField)}
+   * @deprecated instead use {@link XWikiObjectFetcher#streamFields()}
    */
   @Deprecated
   Object getProperty(XWikiDocument doc, DocumentReference classRef, String name);
@@ -448,7 +454,7 @@ public interface IModelAccessFacade {
 
   /**
    * @deprecated instead use {@link #getDocument(DocumentReference)} with
-   *             {@link XWikiObjectFetcher#fetchField(ClassField)}
+   *             {@link XWikiObjectFetcher#streamFields()}
    */
   @Nullable
   @Deprecated
@@ -456,7 +462,7 @@ public interface IModelAccessFacade {
       throws DocumentNotExistsException;
 
   /**
-   * @deprecated instead use {@link XWikiObjectFetcher#fetchField(ClassField)}
+   * @deprecated instead use {@link XWikiObjectFetcher#streamFields()}
    */
   @Nullable
   @Deprecated
@@ -471,7 +477,7 @@ public interface IModelAccessFacade {
       @NotNull ClassField<T> field);
 
   /**
-   * @deprecated instead use {@link XWikiObjectFetcher#fetchField(ClassField)}
+   * @deprecated instead use {@link XWikiObjectFetcher#streamFields()}
    */
   @NotNull
   @Deprecated
@@ -480,7 +486,7 @@ public interface IModelAccessFacade {
 
   /**
    * @deprecated instead use {@link #getDocument(DocumentReference)} with
-   *             {@link XWikiObjectFetcher#fetchField(ClassField)}
+   *             {@link XWikiObjectFetcher#streamFields()}
    */
   @NotNull
   @Deprecated
@@ -488,7 +494,7 @@ public interface IModelAccessFacade {
       @NotNull ClassField<T> field) throws DocumentNotExistsException;
 
   /**
-   * @deprecated instead use {@link XWikiObjectFetcher#fetchField(ClassField)}
+   * @deprecated instead use {@link XWikiObjectFetcher#streamFields()}
    */
   @NotNull
   @Deprecated
@@ -497,7 +503,7 @@ public interface IModelAccessFacade {
 
   /**
    * @deprecated instead use {@link #getDocument(DocumentReference)} with
-   *             {@link XWikiObjectFetcher#fetchField(ClassField)}
+   *             {@link XWikiObjectFetcher#streamFields()}
    */
   @NotNull
   @Deprecated
@@ -505,7 +511,7 @@ public interface IModelAccessFacade {
       @NotNull ClassField<T> field, T ignoreValue) throws DocumentNotExistsException;
 
   /**
-   * @deprecated instead use {@link XWikiObjectFetcher#fetchField(ClassField)}
+   * @deprecated instead use {@link XWikiObjectFetcher#streamFields()}
    */
   @NotNull
   @Deprecated

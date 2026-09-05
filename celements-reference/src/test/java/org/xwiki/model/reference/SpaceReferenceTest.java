@@ -61,8 +61,7 @@ public class SpaceReferenceTest {
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Invalid parent reference [name = [whatever], type = [DOCUMENT], parent = [null]] "
-              + "in a space reference",
+          "Invalid parent reference [whatever] in a space reference",
           expected.getMessage());
     }
   }

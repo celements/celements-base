@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -428,13 +429,11 @@ public class XWikiDocument implements DocumentModelBridge {
     init(reference);
   }
 
-  private XWikiDocument(CelDocument celDocument) {
-    this(checkNotNull(celDocument).getDocumentReference());
-    applyCelDocument(celDocument);
-    xClassCelDocument = celDocument instanceof CelDocument.Default defaultDocument
-        ? defaultDocument
-        : null;
-    originalCelDocument = celDocument;
+  private XWikiDocument(CelDocument doc) {
+    this(checkNotNull(doc).getDocRef().withoutLocale());
+    applyCelDocument(doc);
+    xClassCelDocument = (doc instanceof CelDocument.Default defaultDoc) ? defaultDoc : null;
+    originalCelDocument = doc;
   }
 
   public static XWikiDocument from(CelDocument celDocument) {
@@ -538,36 +537,11 @@ public class XWikiDocument implements DocumentModelBridge {
 
   private void applyCelDocument(CelDocument.Default celDocument) {
     celDocument.getXObjects().stream()
-        .map(XWikiDocument::materializeObject)
+        .map(BaseObject::from)
         .forEach(object -> setXObject(object.getNumber(), object));
     setAttachmentList(celDocument.getAttachmentList().stream()
-        .map(this::materializeAttachment)
+        .map(att -> XWikiAttachment.from(this, att))
         .collect(toCollection(ArrayList::new)));
-  }
-
-  private static BaseObject materializeObject(CelObject celObject) {
-    BaseObject object = new BaseObject();
-    object.setDocumentReference(celObject.getDocumentReference());
-    object.setXClassReference(celObject.getClassReference());
-    object.setNumber(celObject.getNumber());
-    object.setGuid(celObject.getGuid());
-    Optional.ofNullable(celObject.getIdVersion())
-        .ifPresent(idVersion -> object.setId(celObject.getId(), idVersion));
-    celObject.getProperties().stream()
-        .map(BaseProperty::from)
-        .forEach(property -> object.safeput(property.getName(), property));
-    return object;
-  }
-
-  private XWikiAttachment materializeAttachment(CelAttachment celAttachment) {
-    XWikiAttachment attachment = new XWikiAttachment(this, celAttachment.getFilename());
-    attachment.setFilesize(celAttachment.getFilesize());
-    attachment.setAuthor(celAttachment.getAuthor());
-    attachment.setVersion(celAttachment.getVersion());
-    attachment.setComment(celAttachment.getComment());
-    attachment.setDate(Optional.ofNullable(celAttachment.getDate()).map(Date::from).orElse(null));
-    attachment.setMetaDataDirty(false);
-    return attachment;
   }
 
   public XWikiStoreInterface getStore(XWikiContext context) {
@@ -1057,6 +1031,11 @@ public class XWikiDocument implements DocumentModelBridge {
 
   public DocumentReference getDocRef() {
     return documentReference;
+  }
+
+  public DocumentReference getDocRefWithLocale() {
+    var locale = isTrans() ? Locale.forLanguageTag(getLanguage().replace('_', '-')) : null;
+    return getDocRef().withLocale(locale);
   }
 
   /**

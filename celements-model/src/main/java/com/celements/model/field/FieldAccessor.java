@@ -38,11 +38,15 @@ public interface FieldAccessor<T> {
 
   @NotNull
   @Deprecated
-  <V> com.google.common.base.Optional<V> getValue(@NotNull T instance, @NotNull ClassField<V> field)
-      throws FieldAccessException;
+  default <V> com.google.common.base.Optional<V> getValue(@NotNull T instance,
+      @NotNull ClassField<V> field) throws FieldAccessException {
+    return com.google.common.base.Optional.fromJavaUtil(get(instance, field));
+  }
 
   @Deprecated
-  <V> boolean setValue(@NotNull T instance, @NotNull ClassField<V> field, @Nullable V value)
-      throws FieldAccessException;
+  default <V> boolean setValue(@NotNull T instance, @NotNull ClassField<V> field, @Nullable V value)
+      throws FieldAccessException {
+    return set(instance, field, value);
+  }
 
 }
