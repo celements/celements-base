@@ -3,6 +3,7 @@ package com.celements.keycloak;
 import static com.celements.execution.XWikiExecutionProp.*;
 import static com.celements.logging.LogUtils.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,7 +46,11 @@ public class KeycloakService implements IdentityService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KeycloakService.class);
 
+  static final String BASE_URL_PROPERTY = "celements.keycloak.base_url";
+  static final String HOST_PROPERTY = "celements.keycloak.host";
+
   private static final String CELEMENTS_KEYCLOAK_REALM = "celements.keycloak.realm";
+  private static final String LEGACY_DEFAULT_SCHEME = "https";
 
   private final Map<String, AuthenticationManager> authManagerCache = new ConcurrentHashMap<>();
   private final Map<String, JwtDecoder> jwtDecoderCache = new ConcurrentHashMap<>();
@@ -59,14 +64,21 @@ public class KeycloakService implements IdentityService {
       Execution execution) {
     this.configSource = configSource;
     this.execution = execution;
-    LOGGER.info("KeycloakService constructor: {} host '{}', realm '{}'", configSource.getClass(),
-        getHost(), getRealm());
+    LOGGER.info("KeycloakService constructor: {}, realm '{}'", configSource.getClass(), getRealm());
   }
 
   @Override
   public boolean isConfigValid() {
-    return configSource.containsKey(CELEMENTS_KEYCLOAK_REALM)
-        && getRealmOpt().isPresent();
+    if (!configSource.containsKey(CELEMENTS_KEYCLOAK_REALM) || getRealmOpt().isEmpty()) {
+      return false;
+    }
+    try {
+      getKeycloakBaseUrl();
+      return true;
+    } catch (IllegalArgumentException exc) {
+      LOGGER.warn("Invalid Keycloak base URL configuration", exc);
+      return false;
+    }
   }
 
   @NotEmpty
@@ -83,7 +95,7 @@ public class KeycloakService implements IdentityService {
   @Override
   @NotEmpty
   public String getHost() {
-    return configSource.getProperty("celements.keycloak.host", "localhost");
+    return URI.create(getKeycloakBaseUrl()).getAuthority();
   }
 
   @Override
@@ -101,7 +113,16 @@ public class KeycloakService implements IdentityService {
   @Override
   @NotEmpty
   public String getIssuerUri() {
-    return "https://" + getHost() + "/realms/" + getRealm();
+    return KeycloakUrl.append(getKeycloakBaseUrl(), "/realms/" + getRealm());
+  }
+
+  String getKeycloakBaseUrl() {
+    if (configSource.containsKey(BASE_URL_PROPERTY)) {
+      return KeycloakUrl.normalizeBaseUrl(
+          configSource.getProperty(BASE_URL_PROPERTY, String.class), BASE_URL_PROPERTY);
+    }
+    String host = configSource.getProperty(HOST_PROPERTY, "localhost");
+    return KeycloakUrl.normalizeBaseUrl(LEGACY_DEFAULT_SCHEME + "://" + host, HOST_PROPERTY);
   }
 
   @Override
