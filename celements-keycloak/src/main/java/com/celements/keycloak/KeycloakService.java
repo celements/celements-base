@@ -69,16 +69,10 @@ public class KeycloakService implements IdentityService {
 
   @Override
   public boolean isConfigValid() {
-    if (!configSource.containsKey(CELEMENTS_KEYCLOAK_REALM) || getRealmOpt().isEmpty()) {
-      return false;
-    }
-    try {
-      getKeycloakBaseUrl();
-      return true;
-    } catch (IllegalArgumentException exc) {
-      LOGGER.warn("Invalid Keycloak base URL configuration", exc);
-      return false;
-    }
+    // This selects the authenticated security chain; invalid endpoints must not disable it.
+    // Validate the base URL when an endpoint is used instead.
+    return configSource.containsKey(CELEMENTS_KEYCLOAK_REALM)
+        && getRealmOpt().isPresent();
   }
 
   @NotEmpty

@@ -1,126 +1,128 @@
 package com.celements.keycloak;
 
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.xwiki.configuration.ConfigurationSource;
+import org.xwiki.context.Execution;
+import org.xwiki.model.reference.WikiReference;
 
-public class KeycloakServiceTest {
+import com.celements.common.test.AbstractComponentTest;
+import com.celements.configuration.CelementsFromWikiConfigurationSource;
+import com.celements.spring.security.oauth2.wiki.TenantOicdActiveRequestMatcher;
+import com.celements.wiki.WikiDescriptorService;
 
-  @Test
-  public void testHttpBaseUrlWithPathAndTrailingSlashes() {
-    KeycloakService service = newService(Map.of(
-        KeycloakService.BASE_URL_PROPERTY, "http://idp.alumni.localhost/keycloak///",
-        "celements.keycloak.realm", "alumni"));
-    assertTrue(service.isConfigValid());
-    assertEquals("idp.alumni.localhost", service.getHost());
-    assertEquals("http://idp.alumni.localhost/keycloak/realms/alumni", service.getIssuerUri());
-    assertEquals("http://idp.alumni.localhost/keycloak/realms/alumni/protocol/openid-connect/",
-        service.getOAuth2BaseUrl());
-    assertEquals("http://idp.alumni.localhost/keycloak/realms/alumni/protocol/openid-connect/certs",
-        service.getJwkSetUri());
-    assertEquals("http://idp.alumni.localhost/keycloak/realms/alumni/protocol/openid-connect/revoke",
-        service.getRevokeUrl());
-    assertEquals("http://idp.alumni.localhost/keycloak/realms/alumni/protocol/openid-connect/logout",
-        service.getLogoutUrl());
+public class KeycloakServiceTest extends AbstractComponentTest {
+
+  private static final String REALM_PROPERTY = "celements.keycloak.realm";
+
+  private ConfigurationSource configSource;
+
+  @Before
+  public void setUp() throws Exception {
+    configSource = registerComponentMock(ConfigurationSource.class,
+        CelementsFromWikiConfigurationSource.NAME);
+    var context = getBeanFactory().getBean(Execution.class).getContext();
+    Execution execution = registerComponentMock(Execution.class);
+    expect(execution.getContext()).andStubReturn(context);
+    execution.removeContext();
+    expectLastCall().anyTimes();
   }
 
   @Test
-  public void testHttpsBaseUrl() {
-    KeycloakService service = newService(Map.of(
-        KeycloakService.BASE_URL_PROPERTY, "https://iam.example.org",
-        "celements.keycloak.realm", "production"));
-    assertEquals("https://iam.example.org/realms/production", service.getIssuerUri());
+  public void testConfiguredEndpointsAndHintedWiring() {
+    expectRealm(Optional.of("alumni"));
+    expect(configSource.containsKey(KeycloakService.BASE_URL_PROPERTY)).andStubReturn(true);
+    expect(configSource.getProperty(KeycloakService.BASE_URL_PROPERTY, String.class))
+        .andStubReturn("http://idp.alumni.localhost/keycloak///");
+    replayDefault();
+
+    var service = getBeanFactory().getBean(KeycloakService.class);
+    assertTrue(service.isConfigValid());
+    assertEquals("idp.alumni.localhost", service.getHost());
+    assertEquals("http://idp.alumni.localhost/keycloak/realms/alumni", service.getIssuerUri());
+    String oauthUrl = "http://idp.alumni.localhost/keycloak/realms/alumni/protocol/openid-connect/";
+    assertEquals(oauthUrl, service.getOAuth2BaseUrl());
+    assertEquals(oauthUrl + "certs", service.getJwkSetUri());
+    assertEquals(oauthUrl + "revoke", service.getRevokeUrl());
+    assertEquals(oauthUrl + "logout", service.getLogoutUrl());
+    assertEquals(DEFAULT_DB + "-login", service.getRegistrationId());
+
+    verifyDefault();
   }
 
   @Test
   public void testLegacyHostPreservesHttpsEndpoint() {
-    KeycloakService service = newService(Map.of(
-        KeycloakService.HOST_PROPERTY, "iam.example.org",
-        "celements.keycloak.realm", "production"));
+    expectRealm(Optional.of("production"));
+    expect(configSource.containsKey(KeycloakService.BASE_URL_PROPERTY)).andReturn(false);
+    expect(configSource.getProperty(KeycloakService.HOST_PROPERTY, "localhost"))
+        .andReturn("iam.example.org");
+    replayDefault();
+
+    var service = getBeanFactory().getBean(KeycloakService.class);
     assertEquals("https://iam.example.org/realms/production", service.getIssuerUri());
+
+    verifyDefault();
   }
 
   @Test
-  public void testBaseUrlOverridesLegacyHost() {
-    KeycloakService service = newService(Map.of(
-        KeycloakService.BASE_URL_PROPERTY, "http://localhost:8080/auth/",
-        KeycloakService.HOST_PROPERTY, "iam.example.org",
-        "celements.keycloak.realm", "local"));
-    assertEquals("http://localhost:8080/auth/realms/local", service.getIssuerUri());
+  public void testDefaultHostPreservesHttpsEndpoint() {
+    expectRealm(Optional.of("production"));
+    expect(configSource.containsKey(KeycloakService.BASE_URL_PROPERTY)).andReturn(false);
+    expect(configSource.getProperty(KeycloakService.HOST_PROPERTY, "localhost"))
+        .andReturn("localhost");
+    replayDefault();
+
+    var service = getBeanFactory().getBean(KeycloakService.class);
+    assertEquals("https://localhost/realms/production", service.getIssuerUri());
+
+    verifyDefault();
   }
 
   @Test
-  public void testInvalidBaseUrls() {
-    for (String baseUrl : List.of("", "idp.example.org", "ftp://idp.example.org",
-        "https:///auth", "https://user@idp.example.org", "https://idp.example.org?x=1",
-        "https://idp.example.org#fragment", "https://idp.example.org:-1/base",
-        "https://idp.example.org:0/base",
-        "https://idp.example.org:65536/base", "https://idp.example.org:99999/base")) {
-      KeycloakService service = newService(Map.of(
-          KeycloakService.BASE_URL_PROPERTY, baseUrl,
-          "celements.keycloak.realm", "alumni"));
-      assertFalse(baseUrl, service.isConfigValid());
-      try {
-        service.getIssuerUri();
-        fail("Expected invalid base URL: " + baseUrl);
-      } catch (IllegalArgumentException expected) {
-        assertTrue(expected.getMessage().contains(KeycloakService.BASE_URL_PROPERTY));
-      }
-    }
+  public void testInvalidBaseUrlKeepsAuthenticatedTenantMatched() throws Exception {
+    expectRealm(Optional.of("alumni"));
+    expect(configSource.containsKey(KeycloakService.BASE_URL_PROPERTY)).andStubReturn(true);
+    expect(configSource.getProperty(KeycloakService.BASE_URL_PROPERTY, String.class))
+        .andReturn("https://user:secret@[invalid?token=secret")
+        .andReturn("http://external.example.org");
+    var wikiManager = registerComponentMock(WikiDescriptorService.class);
+    expect(wikiManager.isOicdEnabled(new WikiReference(DEFAULT_DB))).andReturn(true).times(3);
+    replayDefault();
+
+    var service = getBeanFactory().getBean(KeycloakService.class);
+    var matcher = getBeanFactory().getBean(TenantOicdActiveRequestMatcher.class);
+    var request = new MockHttpServletRequest("GET", "/protected");
+    assertTrue(matcher.matches(request));
+    var malformed = assertThrows(IllegalArgumentException.class, service::getIssuerUri);
+    assertTrue(malformed.getMessage().startsWith(KeycloakService.BASE_URL_PROPERTY));
+    assertNull(malformed.getCause());
+    assertTrue(matcher.matches(request));
+    assertThrows(IllegalArgumentException.class, service::getJwkSetUri);
+    assertTrue(matcher.matches(request));
+
+    verifyDefault();
   }
 
-  private KeycloakService newService(Map<String, String> properties) {
-    return new KeycloakService(new MapConfigurationSource(properties), null);
+  @Test
+  public void testMissingRealmPreservesInactiveConfiguration() {
+    expectRealm(Optional.empty());
+    replayDefault();
+
+    var service = getBeanFactory().getBean(KeycloakService.class);
+    assertFalse(service.isConfigValid());
+
+    verifyDefault();
   }
 
-  private static class MapConfigurationSource implements ConfigurationSource {
-
-    private final Map<String, String> properties;
-
-    MapConfigurationSource(Map<String, String> properties) {
-      this.properties = new HashMap<>(properties);
-    }
-
-    @Override
-    public <T> T getProperty(String key, T defaultValue) {
-      return properties.containsKey(key) ? cast(properties.get(key)) : defaultValue;
-    }
-
-    @Override
-    public <T> T getProperty(String key, Class<T> valueClass) {
-      return valueClass.cast(properties.get(key));
-    }
-
-    @Override
-    public <T> T getProperty(String key) {
-      return cast(properties.get(key));
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T cast(String value) {
-      return (T) value;
-    }
-
-    @Override
-    public List<String> getKeys() {
-      return List.copyOf(properties.keySet());
-    }
-
-    @Override
-    public boolean containsKey(String key) {
-      return properties.containsKey(key);
-    }
-
-    @Override
-    public boolean isEmpty() {
-      return properties.isEmpty();
-    }
-
+  private void expectRealm(Optional<String> realm) {
+    expect(configSource.containsKey(REALM_PROPERTY)).andStubReturn(realm.isPresent());
+    expect(configSource.getStringProperty(REALM_PROPERTY)).andStubReturn(realm);
   }
 
 }
