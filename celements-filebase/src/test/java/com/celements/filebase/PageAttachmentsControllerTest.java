@@ -28,6 +28,7 @@ import com.celements.model.context.ModelContext;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.url.UrlService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.user.api.XWikiUser;
@@ -88,6 +89,7 @@ public class PageAttachmentsControllerTest extends AbstractComponentTest {
     expect(docMock.getDocumentReference()).andReturn(docRef).anyTimes();
     expect(urlServiceMock.getURL(anyObject(), eq("download"))).andReturn("http://download");
     expect(urlServiceMock.getURL(anyObject(), eq("download"), anyString())).andReturn("http://preview");
+    expect(urlServiceMock.getURL(anyObject(), eq("viewattachrev"))).andReturn("http://history");
 
     replayDefault();
     ListResponse response = pageAttachmentsCtrl.list("MySpace", "MyDoc", "attachments://MySpace/MyDoc");
@@ -97,6 +99,45 @@ public class PageAttachmentsControllerTest extends AbstractComponentTest {
     assertEquals("attachments://MySpace/MyDoc", response.dirname());
     assertEquals(1, response.files().size());
     assertEquals("file.png", response.files().get(0).basename());
+    assertEquals("http://history", response.files().get(0).historyUrl());
+    assertTrue(new ObjectMapper().writeValueAsString(response.files().get(0)).contains("\"historyUrl\""));
+  }
+
+  @Test
+  public void test_list_anonymousAllowed() throws Exception {
+    expectGuestCheckAuth();
+    expect(modelContextMock.user()).andReturn(Optional.empty()).anyTimes();
+    WikiReference wikiRef = new WikiReference("xwiki");
+    expect(modelContextMock.getWikiRef()).andReturn(wikiRef).anyTimes();
+    DocumentReference docRef = new DocumentReference("MyDoc", new SpaceReference("MySpace", wikiRef));
+    expect(rightsAccessMock.hasAccessLevel(eq(docRef), eq(EAccessLevel.VIEW), isNull(User.class)))
+        .andReturn(true);
+    XWikiDocument docMock = createDefaultMock(XWikiDocument.class);
+    expect(modelAccessMock.getOrCreateDocument(eq(docRef))).andReturn(docMock);
+    expect(attServiceMock.getAttachmentsNameMatch(same(docMock), anyObject())).andReturn(List.of());
+    replayDefault();
+    ListResponse response = pageAttachmentsCtrl.list("MySpace", "MyDoc", "attachments://MySpace/MyDoc");
+    verifyDefault();
+    assertNotNull(response);
+  }
+
+  @Test
+  public void test_list_anonymousDenied() throws Exception {
+    expectGuestCheckAuth();
+    expect(modelContextMock.user()).andReturn(Optional.empty()).anyTimes();
+    WikiReference wikiRef = new WikiReference("xwiki");
+    expect(modelContextMock.getWikiRef()).andReturn(wikiRef).anyTimes();
+    DocumentReference docRef = new DocumentReference("MyDoc", new SpaceReference("MySpace", wikiRef));
+    expect(rightsAccessMock.hasAccessLevel(eq(docRef), eq(EAccessLevel.VIEW), isNull(User.class)))
+        .andReturn(false);
+    replayDefault();
+    try {
+      pageAttachmentsCtrl.list("MySpace", "MyDoc", "attachments://MySpace/MyDoc");
+      fail("Expected FORBIDDEN");
+    } catch (ResponseStatusException rse) {
+      assertEquals(HttpStatus.FORBIDDEN, rse.getStatus());
+    }
+    verifyDefault();
   }
 
   @Test
@@ -176,6 +217,10 @@ public class PageAttachmentsControllerTest extends AbstractComponentTest {
     XWikiUser xuser = new XWikiUser("xwiki:User.test");
     expect(getXContext().getWiki().checkAuth(same(getXContext()))).andReturn(xuser).anyTimes();
     expect(userServiceMock.getUser(eq("xwiki:User.test"))).andReturn(userMock).anyTimes();
+  }
+
+  private void expectGuestCheckAuth() throws Exception {
+    expect(getXContext().getWiki().checkAuth(same(getXContext()))).andReturn(null).anyTimes();
   }
 
 }

@@ -35,6 +35,7 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.server.ResponseStatusException;
 import org.xwiki.model.reference.AttachmentReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.SpaceReference;
 
 import com.celements.auth.user.User;
 import com.celements.filebase.dto.DeleteItem;
@@ -188,12 +189,9 @@ public class PageAttachmentsController extends AuthenticatedBaseController {
       EAccessLevel accessLevel) {
     checkAuth();
     User user = modelContext.user().orElse(null);
-    if (user == null) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-    }
     DocumentReference docRef = new DocumentReference(
         docName,
-        new org.xwiki.model.reference.SpaceReference(spaceName, modelContext.getWikiRef()));
+        new SpaceReference(spaceName, modelContext.getWikiRef()));
     if (!rightsAccess.hasAccessLevel(docRef, accessLevel, user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
