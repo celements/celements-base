@@ -193,7 +193,7 @@ public class MediaLibController extends AuthenticatedBaseController {
    */
   @GetMapping("/search")
   @PreAuthorize("permitAll()")
-  public ListResponse search(@RequestParam("q") String query,
+  public ListResponse search(@RequestParam("filter") String query,
       @RequestParam(name = "path", required = false) String path) {
     checkAuth();
     String dirPath = normalizeDirPath(path);

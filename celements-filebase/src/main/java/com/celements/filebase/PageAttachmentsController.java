@@ -163,7 +163,7 @@ public class PageAttachmentsController extends AuthenticatedBaseController {
   public ListResponse search(
       @PathVariable String spaceName,
       @PathVariable String docName,
-      @RequestParam("q") String query,
+      @RequestParam("filter") String query,
       @RequestParam(name = "path", required = false) String path) {
     AttachmentRequest request = prepareRequest(spaceName, docName, path, EAccessLevel.VIEW);
     String lower = query.toLowerCase(Locale.ROOT);

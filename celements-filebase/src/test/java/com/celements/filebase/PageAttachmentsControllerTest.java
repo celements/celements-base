@@ -2,6 +2,8 @@ package com.celements.filebase;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.util.Date;
 import java.util.List;
@@ -12,6 +14,9 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.util.AopTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.server.ResponseStatusException;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.SpaceReference;
@@ -23,11 +28,14 @@ import com.celements.common.test.AbstractComponentTest;
 import com.celements.filebase.dto.DeleteItem;
 import com.celements.filebase.dto.DeleteRequest;
 import com.celements.filebase.dto.ListResponse;
+import com.celements.filebase.matcher.IAttachmentMatcher;
 import com.celements.model.access.IModelAccessFacade;
 import com.celements.model.context.ModelContext;
 import com.celements.rights.access.EAccessLevel;
 import com.celements.rights.access.IRightsAccessFacadeRole;
 import com.celements.url.UrlService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xpn.xwiki.doc.XWikiAttachment;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.user.api.XWikiUser;
@@ -43,6 +51,7 @@ public class PageAttachmentsControllerTest extends AbstractComponentTest {
   private ModelContext modelContextMock;
   private UserService userServiceMock;
   private User userMock;
+  private MockMvc mockMvc;
 
   @Before
   public void prepare() throws Exception {
@@ -57,6 +66,8 @@ public class PageAttachmentsControllerTest extends AbstractComponentTest {
     userMock = createDefaultMock(User.class);
     fileItemHelper = getBeanFactory().getBean(FileItemHelper.class);
     pageAttachmentsCtrl = getBeanFactory().getBean(PageAttachmentsController.class);
+    mockMvc = MockMvcBuilders.standaloneSetup(
+        AopTestUtils.<PageAttachmentsController>getTargetObject(pageAttachmentsCtrl)).build();
   }
 
   @Test
@@ -140,6 +151,44 @@ public class PageAttachmentsControllerTest extends AbstractComponentTest {
 
     assertNotNull(response);
     assertEquals("attachments://MySpace/MyDoc", response.dirname());
+  }
+
+  @Test
+  public void test_search_bindsVueFinderFilter_andReturnsMatchingFile() throws Exception {
+    expectCheckAuth();
+    expect(modelContextMock.user()).andReturn(Optional.of(userMock)).anyTimes();
+    WikiReference wikiRef = new WikiReference("xwiki");
+    expect(modelContextMock.getWikiRef()).andReturn(wikiRef).anyTimes();
+    DocumentReference docRef = new DocumentReference("MyDoc", new SpaceReference("MySpace", wikiRef));
+    expect(rightsAccessMock.hasAccessLevel(eq(docRef), eq(EAccessLevel.VIEW), same(userMock)))
+        .andReturn(true);
+    XWikiDocument docMock = createDefaultMock(XWikiDocument.class);
+    expect(modelAccessMock.getOrCreateDocument(eq(docRef))).andReturn(docMock);
+    XWikiAttachment matchingAtt = createDefaultMock(XWikiAttachment.class);
+    XWikiAttachment otherAtt = createDefaultMock(XWikiAttachment.class);
+    expect(matchingAtt.getFilename()).andReturn("mELVin.png").anyTimes();
+    expect(otherAtt.getFilename()).andReturn("other.png").anyTimes();
+    expect(matchingAtt.getDoc()).andReturn(docMock).anyTimes();
+    expect(docMock.getDocumentReference()).andReturn(docRef).anyTimes();
+    expect(matchingAtt.getFilesize()).andReturn(100).anyTimes();
+    expect(matchingAtt.getDate()).andReturn(new Date()).anyTimes();
+    expect(urlServiceMock.getURL(anyObject(), eq("download"))).andReturn("http://download");
+    expect(urlServiceMock.getURL(anyObject(), eq("download"), anyString()))
+        .andReturn("http://preview");
+    expect(attServiceMock.getAttachmentsNameMatch(same(docMock), anyObject())).andAnswer(() -> {
+      IAttachmentMatcher matcher = (IAttachmentMatcher) getCurrentArguments()[1];
+      return List.of(matchingAtt, otherAtt).stream().filter(matcher::accept).toList();
+    });
+    replayDefault();
+    var result = mockMvc.perform(get("/api/attachments/MySpace/MyDoc/search").servletPath("/api")
+        .param("path", "attachments://MySpace/MyDoc").param("filter", "Melvin"))
+        .andExpect(status().isOk())
+        .andReturn();
+    verifyDefault();
+    JsonNode response = new ObjectMapper().readTree(result.getResponse().getContentAsByteArray());
+    assertEquals("attachments://MySpace/MyDoc", response.get("dirname").asText());
+    assertEquals(1, response.get("files").size());
+    assertEquals("mELVin.png", response.at("/files/0/basename").asText());
   }
 
   @Test
