@@ -2,7 +2,10 @@ package com.celements.filebase;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,15 +14,25 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.util.AopTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.server.ResponseStatusException;
+import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.auth.user.User;
+import com.celements.auth.user.UserService;
 import com.celements.filebase.dto.DeleteItem;
 import com.celements.filebase.dto.DeleteRequest;
 import com.celements.filebase.dto.ListResponse;
-import com.celements.auth.user.UserService;
+import com.celements.filebase.matcher.IAttachmentMatcher;
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.model.context.ModelContext;
+import com.celements.url.UrlService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xpn.xwiki.doc.XWikiAttachment;
+import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.user.api.XWikiUser;
 
 public class MediaLibControllerTest extends AbstractComponentTest {
@@ -28,8 +41,10 @@ public class MediaLibControllerTest extends AbstractComponentTest {
   private FileItemHelper fileItemHelper;
   private IFileBaseServiceRole fileBaseServiceMock;
   private ModelContext modelContextMock;
+  private UrlService urlServiceMock;
   private UserService userServiceMock;
   private User userMock;
+  private MockMvc mockMvc;
 
   @Before
   public void prepare() throws Exception {
@@ -37,10 +52,13 @@ public class MediaLibControllerTest extends AbstractComponentTest {
         .setAuthentication(new TestingAuthenticationToken("test", "n/a", "ROLE_USER"));
     fileBaseServiceMock = registerComponentMock(IFileBaseServiceRole.class);
     modelContextMock = registerComponentMock(ModelContext.class);
+    urlServiceMock = registerComponentMock(UrlService.class);
     userServiceMock = registerComponentMock(UserService.class);
     userMock = createDefaultMock(User.class);
     fileItemHelper = getBeanFactory().getBean(FileItemHelper.class);
     mediaLibCtrl = getBeanFactory().getBean(MediaLibController.class);
+    mockMvc = MockMvcBuilders.standaloneSetup(
+        AopTestUtils.<MediaLibController>getTargetObject(mediaLibCtrl)).build();
   }
 
   @Test
@@ -66,6 +84,40 @@ public class MediaLibControllerTest extends AbstractComponentTest {
     verifyDefault();
     assertNotNull(response);
     assertEquals("local://", response.dirname());
+  }
+
+  @Test
+  public void test_search_bindsVueFinderFilter_andReturnsMatchingFile() throws Exception {
+    expectCheckAuth();
+    expect(modelContextMock.user()).andReturn(Optional.of(userMock)).anyTimes();
+    expect(fileBaseServiceMock.hasListingRight(eq("local://"), same(userMock))).andReturn(true);
+    XWikiDocument docMock = createDefaultMock(XWikiDocument.class);
+    XWikiAttachment matchingAtt = createDefaultMock(XWikiAttachment.class);
+    XWikiAttachment otherAtt = createDefaultMock(XWikiAttachment.class);
+    expect(matchingAtt.getFilename()).andReturn("mELVin.png").anyTimes();
+    expect(otherAtt.getFilename()).andReturn("other.png").anyTimes();
+    expect(matchingAtt.getDoc()).andReturn(docMock).anyTimes();
+    expect(docMock.getDocumentReference())
+        .andReturn(new DocumentReference("FileRepo", "public", "xwiki")).anyTimes();
+    expect(matchingAtt.getFilesize()).andReturn(100).anyTimes();
+    expect(matchingAtt.getDate()).andReturn(new Date()).anyTimes();
+    expect(urlServiceMock.getURL(anyObject(), eq("download"))).andReturn("http://download");
+    expect(urlServiceMock.getURL(anyObject(), eq("download"), anyString()))
+        .andReturn("http://preview");
+    expect(fileBaseServiceMock.getFilesNameMatch(anyObject())).andAnswer(() -> {
+      IAttachmentMatcher matcher = (IAttachmentMatcher) getCurrentArguments()[0];
+      return List.of(matchingAtt, otherAtt).stream().filter(matcher::accept).toList();
+    });
+    replayDefault();
+    var result = mockMvc.perform(get("/api/files/search").servletPath("/api")
+        .param("path", "local://").param("filter", "Melvin"))
+        .andExpect(status().isOk())
+        .andReturn();
+    verifyDefault();
+    JsonNode response = new ObjectMapper().readTree(result.getResponse().getContentAsByteArray());
+    assertEquals("local://", response.get("dirname").asText());
+    assertEquals(1, response.get("files").size());
+    assertEquals("mELVin.png", response.at("/files/0/basename").asText());
   }
 
   @Test
