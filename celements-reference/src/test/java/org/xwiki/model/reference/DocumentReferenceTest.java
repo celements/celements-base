@@ -21,8 +21,11 @@ package org.xwiki.model.reference;
 
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.junit.Test;
 import org.xwiki.model.EntityType;
@@ -45,6 +48,29 @@ public class DocumentReferenceTest {
     assertEquals(reference, new DocumentReference("wiki", Arrays.asList("space"), "page"));
     assertEquals(reference, new DocumentReference("page",
         new SpaceReference("space", new WikiReference("wiki"))));
+  }
+
+  @Test
+  public void testCloneWithLocale() {
+    EntityReference reference = new EntityReference("page", EntityType.DOCUMENT,
+        new SpaceReference("space", new WikiReference("wiki")),
+        Map.<String, Serializable>of("custom", "value"));
+
+    DocumentReference unlocalized = new DocumentReference(reference, null);
+    assertTrue(unlocalized.getLocale().isEmpty());
+    assertEquals("value", unlocalized.getParameter(String.class, "custom").orElse(null));
+
+    DocumentReference english = new DocumentReference(unlocalized, Locale.ENGLISH);
+    assertEquals(Locale.ENGLISH, english.getLocale().orElse(null));
+    assertEquals("value", english.getParameter(String.class, "custom").orElse(null));
+
+    DocumentReference german = new DocumentReference(english, Locale.GERMAN);
+    assertEquals(Locale.GERMAN, german.getLocale().orElse(null));
+
+    DocumentReference removed = german.withoutLocale();
+    assertTrue(removed.getLocale().isEmpty());
+    assertEquals("value", removed.getParameter(String.class, "custom").orElse(null));
+    assertSame(unlocalized, unlocalized.withoutLocale());
   }
 
   @Test
@@ -76,8 +102,7 @@ public class DocumentReferenceTest {
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] in a "
-              + "document reference",
+          "Invalid parent reference [wiki] in a document reference",
           expected.getMessage());
     }
   }

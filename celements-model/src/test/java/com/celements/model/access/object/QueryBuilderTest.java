@@ -5,18 +5,19 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.common.test.AbstractComponentTest;
 import com.celements.common.test.ExceptionAsserter;
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.fields.ClassField;
-import com.celements.model.object.ObjectBridge;
 import com.celements.model.object.restriction.ClassRestriction;
 import com.celements.model.object.restriction.FieldAbsentRestriction;
 import com.celements.model.object.restriction.ObjectQuery;
@@ -25,7 +26,6 @@ import com.celements.model.object.xwiki.XWikiObjectBridge;
 import com.celements.model.object.xwiki.XWikiObjectEditor;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.web.Utils;
 
 public class QueryBuilderTest extends AbstractComponentTest {
 
@@ -38,7 +38,7 @@ public class QueryBuilderTest extends AbstractComponentTest {
   public void prepareTest() throws Exception {
     wikiRef = new WikiReference("db");
     doc = new XWikiDocument(new DocumentReference(wikiRef.getName(), "space", "doc"));
-    classRef = Utils.getComponent(ClassDefinition.class, NAME).getClassReference();
+    classRef = getBeanFactory().getBean(NAME, ClassDefinition.class).getClassReference();
     classRef2 = new ClassReference("class", "other");
   }
 
@@ -102,6 +102,16 @@ public class QueryBuilderTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_filter_classReferenceNormalization() {
+    assertEquals(Set.of(classRef), newBuilder()
+        .filter(new LocalDocumentReference(classRef))
+        .getQuery().getObjectClasses());
+    assertEquals(Set.of(classRef), newBuilder()
+        .filter(getBeanFactory().getBean(NAME, ClassDefinition.class))
+        .getQuery().getObjectClasses());
+  }
+
+  @Test
   public void test_filterAbsent_null() throws Exception {
     new ExceptionAsserter<NullPointerException>(NullPointerException.class) {
 
@@ -140,7 +150,7 @@ public class QueryBuilderTest extends AbstractComponentTest {
   }
 
   private XWikiObjectBridge getBridge() {
-    return (XWikiObjectBridge) Utils.getComponent(ObjectBridge.class, XWikiObjectBridge.NAME);
+    return getBeanFactory().getBean(XWikiObjectBridge.NAME, XWikiObjectBridge.class);
   }
 
 }

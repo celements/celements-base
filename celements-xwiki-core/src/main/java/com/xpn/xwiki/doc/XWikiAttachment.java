@@ -28,6 +28,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -71,6 +72,17 @@ public class XWikiAttachment implements Cloneable {
   private XWikiAttachmentArchive attachment_archive;
 
   private boolean isMetaDataDirty = false;
+
+  public static XWikiAttachment from(XWikiDocument doc, CelAttachment catt) {
+    XWikiAttachment xatt = new XWikiAttachment(doc, catt.getFilename());
+    xatt.setFilesize(catt.getFilesize());
+    xatt.setAuthor(catt.getAuthor());
+    xatt.setVersion(catt.getVersion());
+    xatt.setComment(catt.getComment());
+    xatt.setDate(Optional.ofNullable(catt.getDate()).map(Date::from).orElse(null));
+    xatt.setMetaDataDirty(false);
+    return xatt;
+  }
 
   public XWikiAttachment(XWikiDocument doc, String filename) {
     this();

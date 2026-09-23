@@ -6,10 +6,11 @@ import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 
-import com.celements.model.classes.ClassIdentity;
 import com.celements.model.field.FieldAccessor;
-import com.google.common.collect.FluentIterable;
+
+import one.util.streamex.StreamEx;
 
 /**
  * Bridge for effective access on document and objects, primarily used by {@link ObjectHandler}s to
@@ -47,21 +48,21 @@ public interface ObjectBridge<D, O> {
   String getDefaultLanguage(@NotNull D doc);
 
   @NotNull
-  FluentIterable<? extends ClassIdentity> getDocClasses(@NotNull D doc);
+  StreamEx<LocalDocumentReference> getDocClasses(@NotNull D doc);
 
   @NotNull
-  FluentIterable<O> getObjects(@NotNull D doc, @NotNull ClassIdentity classId);
+  StreamEx<O> getObjects(@NotNull D doc, @NotNull LocalDocumentReference classRef);
 
   int getObjectNumber(@NotNull O obj);
 
   @NotNull
-  ClassIdentity getObjectClass(@NotNull O obj);
+  LocalDocumentReference getObjectClass(@NotNull O obj);
 
   @NotNull
   O cloneObject(@NotNull O obj);
 
   @NotNull
-  O createObject(@NotNull D doc, @NotNull ClassIdentity classId);
+  O createObject(@NotNull D doc, @NotNull LocalDocumentReference classRef);
 
   boolean deleteObject(@NotNull D doc, @NotNull O obj);
 

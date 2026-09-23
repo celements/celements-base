@@ -5,10 +5,11 @@ import static com.google.common.base.Strings.*;
 import java.util.Collection;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
+import org.springframework.stereotype.Component;
 import org.xwiki.model.reference.ClassReference;
 
 import com.celements.model.context.ModelContext;
@@ -26,10 +27,14 @@ public class XObjectStringFieldAccessor implements StringFieldAccessor<BaseObjec
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XObjectStringFieldAccessor.class);
 
-  public static final String NAME = "xobject";
+  public static final String NAME = "XObjectStringFieldAccessor";
 
-  @Requirement
-  private ModelContext context;
+  private final ModelContext context;
+
+  @Inject
+  public XObjectStringFieldAccessor(ModelContext context) {
+    this.context = context;
+  }
 
   @Override
   public String getName() {

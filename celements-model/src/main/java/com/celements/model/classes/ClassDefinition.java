@@ -26,17 +26,17 @@ public interface ClassDefinition extends ClassIdentity {
   String getName();
 
   /**
-   * @deprecated instead use {{@link #getClassReference()}
-   * @return the document reference on which the class is defined, using current wiki
+   * @deprecated instead use {@link #getLocalClassRef()}
+   * @return the document reference on which the class is defined, using the current wiki
    */
   @Deprecated
   @NotNull
   DocumentReference getClassRef();
 
   /**
-   * @deprecated instead use {{@link #getClassReference()}
-   * @param wikiRef
-   * @return the document reference on which the class is defined, using given wiki
+   * @deprecated instead use {@link #getLocalClassRef()}{@code .getDocRef(wikiRef)}
+   * @param wikiRef the wiki for the returned document reference
+   * @return the document reference on which the class is defined, using the given wiki
    */
   @Deprecated
   @NotNull

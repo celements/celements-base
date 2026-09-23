@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.validation.constraints.NotNull;
 
+import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
 
 import com.celements.model.classes.ClassDefinition;
@@ -63,9 +64,9 @@ public abstract class AbstractObjectHandler<R extends AbstractObjectHandler<R, D
     return query;
   }
 
-  private Optional<FieldRestriction<O, ?>> asObjectLangRestriction(ClassIdentity classId) {
-    return classId.getClassDefinition()
-        .filter(ClassIdentity::isValidObjectClass)
+  private Optional<FieldRestriction<O, ?>> asObjectLangRestriction(ClassReference classRef) {
+    return classRef.getClassDefinition()
+        .filter(ClassDefinition::isValidObjectClass)
         .flatMap(ClassDefinition::getLangField)
         .map(langField -> new FieldRestriction<>(getBridge(), langField, getObjectLanguage()));
   }

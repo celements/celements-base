@@ -39,12 +39,28 @@ import org.xwiki.model.reference.EntityReference;
 
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
+import com.xpn.xwiki.doc.CelObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
 import com.xpn.xwiki.objects.classes.PropertyClass;
 
 public class BaseObject extends BaseCollection implements ObjectInterface, Serializable, Cloneable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseObject.class);
+
+  public static BaseObject from(CelObject cobj) {
+    BaseObject xobj = new BaseObject();
+    xobj.setDocumentReference(cobj.getDocumentReference());
+    xobj.setXClassReference(cobj.getClassReference());
+    xobj.setNumber(cobj.getNumber());
+    xobj.setGuid(cobj.getGuid());
+    if (cobj.getIdVersion() != null) {
+      xobj.setId(cobj.getId(), cobj.getIdVersion());
+    }
+    cobj.getProperties().stream()
+        .map(BaseProperty::from)
+        .forEach(property -> xobj.safeput(property.getName(), property));
+    return xobj;
+  }
 
   private String guid = UUID.randomUUID().toString();
 

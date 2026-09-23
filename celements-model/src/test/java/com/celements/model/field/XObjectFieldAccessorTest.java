@@ -31,9 +31,8 @@ public class XObjectFieldAccessorTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    accessor = (XObjectFieldAccessor) Utils.getComponent(FieldAccessor.class,
-        XObjectFieldAccessor.NAME);
-    testClassDef = Utils.getComponent(ClassDefinition.class, TestClassDefinition.NAME);
+    accessor = getBeanFactory().getBean(XObjectFieldAccessor.class);
+    testClassDef = getBeanFactory().getBean(TestClassDefinition.NAME, ClassDefinition.class);
     expectClass(testClassDef, getXContext().getWikiRef());
   }
 

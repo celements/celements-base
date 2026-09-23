@@ -92,7 +92,7 @@ public class ObjectEditorTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws IllegalArgumentException {
-        newEditor().fetch().stream();
+        newEditor().fetch().stream().count();
       }
     }.evaluate();
     assertTrue("wrong message: " + iae.getMessage(), iae.getMessage().contains("[en]"));
@@ -147,6 +147,17 @@ public class ObjectEditorTest extends AbstractComponentTest {
     assertEquals(val, ret.get(classRef).getIntValue(field2.getName()));
     assertEquals(classRef2.getDocRef(wikiRef), ret.get(classRef2).getXClassReference());
     assertObjs(newEditor(), ret.get(classRef), ret.get(classRef2));
+  }
+
+  @Test
+  public void test_create_fieldFilterOrder() throws Exception {
+    replayDefault();
+    BaseObject ret = newEditor()
+        .filter(FIELD_MY_STRING, "first")
+        .filter(FIELD_MY_STRING, "last")
+        .createFirst();
+    verifyDefault();
+    assertEquals("last", ret.getStringValue(FIELD_MY_STRING.getName()));
   }
 
   @Test
@@ -246,11 +257,11 @@ public class ObjectEditorTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_createFirst() throws Exception {
+  public void test_createFirst_filterOrder() throws Exception {
     replayDefault();
-    BaseObject ret = newEditor().filter(classRef).createFirst();
+    BaseObject ret = newEditor().filter(classRef2).filter(classRef).createFirst();
     verifyDefault();
-    assertEquals(classRef.getDocRef(wikiRef), ret.getXClassReference());
+    assertEquals(classRef2.getDocRef(wikiRef), ret.getXClassReference());
     assertObjs(newEditor(), ret);
   }
 

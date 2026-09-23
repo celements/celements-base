@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -211,6 +212,19 @@ public class XWikiDocumentTest extends AbstractComponentTest {
     assertEquals("space", doc.getSpaceName());
     assertEquals("page", doc.getPageName());
     assertEquals("wiki", doc.getWikiName());
+  }
+
+  @Test
+  public void test_getDocRefWithLocale() {
+    DocumentReference localizedRef = new DocumentReference(
+        DOCWIKI, DOCSPACE, DOCNAME, Locale.ENGLISH);
+    XWikiDocument doc = new XWikiDocument(localizedRef);
+
+    assertTrue(doc.getDocRefWithLocale().getLocale().isEmpty());
+
+    doc.setLanguage("de");
+    doc.setTranslation(1);
+    assertEquals(Locale.GERMAN, doc.getDocRefWithLocale().getLocale().orElse(null));
   }
 
   @Test

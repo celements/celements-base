@@ -11,7 +11,6 @@ import org.xwiki.component.annotation.Component;
 
 import com.celements.model.classes.fields.ClassField;
 import com.celements.model.classes.fields.list.ListField;
-import com.celements.model.field.AbstractFieldAccessor;
 import com.celements.model.field.FieldAccessException;
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.field.FieldMissingException;
@@ -23,7 +22,7 @@ import com.google.common.collect.Lists;
  * {{@link #getBeanMethodName(ClassField)} to check expected naming.
  */
 @Component(BeanFieldAccessor.NAME)
-public class BeanFieldAccessor<T> extends AbstractFieldAccessor<T> {
+public class BeanFieldAccessor<T> implements FieldAccessor<T> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BeanFieldAccessor.class);
 

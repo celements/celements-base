@@ -17,6 +17,7 @@ import org.xwiki.component.annotation.Requirement;
 import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.ClassReference;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.classes.fields.ClassField;
@@ -59,6 +60,12 @@ public abstract class AbstractClassDefinition implements ClassDefinition {
   }
 
   @Override
+  public LocalDocumentReference getLocalClassRef() {
+    return getClassReference();
+  }
+
+  @Override
+  @Deprecated
   public ClassReference getClassReference() {
     if (classRef == null) {
       classRef = new ClassReference(getClassSpaceName(), getClassDocName());
@@ -78,6 +85,7 @@ public abstract class AbstractClassDefinition implements ClassDefinition {
   }
 
   @Override
+  @Deprecated
   public DocumentReference getDocRef() {
     return getClassReference().getDocRef();
   }

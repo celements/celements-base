@@ -40,6 +40,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.text.DateFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -185,6 +186,7 @@ public class XWiki implements EventListener {
   public static final String SERVLET_CONTEXT_KEY = "xwiki.instance";
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(XWiki.class);
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   /** XWiki configuration loaded from xwiki.cfg. */
   private XWikiConfig config;
@@ -3011,7 +3013,7 @@ public class XWiki implements EventListener {
   }
 
   public String generateRandomString(int size) {
-    return RandomStringUtils.randomAlphanumeric(size);
+    return RandomStringUtils.random(size, 0, 0, true, true, null, SECURE_RANDOM);
   }
 
   public String generateValidationKey(int size) {

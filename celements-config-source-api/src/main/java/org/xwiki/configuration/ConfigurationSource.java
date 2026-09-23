@@ -111,8 +111,8 @@ public interface ConfigurationSource {
   }
 
   private static Stream<?> toStream(Object value) {
-    if (value instanceof Iterable) {
-      return StreamSupport.stream(((Iterable<?>) value).spliterator(), false);
+    if (value instanceof Iterable iter) {
+      return StreamSupport.stream(iter.spliterator(), false);
     } else if (value != null) {
       return Stream.of(value);
     } else {
