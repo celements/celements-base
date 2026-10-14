@@ -6,7 +6,7 @@ Accepted on 2026-09-13.
 
 ## Context
 
-The reusable Celements Keycloak adapter needs one configuration for every Space in a Wiki. Existing
+The reusable Celements Keycloak adapter needs one configuration shared by all Spaces in a Wiki. Existing
 Keycloak settings are stored in each environment's `XWikiPreferences`, and Wiki administrators are
 trusted to configure Keycloak destinations within their own Wiki. In the customer deployment that
 prompted [ALU-190](https://github.com/progonline/progon-customizing/pull/199), each customer has its
@@ -25,7 +25,8 @@ preferences, `celements.properties`, then `xwiki.properties`; it does not includ
 - Existing Wiki-level settings must remain effective without moving them to files.
 - The adapter must not embed customer-specific realm, sidecar address, or credential values.
 - The security boundary must be explicit because the configured destination receives authentication
-  and administrative token requests.
+  requests and may also be reused by applications for administrative token requests containing client
+  credentials.
 
 ## Considered options
 
@@ -52,8 +53,13 @@ settings. Wiki preferences take precedence over `celements.properties`, then `xw
 Space preferences must not override them. This records the adapter's existing source choice; it does
 not assert a new code change.
 
-This decision assumes that Wiki administrators are trusted to configure Keycloak destinations for
-their own Wiki. Deployments **MUST assess that trust assumption** before adopting this source choice.
+`KeycloakService` selects this source unconditionally through its constructor's `@Named` injection;
+deployments inherit this trust model when they use the adapter. This decision assumes that Wiki
+administrators are trusted to configure Keycloak destinations for their own Wiki. Deployments
+**MUST assess that trust assumption** and **MUST NOT use the adapter unchanged** if they do not trust
+Wiki administrators with that authority. The adapter provides no configuration setting to select a
+different source, and source replacement is not a documented supported extension point. It requires
+a code or dependency-injection wiring change, reviewed and tested for the deployment.
 The adapter's configuration-source policy is separate from deployment-specific realm names, sidecar
 addresses, and credentials; those values belong in each deployment's configuration.
 
@@ -67,13 +73,17 @@ addresses, and credentials; those values belong in each deployment's configurati
 
 ### Negative and security risk
 
-- A trusted Wiki administrator can redirect authentication and administrative token requests to a
-  destination they control, potentially exposing client secrets or tokens. This is an intentional
-  trust boundary, not a claim that all Celements deployments trust Wiki administrators.
+- A trusted Wiki administrator can redirect authentication requests to a destination they control,
+  potentially exposing client secrets or tokens. Applications that reuse this destination for
+  administrative token requests may also expose the client credentials sent in those requests; the
+  Celements adapter does not itself perform those administrative token requests. This is an
+  intentional trust boundary, not a claim that all Celements deployments trust Wiki administrators.
 - Deployments without that trust boundary cannot safely rely on Wiki-editable destinations. Their
   rollback/alternative is to move the required values to deployment-controlled properties and
-  switch the adapter to the file-only `CelementsAllPropertiesConfigurationSource`; that change must
-  be reviewed and tested for the deployment's credential and fallback behavior.
+  change the adapter's code or dependency-injection wiring to use the file-only
+  `CelementsAllPropertiesConfigurationSource`; setting file properties alone does not replace the
+  Wiki-first source. The change must be reviewed and tested for the deployment's credential and
+  fallback behavior.
 
 ## Source references
 
