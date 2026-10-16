@@ -6,11 +6,10 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.validation.constraints.NotNull;
 
 import com.celements.model.object.AbstractObjectEditor;
-import com.celements.model.object.ObjectBridge;
 import com.celements.model.object.ObjectHandler;
+import com.celements.spring.context.SpringContextProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.web.Utils;
 
 @NotThreadSafe
 public class XWikiObjectEditor extends
@@ -43,7 +42,8 @@ public class XWikiObjectEditor extends
 
   @Override
   protected XWikiObjectBridge getBridge() {
-    return (XWikiObjectBridge) Utils.getComponent(ObjectBridge.class, XWikiObjectBridge.NAME);
+    return SpringContextProvider.getBeanFactory()
+        .getBean(XWikiObjectBridge.NAME, XWikiObjectBridge.class);
   }
 
   @Override

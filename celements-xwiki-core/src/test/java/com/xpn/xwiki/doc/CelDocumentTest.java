@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
@@ -30,10 +31,29 @@ import com.xpn.xwiki.test.AbstractComponentTest;
 
 public class CelDocumentTest extends AbstractComponentTest {
 
+  @Test
+  public void testToString() {
+    XWikiDocument document = new XWikiDocument(
+        new DocumentReference("wiki", "space", "page"));
+    document.setLanguage("de");
+    document.setTranslation(1);
+
+    assertEquals("wiki:space.page(de)", CelDocument.from(document).toString());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testTranslationRejectsDefaultDocument() {
     XWikiDocument document = new XWikiDocument(
         new DocumentReference("wiki", "space", "page"));
+
+    CelDocument.Translation.from(document);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testTranslationRejectsMissingLanguage() {
+    XWikiDocument document = new XWikiDocument(
+        new DocumentReference("wiki", "space", "page"));
+    document.setTranslation(1);
 
     CelDocument.Translation.from(document);
   }
@@ -127,7 +147,6 @@ public class CelDocumentTest extends AbstractComponentTest {
     assertSame(documentReference, identity.docRef());
     assertEquals(42, identity.id());
     assertEquals(IdVersion.CELEMENTS_3, identity.idVersion());
-    assertEquals("", identity.language());
     assertEquals("1.1", identity.version());
     assertEquals("en", documentMeta.defaultLanguage());
     assertEquals("content", documentMeta.content());
@@ -139,6 +158,8 @@ public class CelDocumentTest extends AbstractComponentTest {
     assertSame(documentReference, celDocument.getDocumentReference());
     assertEquals("content", celDocument.getContent());
     assertEquals("value", defaultDocument.getXObjects().get(0).getStringValue("string"));
+    assertEquals("wiki:space.page_XWiki.Class_2",
+        defaultDocument.getXObjects().get(0).toString());
     assertEquals(new LocalDocumentReference(classReference),
         defaultDocument.getXObjects().get(0).getClassReference());
     assertEquals("comment", defaultDocument.getAttachmentList().get(0).getComment());
@@ -218,6 +239,12 @@ public class CelDocumentTest extends AbstractComponentTest {
     CelDocument celDocument = CelDocument.from(source);
 
     assertTrue(celDocument instanceof CelDocument.Translation);
+    assertEquals(Locale.GERMAN, celDocument.getDocumentReference().getLocale().orElse(null));
+    assertEquals("de", celDocument.getLanguage());
+
+    XWikiDocument materialized = XWikiDocument.from(celDocument);
+    assertEquals(source.getDocumentReference(), materialized.getDocumentReference());
+    assertEquals("de", materialized.getLanguage());
   }
 
   private void put(BaseObject object, String name, BaseProperty property, Object value) {

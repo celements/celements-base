@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.validation.constraints.NotNull;
 
+import org.xwiki.model.reference.ClassReference;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,19 +68,19 @@ public abstract class AbstractObjectEditor<R extends AbstractObjectEditor<R, D, 
         .orElseThrow(() -> new IllegalArgumentException("no class defined - " + this));
   }
 
-  private O createObject(ClassIdentity classId, boolean ifNotExists) {
-    checkArgument(classId.isValidObjectClass(),
-        "unable to create object with invalid class [%s] on [%s]", classId, getDocRef());
+  private O createObject(ClassReference classRef, boolean ifNotExists) {
+    checkArgument(classRef.isValidObjectClass(),
+        "unable to create object with invalid class [%s] on [%s]", classRef, getDocRef());
     O obj = null;
     if (ifNotExists) {
-      obj = fetch().filter(classId).stream().findFirst().orElse(null);
+      obj = fetch().filter(classRef).stream().findFirst().orElse(null);
     }
     if (obj == null) {
-      obj = getBridge().createObject(getDocument(), classId);
-      for (FieldRestriction<O, ?> restriction : getQuery().getFieldRestrictions(classId)) {
+      obj = getBridge().createObject(getDocument(), classRef);
+      for (FieldRestriction<O, ?> restriction : getQuery().getFieldRestrictions(classRef)) {
         setObjectField(obj, restriction);
       }
-      LOGGER.info("{} created object {} for {}", this, getBridge().getObjectNumber(obj), classId);
+      LOGGER.info("{} created object {} for {}", this, getBridge().getObjectNumber(obj), classRef);
     }
     return obj;
   }

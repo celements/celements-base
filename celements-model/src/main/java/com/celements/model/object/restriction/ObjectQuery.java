@@ -1,7 +1,7 @@
 package com.celements.model.object.restriction;
 
-import static com.celements.common.MoreObjectsCel.*;
-import static com.google.common.collect.ImmutableSet.*;
+import static com.celements.common.MoreObjectsCel.tryCast;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -11,7 +11,10 @@ import java.util.stream.Stream;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
-import com.celements.model.classes.ClassIdentity;
+import org.xwiki.model.reference.ClassReference;
+import org.xwiki.model.reference.LocalDocumentReference;
+
+import one.util.streamex.StreamEx;
 
 @NotThreadSafe
 public class ObjectQuery<O> {
@@ -31,30 +34,34 @@ public class ObjectQuery<O> {
     return this;
   }
 
-  public Stream<Predicate<O>> streamRestrictions() {
-    return restrictions.stream();
+  public StreamEx<Predicate<O>> streamRestrictions() {
+    return StreamEx.of(restrictions);
   }
 
-  public Predicate<O> predicate(ClassIdentity classId) {
+  public Predicate<O> predicate(LocalDocumentReference classRef) {
     return streamRestrictions()
         .filter(restr -> tryCast(restr, ClassRestriction.class)
-            .map(classRestr -> classRestr.getClassIdentity().equals(classId))
+            .map(classRestr -> classRestr.getClassRef().equals(classRef))
             .orElse(true))
         .reduce((p1, p2) -> p1.and(p2))
         .orElse(o -> true);
   }
 
-  public Set<ClassIdentity> getObjectClasses() {
+  public StreamEx<LocalDocumentReference> streamClassRefs() {
     return streamRestrictions()
         .flatMap(tryCast(ClassRestriction.class))
-        .map(ClassRestriction::getClassIdentity)
-        .collect(toImmutableSet());
+        .map(ClassRestriction::getClassRef)
+        .distinct();
   }
 
-  public Set<FieldRestriction<O, ?>> getFieldRestrictions(ClassIdentity classId) {
+  public Set<ClassReference> getObjectClasses() {
+    return streamClassRefs().map(ClassReference::new).collect(toImmutableSet());
+  }
+
+  public Set<FieldRestriction<O, ?>> getFieldRestrictions(LocalDocumentReference classRef) {
     return streamRestrictions()
         .flatMap(tryCast(getFieldRestrictionClass()))
-        .filter(fieldRestr -> fieldRestr.getClassIdentity().equals(classId))
+        .filter(fieldRestr -> fieldRestr.getClassRef().equals(classRef))
         .collect(toImmutableSet());
   }
 

@@ -14,7 +14,6 @@ import com.celements.common.test.ExceptionAsserter;
 import com.celements.model.classes.TestClassDefinition;
 import com.celements.model.classes.fields.ClassField;
 import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.web.Utils;
 
 public class XDocumentFieldAccessorTest extends AbstractComponentTest {
 
@@ -36,8 +35,7 @@ public class XDocumentFieldAccessorTest extends AbstractComponentTest {
 
   @Before
   public void prepareTest() throws Exception {
-    accessor = (XDocumentFieldAccessor) Utils.getComponent(FieldAccessor.class,
-        XDocumentFieldAccessor.NAME);
+    accessor = getBeanFactory().getBean(XDocumentFieldAccessor.class);
   }
 
   @Test

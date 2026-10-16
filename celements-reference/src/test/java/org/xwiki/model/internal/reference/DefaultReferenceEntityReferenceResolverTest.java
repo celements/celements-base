@@ -127,8 +127,7 @@ public class DefaultReferenceEntityReferenceResolverTest extends AbstractBaseCom
       fail("Should have thrown an exception here");
     } catch (InvalidEntityReferenceException expected) {
       assertEquals(
-          "Invalid reference [name = [page], type = [DOCUMENT], parent = [name = [filename], "
-              + "type = [ATTACHMENT], parent = [null]]]",
+          "Invalid reference [filename.page]",
           expected.getMessage());
     }
   }

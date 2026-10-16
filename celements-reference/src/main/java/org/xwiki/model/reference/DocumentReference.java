@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.xwiki.model.EntityType;
@@ -85,7 +86,7 @@ public class DocumentReference extends EntityReference {
    *              if the passed reference is not a valid document reference
    */
   public DocumentReference(EntityReference reference, Locale locale) {
-    super(reference, asMap(EntryStream.of(LOCALE, locale)));
+    super(reference, Collections.singletonMap(LOCALE, locale));
   }
 
   /**
@@ -244,6 +245,15 @@ public class DocumentReference extends EntityReference {
    */
   public Optional<Locale> getLocale() {
     return getParameter(Locale.class, LOCALE);
+  }
+
+  public DocumentReference withLocale(Locale locale) {
+    var isCurrentLocale = Objects.equals(locale, getLocale().orElse(null));
+    return isCurrentLocale ? this : new DocumentReference(this, locale);
+  }
+
+  public DocumentReference withoutLocale() {
+    return withLocale(null);
   }
 
   @Override

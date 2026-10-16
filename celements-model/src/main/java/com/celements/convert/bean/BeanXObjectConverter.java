@@ -1,5 +1,7 @@
 package com.celements.convert.bean;
 
+import java.util.function.Supplier;
+
 import org.xwiki.component.annotation.Component;
 import org.xwiki.component.annotation.InstantiationStrategy;
 import org.xwiki.component.annotation.Requirement;
@@ -7,7 +9,6 @@ import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
 
 import com.celements.convert.classes.XObjectDeconverter;
 import com.celements.model.field.FieldAccessor;
-import com.google.common.base.Supplier;
 import com.xpn.xwiki.objects.BaseObject;
 
 /**

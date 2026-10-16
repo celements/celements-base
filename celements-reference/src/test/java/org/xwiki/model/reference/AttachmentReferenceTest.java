@@ -62,8 +62,7 @@ public class AttachmentReferenceTest {
       fail("Should have thrown an exception here");
     } catch (IllegalArgumentException expected) {
       assertEquals(
-          "Invalid parent reference [name = [wiki], type = [WIKI], parent = [null]] in an "
-              + "attachment reference",
+          "Invalid parent reference [wiki] in an attachment reference",
           expected.getMessage());
     }
   }

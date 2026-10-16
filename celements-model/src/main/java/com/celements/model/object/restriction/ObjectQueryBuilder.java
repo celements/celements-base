@@ -10,7 +10,9 @@ import java.util.function.Predicate;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.validation.constraints.NotNull;
 
-import com.celements.model.classes.ClassIdentity;
+import org.xwiki.model.reference.LocalDocumentReference;
+
+import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.fields.ClassField;
 import com.celements.model.classes.fields.list.ListField;
 import com.celements.model.object.ObjectBridge;
@@ -52,10 +54,19 @@ public abstract class ObjectQueryBuilder<B extends ObjectQueryBuilder<B, O>, O> 
   }
 
   /**
-   * restricts to objects with the given {@link ClassIdentity}
+   * restricts to objects with the given class reference
    */
-  public final @NotNull B filter(@NotNull ClassIdentity classId) {
-    return filter(new ClassRestriction<>(getBridge(), classId));
+  public final @NotNull B filter(@NotNull LocalDocumentReference classRef) {
+    return filter(new ClassRestriction<>(getBridge(), classRef));
+  }
+
+  /**
+   * @deprecated instead use {@link #filter(LocalDocumentReference)} with
+   *             {@link ClassDefinition#getLocalClassRef()}
+   */
+  @Deprecated
+  public final @NotNull B filter(@NotNull ClassDefinition classDef) {
+    return filter(checkNotNull(classDef).getLocalClassRef());
   }
 
   /**
