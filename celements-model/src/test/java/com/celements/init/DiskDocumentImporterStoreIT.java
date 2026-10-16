@@ -10,6 +10,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,12 +58,13 @@ import com.xpn.xwiki.user.api.XWikiRightService;
 import com.xpn.xwiki.web.Utils;
 import com.xpn.xwiki.web.XWikiMessageTool;
 
-/** Opt-in destructive schema creation, restricted to the owned loopback acceptance database. */
+/** Opt-in schema creation, restricted to a fresh owned loopback acceptance database. */
 public class DiskDocumentImporterStoreIT extends AbstractComponentTest {
 
   private final WikiReference wiki = new WikiReference("test");
   private final Map<String, String> resources = new HashMap<>();
   private CelHibernateStore store;
+  private String dockerSocket;
 
   @After
   public void closeStore() {
@@ -72,11 +76,10 @@ public class DiskDocumentImporterStoreIT extends AbstractComponentTest {
 
   @Test
   public void actualPackageAndStoreReplacementWithControlsAndSecondInvocation() throws Exception {
-    String port = System.getProperty("celdev1355.testDbPort");
-    assumeNotNull(port);
-    assertEquals("32769", port);
+    String token = System.getProperty("celements.storeIT.token");
+    assumeNotNull(token);
     assertEquals("FIX-STORE-01", System.getProperty("celdev1355.storeAcceptance"));
-    verifyOwnedContainer();
+    String port = verifyOwnedContainer(token, System.getProperty("celements.storeIT.containerId"));
     prepareStore(port);
     new Contextualiser().withWiki(wiki).execute(() -> {
       try {
@@ -87,27 +90,69 @@ public class DiskDocumentImporterStoreIT extends AbstractComponentTest {
     });
   }
 
-  private void verifyOwnedContainer() throws Exception {
-    String format = "{{.Id}}|{{.Name}}|{{index .Config.Labels \"task\"}}|"
-        + "{{index .Config.Labels \"owner\"}}|{{.State.Running}}|{{.Config.Image}}|"
-        + "{{.Config.Hostname}}|"
+  private String verifyOwnedContainer(String token, String containerId) throws Exception {
+    assertTrue("fresh fixture token required", token.matches(
+        "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"));
+    assertNotNull("explicit full container ID required", containerId);
+    assertTrue("full container ID required", containerId.matches("[a-f0-9]{64}"));
+    String uid = readProcess(List.of("/usr/bin/id", "-u"));
+    assertTrue(uid.matches("[0-9]+"));
+    var socket = Path.of("/run/user", uid, "docker.sock");
+    assertFalse("rootless socket must not be a symlink", Files.isSymbolicLink(socket));
+    assertEquals(Integer.parseInt(uid), Files.getAttribute(socket, "unix:uid"));
+    assertEquals("rootless socket required", 0140000,
+        (int) Files.getAttribute(socket, "unix:mode") & 0170000);
+    dockerSocket = "unix://" + socket;
+    String endpoint = readDocker("port", containerId, "3306/tcp");
+    assertTrue("only a sole loopback endpoint is allowed", endpoint.matches("127\\.0\\.0\\.1:[0-9]{1,5}"));
+    String port = endpoint.substring("127.0.0.1:".length());
+    assertTrue(Integer.parseInt(port) > 0 && Integer.parseInt(port) <= 65535);
+    String networkId = readDocker("network", "inspect", "--format", "{{.Id}}", "bridge");
+    assertTrue(networkId.matches("[a-f0-9]{64}"));
+    String name = "celements-disk-import-" + token;
+    String labels = "{{index .Labels \"fixture\"}}|{{index .Labels \"token\"}}|"
+        + "{{index .Labels \"ownerUid\"}}";
+    String format = "{{.Id}}|{{.Name}}|{{with .Config}}" + labels
+        + "{{end}}|{{.State.Running}}|{{.Config.Image}}|{{.Config.Hostname}}|"
         + "{{len .NetworkSettings.Ports}}|{{range $port, $bindings := .NetworkSettings.Ports}}"
         + "{{$port}}={{len $bindings}}{{range $bindings}}:{{.HostIp}}:{{.HostPort}}{{end}}{{end}}|"
-        + "{{range .Mounts}}{{.Type}}:{{.Destination}}:{{.RW}};{{end}}";
-    var process = new ProcessBuilder("/usr/bin/docker", "--host",
-        "unix:///run/user/1001/docker.sock", "inspect", "--type=container", "--format", format,
-        "celdev1355-imp01-mariadb").redirectErrorStream(true).start();
+        + "{{len .HostConfig.PortBindings}}|{{range $port, $bindings := .HostConfig.PortBindings}}"
+        + "{{$port}}={{len $bindings}}{{range $bindings}}:{{.HostIp}}:{{.HostPort}}{{end}}{{end}}|"
+        + "{{.HostConfig.NetworkMode}}|{{len .NetworkSettings.Networks}}|"
+        + "{{range $name, $network := .NetworkSettings.Networks}}{{$name}}:{{$network.NetworkID}}{{end}}|"
+        + "{{.HostConfig.RestartPolicy.Name}}:{{.HostConfig.RestartPolicy.MaximumRetryCount}}|"
+        + "{{len .Mounts}}|{{range .Mounts}}{{.Type}}:{{.Name}}:{{.Driver}}:{{.Destination}}:{{.RW}}{{end}}";
+    assertEquals(containerId + "|/" + name + "|celements-disk-import|" + token + "|" + uid
+        + "|true|mariadb:10.1|disk-import-store-it|1|3306/tcp=1:127.0.0.1:" + port
+        + "|1|3306/tcp=1:127.0.0.1:|bridge|1|bridge:" + networkId
+        + "|no:0|1|volume:" + name + ":local:/var/lib/mysql:true",
+        readDocker("inspect", "--type=container", "--format", format, containerId));
+    assertEquals(name + "|local|local|celements-disk-import|" + token + "|" + uid,
+        readDocker("volume", "inspect", "--format", "{{.Name}}|{{.Driver}}|{{.Scope}}|" + labels,
+            name));
+    assertEquals("fixture volume must be exclusive, including stopped containers", containerId,
+        readDocker("ps", "-aq", "--no-trunc", "--filter", "volume=" + name));
+    System.out.println("Verified owned disposable fixture before JDBC: " + containerId + "|"
+        + name + "|" + endpoint);
+    return port;
+  }
+
+  private String readDocker(String... args) throws Exception {
+    var command = new ArrayList<>(List.of("/usr/bin/docker", "--host", dockerSocket));
+    command.addAll(List.of(args));
+    return readProcess(command);
+  }
+
+  private String readProcess(List<String> command) throws Exception {
+    var process = new ProcessBuilder(command).redirectErrorStream(true).start();
     if (!process.waitFor(15, TimeUnit.SECONDS)) {
       process.destroyForcibly();
-      fail("owned container inspection timed out before database contact");
+      fail("fixture inspection timed out before database contact");
     }
     String identity = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8)
         .strip();
-    assertEquals("owned container inspection failed: " + identity, 0, process.exitValue());
-    assertEquals("6ce9fc6f03e0703dc8a3808fa1c42cd9e801120c3f3f9943f1bf1a166d78c9d8"
-        + "|/celdev1355-imp01-mariadb|CELDEV-1355|IMP-01|true|mariadb:10.11|6ce9fc6f03e0|1|"
-        + "3306/tcp=1:127.0.0.1:32769|volume:/var/lib/mysql:true;", identity);
-    System.out.println("CELDEV1355 verified owned container before JDBC: " + identity);
+    assertEquals("fixture inspection failed: " + identity, 0, process.exitValue());
+    return identity;
   }
 
   private void prepareStore(String port) throws Exception {
@@ -166,14 +211,15 @@ public class DiskDocumentImporterStoreIT extends AbstractComponentTest {
           var identity = statement.executeQuery("SELECT DATABASE(), @@hostname, VERSION()")) {
         assertTrue(identity.next());
         assertEquals("celdev1355_test", identity.getString(1));
-        assertEquals("6ce9fc6f03e0", identity.getString(2));
-        assertTrue(identity.getString(3).startsWith("10.11.19-MariaDB"));
+        assertEquals("disk-import-store-it", identity.getString(2));
+        assertTrue("MariaDB 10.1 is required", isSupportedDatabaseVersion(identity.getString(3)));
         assertFalse(identity.next());
       }
-      var drop = new SchemaExport(hibernate, connection).setImportFile(importFile);
-      drop.drop(true, true);
-      assertTrue("schema reset drop errors must be preserved and stop before create: "
-          + formatExceptions(drop.getExceptions()), drop.getExceptions().isEmpty());
+      try (var statement = connection.createStatement();
+          var tablesInSchema = statement.executeQuery("SHOW TABLES")) {
+        assertFalse("fixture must be fresh: refusing any existing table, no reset or cleanup",
+            tablesInSchema.next());
+      }
       var schema = new SchemaExport(hibernate, connection).setImportFile(importFile);
       schema.execute(true, true, false, true);
       assertTrue("isolated schema creation errors: " + formatExceptions(schema.getExceptions()),
@@ -210,6 +256,10 @@ public class DiskDocumentImporterStoreIT extends AbstractComponentTest {
     getContext().put("msg", messages);
     assertTrue(xwiki.hasVersioning(getContext()));
     assertNoSession();
+  }
+
+  static boolean isSupportedDatabaseVersion(String version) {
+    return version != null && version.matches("10\\.1\\.[0-9]+-MariaDB(?:[-+].*)?");
   }
 
   private String formatExceptions(List<?> exceptions) {

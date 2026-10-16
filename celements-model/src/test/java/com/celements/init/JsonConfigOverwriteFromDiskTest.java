@@ -104,10 +104,12 @@ public class JsonConfigOverwriteFromDiskTest extends AbstractComponentTest {
         "[\"Main.Secret\",", "[\"Main.Secret\"] true", "[\"Main.\"]",
         "[\"Secret\"]", "[\"Main.Secr(et)\"]" }) {
       resources.put("/docs/test.json", content);
+      int closedBefore = closes;
       var exception = assertThrows(IllegalArgumentException.class, () -> strategy.forWiki(wiki));
       assertTrue(exception.getMessage().contains("/docs/test.json"));
       assertFalse(exception.getMessage().contains("Secret"));
       assertNull(exception.getCause());
+      assertTrue("invalid configuration must close its resource", closes > closedBefore);
     }
   }
 

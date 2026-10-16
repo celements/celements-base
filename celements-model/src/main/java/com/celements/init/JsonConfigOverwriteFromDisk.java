@@ -1,6 +1,7 @@
 package com.celements.init;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -14,6 +15,7 @@ import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.util.ModelUtils;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 /** Loads operator-owned JSON resources; never retains mutable wiki policy in the singleton. */
@@ -36,32 +38,40 @@ public class JsonConfigOverwriteFromDisk {
       if (servletContext.getResource(path) == null) {
         return document -> false;
       }
-      try (var stream = servletContext.getResourceAsStream(path)) {
-        if (stream == null) {
-          throw invalid(path, "resource cannot be read");
-        }
-        try (var parser = JSON.createParser(stream)) {
-          if (parser.nextToken() != JsonToken.START_ARRAY) {
-            throw invalid(path, "expected an array of document FullNames");
-          }
-          Set<DocumentReference> selected = new HashSet<>();
-          while (parser.nextToken() != JsonToken.END_ARRAY) {
-            if (parser.currentToken() != JsonToken.VALUE_STRING) {
-              throw invalid(path, "expected a nonblank document FullName string");
-            }
-            selected.add(resolve(parser.getText(), wiki, path));
-          }
-          if (parser.nextToken() != null) {
-            throw invalid(path, "unexpected content after array");
-          }
-          var snapshot = Set.copyOf(selected);
-          return snapshot::contains;
-        }
+      try (var stream = openResource(path); var parser = JSON.createParser(stream)) {
+        var snapshot = readSnapshot(parser, wiki, path);
+        return snapshot::contains;
       }
     } catch (IOException | SecurityException exception) {
       // Do not attach parser exceptions: their messages can contain configuration contents.
       throw invalid(path, "resource cannot be read as valid JSON");
     }
+  }
+
+  private InputStream openResource(String path) {
+    var stream = servletContext.getResourceAsStream(path);
+    if (stream == null) {
+      throw invalid(path, "resource cannot be read");
+    }
+    return stream;
+  }
+
+  private Set<DocumentReference> readSnapshot(JsonParser parser, WikiReference wiki, String path)
+      throws IOException {
+    if (parser.nextToken() != JsonToken.START_ARRAY) {
+      throw invalid(path, "expected an array of document FullNames");
+    }
+    Set<DocumentReference> selected = new HashSet<>();
+    while (parser.nextToken() != JsonToken.END_ARRAY) {
+      if (parser.currentToken() != JsonToken.VALUE_STRING) {
+        throw invalid(path, "expected a nonblank document FullName string");
+      }
+      selected.add(resolve(parser.getText(), wiki, path));
+    }
+    if (parser.nextToken() != null) {
+      throw invalid(path, "unexpected content after array");
+    }
+    return Set.copyOf(selected);
   }
 
   private DocumentReference resolve(String name, WikiReference wiki, String path) {

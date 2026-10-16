@@ -83,12 +83,15 @@ mvn -o -f celements-model/pom.xml test -Dtest=DiskDocumentImporterTest,JsonConfi
 `DiskDocumentImporterStoreIT` additionally exercises actual Package installation, model reads and
 Celements Hibernate persistence through the configured `modelAccess -> docCache -> celHibernate`
 chain and real Hibernate versioning. Actual verification passed persisted replacement, preservation,
-controls, metadata, history and repeat-import assertions in one default-language test wiki with
+controls, metadata, history and repeat-import assertions on MariaDB 10.1.48 in one default-language test wiki with
 class-table reads/writes disabled. This scope does not establish behavior for every store or backend
 image; the raw-primary-store fallback remains separately unproved. Stored values do not by themselves
 prove runtime configuration/cache visibility; use the owning subsystem's supported invalidation or
 restart procedure where required.
 
-The store test destructively resets mapped tables in a dedicated disposable schema. It requires
-separate safety review and explicit run authorization; this documentation authorizes no reset or
-consumer lifecycle action. Without its opt-in properties it is skipped, which is not store acceptance.
+The revised opt-in store test creates tables only in a fresh owned disposable fixture and refuses
+existing tables. See [STORE_TEST.md](STORE_TEST.md) for provisioning, guards and evidence retention.
+The current MariaDB 10.1 fixture and create-only guard path passed native verification; the earlier
+MariaDB 10.11 verification remains a separate historical result. Separate safety review and explicit
+run authorization are required; this documentation authorizes no runtime or consumer lifecycle action.
+Without its opt-in properties the test is skipped, which is not store acceptance.

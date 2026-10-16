@@ -1,0 +1,28 @@
+# Opt-in disposable fixture. Provisioning and reset require separate operator authorization.
+services:
+  database:
+    image: mariadb:10.1
+    container_name: celements-disk-import-${STORE_IT_TOKEN:?set a fresh UUID}
+    hostname: disk-import-store-it
+    network_mode: bridge
+    restart: "no"
+    labels:
+      fixture: celements-disk-import
+      token: ${STORE_IT_TOKEN:?set a fresh UUID}
+      ownerUid: ${STORE_IT_UID:?set the rootless daemon owner UID}
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "1"
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: celdev1355_test
+    ports:
+      - "127.0.0.1::3306"
+    volumes:
+      - database:/var/lib/mysql
+volumes:
+  database:
+    name: celements-disk-import-${STORE_IT_TOKEN:?set a fresh UUID}
+    driver: local
+    labels:
+      fixture: celements-disk-import
+      token: ${STORE_IT_TOKEN:?set a fresh UUID}
+      ownerUid: ${STORE_IT_UID:?set the rootless daemon owner UID}
