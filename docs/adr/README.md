@@ -6,3 +6,4 @@ material changes are documented by a new ADR that supersedes the previous decisi
 | ADR | Title | Status | Date |
 | --- | --- | --- | --- |
 | [0001](0001-attachment-semantics-and-service-boundary.md) | Attachment semantics and service boundary | Accepted | 2026-08-15 |
+| [0002](0002-wiki-scoped-keycloak-configuration.md) | Wiki-scoped Keycloak configuration | Accepted | 2026-09-13 |
