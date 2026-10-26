@@ -106,6 +106,44 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
+  public void test_blankBooleanUsesDefault() {
+    for (String value : Arrays.asList("", " \t ")) {
+      configuration.setProperty("celdev1358.boolean", value);
+
+      assertNull(source.getProperty("celdev1358.boolean", Boolean.class));
+      assertFalse(source.getProperty("celdev1358.boolean", false));
+      assertTrue(source.getProperty("celdev1358.boolean", true));
+    }
+  }
+
+  @Test
+  public void test_booleanPropertyConversionAndPrecedence() {
+    for (Object value : Arrays.asList(false, "false", true, "true")) {
+      configuration.setProperty("celdev1358.boolean", value);
+      Boolean expected = Boolean.valueOf(value.toString());
+
+      assertEquals(expected, source.getProperty("celdev1358.boolean", Boolean.class));
+      assertEquals(expected, source.getProperty("celdev1358.boolean", !expected));
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void test_invalidBooleanStillThrows() {
+    configuration.setProperty("celdev1358.boolean", "invalid");
+
+    source.getProperty("celdev1358.boolean", false);
+  }
+
+  @Test
+  public void test_blankStringIsPreserved() {
+    configuration.setProperty("blank", "");
+
+    assertEquals("", source.getProperty("blank"));
+    assertEquals("", source.getProperty("blank", String.class));
+    assertEquals("", source.getProperty("blank", "default"));
+  }
+
+  @Test
   public void testListProperty() {
     configuration.setProperty("list", "value1");
     configuration.addProperty("list", "value2");
