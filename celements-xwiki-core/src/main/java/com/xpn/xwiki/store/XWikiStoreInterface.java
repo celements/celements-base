@@ -532,6 +532,18 @@ public interface XWikiStoreInterface {
 
   void saveLock(XWikiLock lock, XWikiContext context, boolean bTransaction) throws XWikiException;
 
+  /**
+   * Atomically reserve a document lock without replacing an existing lock.
+   * Uses an independent transaction and returns only after it has committed. The document
+   * need not exist yet. Existing locks, including expired locks, are left unchanged.
+   *
+   * @param lock the reservation to insert
+   * @param wikiRef the wiki whose database contains the document
+   * @return true if the reservation was committed, false if the document is already locked
+   * @throws XWikiException if the reservation fails for a reason other than a duplicate lock
+   */
+  boolean tryLock(XWikiLock lock, WikiReference wikiRef) throws XWikiException;
+
   void deleteLock(XWikiLock lock, XWikiContext context, boolean bTransaction) throws XWikiException;
 
   List<XWikiLink> loadLinks(long docId, XWikiContext context, boolean bTransaction)

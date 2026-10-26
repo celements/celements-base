@@ -309,6 +309,11 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
+  public boolean tryLock(XWikiLock lock, WikiReference wikiRef) throws XWikiException {
+    return getBackingStore().tryLock(lock, wikiRef);
+  }
+
+  @Override
   public void deleteLock(XWikiLock lock, XWikiContext context, boolean bTransaction)
       throws XWikiException {
     getBackingStore().deleteLock(lock, context, bTransaction);

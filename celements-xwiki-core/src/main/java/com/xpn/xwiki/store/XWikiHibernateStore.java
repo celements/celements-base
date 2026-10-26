@@ -41,13 +41,16 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
+import org.hibernate.JDBCException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Settings;
 import org.hibernate.connection.ConnectionProvider;
+import org.hibernate.exception.JDBCExceptionHelper;
 import org.hibernate.impl.SessionFactoryImpl;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
@@ -854,6 +857,56 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
         }
       } catch (Exception e) {}
     }
+  }
+
+  @Override
+  public boolean tryLock(XWikiLock lock, WikiReference wikiRef) throws XWikiException {
+    checkNotNull(lock);
+    checkNotNull(lock.getDate());
+    checkNotNull(wikiRef);
+    WikiReference originalWiki = getCurrentWiki();
+    Session session = null;
+    Transaction transaction = null;
+    try {
+      session = getSessionFactory().openSession();
+      setDatabase(session, wikiRef);
+      transaction = session.beginTransaction();
+      session.save(lock);
+      transaction.commit();
+      return true;
+    } catch (Exception exc) {
+      rollback(transaction, exc);
+      if (isDuplicateIdError(exc)) {
+        return false;
+      }
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SAVING_LOCK,
+          "Exception while reserving document lock", exc);
+    } finally {
+      setCurrentWiki(originalWiki);
+      if (session != null) {
+        session.close();
+      }
+    }
+  }
+
+  private void rollback(Transaction transaction, Exception exc) throws XWikiException {
+    if (transaction != null) {
+      try {
+        transaction.rollback();
+      } catch (HibernateException rollbackExc) {
+        exc.addSuppressed(rollbackExc);
+        throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+            XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SAVING_LOCK,
+            "Exception while rolling back lock reservation", exc);
+      }
+    }
+  }
+
+  // https://mariadb.com/docs/server/reference/error-codes/mariadb-error-codes-1000-to-1099/e1062
+  private boolean isDuplicateIdError(Exception exc) {
+    return exc instanceof JDBCException jdbc
+        && JDBCExceptionHelper.extractErrorCode(jdbc.getSQLException()) == 1062;
   }
 
   @Override

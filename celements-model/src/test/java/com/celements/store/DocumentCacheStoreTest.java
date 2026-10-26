@@ -20,6 +20,7 @@ import com.celements.model.util.References;
 import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.XWikiLock;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
@@ -41,6 +42,18 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
     getConfigurationSource().setProperty(DocumentCacheStore.PARAM_EXIST_CACHE_CAPACITY, 10000);
     getConfigurationSource().setProperty(DocumentCacheStore.PARAM_DOC_CACHE_CAPACITY, 100);
     docCacheStore = getBeanFactory().getBean(DocumentCacheStore.class);
+  }
+
+  @Test
+  public void test_tryLock_delegatesReservationResult() throws Exception {
+    XWikiLock lock = new XWikiLock(42L, "alice");
+    WikiReference targetWiki = new WikiReference("other-wiki");
+    expect(mockStore.tryLock(same(lock), same(targetWiki)))
+        .andReturn(true).andReturn(false);
+    replayDefault();
+    assertTrue(docCacheStore.tryLock(lock, targetWiki));
+    assertFalse(docCacheStore.tryLock(lock, targetWiki));
+    verifyDefault();
   }
 
   @Test

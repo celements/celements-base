@@ -5547,6 +5547,11 @@ public class XWikiDocument implements DocumentModelBridge {
     getStore(context).saveLock(lock, context, true);
   }
 
+  public boolean tryLock(String userName) throws XWikiException {
+    return getStore().tryLock(new XWikiLock(getId(), userName),
+        getDocumentReference().getWikiReference());
+  }
+
   public void removeLock(XWikiContext context) throws XWikiException {
     XWikiLock lock = getStore(context).loadLock(getId(), context, true);
     if (lock != null) {
