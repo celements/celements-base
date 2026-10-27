@@ -29,6 +29,7 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
   private org.hibernate.classic.Session session;
   private Transaction transaction;
   private XWikiLock lock;
+  private HibernateException closeFailure;
 
   @Before
   public void prepareTest() throws Exception {
@@ -51,7 +52,12 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
     });
     expect(session.beginTransaction()).andReturn(transaction);
     expect(session.save(same(lock))).andReturn(lock.getDocId());
-    expect(session.close()).andReturn(null);
+    expect(session.close()).andAnswer(() -> {
+      if (closeFailure != null) {
+        throw closeFailure;
+      }
+      return null;
+    });
   }
 
   @Test
@@ -108,6 +114,38 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
     transaction.rollback();
     replayDefault(store);
     assertThrows(XWikiException.class, () -> store.tryLock(lock, TARGET_WIKI));
+    verifyDefault(store);
+  }
+
+  @Test
+  public void test_tryLock_closeFailureAfterCommit() throws Exception {
+    closeFailure = new HibernateException("close failed");
+    transaction.commit();
+    replayDefault(store);
+    assertTrue(store.tryLock(lock, TARGET_WIKI));
+    verifyDefault(store);
+  }
+
+  @Test
+  public void test_tryLock_closeFailureAfterDuplicate() throws Exception {
+    closeFailure = new HibernateException("close failed");
+    expectFailure(new SQLException("duplicate key", "23000", 1062));
+    replayDefault(store);
+    assertFalse(store.tryLock(lock, TARGET_WIKI));
+    verifyDefault(store);
+  }
+
+  @Test
+  public void test_tryLock_closeFailureDoesNotMaskDatabaseFailure() throws Exception {
+    closeFailure = new HibernateException("close failed");
+    HibernateException databaseFailure = new HibernateException("database unavailable");
+    transaction.commit();
+    expectLastCall().andThrow(databaseFailure);
+    transaction.rollback();
+    replayDefault(store);
+    XWikiException failure = assertThrows(XWikiException.class,
+        () -> store.tryLock(lock, TARGET_WIKI));
+    assertSame(databaseFailure, failure.getCause());
     verifyDefault(store);
   }
 

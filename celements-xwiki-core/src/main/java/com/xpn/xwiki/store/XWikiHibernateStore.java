@@ -885,7 +885,11 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
     } finally {
       setCurrentWiki(originalWiki);
       if (session != null) {
-        session.close();
+        try {
+          session.close();
+        } catch (HibernateException closeExc) {
+          logger.warn("Failed to close lock reservation session", closeExc);
+        }
       }
     }
   }
