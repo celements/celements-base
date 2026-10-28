@@ -57,7 +57,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void testDefaultValue() {
+  public void test_getProperty_defaultValue() {
     configuration.setProperty("string", "value");
 
     assertEquals("default", source.getProperty("unknown", "default"));
@@ -65,7 +65,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void testStringProperty() {
+  public void test_getProperty_stringProperty() {
     configuration.setProperty("string", "value");
 
     assertEquals("value", source.getProperty("string"));
@@ -76,7 +76,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void testStringPropertyWhenConversionError() {
+  public void test_getProperty_stringPropertyConversionError() {
     configuration.setProperty("string", "value");
 
     // Try to retrieve a String property as a Boolean
@@ -84,7 +84,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void testBooleanPropertyWhenConversionError() {
+  public void test_getProperty_booleanPropertyConversionError() {
     configuration.setProperty("boolean", true);
 
     // Try to retrieve a Boolean property as a String
@@ -92,7 +92,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void testBooleanProperty() {
+  public void test_getProperty_booleanProperty() {
     // Test boolean value
     configuration.setProperty("boolean", true);
 
@@ -101,12 +101,12 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void testUnknownBooleanProperty() {
+  public void test_getProperty_unknownBooleanProperty() {
     assertNull(source.getProperty("unknown", Boolean.class));
   }
 
   @Test
-  public void test_blankBooleanUsesDefault() {
+  public void test_getProperty_blankBooleanUsesDefault() {
     for (String value : Arrays.asList("", " \t ")) {
       configuration.setProperty("celdev1358.boolean", value);
 
@@ -117,7 +117,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void test_booleanPropertyConversionAndPrecedence() {
+  public void test_getProperty_booleanPropertyConversionAndPrecedence() {
     for (Object value : Arrays.asList(false, "false", true, "true")) {
       configuration.setProperty("celdev1358.boolean", value);
       Boolean expected = Boolean.valueOf(value.toString());
@@ -128,14 +128,14 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void test_invalidBooleanStillThrows() {
+  public void test_getProperty_invalidBooleanStillThrows() {
     configuration.setProperty("celdev1358.boolean", "invalid");
 
     source.getProperty("celdev1358.boolean", false);
   }
 
   @Test
-  public void test_blankStringIsPreserved() {
+  public void test_getProperty_blankStringIsPreserved() {
     configuration.setProperty("blank", "");
 
     assertEquals("", source.getProperty("blank"));
@@ -144,7 +144,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void testListProperty() {
+  public void test_getProperty_listProperty() {
     configuration.setProperty("list", "value1");
     configuration.addProperty("list", "value2");
     List<String> expected = Arrays.asList("value1", "value2");
@@ -157,7 +157,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void testListPropertyWhenArrayList() {
+  public void test_getProperty_listPropertyWithArrayListDefault() {
     configuration.setProperty("list", "value");
     List<String> expected = Arrays.asList("value");
 
@@ -165,7 +165,7 @@ public class CommonsConfigurationSourceTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void testPropertiesProperty() {
+  public void test_getProperty_propertiesProperty() {
     configuration.setProperty("properties", "key1=value1");
     configuration.addProperty("properties", "key2=value2");
     List<String> expectedList = Arrays.asList("key1=value1", "key2=value2");

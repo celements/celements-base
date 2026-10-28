@@ -74,7 +74,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testContainsKey() {
+  public void test_containsKey_presentAndMissing() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -87,7 +87,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetProperty() {
+  public void test_getProperty_untyped() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -100,7 +100,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetPropertyWithClass() {
+  public void test_getProperty_withClass() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -113,7 +113,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetPropertyWithDefaultValue() {
+  public void test_getProperty_withDefaultValue() {
     config1.setProperty("key1", "value1");
     config1.setProperty("key3", "value3");
     config2.setProperty("key2", "value2");
@@ -126,7 +126,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetKeys() {
+  public void test_getKeys_multipleSources() {
     config1.setProperty("key1", "value1");
     config2.setProperty("key2", "value2");
 
@@ -135,7 +135,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testIsEmpty() {
+  public void test_isEmpty_emptyAndPopulated() {
     assertTrue(composite.isEmpty());
 
     config2.setProperty("key", "value");
@@ -143,13 +143,13 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void testGetPropertiesAndListsWhenEmpty() {
+  public void test_getProperty_missingCollections() {
     assertTrue(composite.getProperty("unknown", Properties.class).isEmpty());
     assertTrue(composite.getProperty("unknown", List.class).isEmpty());
   }
 
   @Test
-  public void testTypeConversionsWhenDefaultValuesAreNotUsed() {
+  public void test_getProperty_convertsConfiguredValues() {
     config1.setProperty("key1", "true");
     config1.setProperty("key2", "item1,item2");
     config1.setProperty("key3", "prop1=value1,prop2=value2");
@@ -168,7 +168,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_blankBooleanFallsThrough() {
+  public void test_getProperty_blankBooleanFallsThrough() {
     config1.setProperty("boolean", "");
     config2.setProperty("boolean", "false");
 
@@ -183,7 +183,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_explicitFalseStopsLookup() {
+  public void test_getProperty_explicitFalseStopsLookup() {
     config1.setProperty("boolean", "false");
     config2.setProperty("boolean", "invalid");
 
@@ -192,7 +192,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_allBlankBooleansUseCallerDefault() {
+  public void test_getProperty_allBlankBooleansUseCallerDefault() {
     config1.setProperty("boolean", "");
     config2.setProperty("boolean", " ");
 
@@ -204,7 +204,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_nestedCompositeDoesNotApplyDefaultEarly() throws Exception {
+  public void test_getProperty_nestedCompositeDoesNotApplyDefaultEarly() throws Exception {
     config1.setProperty("boolean", "");
     config2.setProperty("boolean", " ");
     CompositeConfigurationSource outer = new CompositeConfigurationSource();
@@ -228,7 +228,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_emptyWikiPreferenceStillInheritsProperties() throws Exception {
+  public void test_getProperty_emptyWikiPreferenceStillInheritsProperties() throws Exception {
     DocumentAccessBridge bridge = registerComponentMock(DocumentAccessBridge.class);
     DocumentReference preferences = new DocumentReference("wiki", "XWiki", "XWikiPreferences");
     expect(bridge.getCurrentWiki()).andReturn("wiki").anyTimes();
@@ -246,7 +246,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test(expected = ConversionException.class)
-  public void test_invalidBooleanDoesNotFallThrough() {
+  public void test_getProperty_invalidBooleanDoesNotFallThrough() {
     config1.setProperty("boolean", "invalid");
     config2.setProperty("boolean", "false");
 
@@ -254,7 +254,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_blankStringStillOverridesLowerSource() {
+  public void test_getProperty_blankStringStillOverridesLowerSource() {
     config1.setProperty("string", "");
     config2.setProperty("string", "value");
 
@@ -264,7 +264,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_nullTypedValuesFallThrough() {
+  public void test_getProperty_nullTypedValuesFallThrough() {
     ConfigurationSource nullable = createMock(ConfigurationSource.class);
     expect(nullable.containsKey("string")).andReturn(true).times(2);
     expect(nullable.getProperty("string", String.class)).andReturn(null).times(2);
@@ -285,7 +285,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_missingCollectionValuesUseCallerDefaults() {
+  public void test_getProperty_missingCollectionValuesUseCallerDefaults() {
     ArrayList<String> defaultList = new ArrayList<>(Arrays.asList("default"));
     Properties defaultProperties = new Properties();
     defaultProperties.setProperty("key", "default");
@@ -299,7 +299,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_nestedNullPropertiesDoNotHideCallerDefault() {
+  public void test_getProperty_nestedNullPropertiesDoNotHideCallerDefault() {
     ConfigurationSource nullable = createMock(ConfigurationSource.class);
     expect(nullable.containsKey("properties")).andReturn(true).times(4);
     expect(nullable.getProperty("properties", Properties.class)).andReturn(null).times(2);
@@ -319,7 +319,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_nullDefaultRetainsExistingHandling() {
+  public void test_getProperty_nullDefaultRetainsExistingHandling() {
     assertNull(composite.getProperty("unknown", (String) null));
     config1.setProperty("string", "value");
 
@@ -328,7 +328,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_zeroStillOverridesLowerSource() {
+  public void test_getProperty_zeroStillOverridesLowerSource() {
     config1.setProperty("integer", "0");
     config2.setProperty("integer", "7");
 
@@ -337,7 +337,7 @@ public class CompositeConfigurationSourceTest extends AbstractBaseComponentTest 
   }
 
   @Test
-  public void test_emptyCollectionsStillOverrideLowerSource() {
+  public void test_getProperty_emptyCollectionsStillOverrideLowerSource() {
     ConfigurationSource empty = createMock(ConfigurationSource.class);
     expect(empty.containsKey("list")).andReturn(true);
     expect(empty.getProperty("list", List.class)).andReturn(Collections.emptyList());
