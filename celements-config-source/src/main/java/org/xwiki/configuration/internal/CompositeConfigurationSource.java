@@ -88,13 +88,7 @@ public class CompositeConfigurationSource implements ConfigurationSource {
   @Override
   @SuppressWarnings("unchecked")
   public <T> T getProperty(String key, Class<T> valueClass) {
-    T result = null;
-    for (ConfigurationSource source : this.sources) {
-      if (source.containsKey(key)) {
-        result = source.getProperty(key, valueClass);
-        break;
-      }
-    }
+    T result = getPropertyValue(key, valueClass);
     // List and Properties must return empty collections and not null values.
     if (result == null) {
       if (List.class.getName().equals(valueClass.getName())) {
@@ -107,13 +101,32 @@ public class CompositeConfigurationSource implements ConfigurationSource {
     return result;
   }
 
+  private <T> T getPropertyValue(String key, Class<T> valueClass) {
+    for (ConfigurationSource source : this.sources) {
+      if (source.containsKey(key)) {
+        T result = source instanceof CompositeConfigurationSource composite
+            ? composite.getPropertyValue(key, valueClass) : source.getProperty(key, valueClass);
+        if (result != null) {
+          return result;
+        }
+      }
+    }
+    return null;
+  }
+
   /**
    * {@inheritDoc}
    *
    * @see ConfigurationSource#getProperty(String, Object)
    */
   @Override
+  @SuppressWarnings("unchecked")
   public <T> T getProperty(String key, T defaultValue) {
+    if (defaultValue != null) {
+      // Apply the default only after all sources, including nested composites, were checked.
+      T result = getPropertyValue(key, (Class<T>) defaultValue.getClass());
+      return result != null ? result : defaultValue;
+    }
     T result = null;
     for (ConfigurationSource source : this.sources) {
       if (source.containsKey(key)) {

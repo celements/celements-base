@@ -97,18 +97,21 @@ public class CommonsConfigurationSource implements ConfigurationSource {
   @Override
   @SuppressWarnings("unchecked")
   public <T> T getProperty(String key, Class<T> valueClass) {
-    T result = null;
     try {
       if (String.class.equals(valueClass)) {
-        result = (T) getEnv(key)
+        return (T) getEnv(key)
             .orElseGet(() -> configuration.getString(key));
       } else if (List.class.isAssignableFrom(valueClass)) {
-        result = (T) getEnvList(key).<List<?>>map(x -> x)
+        return (T) getEnvList(key).<List<?>>map(x -> x)
             .orElseGet(() -> configuration.getList(key));
       } else if (Properties.class.isAssignableFrom(valueClass)) {
-        result = (T) configuration.getProperties(key);
+        return (T) configuration.getProperties(key);
+      } else if (Boolean.class.equals(valueClass)) {
+        return getBooleanProperty(key)
+            .map(value -> converterManager.convert(valueClass, value))
+            .orElse(null);
       } else {
-        result = getPropertyOpt(key)
+        return getPropertyOpt(key)
             .map(value -> converterManager.convert(valueClass, value))
             .orElse(null);
       }
@@ -116,11 +119,18 @@ public class CommonsConfigurationSource implements ConfigurationSource {
         | org.xwiki.properties.converter.ConversionException e) {
       throw new ConversionException("[" + key + "] is not of type [" + valueClass + "]", e);
     }
-    return result;
   }
 
   public <T> Optional<T> getPropertyOpt(String key, Class<T> valueClass) {
     return Optional.ofNullable(getProperty(key, valueClass));
+  }
+
+  private Optional<Object> getBooleanProperty(String key) {
+    return getEnv(key)
+        .filter(value -> !value.isBlank())
+        .<Object>map(value -> value)
+        .or(() -> Optional.ofNullable(configuration.getProperty(key)))
+        .filter(value -> !(value instanceof String stringValue) || !stringValue.isBlank());
   }
 
   /**
