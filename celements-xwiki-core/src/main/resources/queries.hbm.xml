@@ -46,4 +46,14 @@
     select distinct doc.fullName from XWikiDocument as doc, BaseObject as obj
     where obj.name=doc.fullName and obj.className='XWiki.XWikiUsers'
   </query>
+  <sql-query name="tryLock">
+    insert into xwikilock (XWL_DOC_ID, XWL_AUTHOR, XWL_DATE)
+    values (:docId, :userName, :date)
+    on duplicate key update
+      XWL_AUTHOR = case when XWL_DATE &lt; :expiredBefore
+        then values(XWL_AUTHOR) else XWL_AUTHOR end,
+      XWL_DATE = case when XWL_DATE &lt; :expiredBefore
+        or binary XWL_AUTHOR &lt;=> binary values(XWL_AUTHOR)
+        then values(XWL_DATE) else XWL_DATE end
+  </sql-query>
 </hibernate-mapping>

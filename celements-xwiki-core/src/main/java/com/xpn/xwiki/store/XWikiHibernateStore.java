@@ -29,10 +29,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -41,7 +43,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
-import org.hibernate.JDBCException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -50,7 +51,6 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Settings;
 import org.hibernate.connection.ConnectionProvider;
-import org.hibernate.exception.JDBCExceptionHelper;
 import org.hibernate.impl.SessionFactoryImpl;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Property;
@@ -860,25 +860,30 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
   }
 
   @Override
-  public boolean tryLock(XWikiLock lock, WikiReference wikiRef) throws XWikiException {
+  public boolean tryLock(XWikiLock lock, Date expiredBefore) throws XWikiException {
     checkNotNull(lock);
     checkNotNull(lock.getDate());
-    checkNotNull(wikiRef);
+    checkNotNull(expiredBefore);
     WikiReference originalWiki = getCurrentWiki();
     Session session = null;
     Transaction transaction = null;
     try {
       session = getSessionFactory().openSession();
-      setDatabase(session, wikiRef);
+      setDatabase(session, lock.getWikiRef()
+          .orElseGet(() -> getEContext().get(WIKI).orElseThrow()));
       transaction = session.beginTransaction();
-      session.save(lock);
+      session.getNamedQuery("tryLock")
+          .setLong("docId", lock.getDocId())
+          .setString("userName", lock.getUserName())
+          .setTimestamp("date", lock.getDate())
+          .setTimestamp("expiredBefore", expiredBefore)
+          .executeUpdate();
+      XWikiLock stored = (XWikiLock) session.load(XWikiLock.class, lock.getDocId());
+      boolean reserved = Objects.equals(lock.getUserName(), stored.getUserName());
       transaction.commit();
-      return true;
+      return reserved;
     } catch (Exception exc) {
       rollback(transaction, exc);
-      if (isDuplicateIdError(exc)) {
-        return false;
-      }
       throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
           XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SAVING_LOCK,
           "Exception while reserving document lock", exc);
@@ -905,12 +910,6 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
             "Exception while rolling back lock reservation", exc);
       }
     }
-  }
-
-  // https://mariadb.com/docs/server/reference/error-codes/mariadb-error-codes-1000-to-1099/e1062
-  private boolean isDuplicateIdError(Exception exc) {
-    return exc instanceof JDBCException jdbc
-        && JDBCExceptionHelper.extractErrorCode(jdbc.getSQLException()) == 1062;
   }
 
   @Override

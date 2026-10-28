@@ -1,5 +1,6 @@
 package com.celements.store;
 
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -309,8 +310,8 @@ public abstract class DelegateStore implements XWikiStoreInterface, MetaDataStor
   }
 
   @Override
-  public boolean tryLock(XWikiLock lock, WikiReference wikiRef) throws XWikiException {
-    return getBackingStore().tryLock(lock, wikiRef);
+  public boolean tryLock(XWikiLock lock, Date expiredBefore) throws XWikiException {
+    return getBackingStore().tryLock(lock, expiredBefore);
   }
 
   @Override

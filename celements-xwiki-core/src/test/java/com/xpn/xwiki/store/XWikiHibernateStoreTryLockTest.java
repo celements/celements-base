@@ -3,15 +3,14 @@ package com.xpn.xwiki.store;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
-import java.sql.BatchUpdateException;
-import java.sql.SQLException;
+import java.util.Date;
 
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.context.Execution;
@@ -24,12 +23,15 @@ import com.xpn.xwiki.test.AbstractComponentTest;
 public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
 
   private static final WikiReference TARGET_WIKI = new WikiReference("other-wiki");
+  private static final Date EXPIRED_BEFORE = new Date(1000L);
 
   private XWikiHibernateStore store;
   private org.hibernate.classic.Session session;
   private Transaction transaction;
   private XWikiLock lock;
   private HibernateException closeFailure;
+  private boolean upsertExecuted;
+  private boolean ownerRead;
 
   @Before
   public void prepareTest() throws Exception {
@@ -42,7 +44,7 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
     SessionFactory factory = createDefaultMock(SessionFactory.class);
     session = createDefaultMock(org.hibernate.classic.Session.class);
     transaction = createDefaultMock(Transaction.class);
-    lock = new XWikiLock(42L, "alice");
+    lock = new XWikiLock(42L, "alice", TARGET_WIKI);
     expect(store.getSessionFactory()).andReturn(factory);
     expect(factory.openSession()).andReturn(session);
     store.setDatabase(same(session), eq(TARGET_WIKI));
@@ -51,7 +53,6 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
       return null;
     });
     expect(session.beginTransaction()).andReturn(transaction);
-    expect(session.save(same(lock))).andReturn(lock.getDocId());
     expect(session.close()).andAnswer(() -> {
       if (closeFailure != null) {
         throw closeFailure;
@@ -70,10 +71,12 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
     WikiReference outerWiki = getContext().getWikiRef();
     assertNotEquals(outerWiki, TARGET_WIKI);
     store.setCurrentWiki(outerWiki);
-    transaction.commit();
+    expectUpsert(1);
+    expectOwner("alice");
+    expectCommit();
 
     replayDefault(store);
-    assertTrue(store.tryLock(lock, TARGET_WIKI));
+    assertTrue(store.tryLock(lock, EXPIRED_BEFORE));
     assertSame(outerTransaction, store.getTransaction());
     assertSame(outerSession, store.getSession());
     assertSame(outerWiki, store.getCurrentWiki());
@@ -82,56 +85,91 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
   }
 
   @Test
-  public void test_tryLock_duplicateAtCommit() throws Exception {
-    expectFailure(new SQLException("duplicate key", "23000", 1062));
+  public void test_tryLock_activeLockForSameUser() throws Exception {
+    expectUpsert(0);
+    expectOwner("alice");
+    expectCommit();
     replayDefault(store);
-    assertFalse(store.tryLock(lock, TARGET_WIKI));
+    assertTrue(store.tryLock(lock, EXPIRED_BEFORE));
     verifyDefault(store);
   }
 
   @Test
-  public void test_tryLock_duplicateInBatchException() throws Exception {
-    SQLException batch = new BatchUpdateException("batch update failed", new int[0]);
-    batch.setNextException(new SQLException("duplicate key", "23000", 1062));
-    expectFailure(batch);
+  public void test_tryLock_activeLockForOtherUserWithFoundRowCount() throws Exception {
+    expectUpsert(1);
+    expectOwner("bob");
+    expectCommit();
     replayDefault(store);
-    assertFalse(store.tryLock(lock, TARGET_WIKI));
+    assertFalse(store.tryLock(lock, EXPIRED_BEFORE));
     verifyDefault(store);
   }
 
   @Test
-  public void test_tryLock_otherConstraintFailure() throws Exception {
-    expectFailure(new SQLException("invalid column value", "23000", 1048));
+  public void test_tryLock_reclaimedLockWithChangedRowCount() throws Exception {
+    expectUpsert(2);
+    expectOwner("alice");
+    expectCommit();
     replayDefault(store);
-    assertThrows(XWikiException.class, () -> store.tryLock(lock, TARGET_WIKI));
+    assertTrue(store.tryLock(lock, EXPIRED_BEFORE));
     verifyDefault(store);
   }
 
   @Test
-  public void test_tryLock_databaseFailure() throws Exception {
-    transaction.commit();
-    expectLastCall().andThrow(new HibernateException("database unavailable"));
+  public void test_tryLock_upsertFailure() throws Exception {
+    HibernateException databaseFailure = new HibernateException("upsert failed");
+    expect(upsertQuery().executeUpdate()).andThrow(databaseFailure);
     transaction.rollback();
     replayDefault(store);
-    assertThrows(XWikiException.class, () -> store.tryLock(lock, TARGET_WIKI));
+    XWikiException failure = assertThrows(XWikiException.class,
+        () -> store.tryLock(lock, EXPIRED_BEFORE));
+    assertSame(databaseFailure, failure.getCause());
+    verifyDefault(store);
+  }
+
+  @Test
+  public void test_tryLock_ownerReadFailure() throws Exception {
+    HibernateException readFailure = new HibernateException("owner read failed");
+    expectUpsert(1);
+    expect(expectLoadedLock().getUserName()).andThrow(readFailure);
+    transaction.rollback();
+    replayDefault(store);
+    XWikiException failure = assertThrows(XWikiException.class,
+        () -> store.tryLock(lock, EXPIRED_BEFORE));
+    assertSame(readFailure, failure.getCause());
+    verifyDefault(store);
+  }
+
+  @Test
+  public void test_tryLock_commitFailure() throws Exception {
+    expectUpsert(1);
+    expectOwner("alice");
+    transaction.commit();
+    expectLastCall().andThrow(new HibernateException("commit failed"));
+    transaction.rollback();
+    replayDefault(store);
+    assertThrows(XWikiException.class, () -> store.tryLock(lock, EXPIRED_BEFORE));
     verifyDefault(store);
   }
 
   @Test
   public void test_tryLock_closeFailureAfterCommit() throws Exception {
     closeFailure = new HibernateException("close failed");
-    transaction.commit();
+    expectUpsert(1);
+    expectOwner("alice");
+    expectCommit();
     replayDefault(store);
-    assertTrue(store.tryLock(lock, TARGET_WIKI));
+    assertTrue(store.tryLock(lock, EXPIRED_BEFORE));
     verifyDefault(store);
   }
 
   @Test
-  public void test_tryLock_closeFailureAfterDuplicate() throws Exception {
+  public void test_tryLock_closeFailureAfterRejection() throws Exception {
     closeFailure = new HibernateException("close failed");
-    expectFailure(new SQLException("duplicate key", "23000", 1062));
+    expectUpsert(0);
+    expectOwner("bob");
+    expectCommit();
     replayDefault(store);
-    assertFalse(store.tryLock(lock, TARGET_WIKI));
+    assertFalse(store.tryLock(lock, EXPIRED_BEFORE));
     verifyDefault(store);
   }
 
@@ -139,21 +177,82 @@ public class XWikiHibernateStoreTryLockTest extends AbstractComponentTest {
   public void test_tryLock_closeFailureDoesNotMaskDatabaseFailure() throws Exception {
     closeFailure = new HibernateException("close failed");
     HibernateException databaseFailure = new HibernateException("database unavailable");
-    transaction.commit();
-    expectLastCall().andThrow(databaseFailure);
+    expect(upsertQuery().executeUpdate()).andThrow(databaseFailure);
     transaction.rollback();
     replayDefault(store);
     XWikiException failure = assertThrows(XWikiException.class,
-        () -> store.tryLock(lock, TARGET_WIKI));
+        () -> store.tryLock(lock, EXPIRED_BEFORE));
     assertSame(databaseFailure, failure.getCause());
     verifyDefault(store);
   }
 
-  private void expectFailure(SQLException sqlException) {
-    transaction.commit();
-    expectLastCall().andThrow(new ConstraintViolationException("insert failed", sqlException,
-        "xwikilock_pkey"));
+  @Test
+  public void test_tryLock_rollbackFailureIsSuppressed() throws Exception {
+    HibernateException databaseFailure = new HibernateException("upsert failed");
+    HibernateException rollbackFailure = new HibernateException("rollback failed");
+    expect(upsertQuery().executeUpdate()).andThrow(databaseFailure);
     transaction.rollback();
+    expectLastCall().andThrow(rollbackFailure);
+    replayDefault(store);
+    XWikiException failure = assertThrows(XWikiException.class,
+        () -> store.tryLock(lock, EXPIRED_BEFORE));
+    assertSame(databaseFailure, failure.getCause());
+    assertSame(rollbackFailure, databaseFailure.getSuppressed()[0]);
+    verifyDefault(store);
+  }
+
+  @Test
+  public void test_tryLock_legacyConstructorUsesExecutionWiki() throws Exception {
+    lock = new XWikiLock(42L, "alice");
+    assertTrue(lock.getWikiRef().isEmpty());
+    getContext().setDatabase(TARGET_WIKI.getName());
+    expectUpsert(1);
+    expectOwner("alice");
+    expectCommit();
+    replayDefault(store);
+    assertTrue(store.tryLock(lock, EXPIRED_BEFORE));
+    verifyDefault(store);
+  }
+
+  private Query upsertQuery() {
+    Query query = createDefaultMock(Query.class);
+    expect(session.getNamedQuery("tryLock")).andReturn(query);
+    expect(query.setLong("docId", lock.getDocId())).andReturn(query);
+    expect(query.setString("userName", lock.getUserName())).andReturn(query);
+    expect(query.setTimestamp("date", lock.getDate())).andReturn(query);
+    expect(query.setTimestamp("expiredBefore", EXPIRED_BEFORE)).andReturn(query);
+    return query;
+  }
+
+  private void expectUpsert(int updateCount) {
+    expect(upsertQuery().executeUpdate()).andAnswer(() -> {
+      upsertExecuted = true;
+      return updateCount;
+    });
+  }
+
+  private XWikiLock expectLoadedLock() {
+    XWikiLock stored = createDefaultMock(XWikiLock.class);
+    expect(session.load(XWikiLock.class, lock.getDocId())).andAnswer(() -> {
+      assertTrue("load the stored lock after the upsert", upsertExecuted);
+      return stored;
+    });
+    return stored;
+  }
+
+  private void expectOwner(String owner) {
+    expect(expectLoadedLock().getUserName()).andAnswer(() -> {
+      ownerRead = true;
+      return owner;
+    });
+  }
+
+  private void expectCommit() {
+    transaction.commit();
+    expectLastCall().andAnswer(() -> {
+      assertTrue("commit after reading the owner", ownerRead);
+      return null;
+    });
   }
 
 }

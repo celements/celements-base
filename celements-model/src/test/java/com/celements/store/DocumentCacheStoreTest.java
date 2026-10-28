@@ -4,6 +4,7 @@ import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
+import java.util.Date;
 import java.util.Optional;
 
 import org.easymock.Capture;
@@ -46,13 +47,14 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
 
   @Test
   public void test_tryLock_delegatesReservationResult() throws Exception {
-    XWikiLock lock = new XWikiLock(42L, "alice");
     WikiReference targetWiki = new WikiReference("other-wiki");
-    expect(mockStore.tryLock(same(lock), same(targetWiki)))
+    XWikiLock lock = new XWikiLock(42L, "alice", targetWiki);
+    Date expiredBefore = new Date(1000L);
+    expect(mockStore.tryLock(same(lock), same(expiredBefore)))
         .andReturn(true).andReturn(false);
     replayDefault();
-    assertTrue(docCacheStore.tryLock(lock, targetWiki));
-    assertFalse(docCacheStore.tryLock(lock, targetWiki));
+    assertTrue(docCacheStore.tryLock(lock, expiredBefore));
+    assertFalse(docCacheStore.tryLock(lock, expiredBefore));
     verifyDefault();
   }
 
