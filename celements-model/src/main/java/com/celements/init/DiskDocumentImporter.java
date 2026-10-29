@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -46,6 +47,7 @@ public class DiskDocumentImporter {
   private final WikiService wikiService;
   private final ModelUtils modelUtils;
   private final IModelAccessFacade modelAccess;
+  private final JsonConfigOverwriteFromDisk overwriteFromDisk;
 
   @Inject
   public DiskDocumentImporter(
@@ -53,12 +55,14 @@ public class DiskDocumentImporter {
       Execution execution,
       @Lazy WikiService wikiService,
       ModelUtils modelUtils,
-      IModelAccessFacade modelAccess) {
+      IModelAccessFacade modelAccess,
+      JsonConfigOverwriteFromDisk overwriteFromDisk) {
     this.servletContext = servletContext;
     this.execution = execution;
     this.wikiService = wikiService;
     this.modelUtils = modelUtils;
     this.modelAccess = modelAccess;
+    this.overwriteFromDisk = overwriteFromDisk;
   }
 
   public void importAll(boolean force) {
@@ -99,17 +103,19 @@ public class DiskDocumentImporter {
   }
 
   private void importDocs(WikiReference wiki, List<Path> paths, boolean force) {
+    var shouldForceOverwrite = overwriteFromDisk.forWiki(wiki);
     new Contextualiser().withWiki(wiki).execute(() -> paths.forEach(path -> {
       LOGGER.info("import [{}] into [{}]", path, wiki);
       try {
-        importDocs(path, force);
+        importDocs(path, force, shouldForceOverwrite);
       } catch (XWikiException e) {
         LOGGER.error("Failed to import [{}]", path, e);
       }
     }));
   }
 
-  private void importDocs(Path path, boolean force) throws XWikiException {
+  private void importDocs(Path path, boolean force,
+      Predicate<DocumentReference> shouldForceOverwrite) throws XWikiException {
     var importer = new Package();
     importer.setCheckPackageDefinition(false); // we don't need a package.xml
     importer.setCheckEditRights(false); // we have the rights
@@ -120,7 +126,8 @@ public class DiskDocumentImporter {
     var skipAll = true;
     for (DocumentInfo docInfo : importer.getFiles()) {
       var docRef = modelUtils.resolveRef(docInfo.getFullName(), DocumentReference.class);
-      var skip = !force && modelAccess.existsLang(docRef, docInfo.getLanguage());
+      var skip = !force && modelAccess.existsLang(docRef, docInfo.getLanguage())
+          && !shouldForceOverwrite.test(docRef);
       docInfo.setAction(skip ? ACTION_SKIP : ACTION_OVERWRITE);
       skipAll &= skip;
     }
@@ -139,6 +146,7 @@ public class DiskDocumentImporter {
     return streamResourcePaths(path.toString())
         .flatMap(p -> p.endsWith("/") ? streamResourcePaths(p) : Stream.of(p))
         .filter(p -> !p.endsWith("/"))
+        .filter(p -> !p.endsWith(".json"))
         .map(Paths::get)
         .map(p -> new Package.Entry() {
 

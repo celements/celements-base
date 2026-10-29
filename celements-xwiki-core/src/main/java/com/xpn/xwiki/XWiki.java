@@ -1641,11 +1641,21 @@ public class XWiki implements EventListener {
    */
   public String getXWikiPreference(String prefname, String fallback_param, String default_value,
       XWikiContext context) {
+    return getXWikiPreference(prefname, fallback_param, default_value,
+        context.getWikiRef(), context.getLanguage());
+  }
+
+  /**
+   * Obtain a preference for the explicit wiki and language, falling back to the first
+   * preference object, the config parameter, and finally the default value.
+   */
+  public String getXWikiPreference(String prefname, String fallback_param, String default_value,
+      WikiReference wikiRef, String language) {
     try {
       var wikiPrefDocRef = new DocumentReference(XWIKI_PREF_DOC_NAME,
-          new SpaceReference(XWIKI_SPACE, context.getWikiRef()));
+          new SpaceReference(XWIKI_SPACE, wikiRef));
       var result = getCelDocument(wikiPrefDocRef)
-          .flatMap(doc -> getPreferenceObject(doc, context.getLanguage())
+          .flatMap(doc -> getPreferenceObject(doc, language)
               .map(object -> object.getStringValue(prefname))
               .filter(not(String::isEmpty))
               .or(() -> doc.streamXObjects(doc.getDocumentReference())
@@ -2165,6 +2175,11 @@ public class XWiki implements EventListener {
 
   public int getXWikiPreferenceAsInt(String preference, int defaultValue, XWikiContext context) {
     return NumberUtils.toInt(getXWikiPreference(preference, context), defaultValue);
+  }
+
+  public int getXWikiPreferenceAsInt(WikiReference wikiRef, String preference, int defaultValue) {
+    return NumberUtils.toInt(getXWikiPreference(preference, "", "",
+        wikiRef, getXWikiContext().getLanguage()), defaultValue);
   }
 
   public int getXWikiPreferenceAsInt(String preference, String fallbackParameter, int defaultValue,

@@ -965,7 +965,7 @@ public class XWikiHibernateBaseStore implements Initializable {
   /**
    * @return current hibernate database name
    */
-  private WikiReference getCurrentWiki() {
+  protected WikiReference getCurrentWiki() {
     return (WikiReference) getEContext().getProperty(KEY_CURRENT_DATABASE);
   }
 
@@ -973,8 +973,12 @@ public class XWikiHibernateBaseStore implements Initializable {
    * @param database
    *          current hibernate database name to set
    */
-  private void setCurrentWiki(WikiReference wikiRef) {
-    getEContext().setProperty(KEY_CURRENT_DATABASE, wikiRef);
+  protected void setCurrentWiki(WikiReference wikiRef) {
+    if (wikiRef == null) {
+      getEContext().removeProperty(KEY_CURRENT_DATABASE);
+    } else {
+      getEContext().setProperty(KEY_CURRENT_DATABASE, wikiRef);
+    }
   }
 
   protected final XWikiContext getXContext() {

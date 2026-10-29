@@ -21,23 +21,34 @@
 package com.xpn.xwiki.doc;
 
 import java.util.Date;
+import java.util.Optional;
+
+import org.xwiki.model.reference.WikiReference;
 
 public class XWikiLock extends Object {
 
   protected String userName;
   protected long docId;
   protected Date date;
+  // metadata only, not part of the hibernate mapping
+  private final WikiReference wikiRef;
 
   public XWikiLock(long docId, String userName) {
+    this(docId, userName, null);
+  }
+
+  public XWikiLock(long docId, String userName, WikiReference wikiRef) {
     this.setDocId(docId);
     this.setUserName(userName);
     this.setDate(new Date());
+    this.wikiRef = wikiRef;
   }
 
   public XWikiLock() {
     this.setDate(null);
     this.setUserName(null);
     this.setDocId(0);
+    this.wikiRef = null;
   }
 
   public String getUserName() {
@@ -62,5 +73,9 @@ public class XWikiLock extends Object {
 
   public void setDate(Date date) {
     this.date = date;
+  }
+
+  public Optional<WikiReference> getWikiRef() {
+    return Optional.ofNullable(wikiRef);
   }
 }

@@ -29,10 +29,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -45,6 +47,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Settings;
 import org.hibernate.connection.ConnectionProvider;
@@ -853,6 +856,59 @@ public class XWikiHibernateStore extends XWikiHibernateBaseStore implements XWik
           endTransaction(context, false);
         }
       } catch (Exception e) {}
+    }
+  }
+
+  @Override
+  public boolean tryLock(XWikiLock lock, Date expiredBefore) throws XWikiException {
+    checkNotNull(lock);
+    checkNotNull(lock.getDate());
+    checkNotNull(expiredBefore);
+    WikiReference originalWiki = getCurrentWiki();
+    Session session = null;
+    Transaction transaction = null;
+    try {
+      session = getSessionFactory().openSession();
+      setDatabase(session, lock.getWikiRef()
+          .orElseGet(() -> getEContext().get(WIKI).orElseThrow()));
+      transaction = session.beginTransaction();
+      session.getNamedQuery("tryLock")
+          .setLong("docId", lock.getDocId())
+          .setString("userName", lock.getUserName())
+          .setTimestamp("date", lock.getDate())
+          .setTimestamp("expiredBefore", expiredBefore)
+          .executeUpdate();
+      XWikiLock stored = (XWikiLock) session.load(XWikiLock.class, lock.getDocId());
+      boolean reserved = Objects.equals(lock.getUserName(), stored.getUserName());
+      transaction.commit();
+      return reserved;
+    } catch (Exception exc) {
+      rollback(transaction, exc);
+      throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+          XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SAVING_LOCK,
+          "Exception while reserving document lock", exc);
+    } finally {
+      setCurrentWiki(originalWiki);
+      if (session != null) {
+        try {
+          session.close();
+        } catch (HibernateException closeExc) {
+          logger.warn("Failed to close lock reservation session", closeExc);
+        }
+      }
+    }
+  }
+
+  private void rollback(Transaction transaction, Exception exc) throws XWikiException {
+    if (transaction != null) {
+      try {
+        transaction.rollback();
+      } catch (HibernateException rollbackExc) {
+        exc.addSuppressed(rollbackExc);
+        throw new XWikiException(XWikiException.MODULE_XWIKI_STORE,
+            XWikiException.ERROR_XWIKI_STORE_HIBERNATE_SAVING_LOCK,
+            "Exception while rolling back lock reservation", exc);
+      }
     }
   }
 
