@@ -20,6 +20,7 @@
 package com.xpn.xwiki.doc;
 
 import static com.celements.logging.LogUtils.*;
+import static com.celements.spring.context.SpringContextProvider.*;
 import static com.google.common.base.Preconditions.*;
 import static com.google.common.base.Strings.*;
 import static java.util.stream.Collectors.*;
@@ -101,6 +102,7 @@ import org.xwiki.rendering.util.ParserUtils;
 import org.xwiki.velocity.VelocityManager;
 import org.xwiki.velocity.XWikiVelocityException;
 
+import com.celements.init.XWikiProvider;
 import com.celements.model.reference.RefBuilder;
 import com.celements.store.id.DocumentIdComputer;
 import com.celements.store.id.IdVersion;
@@ -587,7 +589,12 @@ public class XWikiDocument implements DocumentModelBridge {
    **/
   @Deprecated
   public XWikiStoreInterface getStore() {
-    return getStore(getXWikiContext());
+    return getXWiki().getStore();
+  }
+
+  private XWiki getXWiki() {
+    return getBeanFactory().getBean(XWikiProvider.class).get()
+        .orElseThrow(IllegalStateException::new);
   }
 
   /**
@@ -5530,21 +5537,28 @@ public class XWikiDocument implements DocumentModelBridge {
   }
 
   public XWikiLock getLock(XWikiContext context) throws XWikiException {
-    XWikiLock theLock = getStore(context).loadLock(getId(), context, true);
-    if (theLock != null) {
-      int timeout = context.getWiki().getXWikiPreferenceAsInt("lock_Timeout", 30 * 60, context);
-      if ((theLock.getDate().getTime() + (timeout * 1000)) < new Date().getTime()) {
-        getStore(context).deleteLock(theLock, context, true);
-        theLock = null;
-      }
+    XWikiLock lock = getStore(context).loadLock(getId(), context, true);
+    if (lock != null && lock.getDate().before(getLockExpiryCutoff())) {
+      return null;
     }
-
-    return theLock;
+    return lock;
   }
 
   public void setLock(String userName, XWikiContext context) throws XWikiException {
     XWikiLock lock = new XWikiLock(getId(), userName);
     getStore(context).saveLock(lock, context, true);
+  }
+
+  public boolean tryLock(String userName) throws XWikiException {
+    WikiReference wikiRef = getDocumentReference().getWikiReference();
+    Date expiredBefore = getLockExpiryCutoff();
+    return getStore().tryLock(new XWikiLock(getId(), userName, wikiRef), expiredBefore);
+  }
+
+  private Date getLockExpiryCutoff() {
+    int timeoutSeconds = getXWiki().getXWikiPreferenceAsInt(
+        getDocumentReference().getWikiReference(), "lock_Timeout", 30 * 60);
+    return new Date(System.currentTimeMillis() - timeoutSeconds * 1000L);
   }
 
   public void removeLock(XWikiContext context) throws XWikiException {

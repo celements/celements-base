@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.WikiReference;
 
 import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -37,6 +38,32 @@ public class XWikiPreferenceTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_getXWikiPreference_usesExplicitWikiAndLanguage() throws Exception {
+    XWiki xwiki = new XWiki();
+    XWikiStoreInterface store = createDefaultMock(XWikiStoreInterface.class);
+    xwiki.setStore(store);
+    WikiReference callerWiki = getContext().getWikiRef();
+    getContext().setLanguage("fr");
+    WikiReference targetWiki = new WikiReference("other-wiki");
+    DocumentReference prefRef = new DocumentReference("other-wiki", "XWiki", "XWikiPreferences");
+    XWikiDocument document = new XWikiDocument(prefRef);
+    addPreferenceObject(document, prefRef, "en", "default");
+    addPreferenceObject(document, prefRef, "de", "german");
+    expect(store.loadCelDocument(prefRef))
+        .andReturn(Optional.of(CelDocument.Default.from(document))).times(2);
+    replayDefault();
+
+    assertEquals("german",
+        xwiki.getXWikiPreference("preference", "", "fallback", targetWiki, "de"));
+    assertEquals("default",
+        xwiki.getXWikiPreference("preference", "", "fallback", targetWiki, "es"));
+    assertEquals(callerWiki, getContext().getWikiRef());
+    assertEquals("fr", getContext().getLanguage());
+
+    verifyDefault();
+  }
+
+  @Test
   public void test_getSpacePreference_fromCelDocument() throws Exception {
     XWiki xwiki = new XWiki();
     XWikiStoreInterface store = createDefaultMock(XWikiStoreInterface.class);
@@ -54,6 +81,55 @@ public class XWikiPreferenceTest extends AbstractComponentTest {
     assertEquals("space",
         xwiki.getSpacePreference("preference", "space", "", getContext()));
 
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getXWikiPreferenceAsInt_usesExplicitWiki() throws Exception {
+    XWiki xwiki = new XWiki();
+    XWikiStoreInterface store = createDefaultMock(XWikiStoreInterface.class);
+    xwiki.setStore(store);
+    WikiReference callerWiki = getContext().getWikiRef();
+    getContext().setLanguage("de");
+    WikiReference targetWiki = new WikiReference("other-wiki");
+    DocumentReference prefRef = new DocumentReference("other-wiki", "XWiki", "XWikiPreferences");
+    XWikiDocument document = new XWikiDocument(prefRef);
+    addPreferenceObject(document, prefRef, "en", "300");
+    addPreferenceObject(document, prefRef, "de", "120");
+    expect(store.loadCelDocument(prefRef))
+        .andReturn(Optional.of(CelDocument.Default.from(document)));
+    replayDefault();
+    assertEquals(120, xwiki.getXWikiPreferenceAsInt(targetWiki, "preference", 1800));
+    assertEquals(callerWiki, getContext().getWikiRef());
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getXWikiPreferenceAsInt_invalidValueUsesDefault() throws Exception {
+    XWiki xwiki = new XWiki();
+    XWikiStoreInterface store = createDefaultMock(XWikiStoreInterface.class);
+    xwiki.setStore(store);
+    WikiReference targetWiki = new WikiReference("other-wiki");
+    DocumentReference prefRef = new DocumentReference("other-wiki", "XWiki", "XWikiPreferences");
+    XWikiDocument document = new XWikiDocument(prefRef);
+    addPreferenceObject(document, prefRef, "en", "invalid");
+    expect(store.loadCelDocument(prefRef))
+        .andReturn(Optional.of(CelDocument.Default.from(document)));
+    replayDefault();
+    assertEquals(1800, xwiki.getXWikiPreferenceAsInt(targetWiki, "preference", 1800));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_getXWikiPreferenceAsInt_missingValueUsesDefault() throws Exception {
+    XWiki xwiki = new XWiki();
+    XWikiStoreInterface store = createDefaultMock(XWikiStoreInterface.class);
+    xwiki.setStore(store);
+    WikiReference targetWiki = new WikiReference("other-wiki");
+    DocumentReference prefRef = new DocumentReference("other-wiki", "XWiki", "XWikiPreferences");
+    expect(store.loadCelDocument(prefRef)).andReturn(Optional.empty());
+    replayDefault();
+    assertEquals(1800, xwiki.getXWikiPreferenceAsInt(targetWiki, "lock_Timeout", 1800));
     verifyDefault();
   }
 

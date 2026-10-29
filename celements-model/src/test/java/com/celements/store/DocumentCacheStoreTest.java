@@ -4,6 +4,7 @@ import static com.celements.common.test.CelementsTestUtils.*;
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
+import java.util.Date;
 import java.util.Optional;
 
 import org.easymock.Capture;
@@ -20,6 +21,7 @@ import com.celements.model.util.References;
 import com.celements.store.id.IdVersion;
 import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.XWikiDocument;
+import com.xpn.xwiki.doc.XWikiLock;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.store.XWikiStoreInterface;
 import com.xpn.xwiki.web.Utils;
@@ -41,6 +43,19 @@ public class DocumentCacheStoreTest extends AbstractComponentTest {
     getConfigurationSource().setProperty(DocumentCacheStore.PARAM_EXIST_CACHE_CAPACITY, 10000);
     getConfigurationSource().setProperty(DocumentCacheStore.PARAM_DOC_CACHE_CAPACITY, 100);
     docCacheStore = getBeanFactory().getBean(DocumentCacheStore.class);
+  }
+
+  @Test
+  public void test_tryLock_delegatesReservationResult() throws Exception {
+    WikiReference targetWiki = new WikiReference("other-wiki");
+    XWikiLock lock = new XWikiLock(42L, "alice", targetWiki);
+    Date expiredBefore = new Date(1000L);
+    expect(mockStore.tryLock(same(lock), same(expiredBefore)))
+        .andReturn(true).andReturn(false);
+    replayDefault();
+    assertTrue(docCacheStore.tryLock(lock, expiredBefore));
+    assertFalse(docCacheStore.tryLock(lock, expiredBefore));
+    verifyDefault();
   }
 
   @Test

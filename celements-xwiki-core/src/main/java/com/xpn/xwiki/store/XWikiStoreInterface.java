@@ -23,6 +23,7 @@ package com.xpn.xwiki.store;
 
 import static com.xpn.xwiki.XWikiConstant.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -531,6 +532,21 @@ public interface XWikiStoreInterface {
   XWikiLock loadLock(long docId, XWikiContext context, boolean bTransaction) throws XWikiException;
 
   void saveLock(XWikiLock lock, XWikiContext context, boolean bTransaction) throws XWikiException;
+
+  /**
+   * Atomically acquire or renew a document lock for the requested user. An existing lock
+   * owned by another user is replaced only if it has expired.
+   * Uses an independent transaction and returns only after it has committed. The document
+   * need not exist yet. A lock dated exactly at the expiry cutoff is considered active.
+   *
+   * @param lock the requested owner and timestamp; its optional wiki selects the database,
+   *          otherwise the current execution wiki is used
+   * @param expiredBefore locks older than this cutoff may be reclaimed
+   * @return true if the lock was committed with the requested user and timestamp;
+   *         false if another user holds an active lock, leaving that lock unchanged
+   * @throws XWikiException if the lock operation fails
+   */
+  boolean tryLock(XWikiLock lock, Date expiredBefore) throws XWikiException;
 
   void deleteLock(XWikiLock lock, XWikiContext context, boolean bTransaction) throws XWikiException;
 
