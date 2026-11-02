@@ -20,6 +20,7 @@ import org.xwiki.observation.remote.RemoteObservationManagerContext;
 import org.xwiki.observation.remote.converter.EventConverterManager;
 
 import com.celements.common.test.AbstractBaseComponentTest;
+import com.celements.init.CelementsInitialisedEvent;
 
 public class IncomingRemoteObservationManagerTest extends AbstractBaseComponentTest {
 
@@ -41,23 +42,32 @@ public class IncomingRemoteObservationManagerTest extends AbstractBaseComponentT
   }
 
   @Test
-  public void test_initialize_starts_configuredAdapter() {
-    expect(getMock(RemoteObservationManagerConfiguration.class).getImplementation())
-        .andReturn(Optional.of(ADAPTER_NAME));
-    adapter.start(anyObject(Consumer.class));
-
+  public void test_beanCreation_doesNotStartConsumption() {
     replayDefault();
     getBeanFactory().getBean(IncomingRemoteObservationManager.class);
     verifyDefault();
   }
 
   @Test
-  public void test_initialize_disabled() {
+  public void test_onApplicationEvent_starts_configuredAdapter() {
+    expect(getMock(RemoteObservationManagerConfiguration.class).getImplementation())
+        .andReturn(Optional.of(ADAPTER_NAME));
+    adapter.start(anyObject(Consumer.class));
+
+    replayDefault();
+    getBeanFactory().getBean(IncomingRemoteObservationManager.class);
+    getSpringContext().publishEvent(new CelementsInitialisedEvent(this));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_onApplicationEvent_disabled() {
     expect(getMock(RemoteObservationManagerConfiguration.class).getImplementation())
         .andReturn(Optional.empty());
 
     replayDefault();
     getBeanFactory().getBean(IncomingRemoteObservationManager.class);
+    getSpringContext().publishEvent(new CelementsInitialisedEvent(this));
     verifyDefault();
   }
 
