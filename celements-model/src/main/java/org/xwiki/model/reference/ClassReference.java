@@ -39,11 +39,18 @@ public class ClassReference extends LocalDocumentReference implements ClassIdent
   }
 
   @Override
+  public LocalDocumentReference getLocalClassRef() {
+    return this;
+  }
+
+  @Override
+  @Deprecated
   public ClassReference getClassReference() {
     return this;
   }
 
   @Override
+  @Deprecated
   public Optional<ClassDefinition> getClassDefinition() {
     try {
       return Optional.of(Utils.getComponentManager().lookup(ClassDefinition.class, serialize()));
@@ -53,6 +60,7 @@ public class ClassReference extends LocalDocumentReference implements ClassIdent
   }
 
   @Override
+  @Deprecated
   public DocumentReference getDocRef() {
     return getDocRef(getModelContext().getWikiRef());
   }
@@ -78,7 +86,7 @@ public class ClassReference extends LocalDocumentReference implements ClassIdent
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof ClassDefinition) {
-      obj = ((ClassDefinition) obj).getClassReference();
+      obj = ((ClassDefinition) obj).getLocalClassRef();
     }
     return super.equals(obj);
   }

@@ -1,5 +1,7 @@
 package com.celements.convert.bean;
 
+import java.util.function.Supplier;
+
 import javax.validation.constraints.NotNull;
 
 import org.xwiki.component.annotation.ComponentRole;
@@ -9,7 +11,6 @@ import org.xwiki.component.phase.Initializable;
 import com.celements.common.reflect.ReflectiveInstanceSupplier;
 import com.celements.component.ComponentInstanceSupplier;
 import com.celements.convert.Converter;
-import com.google.common.base.Supplier;
 
 /**
  * <p>

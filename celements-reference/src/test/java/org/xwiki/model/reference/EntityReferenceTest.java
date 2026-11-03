@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,6 +46,14 @@ import com.google.common.collect.ImmutableMap;
  * @since 2.2M1
  */
 public class EntityReferenceTest {
+
+  @Test
+  public void testToString() {
+    assertEquals("wiki:space.page",
+        new DocumentReference("wiki", "space", "page").toString());
+    assertEquals("wiki:space.page(en)",
+        new DocumentReference("wiki", "space", "page", Locale.ENGLISH).toString());
+  }
 
   private Map<String, Serializable> getParamMap(int nb) {
     Map<String, Serializable> map = new HashMap<>(nb);

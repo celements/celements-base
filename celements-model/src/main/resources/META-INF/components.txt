@@ -18,12 +18,9 @@ com.celements.store.DocumentCacheStoreListener
 com.celements.model.context.DefaultModelContext
 com.celements.model.util.DefaultModelUtils
 com.celements.model.access.DefaultXWikiDocumentCreator
-com.celements.model.field.XObjectFieldAccessor
-com.celements.model.field.XObjectStringFieldAccessor
 com.celements.convert.bean.BeanFieldAccessor
 com.celements.convert.bean.XObjectBeanConverter
 com.celements.convert.bean.BeanXObjectConverter
-com.celements.model.object.xwiki.XWikiObjectBridge
 com.celements.query.QueryExecutionService
 com.celements.store.CelHibernateStore
 com.celements.web.classes.oldcore.XWikiGlobalRightsClass
@@ -38,9 +35,7 @@ com.celements.web.classes.oldcore.XWikiUsersClass
 com.celements.web.classes.oldcore.XWikiGroupsClass
 com.celements.model.migration.DanglingObjectsMigration
 com.celements.web.classes.oldcore.XWikiDocumentClass
-com.celements.model.field.XDocumentFieldAccessor
 com.celements.web.classes.oldcore.XWikiTagClass
-com.celements.model.object.xwiki.XWikiEmptyObjectBridge
 com.celements.web.classes.oldcore.XWikiObjectClass
 com.celements.model.migration.InvalidXObjectsMigration
 com.celements.convert.bean.XDocBeanConversionLoader
