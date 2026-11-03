@@ -1,12 +1,16 @@
 package org.xwiki.observation.remote.internal;
 
 import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.easymock.Capture;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
 import org.xwiki.context.ExecutionContextManager;
@@ -49,10 +53,17 @@ public class IncomingRemoteObservationManagerTest extends AbstractBaseComponentT
   }
 
   @Test
-  public void test_onApplicationEvent_starts_configuredAdapter() {
+  public void test_onApplicationEvent_startsAfterOtherInitialisationListeners() {
+    var initialisationListener = new InitialisationListener();
+    getSpringContext().addApplicationListener(initialisationListener);
     expect(getMock(RemoteObservationManagerConfiguration.class).getImplementation())
         .andReturn(Optional.of(ADAPTER_NAME));
     adapter.start(anyObject(Consumer.class));
+    expectLastCall().andAnswer(() -> {
+      assertTrue("initialisation listener must finish before consumption starts",
+          initialisationListener.completed);
+      return null;
+    });
 
     replayDefault();
     getBeanFactory().getBean(IncomingRemoteObservationManager.class);
@@ -72,12 +83,15 @@ public class IncomingRemoteObservationManagerTest extends AbstractBaseComponentT
   }
 
   @Test
-  public void test_notify_replays_remoteEventLocally() throws Exception {
-    IncomingRemoteObservationManager manager = newIncomingRemoteObservationManager();
+  public void test_onRemoteEvent_replays_remoteEventLocally() throws Exception {
+    Capture<Consumer<RemoteEventData>> callback = newCapture();
     RemoteEventData remoteEvent = new RemoteEventData();
     Event event = new TestEvent();
     LocalEventData localEvent = new LocalEventData(event, "source", "data");
 
+    expect(getMock(RemoteObservationManagerConfiguration.class).getImplementation())
+        .andReturn(Optional.of(ADAPTER_NAME));
+    adapter.start(capture(callback));
     getMock(Execution.class).setContext(anyObject(ExecutionContext.class));
     getMock(ExecutionContextManager.class).initialize(anyObject(ExecutionContext.class));
     expect(getMock(EventConverterManager.class).createLocalEventData(same(remoteEvent)))
@@ -88,7 +102,9 @@ public class IncomingRemoteObservationManagerTest extends AbstractBaseComponentT
     getMock(Execution.class).removeContext();
 
     replayDefault();
-    manager.notify(remoteEvent);
+    getBeanFactory().getBean(IncomingRemoteObservationManager.class);
+    getSpringContext().publishEvent(new CelementsInitialisedEvent(this));
+    callback.getValue().accept(remoteEvent);
     verifyDefault();
   }
 
@@ -117,6 +133,22 @@ public class IncomingRemoteObservationManagerTest extends AbstractBaseComponentT
         getMock(Execution.class),
         getMock(ExecutionContextManager.class),
         getBeanFactory());
+  }
+
+  private static class InitialisationListener
+      implements ApplicationListener<CelementsInitialisedEvent>, Ordered {
+
+    private boolean completed;
+
+    @Override
+    public void onApplicationEvent(CelementsInitialisedEvent event) {
+      completed = true;
+    }
+
+    @Override
+    public int getOrder() {
+      return 100;
+    }
   }
 
   private static class TestEvent implements Event {
