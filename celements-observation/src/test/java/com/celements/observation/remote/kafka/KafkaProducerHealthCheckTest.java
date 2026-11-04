@@ -41,8 +41,8 @@ public class KafkaProducerHealthCheckTest extends AbstractBaseComponentTest {
   }
 
   @After
-  public void shutdownExecutor() {
-    check.shutdownExecutor();
+  public void close() {
+    check.close();
   }
 
   @Test
@@ -72,7 +72,7 @@ public class KafkaProducerHealthCheckTest extends AbstractBaseComponentTest {
   }
 
   @Test
-  public void test_check_waitsForAcknowledgementAndSharesPendingProbe() throws Exception {
+  public void test_check_waitsForAcknowledgementAndSharesPendingCheck() throws Exception {
     expectKafka();
     var producer = registerProducer();
     Capture<ProducerRecord<String, byte[]>> record = newCapture();
@@ -84,27 +84,27 @@ public class KafkaProducerHealthCheckTest extends AbstractBaseComponentTest {
     });
 
     replayDefault();
-    var probe = check.check().toCompletableFuture();
+    var pending = check.check().toCompletableFuture();
     assertTrue(sent.await(2, SECONDS));
-    assertFalse(probe.isDone());
+    assertFalse(pending.isDone());
     assertEquals("test-topic", record.getValue().topic());
     assertEquals("observation", record.getValue().key());
     assertArrayEquals(new byte[0], record.getValue().value());
     assertNotNull(record.getValue().headers().lastHeader("health-probe"));
 
-    var timedOutRequest = probe.copy().orTimeout(1, MILLISECONDS);
+    var timedOutRequest = pending.copy().orTimeout(1, MILLISECONDS);
     var timeout = assertThrows(ExecutionException.class, () -> timedOutRequest.get(2, SECONDS));
     assertTrue(timeout.getCause() instanceof TimeoutException);
-    assertFalse(probe.isDone());
-    assertSame(probe, check.check().toCompletableFuture());
+    assertFalse(pending.isDone());
+    assertSame(pending, check.check().toCompletableFuture());
 
     acknowledgement.set(new SendResult<>(record.getValue(), null));
-    assertEquals(new Result(Status.UP, "Kafka producer probe acknowledged"), probe.get(2, SECONDS));
+    assertEquals(new Result(Status.UP, "Kafka producer check succeeded"), pending.get(2, SECONDS));
     verifyDefault();
   }
 
   @Test
-  public void test_check_failedAcknowledgementAllowsNewProbe() throws Exception {
+  public void test_check_failedAcknowledgementAllowsNewCheck() throws Exception {
     expectKafka();
     var producer = registerProducer();
     var failed = new SettableListenableFuture<SendResult<String, byte[]>>();
@@ -132,14 +132,14 @@ public class KafkaProducerHealthCheckTest extends AbstractBaseComponentTest {
     expect(producer.send(anyObject(ProducerRecord.class))).andThrow(failure);
 
     replayDefault();
-    var probe = check.check().toCompletableFuture();
-    var exception = assertThrows(ExecutionException.class, () -> probe.get(2, SECONDS));
+    var pending = check.check().toCompletableFuture();
+    var exception = assertThrows(ExecutionException.class, () -> pending.get(2, SECONDS));
     assertSame(failure, exception.getCause());
     verifyDefault();
   }
 
   @Test
-  public void test_check_blockingSendKeepsHealthDeadlineAndSingleProbe() throws Exception {
+  public void test_check_blockingSendKeepsHealthDeadlineAndSingleCheck() throws Exception {
     expectKafka();
     var producer = registerProducer();
     var enteredSend = new CountDownLatch(1);
@@ -157,15 +157,15 @@ public class KafkaProducerHealthCheckTest extends AbstractBaseComponentTest {
     try {
       var report = new HealthService(List.of(check)).check(Scope.MONITORING).toCompletableFuture();
       assertTrue(enteredSend.await(2, SECONDS));
-      var probe = check.check().toCompletableFuture();
-      assertFalse(probe.isDone());
-      assertSame(probe, check.check().toCompletableFuture());
+      var pending = check.check().toCompletableFuture();
+      assertFalse(pending.isDone());
+      assertSame(pending, check.check().toCompletableFuture());
       assertEquals(new Result(Status.DOWN, "Check timed out"),
           report.get(3, SECONDS).checks().get(check.id()).result());
-      assertFalse(probe.isDone());
+      assertFalse(pending.isDone());
       releaseSend.countDown();
       acknowledgement.set(new SendResult<>(new ProducerRecord<>("test-topic", new byte[0]), null));
-      assertEquals(Status.UP, probe.get(2, SECONDS).status());
+      assertEquals(Status.UP, pending.get(2, SECONDS).status());
     } finally {
       releaseSend.countDown();
     }

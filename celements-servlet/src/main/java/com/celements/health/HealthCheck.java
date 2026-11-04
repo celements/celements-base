@@ -9,13 +9,14 @@ import javax.validation.constraints.NotNull;
 /**
  * One health check, discovered as a Spring bean and requested by {@link HealthService}.
  *
- * <p>Checks run on each health request. Readiness requests invoke only cheap, local readiness
- * checks; status and metrics requests also invoke monitoring checks.
+ * <p>Checks run on each health request. Readiness requests invoke checks required for routing;
+ * status and metrics requests also invoke monitoring checks.
  *
  * <p>{@link #check()} must return promptly. Local checks can return a completed future; blocking
  * I/O must run asynchronously with native timeouts. Implementations own any detached work,
- * caching, data freshness, and reuse of ongoing probes. Returned stages may be shared across
+ * caching, data freshness, and reuse of ongoing checks. Returned stages may be shared across
  * requests: service deadlines affect only dependent stages, leaving shared work untouched.
+ * {@link AsyncHealthCheck} provides a worker and reuse of one in-flight execution for blocking checks.
  *
  * <p>Disabled checks do not block readiness. Keep identifiers stable and diagnostic reasons
  * human-readable: only check IDs and fixed status/scope values should become metric labels;

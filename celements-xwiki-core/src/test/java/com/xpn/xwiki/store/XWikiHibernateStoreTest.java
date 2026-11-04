@@ -23,8 +23,11 @@ import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.time.Duration;
 
 import org.hibernate.HibernateException;
+import org.hibernate.SQLQuery;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.junit.Assert;
 import org.junit.Before;
@@ -129,6 +132,56 @@ public class XWikiHibernateStoreTest extends AbstractComponentTest {
     assertEquals("pref_main",
         store.getSchemaFromWikiName(XWikiConstant.MAIN_WIKI.getName(), getContext()));
     verifyDefault();
+  }
+
+  @Test
+  public void test_checkConnection_usesIndependentSessionAndTimeout() {
+    var session = expectConnectionCheckSession();
+    var query = createDefaultMock(SQLQuery.class);
+    expect(session.createSQLQuery("SELECT 1")).andReturn(query);
+    expect(query.setTimeout(1)).andReturn(query);
+    expect(query.uniqueResult()).andReturn(1);
+    expect(session.close()).andReturn(null);
+
+    replayDefault();
+    store.checkConnection(Duration.ofSeconds(1));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_checkConnection_queryFailureClosesSession() {
+    var session = expectConnectionCheckSession();
+    var query = createDefaultMock(SQLQuery.class);
+    var failure = new HibernateException("Query timed out");
+    expect(session.createSQLQuery("SELECT 1")).andReturn(query);
+    expect(query.setTimeout(1)).andReturn(query);
+    expect(query.uniqueResult()).andThrow(failure);
+    expect(session.close()).andReturn(null);
+
+    replayDefault();
+    assertSame(failure, assertThrows(HibernateException.class,
+        () -> store.checkConnection(Duration.ofSeconds(1))));
+    verifyDefault();
+  }
+
+  @Test
+  public void test_checkConnection_rejectsInvalidTimeoutAndUninitializedFactory() {
+    store.setSessionFactory(null);
+
+    replayDefault();
+    assertThrows(IllegalArgumentException.class, () -> store.checkConnection(Duration.ZERO));
+    assertThrows(IllegalArgumentException.class,
+        () -> store.checkConnection(Duration.ofSeconds(-1)));
+    assertThrows(IllegalStateException.class, () -> store.checkConnection(Duration.ofSeconds(1)));
+    verifyDefault();
+  }
+
+  private org.hibernate.classic.Session expectConnectionCheckSession() {
+    var factory = createDefaultMock(SessionFactory.class);
+    var session = createDefaultMock(org.hibernate.classic.Session.class);
+    store.setSessionFactory(factory);
+    expect(factory.openSession()).andReturn(session);
+    return session;
   }
 
 }

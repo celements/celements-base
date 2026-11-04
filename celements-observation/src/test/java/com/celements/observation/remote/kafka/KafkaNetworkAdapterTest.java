@@ -97,7 +97,7 @@ public class KafkaNetworkAdapterTest extends AbstractBaseComponentTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void test_receive_acknowledgesProbeWithoutDecryptingOrPublishingEvent() {
+  public void test_receive_acknowledgesCheckWithoutDecryptingOrPublishingEvent() {
     var record = new ConsumerRecord<String, byte[]>("test-topic", 0, 0L,
         "observation", new byte[0]);
     record.headers().add("health-probe", new byte[] { 1 });

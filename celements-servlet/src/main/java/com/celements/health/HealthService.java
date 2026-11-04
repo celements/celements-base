@@ -67,7 +67,7 @@ public class HealthService {
     return Map.copyOf(validated);
   }
 
-  /** Runs checks included in the scope; READINESS excludes monitoring-only dependency probes. */
+  /** Runs checks included in the scope; READINESS excludes monitoring-only dependency checks. */
   @NotNull
   public CompletionStage<@NotNull HealthReport> check(@NotNull Scope scope) {
     requireNonNull(scope);

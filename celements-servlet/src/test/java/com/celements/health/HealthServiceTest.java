@@ -71,8 +71,8 @@ public class HealthServiceTest {
   public void test_check_readinessDoesNotInvokeMonitoringChecks() throws Exception {
     HealthReport report = await(service(
         check("local", Scope.READINESS, Status.UP),
-        new Check("database", Scope.MONITORING, () -> {
-          throw new AssertionError("Readiness must not start a database probe");
+        new Check("monitoring", Scope.MONITORING, () -> {
+          throw new AssertionError("Readiness must not start a monitoring-only check");
         })).check(Scope.READINESS));
     assertEquals(1, report.checks().size());
     assertTrue(report.checks().containsKey("local"));
@@ -80,8 +80,8 @@ public class HealthServiceTest {
 
   @Test
   public void test_check_readinessMonitoringOnlySelectsNoChecks() throws Exception {
-    HealthReport report = await(service(new Check("database", Scope.MONITORING, () -> {
-      throw new AssertionError("Readiness must not start a database probe");
+    HealthReport report = await(service(new Check("monitoring", Scope.MONITORING, () -> {
+      throw new AssertionError("Readiness must not start a monitoring-only check");
     })).check(Scope.READINESS));
     assertTrue(report.checks().isEmpty());
   }
