@@ -7,10 +7,11 @@ import static org.springframework.util.SerializationUtils.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -26,6 +27,7 @@ import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.stereotype.Component;
 import org.xwiki.observation.remote.NetworkAdapter;
@@ -61,15 +63,16 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
   private static final String KEY_EVENT = "event";
   private static final String KEY_ORIGIN = "origin";
   private static final String KEY_ENCRYPTED = "encrypted";
+  private static final String KEY_HEALTH_PROBE = "health-probe";
   private static final String ENCRYPTION_VERSION = "v1";
 
   private final KafkaConfig config;
 
   private DefaultKafkaProducerFactory<String, byte[]> producerFactory;
-  private KafkaTemplate<String, byte[]> producer;
+  private volatile KafkaTemplate<String, byte[]> producer;
 
   private DefaultKafkaConsumerFactory<String, byte[]> consumerFactory;
-  private ConcurrentMessageListenerContainer<String, byte[]> consumer;
+  private volatile ConcurrentMessageListenerContainer<String, byte[]> consumer;
 
   private BytesEncryptor encryptor;
 
@@ -78,11 +81,13 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     this.config = kafkaConfig;
   }
 
-  @PostConstruct
-  public void init() {
+  private void init() {
+    if (consumerFactory != null) {
+      return;
+    }
+    encryptor = config.buildEncryptor().orElse(null);
     producerFactory = config.buildProducerFactory();
     consumerFactory = config.buildConsumerFactory();
-    encryptor = config.buildEncryptor().orElse(null);
     LOGGER.info("initialized (servers={}, topic={}, clientId={}, encryption={})",
         config.getServers(), config.getTopic(), config.getClientId(),
         (encryptor != null ? "enabled" : "disabled"));
@@ -90,12 +95,13 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
 
   @Override
   public synchronized void start(Consumer<RemoteEventData> onRemoteEvent) {
+    init();
     startProducer();
     startConsumer(onRemoteEvent);
   }
 
   private void startProducer() {
-    if (producer != null) {
+    if (isProducerRunning()) {
       return;
     }
     checkState(producerFactory != null, "not initialized");
@@ -103,8 +109,12 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     LOGGER.info("startProducer - topic [{}]", config.getTopic());
   }
 
+  boolean isProducerRunning() {
+    return producer != null;
+  }
+
   private void startConsumer(Consumer<RemoteEventData> onRemoteEvent) {
-    if ((consumer != null) && consumer.isRunning()) {
+    if (isConsumerRunning()) {
       return;
     }
     checkState(consumerFactory != null, "not initialized");
@@ -117,6 +127,20 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     consumer.setConcurrency(1);
     consumer.start();
     LOGGER.info("startConsumer - topic [{}]", config.getTopic());
+  }
+
+  boolean isConsumerRunning() {
+    // A running parent alone does not establish that its single consumer worker is running.
+    return (consumer != null) && consumer.isRunning() && consumer.isChildRunning();
+  }
+
+  /** May block on Kafka metadata or buffer space; invoke off the request thread. */
+  @NotNull
+  CompletionStage<@NotNull SendResult<String, byte[]>> probeProducer() {
+    checkState(producer != null, "Kafka producer is not started");
+    var record = new ProducerRecord<String, byte[]>(config.getTopic(), "observation", new byte[0]);
+    record.headers().add(KEY_HEALTH_PROBE, new byte[] { 1 });
+    return producer.send(record).completable();
   }
 
   @Override
@@ -153,6 +177,9 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
   private void receive(ConsumerRecord<String, byte[]> kafkaRecord, Acknowledgment ack,
       Consumer<RemoteEventData> onRemoteEvent) {
     try {
+      if (isHealthProbe(kafkaRecord)) {
+        return;
+      }
       if (checkOrigin(kafkaRecord) && checkEncryption(kafkaRecord)) {
         extractEvent(kafkaRecord).ifPresent(onRemoteEvent::accept);
       }
@@ -161,6 +188,10 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     } finally {
       ack.acknowledge(); // always acknowledge to avoid indefinite reprocessing
     }
+  }
+
+  private boolean isHealthProbe(ConsumerRecord<String, byte[]> record) {
+    return record.headers().lastHeader(KEY_HEALTH_PROBE) != null;
   }
 
   private boolean checkOrigin(ConsumerRecord<String, byte[]> kafkaRecord) {
