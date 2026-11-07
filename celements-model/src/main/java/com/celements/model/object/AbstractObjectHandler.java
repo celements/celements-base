@@ -64,7 +64,7 @@ public abstract class AbstractObjectHandler<R extends AbstractObjectHandler<R, D
     return query;
   }
 
-  private Optional<FieldRestriction<O, ?>> asObjectLangRestriction(ClassReference classRef) {
+  protected Optional<FieldRestriction<O, ?>> asObjectLangRestriction(ClassReference classRef) {
     return classRef.getClassDefinition()
         .filter(ClassDefinition::isValidObjectClass)
         .flatMap(ClassDefinition::getLangField)

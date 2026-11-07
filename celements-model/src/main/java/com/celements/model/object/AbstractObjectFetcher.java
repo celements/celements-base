@@ -120,8 +120,12 @@ public abstract class AbstractObjectFetcher<R extends AbstractObjectFetcher<R, D
   }
 
   protected Stream<O> getObjects(LocalDocumentReference classRef) {
+    var query = getQuery();
+    if (getTranslationDoc().isPresent()) {
+      asObjectLangRestriction(new ClassReference(classRef)).ifPresent(query::add);
+    }
     Stream<O> objects = getBridge().getObjects(getDocument(), classRef)
-        .filter(getQuery().predicate(classRef));
+        .filter(query.predicate(classRef));
     if (clone) {
       LOGGER.debug("{} clone objects", this);
       objects = objects.map(getBridge()::cloneObject);

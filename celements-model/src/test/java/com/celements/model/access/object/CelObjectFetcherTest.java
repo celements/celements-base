@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +20,7 @@ import com.celements.model.object.cel.CelObjectBridge;
 import com.celements.model.object.cel.CelObjectFetcher;
 import com.celements.web.classes.oldcore.XWikiDocumentClass;
 import com.celements.web.classes.oldcore.XWikiObjectClass;
+import com.celements.web.classes.oldcore.XWikiRightsClass;
 import com.xpn.xwiki.doc.CelDocument;
 import com.xpn.xwiki.doc.CelObject;
 import com.xpn.xwiki.doc.XWikiDocument;
@@ -138,6 +140,31 @@ public class CelObjectFetcherTest extends AbstractComponentTest {
 
     assertEquals(1, objects.size());
     assertEquals("fr", objects.get(0).getStringValue(FIELD_LANG.getName()));
+  }
+
+  @Test
+  public void test_withTranslation_withoutClassFilter() {
+    doc.setDefaultLanguage("en");
+    CelObject english = CelObject.from(addObj(CLASS_REF, FIELD_LANG, "en"));
+    CelObject french = CelObject.from(addObj(CLASS_REF, FIELD_LANG, "fr"));
+    addObj(CLASS_REF, null, null);
+    CelObject rights = CelObject.from(addObj(XWikiRightsClass.CLASS_REF, null, null));
+    ClassReference otherClass = new ClassReference("Classes", "Other");
+    CelObject other = CelObject.from(addObj(otherClass, null, null));
+    CelDocument.Default celDoc = CelDocument.Default.from(doc);
+    XWikiDocument transDoc = new XWikiDocument(doc.getDocumentReference());
+    transDoc.setTranslation(1);
+    transDoc.setLanguage("fr");
+    CelObjectFetcher fetcher = CelObjectFetcher.on(celDoc)
+        .withTranslation(CelDocument.Translation.from(transDoc));
+
+    assertEquals(3, fetcher.list().size());
+    assertEquals(Map.of(CLASS_REF, List.of(french),
+        XWikiRightsClass.CLASS_REF, List.of(rights), otherClass, List.of(other)), fetcher.map());
+    assertEquals(Map.of(CLASS_REF, List.of(english),
+        XWikiRightsClass.CLASS_REF, List.of(rights), otherClass, List.of(other)),
+        fetcher.withTranslation(celDoc).map());
+    assertEquals(5, fetcher.withTranslation(null).count());
   }
 
   @Test

@@ -25,6 +25,7 @@ import com.celements.model.classes.fields.ClassField;
 import com.celements.model.object.ObjectFetcher;
 import com.celements.model.object.xwiki.XWikiObjectFetcher;
 import com.celements.web.classes.oldcore.XWikiDocumentClass;
+import com.celements.web.classes.oldcore.XWikiRightsClass;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -392,6 +393,32 @@ public class ObjectFetcherTest extends AbstractComponentTest {
     BaseObject obj3 = addObj(classRef, null, null);
     assertObjs(newFetcher().filter(classRef), obj1, obj2, obj3);
     assertObjs(newFetcher().filter(classRef).withTranslation(transDoc), obj2);
+  }
+
+  @Test
+  public void test_fetch_withTranslation_withoutClassFilter() {
+    doc.setDefaultLanguage("en");
+    BaseObject english = addObj(classRef, FIELD_LANG, "en");
+    BaseObject french = addObj(classRef, FIELD_LANG, "fr");
+    addObj(classRef, null, null);
+    BaseObject rights = addObj(XWikiRightsClass.CLASS_REF, null, null);
+    BaseObject other = addObj(classRef2, null, null);
+    XWikiDocument transDoc = new XWikiDocument(doc.getDocumentReference());
+    transDoc.setTranslation(1);
+    transDoc.setLanguage("fr");
+    XWikiObjectFetcher fetcher = newFetcher().withTranslation(transDoc);
+
+    assertEquals(3, fetcher.list().size());
+    Map<ClassIdentity, List<BaseObject>> objects = fetcher.map();
+    assertEquals(3, objects.size());
+    assertEquals(1, objects.get(classRef).size());
+    assertEqualObjs(french, objects.get(classRef).get(0));
+    assertEqualObjs(rights, objects.get(XWikiRightsClass.CLASS_REF).get(0));
+    assertEqualObjs(other, objects.get(classRef2).get(0));
+    List<BaseObject> defaultObjects = fetcher.withTranslation(doc).map().get(classRef);
+    assertEquals(1, defaultObjects.size());
+    assertEqualObjs(english, defaultObjects.get(0));
+    assertEquals(5, fetcher.withTranslation(null).count());
   }
 
   @Test
