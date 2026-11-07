@@ -38,9 +38,10 @@ import one.util.streamex.EntryStream;
  * <p>
  * Bootstrap servers, topic and client id are provided by {@link KafkaConfig}.
  * <p>
- * Call {@link #start(Consumer)} to initialize and start a Kafka producer and a single-threaded
- * Kafka consumer for the topic configured in {@link KafkaConfig}. Call {@link #stop()} to stop
- * the consumer/producer.
+ * The Kafka producer is initialized during bean creation so outgoing startup events can be sent.
+ * Call {@link #start(Consumer)} after application initialization to start a single-threaded Kafka
+ * consumer for the topic configured in {@link KafkaConfig}. Call {@link #stop()} to stop the
+ * consumer/producer.
  * <p>
  * For loop prevention, outgoing messages include an {@code origin} header containing the
  * configured {@code clientId}. Incoming messages with the same {@code origin} are ignored.
@@ -86,6 +87,7 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     LOGGER.info("initialized (servers={}, topic={}, clientId={}, encryption={})",
         config.getServers(), config.getTopic(), config.getClientId(),
         (encryptor != null ? "enabled" : "disabled"));
+    startProducer();
   }
 
   @Override

@@ -20,12 +20,13 @@
  */
 package org.xwiki.observation.remote.internal;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Service;
 import org.xwiki.context.Execution;
 import org.xwiki.context.ExecutionContext;
@@ -39,8 +40,11 @@ import org.xwiki.observation.remote.RemoteObservationManagerConfiguration;
 import org.xwiki.observation.remote.RemoteObservationManagerContext;
 import org.xwiki.observation.remote.converter.EventConverterManager;
 
+import com.celements.init.CelementsInitialisedEvent;
+
 @Service
-public class IncomingRemoteObservationManager {
+public class IncomingRemoteObservationManager
+    implements ApplicationListener<CelementsInitialisedEvent>, Ordered {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IncomingRemoteObservationManager.class);
 
@@ -70,8 +74,13 @@ public class IncomingRemoteObservationManager {
     this.beanFactory = beanFactory;
   }
 
-  @PostConstruct
-  public void initialize() {
+  @Override
+  public int getOrder() {
+    return Ordered.LOWEST_PRECEDENCE;
+  }
+
+  @Override
+  public void onApplicationEvent(CelementsInitialisedEvent event) {
     NetworkAdapter adapter = configuration.getImplementation()
         .map(name -> beanFactory.getBean(name, NetworkAdapter.class))
         .orElse(null);
