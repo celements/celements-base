@@ -6,6 +6,7 @@ import static java.util.Objects.*;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -65,7 +66,7 @@ public abstract sealed class CelDocument {
   }
 
   public final String getLanguage() {
-    return getIdentity().language();
+    return getDocumentReference().getLocale().map(Locale::toString).orElse("");
   }
 
   public final String getDefaultLanguage() {
@@ -152,11 +153,15 @@ public abstract sealed class CelDocument {
     return metaData.validationScript();
   }
 
+  @Override
+  public final String toString() {
+    return getDocRef().toString();
+  }
+
   public record Identity(
       long id,
       IdVersion idVersion,
       DocumentReference docRef,
-      String language,
       String version) {
 
     public Identity {
@@ -168,8 +173,7 @@ public abstract sealed class CelDocument {
       return new Identity(
           doc.hasValidId() ? doc.getId() : 0,
           doc.hasValidId() ? doc.getIdVersion() : null,
-          doc.getDocumentReference(),
-          doc.getLanguage(),
+          doc.getDocRefWithLocale(),
           doc.getVersion());
     }
   }
@@ -276,6 +280,7 @@ public abstract sealed class CelDocument {
     private Translation(XWikiDocument doc) {
       super(doc);
       checkArgument(doc.isTrans(), "doc must have translation != 0");
+      checkArgument(!doc.getLanguage().isEmpty(), "translation doc without language");
     }
   }
 
