@@ -45,7 +45,7 @@ public class KafkaProducerHealthCheck extends AsyncHealthCheck {
   @Override
   @NotNull
   protected CompletionStage<@NotNull Result> runCheck() {
-    if (configuration.getImplementation().filter("kafka"::equals).isEmpty()) {
+    if (configuration.getImplementation().filter(KafkaNetworkAdapter.NAME::equals).isEmpty()) {
       return completedFuture(new Result(Status.DISABLED, "Kafka remote observation is disabled"));
     } else if (!adapter.isProducerRunning()) {
       return completedFuture(new Result(Status.DOWN, "Kafka producer is not started"));

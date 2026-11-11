@@ -46,7 +46,7 @@ public class KafkaConsumerHealthCheck implements HealthCheck {
 
   @NotNull
   private Result runChecks() {
-    if (configuration.getImplementation().filter("kafka"::equals).isEmpty()) {
+    if (configuration.getImplementation().filter(KafkaNetworkAdapter.NAME::equals).isEmpty()) {
       return new Result(Status.DISABLED, "Kafka remote observation is disabled");
     }
     return adapter.isConsumerRunning()

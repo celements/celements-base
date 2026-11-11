@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
@@ -33,6 +34,8 @@ import org.springframework.stereotype.Component;
 import org.xwiki.observation.remote.NetworkAdapter;
 import org.xwiki.observation.remote.RemoteEventData;
 
+import com.google.common.base.Suppliers;
+
 import one.util.streamex.EntryStream;
 
 /**
@@ -40,10 +43,10 @@ import one.util.streamex.EntryStream;
  * <p>
  * Bootstrap servers, topic and client id are provided by {@link KafkaConfig}.
  * <p>
- * The Kafka producer is initialized during bean creation so outgoing startup events can be sent.
- * Call {@link #start(Consumer)} after application initialization to start a single-threaded Kafka
- * consumer for the topic configured in {@link KafkaConfig}. Call {@link #stop()} to stop the
- * consumer/producer.
+ * The Kafka producer initializes on the first outgoing event, allowing events during startup.
+ * Call {@link #start(Consumer)} after application initialization to initialize the producer if
+ * needed and start a single-threaded consumer. After {@link #stop()}, sending fails until an
+ * explicit {@link #start(Consumer)}.
  * <p>
  * For loop prevention, outgoing messages include an {@code origin} header containing the
  * configured {@code clientId}. Incoming messages with the same {@code origin} are ignored.
@@ -55,9 +58,11 @@ import one.util.streamex.EntryStream;
  * sending and decrypted on reception. The authenticated encryptor detects payload tampering and
  * provides confidentiality for payloads in transit and at rest outside the application process.
  */
-@Component("kafka")
+@Component(KafkaNetworkAdapter.NAME)
 @Lazy
 public class KafkaNetworkAdapter implements NetworkAdapter {
+
+  public static final String NAME = "kafka";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaNetworkAdapter.class);
 
@@ -69,46 +74,42 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
 
   private final KafkaConfig config;
 
-  private DefaultKafkaProducerFactory<String, byte[]> producerFactory;
+  private final Supplier<DefaultKafkaProducerFactory<String, byte[]>> producerFactory;
   private volatile KafkaTemplate<String, byte[]> producer;
 
-  private DefaultKafkaConsumerFactory<String, byte[]> consumerFactory;
+  private final Supplier<DefaultKafkaConsumerFactory<String, byte[]>> consumerFactory;
   private volatile ConcurrentMessageListenerContainer<String, byte[]> consumer;
 
-  private BytesEncryptor encryptor;
+  private final Supplier<Optional<BytesEncryptor>> encryptor;
+  private boolean stopped;
 
   @Inject
   public KafkaNetworkAdapter(KafkaConfig kafkaConfig) {
     this.config = kafkaConfig;
-  }
-
-  private void init() {
-    if (consumerFactory != null) {
-      return;
-    }
-    encryptor = config.buildEncryptor().orElse(null);
-    producerFactory = config.buildProducerFactory();
-    consumerFactory = config.buildConsumerFactory();
-    LOGGER.info("initialized (servers={}, topic={}, clientId={}, encryption={})",
-        config.getServers(), config.getTopic(), config.getClientId(),
-        (encryptor != null ? "enabled" : "disabled"));
-    startProducer();
+    producerFactory = Suppliers.memoize(config::buildProducerFactory);
+    consumerFactory = Suppliers.memoize(config::buildConsumerFactory);
+    encryptor = Suppliers.memoize(config::buildEncryptor);
   }
 
   @Override
   public synchronized void start(Consumer<RemoteEventData> onRemoteEvent) {
-    init();
+    stopped = false;
     startProducer();
     startConsumer(onRemoteEvent);
   }
 
-  private void startProducer() {
-    if (isProducerRunning()) {
-      return;
+  private synchronized KafkaTemplate<String, byte[]> startProducer() {
+    if (producer == null) {
+      producer = new KafkaTemplate<>(producerFactory.get());
+      LOGGER.info("startProducer - topic [{}]", config.getTopic());
     }
-    checkState(producerFactory != null, "not initialized");
-    producer = new KafkaTemplate<>(producerFactory);
-    LOGGER.info("startProducer - topic [{}]", config.getTopic());
+    return producer;
+  }
+
+  @NotNull
+  private synchronized KafkaTemplate<String, byte[]> getProducer() {
+    checkState(!stopped, "Kafka adapter is stopped");
+    return (producer != null) ? producer : startProducer();
   }
 
   boolean isProducerRunning() {
@@ -119,13 +120,12 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     if (isConsumerRunning()) {
       return;
     }
-    checkState(consumerFactory != null, "not initialized");
     ContainerProperties props = new ContainerProperties(config.getTopic());
     props.setAckMode(AckMode.MANUAL_IMMEDIATE);
     AcknowledgingMessageListener<String, byte[]> listener;
     listener = (kafkaRecord, ack) -> receive(kafkaRecord, ack, onRemoteEvent);
     props.setMessageListener(listener);
-    consumer = new ConcurrentMessageListenerContainer<>(consumerFactory, props);
+    consumer = new ConcurrentMessageListenerContainer<>(consumerFactory.get(), props);
     consumer.setConcurrency(1);
     consumer.start();
     LOGGER.info("startConsumer - topic [{}]", config.getTopic());
@@ -133,12 +133,14 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
 
   boolean isConsumerRunning() {
     // A running parent alone does not establish that its single consumer worker is running.
+    var consumer = this.consumer;
     return (consumer != null) && consumer.isRunning() && consumer.isChildRunning();
   }
 
   /** May block on Kafka metadata or buffer space; invoke off the request thread. */
   @NotNull
   CompletionStage<@NotNull SendResult<String, byte[]>> probeProducer() {
+    var producer = this.producer;
     checkState(producer != null, "Kafka producer is not started");
     var record = new ProducerRecord<String, byte[]>(config.getTopic(), "observation", new byte[0]);
     record.headers().add(KEY_HEALTH_PROBE, new byte[] { 1 });
@@ -147,10 +149,7 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
 
   @Override
   public void send(RemoteEventData remoteEvent) {
-    if (producer == null) {
-      LOGGER.warn("send - producer not started; dropping message: {}", remoteEvent);
-      return;
-    }
+    var producer = getProducer();
     Map<String, String> headers = new HashMap<>();
     headers.put(KEY_EVENT, remoteEvent.getEvent().getClass().getSimpleName());
     // loop prevention
@@ -158,6 +157,7 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     byte[] payload;
     try {
       payload = serialize(remoteEvent);
+      var encryptor = this.encryptor.get().orElse(null);
       if (encryptor != null) {
         payload = encryptor.encrypt(payload);
         headers.put(KEY_ENCRYPTED, ENCRYPTION_VERSION);
@@ -209,7 +209,7 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
 
   private boolean checkEncryption(ConsumerRecord<String, byte[]> kafkaRecord) {
     var version = getEncryption(kafkaRecord);
-    if (version.isPresent() && (encryptor == null)) {
+    if (version.isPresent() && encryptor.get().isEmpty()) {
       LOGGER.warn("receive - no encryptor, unable to decrypt message: {}", kafkaRecord.timestamp());
       return false;
     } else if (version.isPresent() && !version.get().equals(ENCRYPTION_VERSION)) {
@@ -230,7 +230,7 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
     var payload = kafkaRecord.value();
     if (isEncrypted) {
       try {
-        payload = encryptor.decrypt(payload);
+        payload = encryptor.get().orElseThrow().decrypt(payload);
       } catch (Exception e) {
         LOGGER.warn("receive - failed to decrypt message: {}", kafkaRecord.timestamp(), e);
         return Optional.empty();
@@ -252,13 +252,13 @@ public class KafkaNetworkAdapter implements NetworkAdapter {
 
   @Override
   public synchronized void stop() {
+    stopped = true;
     LOGGER.info("stop - topic [{}]", config.getTopic());
     try {
-      if (consumer == null) {
-        return;
+      var consumer = this.consumer;
+      if (consumer != null) {
+        consumer.stop();
       }
-      consumer.stop();
-      LOGGER.info("stop - topic [{}]", config.getTopic());
     } finally {
       producer = null;
       consumer = null;
