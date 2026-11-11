@@ -12,7 +12,7 @@ import com.xpn.xwiki.objects.classes.PropertyClass;
 
 /**
  * A plain {@link ClassField} without the necessity of a backing {@link ClassDefinition}.
- * Makes e.g. {@link ObjectFetcher#fetchField(ClassField)} usable for generic XClasses.
+ * Makes e.g. {@link ObjectFetcher#streamFields()} usable for generic XClasses.
  */
 @Immutable
 public class PlainClassField<T> implements ClassField<T> {

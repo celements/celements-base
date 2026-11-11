@@ -1,18 +1,13 @@
 package com.celements.model.object.xwiki;
 
-import static com.google.common.base.MoreObjects.*;
-
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.validation.constraints.NotNull;
 
-import org.xwiki.model.reference.DocumentReference;
-
 import com.celements.model.object.AbstractObjectFetcher;
-import com.celements.model.object.ObjectBridge;
 import com.celements.model.object.ObjectHandler;
+import com.celements.spring.context.SpringContextProvider;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.web.Utils;
 
 @NotThreadSafe
 public class XWikiObjectFetcher extends
@@ -30,15 +25,15 @@ public class XWikiObjectFetcher extends
   }
 
   public static XWikiObjectFetcher empty() {
-    XWikiDocument dummyDoc = new XWikiDocument(new DocumentReference("$", "$", "$"));
+    XWikiDocument dummyDoc = new XWikiDocument(EMPTY_DOC_REF);
     return new XWikiObjectFetcher(dummyDoc, XWikiEmptyObjectBridge.NAME);
   }
 
-  private final String bridgeHint;
+  private final String bridgeBeanName;
 
-  private XWikiObjectFetcher(XWikiDocument doc, String bridgeHint) {
+  private XWikiObjectFetcher(XWikiDocument doc, String bridgeBeanName) {
     super(doc);
-    this.bridgeHint = bridgeHint;
+    this.bridgeBeanName = bridgeBeanName;
   }
 
   @Override
@@ -53,8 +48,8 @@ public class XWikiObjectFetcher extends
 
   @Override
   protected XWikiObjectBridge getBridge() {
-    return (XWikiObjectBridge) Utils.getComponent(ObjectBridge.class, firstNonNull(bridgeHint,
-        XWikiObjectBridge.NAME));
+    return SpringContextProvider.getBeanFactory()
+        .getBean(bridgeBeanName, XWikiObjectBridge.class);
   }
 
   @Override

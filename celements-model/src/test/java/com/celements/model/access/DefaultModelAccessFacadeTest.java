@@ -813,6 +813,7 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     List<XWikiDocument> transDocs = transLangs.stream().map(lang -> {
       XWikiDocument transDoc = doc.clone();
       transDoc.setLanguage(lang);
+      transDoc.setTranslation(1);
       return transDoc;
     }).toList();
     for (XWikiDocument transDoc : transDocs) {
@@ -999,6 +1000,30 @@ public class DefaultModelAccessFacadeTest extends AbstractComponentTest {
     expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getXContext()))).andReturn(doc);
     replayDefault();
     Stream<XWikiDocument> stream = modelAccess.streamParents(doc);
+    assertThrows(IllegalStateException.class, stream::count);
+    verifyDefault();
+  }
+
+  @Test
+  public void test_streamParents_cel() throws Exception {
+    XWikiDocument pDoc = expectParent(doc, true);
+    XWikiDocument ppDoc = expectParent(pDoc, true);
+    expectParent(ppDoc, false);
+    replayDefault();
+    List<CelDocument> parents = modelAccess.streamParents(CelDocument.from(doc)).toList();
+    verifyDefault();
+    assertEquals(List.of(pDoc.getDocumentReference(), ppDoc.getDocumentReference()),
+        parents.stream().map(CelDocument::getDocumentReference).toList());
+  }
+
+  @Test
+  public void test_streamParents_cel_cyclic() throws Exception {
+    XWikiDocument pDoc = expectParent(doc, true);
+    pDoc.setParentReference((EntityReference) doc.getDocumentReference());
+    expect(storeMock.exists(eqRefLang(doc), same(getXContext()))).andReturn(true);
+    expect(storeMock.loadXWikiDoc(eqRefLang(doc), same(getXContext()))).andReturn(doc);
+    replayDefault();
+    Stream<CelDocument> stream = modelAccess.streamParents(CelDocument.from(doc));
     assertThrows(IllegalStateException.class, stream::count);
     verifyDefault();
   }

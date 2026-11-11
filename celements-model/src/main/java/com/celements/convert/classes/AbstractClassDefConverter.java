@@ -3,6 +3,8 @@ package com.celements.convert.classes;
 import static com.celements.common.MoreObjectsCel.*;
 import static com.google.common.base.Preconditions.*;
 
+import java.util.function.Supplier;
+
 import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
@@ -14,7 +16,6 @@ import com.celements.model.classes.fields.ClassField;
 import com.celements.model.field.FieldAccessException;
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.field.FieldMissingException;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 public abstract class AbstractClassDefConverter<A, B> implements ClassDefinitionConverter<A, B> {

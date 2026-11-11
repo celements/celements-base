@@ -101,4 +101,9 @@ public record CelObject(
   public Instant getDateValue(String name) {
     return getProperty(name).map(CelProperty::getDateValue).orElse(null);
   }
+
+  @Override
+  public String toString() {
+    return documentReference + "_" + classReference + "_" + number;
+  }
 }

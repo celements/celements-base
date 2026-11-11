@@ -13,6 +13,10 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
+import org.apache.kafka.clients.producer.MockProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.easymock.Capture;
 import org.junit.Before;
 import org.junit.Test;
@@ -134,4 +138,30 @@ public class KafkaNetworkAdapterTest extends AbstractBaseComponentTest {
     verifyDefault();
   }
 
+  @Test
+  public void test_init_allowsSendingBeforeConsumptionStarts() {
+    var producer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
+    var producerFactory = new DefaultKafkaProducerFactory<String, byte[]>(Map.of()) {
+      @Override
+      public Producer<String, byte[]> createProducer(String transactionIdPrefix) {
+        return producer;
+      }
+    };
+    var consumerFactory = createDefaultMock(DefaultKafkaConsumerFactory.class);
+    expect(getMock(KafkaConfig.class).buildProducerFactory()).andReturn(producerFactory);
+    expect(getMock(KafkaConfig.class).buildConsumerFactory()).andReturn(consumerFactory);
+    expect(getMock(KafkaConfig.class).buildEncryptor()).andReturn(Optional.empty());
+    expect(getMock(KafkaConfig.class).getServers()).andStubReturn("localhost:9092");
+    expect(getMock(KafkaConfig.class).getTopic()).andStubReturn("observation.remote.test");
+    expect(getMock(KafkaConfig.class).getClientId()).andStubReturn("testNode");
+    var remoteEvent = new RemoteEventData();
+    remoteEvent.setEvent("startup event");
+
+    replayDefault();
+    var adapter = getBeanFactory().getBean(KafkaNetworkAdapter.class);
+    adapter.send(remoteEvent);
+    assertEquals(1, producer.history().size());
+    assertEquals("observation.remote.test", producer.history().get(0).topic());
+    verifyDefault();
+  }
 }

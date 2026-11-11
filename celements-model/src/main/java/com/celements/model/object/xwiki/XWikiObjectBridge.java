@@ -9,42 +9,46 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
+import javax.inject.Inject;
 
-import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
-import org.xwiki.model.reference.ClassReference;
+import org.springframework.stereotype.Component;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 import com.celements.model.access.exception.ClassDocumentLoadException;
-import com.celements.model.classes.ClassIdentity;
 import com.celements.model.context.ModelContext;
 import com.celements.model.field.FieldAccessor;
 import com.celements.model.field.XDocumentFieldAccessor;
 import com.celements.model.field.XObjectFieldAccessor;
 import com.celements.model.object.ObjectBridge;
-import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 
+import one.util.streamex.StreamEx;
+
 @Immutable
 @Component(XWikiObjectBridge.NAME)
 public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject> {
 
-  public static final String NAME = "xwiki";
+  public static final String NAME = "XWikiObjectBridge";
 
-  @Requirement(XDocumentFieldAccessor.NAME)
-  private FieldAccessor<XWikiDocument> xDocAccessor;
+  private final FieldAccessor<XWikiDocument> xDocAccessor;
+  private final FieldAccessor<BaseObject> xObjAccessor;
+  private final ModelContext context;
 
-  @Requirement(XObjectFieldAccessor.NAME)
-  private FieldAccessor<BaseObject> xObjAccessor;
-
-  @Requirement
-  private ModelContext context;
+  @Inject
+  public XWikiObjectBridge(
+      XDocumentFieldAccessor xDocAccessor,
+      XObjectFieldAccessor xObjAccessor,
+      ModelContext context) {
+    this.xDocAccessor = xDocAccessor;
+    this.xObjAccessor = xObjAccessor;
+    this.context = context;
+  }
 
   @Override
   public Class<XWikiDocument> getDocumentType() {
@@ -88,18 +92,18 @@ public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject
   }
 
   @Override
-  public FluentIterable<? extends ClassIdentity> getDocClasses(XWikiDocument doc) {
+  public StreamEx<LocalDocumentReference> getDocClasses(XWikiDocument doc) {
     checkIsMainDoc(doc);
-    return FluentIterable.from(doc.getXObjectClassRefs()).transform(ClassReference::new);
+    return StreamEx.of(doc.getXObjectClassRefs()).map(LocalDocumentReference::new).distinct();
   }
 
   @Override
-  public FluentIterable<BaseObject> getObjects(XWikiDocument doc, ClassIdentity classId) {
+  public StreamEx<BaseObject> getObjects(XWikiDocument doc, LocalDocumentReference classRef) {
     checkIsMainDoc(doc);
     WikiReference docWiki = doc.getDocumentReference().getWikiReference();
-    List<BaseObject> objects = firstNonNull(doc.getXObjects(classId.getDocRef(docWiki)),
+    List<BaseObject> objects = firstNonNull(doc.getXObjects(classRef.getDocRef(docWiki)),
         ImmutableList.<BaseObject>of());
-    return FluentIterable.from(objects).filter(Predicates.notNull());
+    return StreamEx.of(objects).nonNull();
   }
 
   @Override
@@ -108,8 +112,8 @@ public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject
   }
 
   @Override
-  public ClassIdentity getObjectClass(BaseObject obj) {
-    return new ClassReference(obj.getXClassReference());
+  public LocalDocumentReference getObjectClass(BaseObject obj) {
+    return new LocalDocumentReference(obj.getXClassReference());
   }
 
   @Override
@@ -118,13 +122,13 @@ public class XWikiObjectBridge implements ObjectBridge<XWikiDocument, BaseObject
   }
 
   @Override
-  public BaseObject createObject(XWikiDocument doc, ClassIdentity classId) {
+  public BaseObject createObject(XWikiDocument doc, LocalDocumentReference classRef) {
     checkIsMainDoc(doc);
     WikiReference docWiki = doc.getDocumentReference().getWikiReference();
     try {
-      return doc.newXObject(classId.getDocRef(docWiki), context.getXWikiContext());
+      return doc.newXObject(classRef.getDocRef(docWiki), context.getXWikiContext());
     } catch (XWikiException xwe) {
-      throw new ClassDocumentLoadException(classId.getDocRef(docWiki), xwe);
+      throw new ClassDocumentLoadException(classRef.getDocRef(docWiki), xwe);
     }
   }
 

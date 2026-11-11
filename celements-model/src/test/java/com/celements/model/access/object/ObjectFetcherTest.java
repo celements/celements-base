@@ -2,6 +2,7 @@ package com.celements.model.access.object;
 
 import static com.celements.model.classes.TestClassDefinition.*;
 import static com.google.common.base.MoreObjects.*;
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -21,8 +22,10 @@ import com.celements.common.test.ExceptionAsserter;
 import com.celements.model.classes.ClassDefinition;
 import com.celements.model.classes.ClassIdentity;
 import com.celements.model.classes.fields.ClassField;
+import com.celements.model.object.ObjectFetcher;
 import com.celements.model.object.xwiki.XWikiObjectFetcher;
 import com.celements.web.classes.oldcore.XWikiDocumentClass;
+import com.celements.web.classes.oldcore.XWikiRightsClass;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -71,7 +74,7 @@ public class ObjectFetcherTest extends AbstractComponentTest {
 
       @Override
       protected void execute() throws IllegalArgumentException {
-        newFetcher().stream();
+        newFetcher().stream().count();
       }
     }.evaluate();
     assertTrue("wrong message: " + iae.getMessage(), iae.getMessage().contains("[en]"));
@@ -112,6 +115,18 @@ public class ObjectFetcherTest extends AbstractComponentTest {
     assertObjs(newFetcher().filter(classRef), obj1);
     assertObjs(newFetcher().filter(classRef2), obj2);
     assertObjs(newFetcher().filter(classRef).filter(classRef2), obj1, obj2);
+  }
+
+  @Test
+  public void test_fetch_class_doesNotEnumerateDocClasses() {
+    XWikiDocument docMock = createDefaultMock(XWikiDocument.class);
+    expect(docMock.getTranslation()).andReturn(0);
+    expect(docMock.getDocumentReference()).andReturn(doc.getDocumentReference());
+    expect(docMock.getXObjects(classRef.getDocRef(wikiRef))).andReturn(List.of());
+
+    replayDefault();
+    assertEquals(0, XWikiObjectFetcher.on(docMock).filter(classRef).count());
+    verifyDefault();
   }
 
   @Test
@@ -381,6 +396,32 @@ public class ObjectFetcherTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_fetch_withTranslation_withoutClassFilter() {
+    doc.setDefaultLanguage("en");
+    BaseObject english = addObj(classRef, FIELD_LANG, "en");
+    BaseObject french = addObj(classRef, FIELD_LANG, "fr");
+    addObj(classRef, null, null);
+    BaseObject rights = addObj(XWikiRightsClass.CLASS_REF, null, null);
+    BaseObject other = addObj(classRef2, null, null);
+    XWikiDocument transDoc = new XWikiDocument(doc.getDocumentReference());
+    transDoc.setTranslation(1);
+    transDoc.setLanguage("fr");
+    XWikiObjectFetcher fetcher = newFetcher().withTranslation(transDoc);
+
+    assertEquals(3, fetcher.list().size());
+    Map<ClassIdentity, List<BaseObject>> objects = fetcher.map();
+    assertEquals(3, objects.size());
+    assertEquals(1, objects.get(classRef).size());
+    assertEqualObjs(french, objects.get(classRef).get(0));
+    assertEqualObjs(rights, objects.get(XWikiRightsClass.CLASS_REF).get(0));
+    assertEqualObjs(other, objects.get(classRef2).get(0));
+    List<BaseObject> defaultObjects = fetcher.withTranslation(doc).map().get(classRef);
+    assertEquals(1, defaultObjects.size());
+    assertEqualObjs(english, defaultObjects.get(0));
+    assertEquals(5, fetcher.withTranslation(null).count());
+  }
+
+  @Test
   public void test_fetchField_withTranslation_obj() throws Exception {
     XWikiDocument transDoc = new XWikiDocument(doc.getDocumentReference());
     transDoc.setTranslation(1);
@@ -483,6 +524,51 @@ public class ObjectFetcherTest extends AbstractComponentTest {
   }
 
   @Test
+  public void test_streamFields_object() {
+    BaseObject obj = addObj(classRef, FIELD_MY_STRING, "one");
+    obj.setIntValue(FIELD_MY_INT.getName(), 42);
+    addObj(classRef2, null, null);
+    XWikiObjectFetcher fetcher = newFetcher();
+
+    ObjectFetcher.FieldView fields = fetcher.clone().filter(classRef).streamFields()
+        .filter(values -> values.get(FIELD_MY_STRING).isPresent())
+        .findFirst().orElseThrow();
+
+    obj.setStringValue(FIELD_MY_STRING.getName(), "changed");
+    assertEquals("one", fields.get(FIELD_MY_STRING).orElseThrow());
+    assertEquals(Integer.valueOf(42), fields.get(FIELD_MY_INT).orElseThrow());
+    assertEquals(classRef, fields.getClassRef());
+    assertTrue(fields.get(XWikiDocumentClass.FIELD_TITLE).isEmpty());
+    assertEquals(Arrays.asList(classRef),
+        fetcher.clone().filter(classRef).streamFields()
+            .map(ObjectFetcher.FieldView::getClassRef)
+            .toList());
+    assertEquals(3, fetcher.streamFields().count());
+    assertEquals(2, fetcher.count());
+  }
+
+  @Test
+  public void test_streamFields_document() {
+    doc.setContent("default content");
+    XWikiDocument transDoc = new XWikiDocument(doc.getDocumentReference());
+    transDoc.setTranslation(1);
+    transDoc.setLanguage("fr");
+    transDoc.setTitle("translated title");
+
+    ObjectFetcher.FieldView fields = newFetcher().withTranslation(transDoc)
+        .streamFields().findFirst().orElseThrow();
+
+    assertEquals(XWikiDocumentClass.CLASS_REF, fields.getClassRef());
+    assertEquals("translated title", fields.get(XWikiDocumentClass.FIELD_TITLE).orElseThrow());
+    assertEquals("default content", fields.get(XWikiDocumentClass.FIELD_CONTENT).orElseThrow());
+    assertTrue(fields.get(FIELD_MY_STRING).isEmpty());
+    assertEquals(Arrays.asList(XWikiDocumentClass.CLASS_REF),
+        newFetcher().filter(XWikiDocumentClass.CLASS_REF).streamFields()
+            .map(ObjectFetcher.FieldView::getClassRef)
+            .toList());
+  }
+
+  @Test
   public void test_fetchField_manyObj() throws Exception {
     ClassField<String> field = FIELD_MY_STRING;
     String val1 = "val1";
@@ -508,6 +594,8 @@ public class ObjectFetcherTest extends AbstractComponentTest {
     String val = "val";
     doc.setContent(val);
 
+    assertEquals(0, newFetcher().fetchField(XWikiDocumentClass.FIELD_PARENT_REF)
+        .streamNullable().count());
     assertTrue(newFetcher().fetchField(field).first().isPresent());
     assertEquals(newFetcher().fetchField(field).first().get(), val);
     assertEquals(newFetcher().fetchField(field).list(), Arrays.asList(val));

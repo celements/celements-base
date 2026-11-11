@@ -14,9 +14,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -150,6 +150,11 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
     }
     throw new NoAccessRightsException(doc.getDocumentReference(), context.getUser(),
         EAccessLevel.VIEW);
+  }
+
+  @Override
+  public Optional<CelDocument> getCelDocument(DocumentReference docRef) {
+    return getCelDocument(docRef, DEFAULT_LANG);
   }
 
   @Override
@@ -445,28 +450,37 @@ public class DefaultModelAccessFacade implements IModelAccessFacade {
 
   @Override
   public Stream<XWikiDocument> streamParents(XWikiDocument doc) {
-    return StreamEx.of(new Iterator<XWikiDocument>() {
+    return streamParents(doc, XWikiDocument::getParentReference, this::getDocumentOpt);
+  }
 
-      private XWikiDocument current = doc;
+  @Override
+  public Stream<CelDocument> streamParents(CelDocument doc) {
+    return streamParents(doc, CelDocument::getParentReference, this::getCelDocument);
+  }
+
+  private <D> Stream<D> streamParents(D doc,
+      Function<D, DocumentReference> parentRef,
+      Function<DocumentReference, Optional<D>> loader) {
+    return StreamEx.of(new Iterator<D>() {
+
+      private D current = doc;
       private Set<DocumentReference> seen = new HashSet<>();
 
       @Override
       public boolean hasNext() {
-        return (current != null)
-            && (current.getParentReference() != null)
-            && exists(current.getParentReference());
+        return Optional.ofNullable(current)
+            .map(parentRef)
+            .filter(DefaultModelAccessFacade.this::exists)
+            .isPresent();
       }
 
       @Override
-      public XWikiDocument next() {
-        try {
-          if (seen.add(current.getParentReference())) {
-            return current = getDocument(current.getParentReference());
-          } else {
-            throw new IllegalStateException("cyclic parent referencing: " + seen);
-          }
-        } catch (DocumentNotExistsException | NullPointerException exc) {
-          throw new NoSuchElementException(exc.getClass().getSimpleName() + " " + exc.getMessage());
+      public D next() {
+        DocumentReference ref = Optional.ofNullable(current).map(parentRef).orElseThrow();
+        if (seen.add(ref)) {
+          return current = loader.apply(ref).orElseThrow();
+        } else {
+          throw new IllegalStateException("cyclic parent referencing: " + seen);
         }
       }
     });
