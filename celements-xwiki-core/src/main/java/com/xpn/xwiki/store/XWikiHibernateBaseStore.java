@@ -7,10 +7,12 @@ import static com.google.common.base.Preconditions.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -764,6 +766,29 @@ public class XWikiHibernateBaseStore implements Initializable {
 
   public SessionFactory getSessionFactory() {
     return this.sessionFactory.getSessionFactory();
+  }
+
+  /**
+   * Executes a lightweight read in an independent session without requiring execution context.
+   * The positive query timeout uses JDBC's whole-second granularity, with a minimum of one second.
+   * Connection acquisition and socket waits retain the configured provider/driver timeouts.
+   */
+  public void checkConnection(@NotNull Duration queryTimeout) {
+    checkArgument(!queryTimeout.isNegative() && !queryTimeout.isZero(),
+        "Query timeout must be positive");
+    var timeoutSeconds = Math.toIntExact(Math.max(1, queryTimeout.toSeconds()));
+    var factory = getSessionFactory();
+    checkState(factory != null, "Database initialization pending");
+    var session = factory.openSession();
+    try {
+      var result = session.createSQLQuery("SELECT 1")
+          .setTimeout(timeoutSeconds)
+          .uniqueResult();
+      checkState((result instanceof Number number) && (number.intValue() == 1),
+          "Database check returned an unexpected result");
+    } finally {
+      closeSession(session);
+    }
   }
 
   public void setSessionFactory(SessionFactory sessionFactory) {

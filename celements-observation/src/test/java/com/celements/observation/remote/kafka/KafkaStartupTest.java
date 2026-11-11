@@ -134,7 +134,6 @@ public class KafkaStartupTest extends AbstractBaseComponentTest {
     };
     expect(getMock(KafkaConfig.class).buildProducerFactory()).andReturn(producerFactory);
     expect(getMock(KafkaConfig.class).buildConsumerFactory()).andReturn(consumerFactory);
-    expect(getMock(KafkaConfig.class).buildEncryptor()).andReturn(Optional.empty());
     expect(getMock(KafkaConfig.class).getServers()).andStubReturn("localhost:9092");
     expect(getMock(KafkaConfig.class).getTopic()).andStubReturn(partition.topic());
     expect(getMock(KafkaConfig.class).getClientId()).andStubReturn("testNode");
