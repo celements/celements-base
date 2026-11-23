@@ -221,7 +221,8 @@ public class MediaLibController extends AuthenticatedBaseController {
   @GetMapping("/tags")
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> listTags() {
-    if (checkAuth().isEmpty()) {
+    checkAuth();
+    if (modelContext.user().isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
     List<TagDto> tags = fileBaseService.getFileTags().stream()
@@ -239,7 +240,8 @@ public class MediaLibController extends AuthenticatedBaseController {
   @GetMapping("/tags/files")
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> filesForTag(@RequestParam("tagId") String tagId) {
-    if (checkAuth().isEmpty()) {
+    checkAuth();
+    if (modelContext.user().isEmpty()) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
     List<String> files = fileBaseService.getFileTags().stream()
@@ -260,11 +262,13 @@ public class MediaLibController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> assignTag(@RequestBody TagAssignRequest body)
       throws DocumentSaveException {
-    if (checkAuth().isEmpty()) {
+    checkAuth();
+    User user = modelContext.user().orElse(null);
+    if (user == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
     FileBaseTag tag = findTag(body.tagId());
-    if (!rightsAccess.hasAccessLevel(tag.getTagRef(), EAccessLevel.EDIT)) {
+    if (!rightsAccess.hasAccessLevel(tag.getTagRef(), EAccessLevel.EDIT, user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No edit rights on tag document");
     }
     XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tag.getTagRef());
@@ -286,11 +290,13 @@ public class MediaLibController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> removeTag(@RequestBody TagAssignRequest body)
       throws DocumentSaveException {
-    if (checkAuth().isEmpty()) {
+    checkAuth();
+    User user = modelContext.user().orElse(null);
+    if (user == null) {
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
     FileBaseTag tag = findTag(body.tagId());
-    if (!rightsAccess.hasAccessLevel(tag.getTagRef(), EAccessLevel.EDIT)) {
+    if (!rightsAccess.hasAccessLevel(tag.getTagRef(), EAccessLevel.EDIT, user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No edit rights on tag document");
     }
     XWikiDocument tagDoc = modelAccess.getOrCreateDocument(tag.getTagRef());
@@ -308,7 +314,8 @@ public class MediaLibController extends AuthenticatedBaseController {
   @GetMapping("/tags/can-manage")
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> canManageTags() {
-    return checkAuth()
+    checkAuth();
+    return modelContext.user()
         .map(user -> ResponseEntity.ok(Map.of("canManage", rightsAccess.isAdmin(user))))
         .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
   }
@@ -317,7 +324,9 @@ public class MediaLibController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> createTag(@RequestBody TagCreateRequest body)
       throws FileBaseTagCreateException {
-    User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    checkAuth();
+    User user = modelContext.user()
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
@@ -333,7 +342,9 @@ public class MediaLibController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> deleteTag(@RequestBody TagDeleteRequest body)
       throws FileBaseTagDeleteException {
-    User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    checkAuth();
+    User user = modelContext.user()
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
@@ -346,7 +357,9 @@ public class MediaLibController extends AuthenticatedBaseController {
   @PreAuthorize("permitAll()")
   public ResponseEntity<?> renameTag(@RequestBody TagRenameRequest body)
       throws FileBaseTagRenameException {
-    User user = checkAuth().orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    checkAuth();
+    User user = modelContext.user()
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
     if (!rightsAccess.isAdmin(user)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
